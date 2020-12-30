@@ -7,30 +7,30 @@ public class OffsetBox
     private final OffsetPoint min;
     private final OffsetPoint max;
 
-    OffsetBox(Coords minCoords, Coords maxCoords)
+    public OffsetBox(Coords minCoords, Coords maxCoords)
     {
         this.min = new OffsetPoint(minCoords);
         this.max = new OffsetPoint(maxCoords).offset(1, 1, 1);
     }
 
-    OffsetBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
+    public OffsetBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
     {
         this.min = new OffsetPoint(minX, minY, minZ);
         this.max = new OffsetPoint(maxX, maxY, maxZ);
     }
 
-    OffsetBox(OffsetPoint min, OffsetPoint max)
+    public OffsetBox(OffsetPoint min, OffsetPoint max)
     {
         this.min = min;
         this.max = max;
     }
 
-    OffsetBox grow(double x, double y, double z)
+    public OffsetBox grow(double x, double y, double z)
     {
         return new OffsetBox(min.offset(-x, -y, -z), max.offset(x, y, z));
     }
 
-    OffsetBox nudge()
+    public OffsetBox nudge()
     {
         double growXZ = 0.001F;
         if (min.getY() == max.getY())
@@ -40,12 +40,12 @@ public class OffsetBox
         return grow(growXZ, growXZ, growXZ);
     }
 
-    OffsetPoint getMin()
+    public OffsetPoint getMin()
     {
         return min;
     }
 
-    OffsetPoint getMax()
+    public OffsetPoint getMax()
     {
         return max;
     }

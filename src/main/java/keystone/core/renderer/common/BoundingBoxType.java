@@ -5,18 +5,13 @@ import java.util.Map;
 
 public class BoundingBoxType
 {
-    private static final Map<Integer, BoundingBoxType> structureTypeMap = new HashMap<>();
+    private static final Map<String, BoundingBoxType> typeMap = new HashMap<>();
 
-    public static final BoundingBoxType SelectionBox = register("selection_box");
-
-    private static BoundingBoxType register(String name)
+    public static BoundingBoxType register(String name)
     {
-        return structureTypeMap.computeIfAbsent(name.hashCode(), k -> new BoundingBoxType(name));
+        return typeMap.computeIfAbsent(name, k -> new BoundingBoxType(name));
     }
-    public static BoundingBoxType getByNameHash(Integer nameHash)
-    {
-        return structureTypeMap.get(nameHash);
-    }
+    public static BoundingBoxType get(String name) { return typeMap.get(name); }
 
     private final String name;
 

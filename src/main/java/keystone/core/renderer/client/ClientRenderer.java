@@ -5,15 +5,12 @@ import keystone.core.renderer.client.interop.ClientInterop;
 import keystone.core.renderer.client.models.Point;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.client.providers.ICachingProvider;
-import keystone.core.renderer.client.providers.SelectionBoxProvider;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
-import keystone.core.renderer.client.renderers.CuboidRenderer;
 import keystone.core.renderer.client.renderers.RenderHelper;
 import keystone.core.renderer.client.renderers.RenderQueue;
 import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.common.TypeHelper;
 import keystone.core.renderer.common.models.AbstractBoundingBox;
-import keystone.core.renderer.common.models.BoundingBoxCuboid;
 import keystone.core.renderer.common.models.DimensionId;
 
 import java.util.*;
@@ -41,12 +38,6 @@ public class ClientRenderer
         if (!active) return;
 
         Player.setActiveY();
-    }
-
-    static
-    {
-        registerRenderer(BoundingBoxCuboid.class, new CuboidRenderer());
-        registerProvider(new SelectionBoxProvider());
     }
 
     public static <T extends AbstractBoundingBox> void registerProvider(IBoundingBoxProvider<T> provider)

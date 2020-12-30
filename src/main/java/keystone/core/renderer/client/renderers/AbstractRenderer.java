@@ -20,7 +20,7 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
 
     public abstract void render(T boundingBox);
 
-    void renderCuboid(OffsetBox bb, Color color, boolean alwaysDrawFaces)
+    protected void renderCuboid(OffsetBox bb, Color color, boolean alwaysDrawFaces)
     {
         OffsetBox nudge = bb.nudge();
         renderOutlinedCuboid(nudge, color);
@@ -31,7 +31,7 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         RenderHelper.enableDepthTest();
     }
 
-    void renderOutlinedCuboid(OffsetBox bb, Color color)
+    protected void renderOutlinedCuboid(OffsetBox bb, Color color)
     {
         RenderHelper.polygonModeLine();
         OffsetPoint min = bb.getMin();
@@ -113,7 +113,7 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         return minX < 0 && maxX > 0 && minY < 0 && maxY > 0 && minZ < 0 && maxZ > 0;
     }
 
-    void renderLine(OffsetPoint startPoint, OffsetPoint endPoint, Color color)
+    protected void renderLine(OffsetPoint startPoint, OffsetPoint endPoint, Color color)
     {
         RenderHelper.polygonModeLine();
         Renderer.startLines()
@@ -123,18 +123,18 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
                 .render();
     }
 
-    void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color)
+    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color)
     {
         renderFilledFaces(min, max, color, 30);
     }
 
-    void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha)
+    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha)
     {
         if (!KeystoneConfig.fill) return;
         RenderQueue.deferRendering(() -> renderFaces(min, max, color, alpha, Renderer::startQuads));
     }
 
-    void renderText(OffsetPoint offsetPoint, String... texts)
+    protected void renderText(OffsetPoint offsetPoint, String... texts)
     {
         FontRenderer fontRenderer = Minecraft.getInstance().fontRenderer;
 
@@ -149,7 +149,7 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         RenderHelper.afterRenderFont();
     }
 
-    void renderSphere(Point center, double radius, Color color)
+    protected void renderSphere(Point center, double radius, Color color)
     {
         if (KeystoneConfig.renderSphereAsDots)
         {
