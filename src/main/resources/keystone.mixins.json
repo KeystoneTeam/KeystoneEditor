@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "keystone.core.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "keystone.refmap.json",
+  "mixins": [
+    "MixinMinecraft"
+  ],
+  "client": [
+    "MixinWorldRenderer"
+  ],
+  "minVersion": "0.8"
+}
