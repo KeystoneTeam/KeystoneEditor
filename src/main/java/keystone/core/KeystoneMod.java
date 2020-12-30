@@ -14,17 +14,10 @@ public class KeystoneMod
 {
     public static final String MODID = "keystone";
 
-    public static boolean KeystoneActive = KeystoneConfig.startActive;
-
     public KeystoneMod()
     {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-    }
-    public static void toggleKeystone()
-    {
-        if (KeystoneActive) KeystoneActive = false;
-        else KeystoneActive = true;
     }
 
     private void setup(final FMLCommonSetupEvent event)

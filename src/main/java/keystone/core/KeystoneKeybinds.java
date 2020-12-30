@@ -19,8 +19,8 @@ public class KeystoneKeybinds
     @SubscribeEvent
     public static void onKeyInput(InputEvent.KeyInputEvent event)
     {
-        if (TOGGLE_KEYSTONE.isPressed()) KeystoneMod.toggleKeystone();
-        else if (KeystoneMod.KeystoneActive)
+        if (TOGGLE_KEYSTONE.isPressed()) Keystone.toggleKeystone();
+        else if (Keystone.Active)
         {
 
         }

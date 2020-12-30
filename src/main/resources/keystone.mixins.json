@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "keystone.refmap.json",
   "mixins": [
-    "MixinMinecraft"
+    "MixinMinecraft",
+    "MixinEntity"
   ],
   "client": [
     "MixinWorldRenderer"

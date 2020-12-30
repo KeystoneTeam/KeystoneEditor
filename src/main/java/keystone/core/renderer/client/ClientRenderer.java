@@ -1,6 +1,6 @@
 package keystone.core.renderer.client;
 
-import keystone.core.KeystoneMod;
+import keystone.core.Keystone;
 import keystone.core.renderer.client.interop.ClientInterop;
 import keystone.core.renderer.client.models.Point;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
@@ -26,7 +26,7 @@ public class ClientRenderer
 
     public static boolean getActive()
     {
-        return active && KeystoneMod.KeystoneActive;
+        return active && Keystone.Active;
     }
     public static void setActive(boolean active)
     {
@@ -63,7 +63,7 @@ public class ClientRenderer
 
     public static void render(DimensionId dimensionId)
     {
-        if (!active || !KeystoneMod.KeystoneActive) return;
+        if (!active || !Keystone.Active) return;
 
         RenderHelper.beforeRender();
         getBoundingBoxes(dimensionId).forEach(key ->

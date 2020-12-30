@@ -1,10 +1,14 @@
 package keystone.core;
 
 import keystone.core.events.KeystoneEvent;
+import keystone.core.renderer.config.KeystoneConfig;
 import keystone.modules.IKeystoneModule;
-import keystone.modules.selection.SelectionBox;
-import keystone.modules.selection.SelectionBoxRenderer;
+import keystone.modules.selection.boxes.HighlightBoundingBox;
+import keystone.modules.selection.boxes.SelectionBoundingBox;
+import keystone.modules.selection.renderers.HighlightBoxRenderer;
+import keystone.modules.selection.renderers.SelectionBoxRenderer;
 import keystone.modules.selection.SelectionModule;
+import net.minecraftforge.client.event.DrawHighlightEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -20,6 +24,15 @@ public class Keystone
 {
     public static final Logger LOGGER = LogManager.getLogger();
 
+    //region Active Toggle
+    public static boolean Active = KeystoneConfig.startActive;
+
+    public static void toggleKeystone()
+    {
+        if (Active) Active = false;
+        else Active = true;
+    }
+    //endregion
     //region Module Registry
     private static List<IKeystoneModule> modules = new ArrayList<>();
 
@@ -36,13 +49,14 @@ public class Keystone
         modules.forEach(consumer);
     }
     //endregion
-    //region Events
+    //region Keystone Events
     @SubscribeEvent
     public static void registerDefaultBoxes(final KeystoneEvent.RegisterBoundingBoxTypes event)
     {
         LOGGER.info("Registering Default Box Types");
 
-        event.register(SelectionBox.class, new SelectionBoxRenderer(), "selection_box");
+        event.register(SelectionBoundingBox.class, new SelectionBoxRenderer(), "selection_box");
+        event.register(HighlightBoundingBox.class, new HighlightBoxRenderer(), "highlight_box");
     }
 
     @SubscribeEvent
@@ -52,11 +66,18 @@ public class Keystone
 
         event.register(new SelectionModule());
     }
-
+    //endregion
+    //region Forge Events
     @SubscribeEvent
     public static void tick(final TickEvent.ClientTickEvent event)
     {
         modules.forEach((module) -> module.tick());
+    }
+
+    @SubscribeEvent
+    public static void drawHighlight(final DrawHighlightEvent event)
+    {
+        if (Active) event.setCanceled(true);
     }
     //endregion
 }

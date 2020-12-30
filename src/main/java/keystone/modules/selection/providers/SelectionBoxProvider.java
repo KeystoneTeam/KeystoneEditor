@@ -1,9 +1,11 @@
-package keystone.modules.selection;
+package keystone.modules.selection.providers;
 
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.DimensionId;
+import keystone.modules.selection.boxes.SelectionBoundingBox;
+import keystone.modules.selection.SelectionModule;
 
-public class SelectionBoxProvider implements IBoundingBoxProvider<SelectionBox>
+public class SelectionBoxProvider implements IBoundingBoxProvider<SelectionBoundingBox>
 {
     private SelectionModule module;
 
@@ -13,7 +15,7 @@ public class SelectionBoxProvider implements IBoundingBoxProvider<SelectionBox>
     }
 
     @Override
-    public Iterable<SelectionBox> get(DimensionId dimensionId)
+    public Iterable<SelectionBoundingBox> get(DimensionId dimensionId)
     {
         return module.getSelectionBoxes();
     }
