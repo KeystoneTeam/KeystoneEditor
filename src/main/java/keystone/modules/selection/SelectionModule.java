@@ -1,5 +1,6 @@
 package keystone.modules.selection;
 
+import keystone.api.SelectionBox;
 import keystone.core.Keystone;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
@@ -10,6 +11,7 @@ import keystone.modules.selection.boxes.SelectionBoundingBox;
 import keystone.modules.selection.providers.HighlightBoxProvider;
 import keystone.modules.selection.providers.SelectionBoxProvider;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.World;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -38,9 +40,15 @@ public class SelectionModule implements IKeystoneModule
         };
     }
 
-    public List<SelectionBoundingBox> getSelectionBoxes()
+    public List<SelectionBoundingBox> getSelectionBoundingBoxes()
     {
         return selectionBoxes;
+    }
+    public SelectionBox[] buildSelectionBoxes(World world)
+    {
+        SelectionBox[] boxes = new SelectionBox[selectionBoxes.size()];
+        for (int i = 0; i < boxes.length; i++) boxes[i] = new SelectionBox(selectionBoxes.get(i).getMinCoords(), selectionBoxes.get(i).getMaxCoords(), world);
+        return boxes;
     }
 
     @Override

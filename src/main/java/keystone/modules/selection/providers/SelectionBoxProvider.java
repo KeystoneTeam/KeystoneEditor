@@ -17,6 +17,6 @@ public class SelectionBoxProvider implements IBoundingBoxProvider<SelectionBound
     @Override
     public Iterable<SelectionBoundingBox> get(DimensionId dimensionId)
     {
-        return module.getSelectionBoxes();
+        return module.getSelectionBoundingBoxes();
     }
 }
