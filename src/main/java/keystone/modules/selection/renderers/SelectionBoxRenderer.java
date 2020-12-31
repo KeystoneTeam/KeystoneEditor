@@ -16,11 +16,11 @@ public class SelectionBoxRenderer extends AbstractRenderer<SelectionBoundingBox>
 
         if (box.getMinCoords() != box.getMaxCoords())
         {
-            OffsetBox min = new OffsetBox(box.getMinCoords(), box.getMinCoords()).nudge();
-            renderCuboid(min, Color.blue, true);
+            OffsetBox min = new OffsetBox(box.getCorner1(), box.getCorner1()).nudge();
+            renderCuboid(min, Color.yellow, true);
 
-            OffsetBox max = new OffsetBox(box.getMaxCoords(), box.getMaxCoords()).nudge();
-            renderCuboid(max, Color.yellow, true);
+            OffsetBox max = new OffsetBox(box.getCorner2(), box.getCorner2()).nudge();
+            renderCuboid(max, Color.blue, true);
         }
     }
 }

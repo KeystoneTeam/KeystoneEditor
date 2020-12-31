@@ -6,14 +6,18 @@ import keystone.core.renderer.common.TypeHelper;
 
 public class BoundingBoxCuboid extends AbstractBoundingBox
 {
-    private final Coords minCoords;
-    private final Coords maxCoords;
+    private Coords minCoords;
+    private Coords maxCoords;
+    private Coords corner1;
+    private Coords corner2;
 
-    protected BoundingBoxCuboid(Coords minCoords, Coords maxCoords, BoundingBoxType type)
+    protected BoundingBoxCuboid(Coords corner1, Coords corner2, BoundingBoxType type)
     {
         super(type);
-        this.minCoords = minCoords;
-        this.maxCoords = maxCoords;
+        this.corner1 = corner1;
+        this.corner2 = corner2;
+        this.minCoords = new Coords(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
+        this.maxCoords = new Coords(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()), Math.max(corner1.getZ(), corner2.getZ()));
     }
     public static BoundingBoxCuboid from(Coords minCoords, Coords maxCoords, BoundingBoxType type)
     {
@@ -41,6 +45,26 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
     public Coords getMaxCoords()
     {
         return maxCoords;
+    }
+    public Coords getCorner1()
+    {
+        return corner1;
+    }
+    public Coords getCorner2()
+    {
+        return corner2;
+    }
+    public void setCorner1(Coords coords)
+    {
+        corner1 = coords;
+        minCoords = new Coords(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
+        maxCoords = new Coords(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()), Math.max(corner1.getZ(), corner2.getZ()));
+    }
+    public void setCorner2(Coords coords)
+    {
+        corner2 = coords;
+        minCoords = new Coords(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
+        maxCoords = new Coords(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()), Math.max(corner1.getZ(), corner2.getZ()));
     }
 
     @Override

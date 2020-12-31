@@ -25,10 +25,10 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         OffsetBox nudge = bb.nudge();
         renderOutlinedCuboid(nudge, color);
 
-        if (alwaysDrawFaces) RenderHelper.disableDepthTest();
-        else RenderHelper.enableDepthTest();
+        //if (alwaysDrawFaces) RenderHelper.disableDepthTest();
+        //else RenderHelper.enableDepthTest();
         renderFilledFaces(nudge.getMin(), nudge.getMax(), color);
-        RenderHelper.enableDepthTest();
+        //RenderHelper.enableDepthTest();
     }
 
     protected void renderOutlinedCuboid(OffsetBox bb, Color color)

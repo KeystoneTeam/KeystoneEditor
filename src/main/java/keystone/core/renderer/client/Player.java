@@ -1,18 +1,27 @@
 package keystone.core.renderer.client;
 
+import keystone.core.Keystone;
 import keystone.core.renderer.client.interop.ClientInterop;
 import keystone.core.renderer.client.models.Point;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.DimensionId;
+import keystone.core.renderer.config.KeystoneConfig;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.vector.Vector3d;
+
+import java.util.Vector;
 
 public class Player
 {
     private static double x;
     private static double y;
     private static double z;
-    private static double activeY;
+    private static double pitch;
+    private static double yaw;
+    private static Vector3d eyePosition;
+    private static Vector3d lookDirection;
     private static DimensionId dimensionId;
     private static RayTraceResult rayTrace;
 
@@ -21,12 +30,13 @@ public class Player
         x = player.lastTickPosX + (player.getPosX() - player.lastTickPosX) * partialTicks;
         y = player.lastTickPosY + (player.getPosY() - player.lastTickPosY) * partialTicks;
         z = player.lastTickPosZ + (player.getPosZ() - player.lastTickPosZ) * partialTicks;
-        dimensionId = DimensionId.from(player.getEntityWorld().getDimensionKey());
-        rayTrace = player.pick(ClientInterop.getRenderDistanceChunks() * 16, (float)partialTicks, true);
-    }
+        pitch = player.getPitch((float)partialTicks);
+        yaw = player.getYaw((float)partialTicks);
+        eyePosition = player.getEyePosition((float)partialTicks);
+        lookDirection = player.getLook((float)partialTicks);
 
-    static void setActiveY() {
-        activeY = y;
+        dimensionId = DimensionId.from(player.getEntityWorld().getDimensionKey());
+        rayTrace = Keystone.CloseSelection ? null : player.pick(ClientInterop.getRenderDistanceChunks() * 16, (float)partialTicks, true);
     }
 
     public static double getX() {
@@ -38,26 +48,29 @@ public class Player
     public static double getZ() {
         return z;
     }
-
-    public static double getMaxY(double configMaxY) {
-        if (configMaxY == -1) {
-            return activeY;
-        }
-        if (configMaxY == 0) {
-            return y;
-        }
-        return configMaxY;
-    }
+    public static double getPitch() { return pitch; }
+    public static double getYaw() { return yaw; }
+    public static Vector3d getEyePosition() { return eyePosition; }
+    public static Vector3d getLookDirection() { return lookDirection; }
 
     public static DimensionId getDimensionId() {
         return dimensionId;
     }
-    public static RayTraceResult getRayTrace() { return rayTrace; }
 
     public static Coords getCoords() {
         return new Coords(x, y, z);
     }
     public static Point getPoint() {
         return new Point(x, y, z);
+    }
+
+    public static Coords getHighlightedBlock()
+    {
+        if (rayTrace == null || rayTrace.getType() != RayTraceResult.Type.BLOCK) return new Coords(getEyePosition().add(lookDirection.scale(KeystoneConfig.closeSelectDistance)));
+        else
+        {
+            BlockRayTraceResult blockRay = (BlockRayTraceResult)rayTrace;
+            return new Coords(blockRay.getPos());
+        }
     }
 }

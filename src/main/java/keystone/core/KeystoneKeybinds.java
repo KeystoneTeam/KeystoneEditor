@@ -1,5 +1,6 @@
 package keystone.core;
 
+import keystone.modules.selection.SelectionModule;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -10,6 +11,7 @@ import net.minecraftforge.fml.common.Mod;
 public class KeystoneKeybinds
 {
     public static final KeyBinding TOGGLE_KEYSTONE = new KeyBinding("key.toggle_keystone", 75, "key.categories.keystone");
+    public static final KeyBinding CLEAR_SELECTIONS = new KeyBinding("key.clear_selections", 256, "key.categories.keystone");
 
     public static void register()
     {
@@ -22,7 +24,7 @@ public class KeystoneKeybinds
         if (TOGGLE_KEYSTONE.isPressed()) Keystone.toggleKeystone();
         else if (Keystone.Active)
         {
-
+            if (CLEAR_SELECTIONS.isPressed()) Keystone.getModule(SelectionModule.class).getSelectionBoxes().clear();
         }
     }
 }

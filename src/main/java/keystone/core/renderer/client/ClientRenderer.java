@@ -36,8 +36,6 @@ public class ClientRenderer
     {
         active = !active;
         if (!active) return;
-
-        Player.setActiveY();
     }
 
     public static <T extends AbstractBoundingBox> void registerProvider(IBoundingBoxProvider<T> provider)
@@ -61,9 +59,11 @@ public class ClientRenderer
         return boundingBox.intersectsBounds(minX, minZ, maxX, maxZ);
     }
 
-    public static void render(DimensionId dimensionId)
+    public static void render(float partialTicks, DimensionId dimensionId)
     {
         if (!active || !Keystone.Active) return;
+
+        Keystone.forEachModule((module) -> module.prepareRender(partialTicks, dimensionId));
 
         RenderHelper.beforeRender();
         getBoundingBoxes(dimensionId).forEach(key ->
@@ -73,7 +73,7 @@ public class ClientRenderer
         });
         RenderHelper.afterRender();
     }
-    public static void renderDeferred()
+    public static void renderDeferred(float partialTicks)
     {
         RenderHelper.beforeRender();
         RenderHelper.polygonModeFill();

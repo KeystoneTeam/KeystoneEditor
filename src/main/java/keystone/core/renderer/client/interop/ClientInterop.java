@@ -11,11 +11,11 @@ public class ClientInterop
     public static void render(float partialTicks, ClientPlayerEntity player)
     {
         Player.setPosition(partialTicks, player);
-        ClientRenderer.render(DimensionId.from(player.getEntityWorld().getDimensionKey()));
+        ClientRenderer.render(partialTicks, DimensionId.from(player.getEntityWorld().getDimensionKey()));
     }
-    public static void renderDeferred()
+    public static void renderDeferred(float partialTicks)
     {
-        ClientRenderer.renderDeferred();
+        ClientRenderer.renderDeferred(partialTicks);
     }
 
     public static int getRenderDistanceChunks()

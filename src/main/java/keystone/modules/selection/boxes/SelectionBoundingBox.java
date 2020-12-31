@@ -10,8 +10,8 @@ public class SelectionBoundingBox extends BoundingBoxCuboid
     {
         super(minCoords, maxCoords, BoundingBoxType.get("selection_box"));
     }
-    public static SelectionBoundingBox from(Coords minCoords, Coords maxCoords)
+    public static SelectionBoundingBox startNew(Coords coords)
     {
-        return new SelectionBoundingBox(minCoords, maxCoords);
+        return new SelectionBoundingBox(coords, coords);
     }
 }

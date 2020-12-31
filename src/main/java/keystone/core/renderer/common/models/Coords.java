@@ -46,6 +46,11 @@ public class Coords
         return z;
     }
 
+    public Coords add(Vector3d add)
+    {
+        return new Coords(x + add.x, y + add.y, z + add.z);
+    }
+
     @Override
     public int hashCode()
     {

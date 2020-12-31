@@ -31,6 +31,6 @@ public class MixinWorldRenderer
     @Inject(method = "updateCameraAndRender", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/WorldRenderer;renderDebug(Lnet/minecraft/client/renderer/ActiveRenderInfo;)V", shift = At.Shift.BEFORE))
     private void render(MatrixStack ignored_1, float partialTicks, long ignored_2, boolean ignored_3, ActiveRenderInfo ignored_4, GameRenderer ignored_5, LightTexture ignored_6, Matrix4f ignored_7, CallbackInfo ci)
     {
-        ClientInterop.renderDeferred();
+        ClientInterop.renderDeferred(partialTicks);
     }
 }
