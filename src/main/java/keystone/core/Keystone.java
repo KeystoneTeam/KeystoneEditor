@@ -14,6 +14,7 @@ import keystone.modules.selection.boxes.HighlightBoundingBox;
 import keystone.modules.selection.boxes.SelectionBoundingBox;
 import keystone.modules.selection.renderers.HighlightBoxRenderer;
 import keystone.modules.selection.renderers.SelectionBoxRenderer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawHighlightEvent;
 import net.minecraftforge.event.world.BlockEvent;
@@ -24,7 +25,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -76,10 +79,23 @@ public class Keystone
 
         World world = loadedWorlds.get(dimensionId);
         SelectionBox[] boxes = getModule(SelectionModule.class).buildSelectionBoxes(world);
+
+        Set<BlockPos> processedBlocks = new HashSet<>();
         for (SelectionBox box : boxes)
         {
             if (tool instanceof ISelectionBoxTool) ((ISelectionBoxTool)tool).process(box);
-            if (tool instanceof IBlockTool) box.forEachBlock((pos) -> ((IBlockTool)tool).process(pos, box));
+            if (tool instanceof IBlockTool)
+            {
+                IBlockTool blockTool = (IBlockTool)tool;
+                box.forEachBlock((pos ->
+                {
+                    if (!blockTool.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
+                    {
+                        blockTool.process(pos, box);
+                        processedBlocks.add(pos);
+                    }
+                }));
+            }
         }
         for (SelectionBox box : boxes) box.applyChanges(world);
     }
