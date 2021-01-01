@@ -25,12 +25,16 @@ public class SelectionModule implements IKeystoneModule
     private List<SelectionBoundingBox> selectionBoxes;
     private IBoundingBoxProvider[] renderProviders;
 
+    private SelectionFace selectedFace;
     private Coords firstSelectionPoint;
     private boolean creatingSelection;
+    private boolean draggingFace;
 
     public SelectionModule()
     {
         MinecraftForge.EVENT_BUS.register(this);
+        
+        draggingFace = false;
 
         selectionBoxes = new ArrayList<>();
         renderProviders = new IBoundingBoxProvider[]
@@ -40,6 +44,7 @@ public class SelectionModule implements IKeystoneModule
         };
     }
 
+    public SelectionFace getSelectedFace() { return selectedFace; }
     public List<SelectionBoundingBox> getSelectionBoundingBoxes()
     {
         return selectionBoxes;
@@ -51,18 +56,38 @@ public class SelectionModule implements IKeystoneModule
         return boxes;
     }
 
+    //region Rendering
     @Override
     public IBoundingBoxProvider[] getBoundingBoxProviders()
     {
         return renderProviders;
     }
-
     @Override
     public void prepareRender(float partialTicks, DimensionId dimensionId)
     {
-        if (creatingSelection) selectionBoxes.get(selectionBoxes.size() - 1).setCorner2(Player.getHighlightedBlock());
-    }
+        if (creatingSelection)
+        {
+            selectedFace = null;
+            selectionBoxes.get(selectionBoxes.size() - 1).setCorner2(Player.getHighlightedBlock());
+        }
+        else
+        {
+            if (!draggingFace)
+            {
+                selectedFace = null;
+                for (SelectionBoundingBox box : selectionBoxes)
+                {
+                    SelectionFace face = box.getSelectedFace();
+                    if (face != null && (selectedFace == null || selectedFace.distanceSqr > face.distanceSqr)) selectedFace = face;
+                }
+            }
 
+            Keystone.RenderHighlightBox = selectedFace == null && !draggingFace;
+            if (selectedFace != null && draggingFace) selectedFace.drag();
+        }
+    }
+    //endregion
+    //region Input
     @SubscribeEvent
     public void onMouseInput(final InputEvent.MouseInputEvent event)
     {
@@ -70,32 +95,42 @@ public class SelectionModule implements IKeystoneModule
         {
             if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT)
             {
-                // If press left click
-                if (event.getAction() == GLFW.GLFW_PRESS)
+                if (selectedFace == null) createSelectionBox(event);
+                else
                 {
-                    // If not holding control, clear selection blocks
-                    if ((event.getMods() & GLFW.GLFW_MOD_CONTROL) == 0) this.selectionBoxes.clear();
-
-                    // Start new selection box
-                    firstSelectionPoint = Player.getHighlightedBlock();
-                    creatingSelection = true;
-                    selectionBoxes.add(SelectionBoundingBox.startNew(firstSelectionPoint));
-                }
-                // If release left click
-                else if (event.getAction() == GLFW.GLFW_RELEASE)
-                {
-                    // End selection box creation
-                    firstSelectionPoint = null;
-                    creatingSelection = false;
+                    if (event.getAction() == GLFW.GLFW_PRESS) draggingFace = true;
+                    else if (event.getAction() == GLFW.GLFW_RELEASE) draggingFace = false;
                 }
             }
             else if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT)
             {
-                // If press right click, enable close selection
                 if (event.getAction() == GLFW.GLFW_PRESS) Keystone.CloseSelection = true;
-                // If release right click, disable close selection
                 else if (event.getAction() == GLFW.GLFW_RELEASE) Keystone.CloseSelection = false;
             }
         }
     }
+    //endregion
+    //region Controls
+    private void createSelectionBox(final InputEvent.MouseInputEvent event)
+    {
+        // If press left click
+        if (event.getAction() == GLFW.GLFW_PRESS)
+        {
+            // If not holding control, clear selection blocks
+            if ((event.getMods() & GLFW.GLFW_MOD_CONTROL) == 0) this.selectionBoxes.clear();
+
+            // Start new selection box
+            firstSelectionPoint = Player.getHighlightedBlock();
+            creatingSelection = true;
+            selectionBoxes.add(SelectionBoundingBox.startNew(firstSelectionPoint));
+        }
+        // If release left click
+        else if (event.getAction() == GLFW.GLFW_RELEASE)
+        {
+            // End selection box creation
+            firstSelectionPoint = null;
+            creatingSelection = false;
+        }
+    }
+    //endregion
 }

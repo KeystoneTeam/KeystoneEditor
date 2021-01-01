@@ -1,8 +1,10 @@
 package keystone.core.renderer.common.models;
 
+import keystone.core.Keystone;
 import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.common.TypeHelper;
+import net.minecraft.util.Direction;
 
 public class BoundingBoxCuboid extends AbstractBoundingBox
 {
@@ -54,17 +56,53 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
     {
         return corner2;
     }
+
+    public final void refreshMinMax()
+    {
+        minCoords = new Coords(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
+        maxCoords = new Coords(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()), Math.max(corner1.getZ(), corner2.getZ()));
+    }
+
     public void setCorner1(Coords coords)
     {
         corner1 = coords;
-        minCoords = new Coords(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
-        maxCoords = new Coords(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()), Math.max(corner1.getZ(), corner2.getZ()));
+        refreshMinMax();
     }
     public void setCorner2(Coords coords)
     {
         corner2 = coords;
-        minCoords = new Coords(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
-        maxCoords = new Coords(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()), Math.max(corner1.getZ(), corner2.getZ()));
+        refreshMinMax();
+    }
+    public void moveFace(Direction direction, int newPosition)
+    {
+        switch (direction)
+        {
+            case UP:
+                if (corner1.getY() == maxCoords.getY()) corner1 = new Coords(corner1.getX(), newPosition, corner1.getZ());
+                else corner2 = new Coords(corner2.getX(), newPosition, corner2.getZ());
+                break;
+            case DOWN:
+                if (corner1.getY() == minCoords.getY()) corner1 = new Coords(corner1.getX(), newPosition, corner1.getZ());
+                else corner2 = new Coords(corner2.getX(), newPosition, corner2.getZ());
+                break;
+            case NORTH:
+                if (corner1.getZ() == minCoords.getZ()) corner1 = new Coords(corner1.getX(), corner1.getY(), newPosition);
+                else corner2 = new Coords(corner2.getX(), corner2.getY(), newPosition);
+                break;
+            case SOUTH:
+                if (corner1.getZ() == maxCoords.getZ()) corner1 = new Coords(corner1.getX(), corner1.getY(), newPosition);
+                else corner2 = new Coords(corner2.getX(), corner2.getY(), newPosition);
+                break;
+            case WEST:
+                if (corner1.getX() == minCoords.getX()) corner1 = new Coords(newPosition, corner1.getY(), corner1.getZ());
+                else corner2 = new Coords(newPosition, corner2.getY(), corner2.getZ());
+                break;
+            case EAST:
+                if (corner1.getX() == maxCoords.getX()) corner1 = new Coords(newPosition, corner1.getY(), corner1.getZ());
+                else corner2 = new Coords(newPosition, corner2.getY(), corner2.getZ());
+                break;
+        }
+        refreshMinMax();
     }
 
     @Override

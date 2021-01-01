@@ -1,14 +1,16 @@
 package keystone.core.renderer.client.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.client.models.Point;
+import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.common.models.AbstractBoundingBox;
 import keystone.core.renderer.config.KeystoneConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.util.Direction;
 
 import java.awt.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public abstract class AbstractRenderer<T extends AbstractBoundingBox>
@@ -19,27 +21,31 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
     public static final double THETA_SEGMENT = PHI_SEGMENT / 2D;
 
     public abstract void render(T boundingBox);
+    public void modifyRenderer(Renderer renderer, Direction faceDirection) {}
 
-    protected void renderCuboid(OffsetBox bb, Color color, boolean alwaysDrawFaces)
+    protected void renderCuboid(OffsetBox bb, Color color, boolean alwaysDrawFaces) { renderCuboid(bb, direction -> color, direction -> 30, alwaysDrawFaces); }
+    protected void renderCuboid(OffsetBox bb, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean alwaysDrawFaces)
     {
         OffsetBox nudge = bb.nudge();
-        renderOutlinedCuboid(nudge, color);
+        renderOutlinedCuboid(nudge, colorProvider, direction -> 255);
 
-        //if (alwaysDrawFaces) RenderHelper.disableDepthTest();
-        //else RenderHelper.enableDepthTest();
-        renderFilledFaces(nudge.getMin(), nudge.getMax(), color);
-        //RenderHelper.enableDepthTest();
+        if (alwaysDrawFaces) RenderHelper.disableDepthTest();
+        else RenderHelper.enableDepthTest();
+        renderFilledFaces(nudge.getMin(), nudge.getMax(), colorProvider, alphaProvider);
+        RenderHelper.enableDepthTest();
     }
 
-    protected void renderOutlinedCuboid(OffsetBox bb, Color color)
+    protected void renderOutlinedCuboid(OffsetBox bb, Color color) { renderOutlinedCuboid(bb, direction -> color, direction -> 255); }
+    protected void renderOutlinedCuboid(OffsetBox bb, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider)
     {
         RenderHelper.polygonModeLine();
         OffsetPoint min = bb.getMin();
         OffsetPoint max = bb.getMax();
-        renderFaces(min, max, color, 255, min.getY() == max.getY() ? Renderer::startLineLoop : Renderer::startLines);
+        renderFaces(min, max, colorProvider, alphaProvider, min.getY() == max.getY() ? Renderer::startLineLoop : Renderer::startLines);
     }
 
-    private void renderFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha, Supplier<Renderer> rendererSupplier)
+    private void renderFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha, Supplier<Renderer> rendererSupplier) { renderFaces(min, max, direction -> color, direction -> 255, rendererSupplier); }
+    private void renderFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, Supplier<Renderer> rendererSupplier)
     {
         double minX = min.getX();
         double minY = min.getY();
@@ -49,18 +55,13 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         double maxY = max.getY();
         double maxZ = max.getZ();
 
-        if (KeystoneConfig.invertBoxColorPlayerInside &&
-                playerInsideBoundingBox(minX, minY, minZ, maxX, maxY, maxZ))
-        {
-            color = new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
-        }
-
-        Renderer renderer = rendererSupplier.get()
-                .setColor(color)
-                .setAlpha(alpha);
+        Renderer renderer = rendererSupplier.get();
 
         if (minX != maxX && minZ != maxZ)
         {
+            renderer.setColor(colorProvider.apply(Direction.DOWN)).setAlpha(alphaProvider.apply(Direction.DOWN));
+            modifyRenderer(renderer, Direction.DOWN);
+
             renderer.addPoint(minX, minY, minZ)
                     .addPoint(maxX, minY, minZ)
                     .addPoint(maxX, minY, maxZ)
@@ -68,6 +69,9 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
 
             if (minY != maxY)
             {
+                renderer.setColor(colorProvider.apply(Direction.UP)).setAlpha(alphaProvider.apply(Direction.UP));
+                modifyRenderer(renderer, Direction.UP);
+
                 renderer.addPoint(minX, maxY, minZ)
                         .addPoint(maxX, maxY, minZ)
                         .addPoint(maxX, maxY, maxZ)
@@ -77,6 +81,9 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
 
         if (minX != maxX && minY != maxY)
         {
+            renderer.setColor(colorProvider.apply(Direction.SOUTH)).setAlpha(alphaProvider.apply(Direction.SOUTH));
+            modifyRenderer(renderer, Direction.SOUTH);
+
             renderer.addPoint(minX, minY, maxZ)
                     .addPoint(minX, maxY, maxZ)
                     .addPoint(maxX, maxY, maxZ)
@@ -84,6 +91,9 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
 
             if (minZ != maxZ)
             {
+                renderer.setColor(colorProvider.apply(Direction.NORTH)).setAlpha(alphaProvider.apply(Direction.NORTH));
+                modifyRenderer(renderer, Direction.NORTH);
+
                 renderer.addPoint(minX, minY, minZ)
                         .addPoint(minX, maxY, minZ)
                         .addPoint(maxX, maxY, minZ)
@@ -92,6 +102,9 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         }
         if (minY != maxY && minZ != maxZ)
         {
+            renderer.setColor(colorProvider.apply(Direction.WEST)).setAlpha(alphaProvider.apply(Direction.WEST));
+            modifyRenderer(renderer, Direction.WEST);
+
             renderer.addPoint(minX, minY, minZ)
                     .addPoint(minX, minY, maxZ)
                     .addPoint(minX, maxY, maxZ)
@@ -99,6 +112,9 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
 
             if (minX != maxX)
             {
+                renderer.setColor(colorProvider.apply(Direction.EAST)).setAlpha(alphaProvider.apply(Direction.EAST));
+                modifyRenderer(renderer, Direction.EAST);
+
                 renderer.addPoint(maxX, minY, minZ)
                         .addPoint(maxX, minY, maxZ)
                         .addPoint(maxX, maxY, maxZ)
@@ -123,15 +139,17 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
                 .render();
     }
 
-    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color)
+    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color) { renderFilledFaces(min, max, direction -> color); }
+    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider)
     {
-        renderFilledFaces(min, max, color, 30);
+        renderFilledFaces(min, max, colorProvider, direction -> 30);
     }
 
-    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha)
+    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha) { renderFilledFaces(min, max, direction -> color, direction -> alpha); }
+    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider)
     {
         if (!KeystoneConfig.fill) return;
-        RenderQueue.deferRendering(() -> renderFaces(min, max, color, alpha, Renderer::startQuads));
+        RenderQueue.deferRendering(() -> renderFaces(min, max, colorProvider, alphaProvider, Renderer::startQuads));
     }
 
     protected void renderText(OffsetPoint offsetPoint, String... texts)
@@ -158,6 +176,16 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         {
             renderLineSphere(center, radius, color);
         }
+    }
+
+    protected void renderPoint(Point center, Color color)
+    {
+        RenderHelper.enablePointSmooth();
+        RenderHelper.pointSize5();
+        Renderer renderer = Renderer.startPoints()
+                .setColor(color)
+                .addPoint(new OffsetPoint(center));
+        renderer.render();
     }
 
     private void renderLineSphere(Point center, double radius, Color color)

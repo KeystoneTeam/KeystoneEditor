@@ -40,6 +40,7 @@ public class Keystone
     //region Active Toggle
     public static boolean Active = KeystoneConfig.startActive;
     public static boolean CloseSelection = false;
+    public static boolean RenderHighlightBox = true;
 
     public static void toggleKeystone()
     {

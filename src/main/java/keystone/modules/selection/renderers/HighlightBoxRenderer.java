@@ -1,5 +1,6 @@
 package keystone.modules.selection.renderers;
 
+import keystone.core.Keystone;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
 import keystone.core.renderer.client.renderers.OffsetBox;
@@ -13,9 +14,11 @@ public class HighlightBoxRenderer extends AbstractRenderer<HighlightBoundingBox>
     @Override
     public void render(HighlightBoundingBox box)
     {
-        RenderHelper.enableDepthTest();
-
-        OffsetBox bb = new OffsetBox(Player.getHighlightedBlock(), Player.getHighlightedBlock()).nudge();
-        renderOutlinedCuboid(bb, Color.yellow);
+        if (Keystone.RenderHighlightBox)
+        {
+            RenderHelper.enableDepthTest();
+            OffsetBox bb = new OffsetBox(Player.getHighlightedBlock(), Player.getHighlightedBlock()).nudge();
+            renderOutlinedCuboid(bb, Color.yellow);
+        }
     }
 }
