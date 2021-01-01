@@ -1,6 +1,5 @@
 package keystone.modules.selection;
 
-import keystone.core.Keystone;
 import keystone.core.math.RayIntersections;
 import keystone.core.renderer.client.Player;
 import keystone.modules.selection.boxes.SelectionBoundingBox;

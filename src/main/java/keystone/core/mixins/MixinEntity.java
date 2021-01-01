@@ -1,6 +1,6 @@
 package keystone.core.mixins;
 
-import keystone.core.Keystone;
+import keystone.api.Keystone;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,6 +24,6 @@ public class MixinEntity
     @Inject(method = "tick", at = @At(value = "HEAD"))
     public void tick(CallbackInfo callback)
     {
-        if (getType() == EntityType.PLAYER && Keystone.Active) noClip = true;
+        if (getType() == EntityType.PLAYER && Keystone.isActive()) noClip = true;
     }
 }

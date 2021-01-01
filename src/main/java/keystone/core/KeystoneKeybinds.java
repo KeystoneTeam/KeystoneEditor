@@ -1,5 +1,6 @@
 package keystone.core;
 
+import keystone.api.Keystone;
 import keystone.api.tools.DeleteTool;
 import keystone.modules.selection.SelectionModule;
 import net.minecraft.client.settings.KeyBinding;
@@ -26,9 +27,9 @@ public class KeystoneKeybinds
     public static void onKeyInput(InputEvent.KeyInputEvent event)
     {
         if (TOGGLE_KEYSTONE.isPressed()) Keystone.toggleKeystone();
-        else if (Keystone.Active)
+        else if (Keystone.isActive())
         {
-            if (CLEAR_SELECTIONS.isPressed()) Keystone.getModule(SelectionModule.class).getSelectionBoundingBoxes().clear();
+            if (CLEAR_SELECTIONS.isPressed()) Keystone.getModule(SelectionModule.class).clearSelectionBoxes();
             if (DELETE_BLOCKS.isPressed()) Keystone.runTool(new DeleteTool());
         }
     }

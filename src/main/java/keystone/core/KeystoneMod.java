@@ -1,9 +1,13 @@
 package keystone.core;
 
+import keystone.api.Keystone;
 import keystone.core.events.KeystoneEvent;
-import keystone.core.renderer.config.KeystoneConfig;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
+import keystone.modules.history.HistoryModule;
+import keystone.modules.selection.SelectionModule;
+import keystone.modules.selection.boxes.HighlightBoundingBox;
+import keystone.modules.selection.boxes.SelectionBoundingBox;
+import keystone.modules.selection.renderers.HighlightBoxRenderer;
+import keystone.modules.selection.renderers.SelectionBoxRenderer;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -24,16 +28,27 @@ public class KeystoneMod
     {
         Keystone.LOGGER.info("Triggering Keystone initialization events");
 
-        Keystone.registerDefaultBoxes(new KeystoneEvent.RegisterBoundingBoxTypes());
-        Keystone.registerDefaultModules(new KeystoneEvent.RegisterModules());
+        Keystone.init();
+        registerDefaultBoxes(new KeystoneEvent.RegisterBoundingBoxTypes());
+        registerDefaultModules(new KeystoneEvent.RegisterModules());
 
 //        TODO: Figure out why events aren't working
 //        MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterBoundingBoxTypes());
 //        MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterModules());
     }
-
     private void clientSetup(final FMLClientSetupEvent event)
     {
         KeystoneKeybinds.register();
+    }
+
+    public void registerDefaultBoxes(final KeystoneEvent.RegisterBoundingBoxTypes event)
+    {
+        event.register(SelectionBoundingBox.class, new SelectionBoxRenderer(), "selection_box");
+        event.register(HighlightBoundingBox.class, new HighlightBoxRenderer(), "highlight_box");
+    }
+    private void registerDefaultModules(final KeystoneEvent.RegisterModules event)
+    {
+        event.register(new HistoryModule());
+        event.register(new SelectionModule());
     }
 }

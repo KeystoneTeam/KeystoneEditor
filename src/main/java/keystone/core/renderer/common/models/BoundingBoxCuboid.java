@@ -1,6 +1,5 @@
 package keystone.core.renderer.common.models;
 
-import keystone.core.Keystone;
 import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.common.TypeHelper;

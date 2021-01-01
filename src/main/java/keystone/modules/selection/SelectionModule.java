@@ -1,16 +1,17 @@
 package keystone.modules.selection;
 
+import keystone.api.Keystone;
 import keystone.api.SelectionBox;
-import keystone.core.Keystone;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.DimensionId;
 import keystone.modules.IKeystoneModule;
+import keystone.modules.history.HistoryModule;
+import keystone.modules.history.entries.SelectionHistoryEntry;
 import keystone.modules.selection.boxes.SelectionBoundingBox;
 import keystone.modules.selection.providers.HighlightBoxProvider;
 import keystone.modules.selection.providers.SelectionBoxProvider;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -49,11 +50,30 @@ public class SelectionModule implements IKeystoneModule
     {
         return selectionBoxes;
     }
+    public void clearSelectionBoxes()
+    {
+        if (selectionBoxes.size() > 0)
+        {
+            Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, true));
+            selectionBoxes.clear();
+        }
+    }
+
     public SelectionBox[] buildSelectionBoxes(World world)
     {
         SelectionBox[] boxes = new SelectionBox[selectionBoxes.size()];
         for (int i = 0; i < boxes.length; i++) boxes[i] = new SelectionBox(selectionBoxes.get(i).getMinCoords(), selectionBoxes.get(i).getMaxCoords(), world);
         return boxes;
+    }
+    public List<SelectionBoundingBox> restoreSelectionBoxes(List<SelectionBoundingBox> boxes)
+    {
+        List<SelectionBoundingBox> old = new ArrayList<>();
+        selectionBoxes.forEach(box -> old.add(box.clone()));
+
+        selectionBoxes.clear();
+        boxes.forEach(box -> selectionBoxes.add(box.clone()));
+
+        return old;
     }
 
     //region Rendering
@@ -91,14 +111,18 @@ public class SelectionModule implements IKeystoneModule
     @SubscribeEvent
     public void onMouseInput(final InputEvent.MouseInputEvent event)
     {
-        if (Keystone.Active && Minecraft.getInstance().world != null)
+        if (Keystone.isActive())
         {
             if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT)
             {
                 if (selectedFace == null) createSelectionBox(event);
                 else
                 {
-                    if (event.getAction() == GLFW.GLFW_PRESS) draggingFace = true;
+                    if (event.getAction() == GLFW.GLFW_PRESS)
+                    {
+                        draggingFace = true;
+                        Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, true));
+                    }
                     else if (event.getAction() == GLFW.GLFW_RELEASE) draggingFace = false;
                 }
             }
@@ -127,6 +151,9 @@ public class SelectionModule implements IKeystoneModule
         // If release left click
         else if (event.getAction() == GLFW.GLFW_RELEASE)
         {
+            // Push to history
+            if (creatingSelection) Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, false));
+
             // End selection box creation
             firstSelectionPoint = null;
             creatingSelection = false;

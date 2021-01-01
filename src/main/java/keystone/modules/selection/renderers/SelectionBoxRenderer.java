@@ -1,6 +1,6 @@
 package keystone.modules.selection.renderers;
 
-import keystone.core.Keystone;
+import keystone.api.Keystone;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
 import keystone.core.renderer.client.renderers.OffsetBox;
 import keystone.modules.selection.SelectionFace;

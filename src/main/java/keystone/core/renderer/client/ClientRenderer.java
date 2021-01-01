@@ -1,6 +1,6 @@
 package keystone.core.renderer.client;
 
-import keystone.core.Keystone;
+import keystone.api.Keystone;
 import keystone.core.renderer.client.interop.ClientInterop;
 import keystone.core.renderer.client.models.Point;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
@@ -26,7 +26,7 @@ public class ClientRenderer
 
     public static boolean getActive()
     {
-        return active && Keystone.Active;
+        return active && Keystone.isActive();
     }
     public static void setActive(boolean active)
     {
@@ -61,7 +61,7 @@ public class ClientRenderer
 
     public static void render(float partialTicks, DimensionId dimensionId)
     {
-        if (!active || !Keystone.Active) return;
+        if (!active || !Keystone.isActive()) return;
 
         Keystone.forEachModule((module) -> module.prepareRender(partialTicks, dimensionId));
 

@@ -1,6 +1,6 @@
 package keystone.core.events;
 
-import keystone.core.Keystone;
+import keystone.api.Keystone;
 import keystone.core.renderer.client.ClientRenderer;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
@@ -16,7 +16,8 @@ public class KeystoneEvent extends Event
         public void register(IKeystoneModule module)
         {
             Keystone.registerModule(module);
-            for (IBoundingBoxProvider provider : module.getBoundingBoxProviders()) ClientRenderer.registerProvider(provider);
+            IBoundingBoxProvider[] providers = module.getBoundingBoxProviders();
+            if (providers != null) for (IBoundingBoxProvider provider : providers) ClientRenderer.registerProvider(provider);
         }
         public void registerAll(IKeystoneModule... modules)
         {

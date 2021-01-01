@@ -1,51 +1,50 @@
-package keystone.core;
+package keystone.api;
 
-import keystone.api.SelectionBox;
 import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.tools.interfaces.IKeystoneTool;
 import keystone.api.tools.interfaces.ISelectionBoxTool;
-import keystone.core.events.KeystoneEvent;
+import keystone.modules.history.IHistoryEntry;
+import keystone.modules.history.entries.ToolHistoryEntry;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.renderer.config.KeystoneConfig;
 import keystone.modules.IKeystoneModule;
+import keystone.modules.history.HistoryModule;
 import keystone.modules.selection.SelectionModule;
-import keystone.modules.selection.boxes.HighlightBoundingBox;
-import keystone.modules.selection.boxes.SelectionBoundingBox;
-import keystone.modules.selection.renderers.HighlightBoxRenderer;
-import keystone.modules.selection.renderers.SelectionBoxRenderer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawHighlightEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class Keystone
 {
     public static final Logger LOGGER = LogManager.getLogger();
 
     private static Map<DimensionId, World> loadedWorlds = new HashMap<>();
 
+
     //region Active Toggle
-    public static boolean Active = KeystoneConfig.startActive;
     public static boolean CloseSelection = false;
     public static boolean RenderHighlightBox = true;
 
+    private static boolean enabled = KeystoneConfig.startActive;
+
     public static void toggleKeystone()
     {
-        if (Active) Active = false;
-        else Active = true;
+        if (enabled) enabled = false;
+        else enabled = true;
+    }
+    public static boolean isActive()
+    {
+        return enabled && Minecraft.getInstance().world != null;
     }
     //endregion
     //region Module Registry
@@ -98,30 +97,25 @@ public class Keystone
                 }));
             }
         }
-        for (SelectionBox box : boxes) box.applyChanges(world);
+
+        IHistoryEntry toolHistoryEntry = new ToolHistoryEntry(world, boxes);
+        getModule(HistoryModule.class).pushToHistory(toolHistoryEntry);
+        toolHistoryEntry.redo();
     }
     //endregion
-    //region Keystone Events
-    @SubscribeEvent
-    public static void registerDefaultBoxes(final KeystoneEvent.RegisterBoundingBoxTypes event)
+    //region Event Handling
+    public static final void init()
     {
-        LOGGER.info("Registering Default Box Types");
+        MinecraftForge.EVENT_BUS.addListener(Keystone::onWorldLoaded);
+        MinecraftForge.EVENT_BUS.addListener(Keystone::onWorldUnloaded);
 
-        event.register(SelectionBoundingBox.class, new SelectionBoxRenderer(), "selection_box");
-        event.register(HighlightBoundingBox.class, new HighlightBoxRenderer(), "highlight_box");
+        MinecraftForge.EVENT_BUS.addListener(Keystone::drawHighlight);
+        MinecraftForge.EVENT_BUS.addListener(Keystone::onBreakBlock);
+        MinecraftForge.EVENT_BUS.addListener(Keystone::onPlaceBlock);
+        MinecraftForge.EVENT_BUS.addListener(Keystone::onPlaceBlocks);
     }
 
-    @SubscribeEvent
-    public static void registerDefaultModules(final KeystoneEvent.RegisterModules event)
-    {
-        LOGGER.info("Registering Default Modules...");
-
-        event.register(new SelectionModule());
-    }
-    //endregion
-    //region Caching Loaded Worlds
-    @SubscribeEvent
-    public static void onWorldLoaded(final WorldEvent.Load event)
+    private static void onWorldLoaded(final WorldEvent.Load event)
     {
         if (event.getWorld() instanceof World)
         {
@@ -134,8 +128,7 @@ public class Keystone
             }
         }
     }
-    @SubscribeEvent
-    public static void onWorldUnloaded(final WorldEvent.Unload event)
+    private static void onWorldUnloaded(final WorldEvent.Unload event)
     {
         if (event.getWorld() instanceof World)
         {
@@ -147,11 +140,10 @@ public class Keystone
             }
         }
     }
-    //endregion
-    //region Canceled Events
-    @SubscribeEvent public static void drawHighlight(final DrawHighlightEvent event) { if (Active) event.setCanceled(true); }
-    @SubscribeEvent public static void onBreakBlock(final BlockEvent.BreakEvent event) { if (Active) event.setCanceled(true); }
-    @SubscribeEvent public static void onPlaceBlock(final BlockEvent.EntityPlaceEvent event) { if (Active) event.setCanceled(true); }
-    @SubscribeEvent public static void onPlaceBlocks(final BlockEvent.EntityMultiPlaceEvent event) { if (Active) event.setCanceled(true); }
+
+    private static void drawHighlight(final DrawHighlightEvent event) { if (isActive()) event.setCanceled(true); }
+    private static void onBreakBlock(final BlockEvent.BreakEvent event) { if (isActive()) event.setCanceled(true); }
+    private static void onPlaceBlock(final BlockEvent.EntityPlaceEvent event) { if (isActive()) event.setCanceled(true); }
+    private static void onPlaceBlocks(final BlockEvent.EntityMultiPlaceEvent event) { if (isActive()) event.setCanceled(true); }
     //endregion
 }

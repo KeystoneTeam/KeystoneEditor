@@ -11,15 +11,19 @@ import net.minecraft.util.math.vector.Vector3d;
 
 public class SelectionBoundingBox extends BoundingBoxCuboid
 {
-    protected SelectionBoundingBox(Coords minCoords, Coords maxCoords)
+    protected SelectionBoundingBox(Coords corner1, Coords corner2)
     {
-        super(minCoords, maxCoords, BoundingBoxType.get("selection_box"));
+        super(corner1, corner2, BoundingBoxType.get("selection_box"));
     }
     public static SelectionBoundingBox startNew(Coords coords)
     {
         return new SelectionBoundingBox(coords, coords);
     }
 
+    public SelectionBoundingBox clone()
+    {
+        return new SelectionBoundingBox(getCorner1().clone(), getCorner2().clone());
+    }
     public SelectionFace getSelectedFace()
     {
         Vector3d origin = Player.getEyePosition();

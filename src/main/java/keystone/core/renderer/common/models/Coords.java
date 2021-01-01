@@ -46,6 +46,10 @@ public class Coords
         return z;
     }
 
+    public Coords clone()
+    {
+        return new Coords(x, y, z);
+    }
     public Coords add(Vector3d add)
     {
         return new Coords(x + add.x, y + add.y, z + add.z);

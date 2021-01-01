@@ -1,6 +1,6 @@
 package keystone.core.renderer.client;
 
-import keystone.core.Keystone;
+import keystone.api.Keystone;
 import keystone.core.renderer.client.interop.ClientInterop;
 import keystone.core.renderer.client.models.Point;
 import keystone.core.renderer.common.models.Coords;
@@ -10,8 +10,6 @@ import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
-
-import java.util.Vector;
 
 public class Player
 {
