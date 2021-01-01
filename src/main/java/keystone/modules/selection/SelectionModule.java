@@ -33,7 +33,7 @@ public class SelectionModule implements IKeystoneModule
     public SelectionModule()
     {
         MinecraftForge.EVENT_BUS.register(this);
-        
+
         draggingFace = false;
 
         selectionBoxes = new ArrayList<>();

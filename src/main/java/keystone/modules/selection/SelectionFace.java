@@ -75,6 +75,7 @@ public class SelectionFace
 
         // Cast ray onto plane
         Vector3d projectedPoint = RayIntersections.rayPlaneIntersection(Player.getEyePosition(), Player.getLookDirection(), point, normal);
+        if (projectedPoint == null) return;
 
         // Do dragging
         if (direction == Direction.UP || direction == Direction.DOWN) selectionBox.moveFace(direction, (int)projectedPoint.getY());

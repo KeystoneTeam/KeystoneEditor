@@ -25,8 +25,13 @@ public class RayIntersections
     }
     public static Vector3d rayPlaneIntersection(Vector3d origin, Vector3d direction, Vector3d pointOnPlane, Vector3d planeNormal)
     {
-        double d = pointOnPlane.dotProduct(planeNormal.scale(-1));
-        double t = -(d + origin.dotProduct(planeNormal)) / direction.dotProduct(planeNormal);
+        double d = -planeNormal.dotProduct(pointOnPlane);
+        double denom = planeNormal.dotProduct(direction);
+        if (Math.abs(denom) <= 1e-4f) return null;
+
+        double t = -(planeNormal.dotProduct(origin) + d) / planeNormal.dotProduct(direction);
+        if (t <= 0) return null;
+
         return origin.add(direction.scale(t));
     }
     public static Vector3d rayFaceIntersection(Vector3d origin, Vector3d direction, Coords min, Coords max, Direction face)
