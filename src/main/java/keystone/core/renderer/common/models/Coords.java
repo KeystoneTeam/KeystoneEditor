@@ -5,6 +5,8 @@ import keystone.core.renderer.common.TypeHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
 
+import java.util.Vector;
+
 public class Coords
 {
     private final int x;
@@ -50,9 +52,39 @@ public class Coords
     {
         return new Coords(x, y, z);
     }
+
+    public Coords add(double x, double y, double z)
+    {
+        return new Coords(this.x + x, this.y + y, this.z + z);
+    }
+    public Coords add(Vector3i add)
+    {
+        return new Coords(x + add.getX(), y + add.getY(), z + add.getZ());
+    }
     public Coords add(Vector3d add)
     {
         return new Coords(x + add.x, y + add.y, z + add.z);
+    }
+    public Coords add(Coords add)
+    {
+        return new Coords(x + add.x, y + add.y, z + add.z);
+    }
+
+    public Coords sub(double x, double y, double z)
+    {
+        return new Coords(this.x - x, this.y - y, this.z - z);
+    }
+    public Coords sub(Vector3i add)
+    {
+        return new Coords(x - add.getX(), y - add.getY(), z - add.getZ());
+    }
+    public Coords sub(Vector3d add)
+    {
+        return new Coords(x - add.x, y - add.y, z - add.z);
+    }
+    public Coords sub(Coords add)
+    {
+        return new Coords(x - add.x, y - add.y, z - add.z);
     }
 
     @Override

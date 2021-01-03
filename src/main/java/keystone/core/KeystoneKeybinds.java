@@ -29,7 +29,7 @@ public class KeystoneKeybinds
         if (TOGGLE_KEYSTONE.isPressed()) Keystone.toggleKeystone();
         else if (Keystone.isActive())
         {
-            if (CLEAR_SELECTIONS.isPressed()) Keystone.getModule(SelectionModule.class).clearSelectionBoxes();
+            if (CLEAR_SELECTIONS.isPressed()) Keystone.getModule(SelectionModule.class).onCancelPressed();
             if (DELETE_BLOCKS.isPressed()) Keystone.runTool(new DeleteTool());
         }
     }

@@ -4,6 +4,9 @@ import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.common.TypeHelper;
 import net.minecraft.util.Direction;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
+import org.lwjgl.system.CallbackI;
 
 public class BoundingBoxCuboid extends AbstractBoundingBox
 {
@@ -101,6 +104,55 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
                 else corner2 = new Coords(newPosition, corner2.getY(), corner2.getZ());
                 break;
         }
+        refreshMinMax();
+    }
+    public void move(Coords newMin)
+    {
+        Vector3d diff = new Vector3d(getMaxCoords().getX() - getMinCoords().getX(), getMaxCoords().getY() - getMinCoords().getY(), getMaxCoords().getZ() - getMinCoords().getZ());
+        Coords newMax = newMin.add(diff);
+
+        int corner1X, corner1Y, corner1Z;
+        int corner2X, corner2Y, corner2Z;
+
+        // Change corner x values
+        if (corner1.getX() == minCoords.getX())
+        {
+            corner1X = newMin.getX();
+            corner2X = newMax.getX();
+        }
+        else
+        {
+            corner1X = newMax.getX();
+            corner2X = newMin.getX();
+        }
+
+        // Change corner y values
+        if (corner1.getY() == minCoords.getY())
+        {
+            corner1Y = newMin.getY();
+            corner2Y = newMax.getY();
+        }
+        else
+        {
+            corner1Y = newMax.getY();
+            corner2Y = newMin.getY();
+        }
+
+        // Change corner z values
+        if (corner1.getZ() == minCoords.getZ())
+        {
+            corner1Z = newMin.getZ();
+            corner2Z = newMax.getZ();
+        }
+        else
+        {
+            corner1Z = newMax.getZ();
+            corner2Z = newMin.getZ();
+        }
+
+        // Update box data
+        corner1 = new Coords(corner1X, corner1Y, corner1Z);
+        corner2 = new Coords(corner2X, corner2Y, corner2Z);
         refreshMinMax();
     }
 

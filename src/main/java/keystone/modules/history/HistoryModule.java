@@ -1,7 +1,9 @@
 package keystone.modules.history;
 
 import keystone.api.Keystone;
+import keystone.core.renderer.config.KeystoneConfig;
 import keystone.modules.IKeystoneModule;
+import keystone.modules.history.entries.PasteHistoryEntry;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.glfw.GLFW;
@@ -33,10 +35,14 @@ public class HistoryModule implements IKeystoneModule
     public void pushToHistory(IHistoryEntry historyEntry)
     {
         if (currentHistoryIndex < history.size() - 1) for (int i = history.size() - 1; i > currentHistoryIndex; i--) history.remove(i);
+
+        historyEntry.onPushToHistory(this, true);
         history.add(historyEntry);
         currentHistoryIndex++;
+        historyEntry.onPushToHistory(this, false);
 
         if (historyEntry.addToUnsavedChanges()) unsavedChanges++;
+        if (KeystoneConfig.debugHistoryLog) logHistoryStack();
     }
     private IHistoryEntry popFromHistory()
     {
@@ -62,6 +68,8 @@ public class HistoryModule implements IKeystoneModule
             historyEntry.undo();
             if (historyEntry.addToUnsavedChanges()) unsavedChanges++;
         }
+
+        if (KeystoneConfig.debugHistoryLog) logHistoryStack();
     }
     public void redo()
     {
@@ -73,6 +81,8 @@ public class HistoryModule implements IKeystoneModule
             historyEntry.redo();
             if (historyEntry.addToUnsavedChanges()) unsavedChanges++;
         }
+
+        if (KeystoneConfig.debugHistoryLog) logHistoryStack();
     }
 
     public void logHistoryStack()

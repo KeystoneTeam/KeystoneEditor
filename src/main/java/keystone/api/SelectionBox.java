@@ -3,6 +3,7 @@ package keystone.api;
 import keystone.core.renderer.common.models.Coords;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.World;
@@ -46,6 +47,15 @@ public class SelectionBox
     private int getBlockIndex(BlockPos pos)
     {
         Vector3i normalized = new Vector3i(pos.getX() - min.getX(), pos.getY() - min.getY(), pos.getZ() - min.getZ());
+
+        if (normalized.getX() < 0 || normalized.getX() >= size.getX() ||
+                normalized.getY() < 0 || normalized.getY() >= size.getY() ||
+                normalized.getZ() < 0 || normalized.getZ() >= size.getZ())
+        {
+            Keystone.LOGGER.error("Trying to get block outside of selection bounds!");
+            return -1;
+        }
+
         return normalized.getZ() + normalized.getY() * size.getZ() + normalized.getX() * size.getZ() * size.getY();
     }
 
@@ -53,10 +63,24 @@ public class SelectionBox
     public BlockPos getMax() { return max; }
     public Vector3i getSize() { return size; }
 
-    public BlockState getBlock(BlockPos pos) { return buffer[getBlockIndex(pos)]; }
-    public BlockState getBlock(BlockPos pos, boolean getOriginalState) { return getOriginalState ? blocks[getBlockIndex(pos)] : buffer[getBlockIndex(pos)]; }
+    public BlockState getBlock(BlockPos pos)
+    {
+        int index = getBlockIndex(pos);
+        if (index < 0) return Blocks.AIR.getDefaultState();
+        else return buffer[index];
+    }
+    public BlockState getBlock(BlockPos pos, boolean getOriginalState)
+    {
+        int index = getBlockIndex(pos);
+        if (index < 0) return Blocks.AIR.getDefaultState();
+        else return getOriginalState ? blocks[index] : buffer[index];
+    }
     public void setBlock(BlockPos pos, Block block) { setBlock(pos, block.getDefaultState()); }
-    public void setBlock(BlockPos pos, BlockState block) { buffer[getBlockIndex(pos)] = block; }
+    public void setBlock(BlockPos pos, BlockState block)
+    {
+        int index = getBlockIndex(pos);
+        if (index >= 0) buffer[index] = block;
+    }
 
     public void forEachBlock(Consumer<BlockPos> consumer)
     {

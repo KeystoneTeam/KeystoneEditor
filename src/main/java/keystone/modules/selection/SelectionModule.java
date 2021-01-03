@@ -2,13 +2,16 @@ package keystone.modules.selection;
 
 import keystone.api.Keystone;
 import keystone.api.SelectionBox;
+import keystone.core.renderer.client.ClientRenderer;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.DimensionId;
+import keystone.core.renderer.common.models.SelectableBoundingBox;
 import keystone.modules.IKeystoneModule;
 import keystone.modules.history.HistoryModule;
 import keystone.modules.history.entries.SelectionHistoryEntry;
+import keystone.modules.paste.PasteModule;
 import keystone.modules.selection.boxes.SelectionBoundingBox;
 import keystone.modules.selection.providers.HighlightBoxProvider;
 import keystone.modules.selection.providers.SelectionBoxProvider;
@@ -23,19 +26,21 @@ import java.util.List;
 
 public class SelectionModule implements IKeystoneModule
 {
+    public static boolean HideSelectionBoxes = false;
+
     private List<SelectionBoundingBox> selectionBoxes;
     private IBoundingBoxProvider[] renderProviders;
 
-    private SelectionFace selectedFace;
+    private SelectedFace selectedFace;
     private Coords firstSelectionPoint;
     private boolean creatingSelection;
-    private boolean draggingFace;
+    private boolean draggingBox;
 
     public SelectionModule()
     {
         MinecraftForge.EVENT_BUS.register(this);
 
-        draggingFace = false;
+        draggingBox = false;
 
         selectionBoxes = new ArrayList<>();
         renderProviders = new IBoundingBoxProvider[]
@@ -45,10 +50,16 @@ public class SelectionModule implements IKeystoneModule
         };
     }
 
-    public SelectionFace getSelectedFace() { return selectedFace; }
+    public SelectedFace getSelectedFace() { return selectedFace; }
     public List<SelectionBoundingBox> getSelectionBoundingBoxes()
     {
         return selectionBoxes;
+    }
+    public void onCancelPressed()
+    {
+        PasteModule paste = Keystone.getModule(PasteModule.class);
+        if (paste.getPasteBoxes().size() > 0) paste.clearPasteBoxes();
+        else clearSelectionBoxes();
     }
     public void clearSelectionBoxes()
     {
@@ -92,18 +103,27 @@ public class SelectionModule implements IKeystoneModule
         }
         else
         {
-            if (!draggingFace)
+            if (!draggingBox)
             {
                 selectedFace = null;
-                for (SelectionBoundingBox box : selectionBoxes)
+                ClientRenderer.getBoundingBoxes(Player.getDimensionId()).forEachOrdered(box ->
                 {
-                    SelectionFace face = box.getSelectedFace();
-                    if (face != null && (selectedFace == null || selectedFace.distanceSqr > face.distanceSqr)) selectedFace = face;
-                }
+                    if (box instanceof SelectableBoundingBox)
+                    {
+                        SelectableBoundingBox selectable = (SelectableBoundingBox)box;
+                        SelectedFace face = selectable.getSelectedFace();
+                        if (face != null && selectedFace != null)
+                        {
+                            if (selectedFace.getDistance() > face.getDistance()) selectedFace = face;
+                            else if (selectedFace.getDistance() == face.getDistance() && face.getBox().getPriority() > selectedFace.getBox().getPriority()) selectedFace = face;
+                        }
+                        else selectedFace = face;
+                    }
+                });
             }
 
-            Keystone.RenderHighlightBox = selectedFace == null && !draggingFace;
-            if (selectedFace != null && draggingFace) selectedFace.drag();
+            Keystone.RenderHighlightBox = selectedFace == null && !draggingBox;
+            if (selectedFace != null && draggingBox) selectedFace.getBox().drag(selectedFace);
         }
     }
     //endregion
@@ -120,10 +140,13 @@ public class SelectionModule implements IKeystoneModule
                 {
                     if (event.getAction() == GLFW.GLFW_PRESS)
                     {
-                        draggingFace = true;
-                        Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, true));
+                        draggingBox = true;
+                        if (selectedFace.getBox() instanceof SelectionBoundingBox)
+                        {
+                            Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, true));
+                        }
                     }
-                    else if (event.getAction() == GLFW.GLFW_RELEASE) draggingFace = false;
+                    else if (event.getAction() == GLFW.GLFW_RELEASE) draggingBox = false;
                 }
             }
             else if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT)

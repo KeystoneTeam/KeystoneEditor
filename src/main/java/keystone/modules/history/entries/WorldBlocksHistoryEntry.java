@@ -2,14 +2,20 @@ package keystone.modules.history.entries;
 
 import keystone.api.SelectionBox;
 import keystone.modules.history.IHistoryEntry;
+import keystone.modules.selection.boxes.SelectionBoundingBox;
 import net.minecraft.world.World;
 
-public class ToolHistoryEntry implements IHistoryEntry
+public class WorldBlocksHistoryEntry implements IHistoryEntry
 {
-    private World world;
-    private SelectionBox[] boxes;
+    protected World world;
+    protected SelectionBox[] boxes;
 
-    public ToolHistoryEntry(World world, SelectionBox[] boxes)
+    public WorldBlocksHistoryEntry(World world, SelectionBoundingBox[] boxes)
+    {
+        SelectionBox[] converted = new SelectionBox[boxes.length];
+        for (int i = 0; i < boxes.length; i++) converted[i] = new SelectionBox(boxes[i].getMinCoords(), boxes[i].getMaxCoords(), world);
+    }
+    public WorldBlocksHistoryEntry(World world, SelectionBox[] boxes)
     {
         this.world = world;
         this.boxes = boxes;

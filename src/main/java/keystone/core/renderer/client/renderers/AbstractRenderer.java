@@ -23,7 +23,7 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
     public abstract void render(T boundingBox);
     public void modifyRenderer(Renderer renderer, Direction faceDirection) {}
 
-    protected void renderCuboid(OffsetBox bb, Color color, boolean alwaysDrawFaces) { renderCuboid(bb, direction -> color, direction -> 30, alwaysDrawFaces); }
+    protected void renderCuboid(OffsetBox bb, Color color, boolean alwaysDrawFaces) { renderCuboid(bb, direction -> color, direction -> 32, alwaysDrawFaces); }
     protected void renderCuboid(OffsetBox bb, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean alwaysDrawFaces)
     {
         OffsetBox nudge = bb.nudge();
@@ -142,13 +142,12 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
     protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color) { renderFilledFaces(min, max, direction -> color); }
     protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider)
     {
-        renderFilledFaces(min, max, colorProvider, direction -> 30);
+        renderFilledFaces(min, max, colorProvider, direction -> 32);
     }
 
     protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha) { renderFilledFaces(min, max, direction -> color, direction -> alpha); }
     protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider)
     {
-        if (!KeystoneConfig.fill) return;
         RenderQueue.deferRendering(() -> renderFaces(min, max, colorProvider, alphaProvider, Renderer::startQuads));
     }
 
