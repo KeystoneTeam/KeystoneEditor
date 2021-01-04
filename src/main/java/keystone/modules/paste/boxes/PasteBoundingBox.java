@@ -1,6 +1,7 @@
 package keystone.modules.paste.boxes;
 
 import keystone.api.schematic.KeystoneSchematic;
+import keystone.core.renderer.blocks.GhostBlockRenderer;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.models.Coords;
@@ -12,11 +13,15 @@ import net.minecraft.world.World;
 public class PasteBoundingBox extends SelectableBoundingBox
 {
     private KeystoneSchematic schematic;
+    private GhostBlockRenderer ghostBlocks;
 
     private PasteBoundingBox(Coords corner1, Coords corner2, KeystoneSchematic schematic)
     {
         super(corner1, corner2, BoundingBoxType.get("paste_box"));
         this.schematic = schematic;
+
+        this.ghostBlocks = new GhostBlockRenderer();
+        schematic.forEachBlock((pos, block) -> ghostBlocks.setBlock(pos, block));
     }
     public static PasteBoundingBox create(Coords minCoords, KeystoneSchematic contents)
     {
@@ -26,6 +31,9 @@ public class PasteBoundingBox extends SelectableBoundingBox
     {
         return create(getMinCoords(), this.schematic.clone());
     }
+
+    public KeystoneSchematic getSchematic() { return schematic; }
+    public GhostBlockRenderer getGhostBlocks() { return ghostBlocks; }
 
     @Override
     public void drag(SelectedFace face)

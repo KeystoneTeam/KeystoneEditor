@@ -1,5 +1,6 @@
 package keystone.core.renderer.client.interop;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.renderer.client.ClientRenderer;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.DimensionId;
@@ -8,10 +9,10 @@ import net.minecraft.client.entity.player.ClientPlayerEntity;
 
 public class ClientInterop
 {
-    public static void render(float partialTicks, ClientPlayerEntity player)
+    public static void render(MatrixStack stack, float partialTicks, ClientPlayerEntity player)
     {
         Player.setPosition(partialTicks, player);
-        ClientRenderer.render(partialTicks, DimensionId.from(player.getEntityWorld().getDimensionKey()));
+        ClientRenderer.render(stack, partialTicks, DimensionId.from(player.getEntityWorld().getDimensionKey()));
     }
     public static void renderDeferred(float partialTicks)
     {

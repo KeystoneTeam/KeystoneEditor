@@ -1,5 +1,6 @@
 package keystone.core.renderer.client;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.core.renderer.client.interop.ClientInterop;
 import keystone.core.renderer.client.models.Point;
@@ -59,7 +60,7 @@ public class ClientRenderer
         return boundingBox.intersectsBounds(minX, minZ, maxX, maxZ);
     }
 
-    public static void render(float partialTicks, DimensionId dimensionId)
+    public static void render(MatrixStack stack, float partialTicks, DimensionId dimensionId)
     {
         if (!active || !Keystone.isActive()) return;
 
@@ -69,7 +70,7 @@ public class ClientRenderer
         getBoundingBoxes(dimensionId).forEach(key ->
         {
             AbstractRenderer renderer = boundingBoxRendererMap.get(key.getClass());
-            if (renderer != null) renderer.render(key);
+            if (renderer != null) renderer.render(stack, key);
         });
         RenderHelper.afterRender();
     }

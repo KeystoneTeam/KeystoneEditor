@@ -20,7 +20,7 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
     private static final double PI = TAU / 2D;
     public static final double THETA_SEGMENT = PHI_SEGMENT / 2D;
 
-    public abstract void render(T boundingBox);
+    public abstract void render(MatrixStack stack, T boundingBox);
     public void modifyRenderer(Renderer renderer, Direction faceDirection) {}
 
     protected void renderCuboid(OffsetBox bb, Color color, boolean alwaysDrawFaces) { renderCuboid(bb, direction -> color, direction -> 32, alwaysDrawFaces); }

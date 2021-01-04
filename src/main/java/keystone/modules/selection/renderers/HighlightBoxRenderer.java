@@ -1,5 +1,6 @@
 package keystone.modules.selection.renderers;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
@@ -12,7 +13,7 @@ import java.awt.*;
 public class HighlightBoxRenderer extends AbstractRenderer<HighlightBoundingBox>
 {
     @Override
-    public void render(HighlightBoundingBox box)
+    public void render(MatrixStack stack, HighlightBoundingBox box)
     {
         if (Keystone.RenderHighlightBox)
         {
