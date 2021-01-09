@@ -15,8 +15,12 @@ import keystone.modules.paste.PasteModule;
 import keystone.modules.selection.boxes.SelectionBoundingBox;
 import keystone.modules.selection.providers.HighlightBoxProvider;
 import keystone.modules.selection.providers.SelectionBoxProvider;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.overlay.BossOverlayGui;
+import net.minecraft.client.settings.HotbarSnapshot;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
@@ -131,7 +135,7 @@ public class SelectionModule implements IKeystoneModule
     @SubscribeEvent
     public void onMouseInput(final InputEvent.MouseInputEvent event)
     {
-        if (Keystone.isActive())
+        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null)
         {
             if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT)
             {

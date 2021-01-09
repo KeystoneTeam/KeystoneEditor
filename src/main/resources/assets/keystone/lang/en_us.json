@@ -1,4 +1,8 @@
 {
   "key.toggle_keystone": "Toggle Keystone",
+  "key.clear_selections": "Clear Selections",
+  "key.delete_blocks": "Delete Selection",
+  "key.fill_blocks": "Fill Selection",
+
   "key.categories.keystone": "Keystone"
 }
