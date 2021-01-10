@@ -8,6 +8,7 @@ import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.renderer.common.models.SelectableBoundingBox;
+import keystone.gui.KeystoneOverlayHandler;
 import keystone.modules.IKeystoneModule;
 import keystone.modules.history.HistoryModule;
 import keystone.modules.history.entries.SelectionHistoryEntry;
@@ -15,6 +16,7 @@ import keystone.modules.paste.PasteModule;
 import keystone.modules.selection.boxes.SelectionBoundingBox;
 import keystone.modules.selection.providers.HighlightBoxProvider;
 import keystone.modules.selection.providers.SelectionBoxProvider;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -131,7 +133,7 @@ public class SelectionModule implements IKeystoneModule
     @SubscribeEvent
     public void onMouseInput(final InputEvent.MouseInputEvent event)
     {
-        if (Keystone.isActive())
+        if (Keystone.isActive() && !KeystoneOverlayHandler.MouseOverGUI)
         {
             if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT)
             {
@@ -151,8 +153,18 @@ public class SelectionModule implements IKeystoneModule
             }
             else if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT)
             {
-                if (event.getAction() == GLFW.GLFW_PRESS) Keystone.CloseSelection = true;
-                else if (event.getAction() == GLFW.GLFW_RELEASE) Keystone.CloseSelection = false;
+                if (event.getAction() == GLFW.GLFW_PRESS)
+                {
+                    Keystone.CloseSelection = true;
+                    Keystone.AllowPlayerLook = true;
+                    Minecraft.getInstance().mouseHelper.grabMouse();
+                }
+                else if (event.getAction() == GLFW.GLFW_RELEASE)
+                {
+                    Keystone.CloseSelection = false;
+                    Keystone.AllowPlayerLook = false;
+                    Minecraft.getInstance().mouseHelper.ungrabMouse();
+                }
             }
         }
     }

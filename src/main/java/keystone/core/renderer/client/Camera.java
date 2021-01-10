@@ -5,7 +5,7 @@ import net.minecraft.util.math.vector.Vector3d;
 
 public class Camera
 {
-    private static Vector3d getPos()
+    public static Vector3d getPos()
     {
         return Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
     }

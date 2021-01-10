@@ -31,13 +31,22 @@ public class Keystone
     //region Active Toggle
     public static boolean CloseSelection = false;
     public static boolean RenderHighlightBox = true;
+    public static boolean AllowPlayerLook = false;
 
     private static boolean enabled = KeystoneConfig.startActive;
 
     public static void toggleKeystone()
     {
-        if (enabled) enabled = false;
-        else enabled = true;
+        if (enabled)
+        {
+            enabled = false;
+            Minecraft.getInstance().mouseHelper.grabMouse();
+        }
+        else
+        {
+            enabled = true;
+            AllowPlayerLook = false;
+        }
     }
     public static boolean isActive()
     {

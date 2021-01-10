@@ -1,6 +1,6 @@
 package keystone.modules.selection.boxes;
 
-import keystone.core.math.RayIntersections;
+import keystone.core.math.RayTracing;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.models.Coords;
@@ -56,7 +56,7 @@ public class SelectionBoundingBox extends SelectableBoundingBox
         }
 
         // Cast ray onto plane
-        Vector3d projectedPoint = RayIntersections.rayPlaneIntersection(Player.getEyePosition(), Player.getLookDirection(), point, normal);
+        Vector3d projectedPoint = RayTracing.rayPlaneIntersection(Player.getEyePosition(), Player.getLookDirection(), point, normal);
         if (projectedPoint == null) return;
 
         // Do dragging

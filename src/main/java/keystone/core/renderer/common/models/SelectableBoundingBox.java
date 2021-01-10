@@ -1,6 +1,6 @@
 package keystone.core.renderer.common.models;
 
-import keystone.core.math.RayIntersections;
+import keystone.core.math.RayTracing;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.BoundingBoxType;
 import keystone.modules.selection.SelectedFace;
@@ -25,7 +25,7 @@ public abstract class SelectableBoundingBox extends BoundingBoxCuboid
         SelectedFace closest = null;
         for (Direction direction : Direction.values())
         {
-            Vector3d intersection = RayIntersections.rayFaceIntersection(origin, heading, getMinCoords(), getMaxCoords().add(new Vector3d(1, 1, 1)), direction);
+            Vector3d intersection = RayTracing.rayFaceIntersection(origin, heading, getMinCoords(), getMaxCoords().add(new Vector3d(1, 1, 1)), direction);
             if (intersection != null)
             {
                 double distanceSqr = origin.distanceTo(intersection);
