@@ -6,11 +6,16 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.ItemRenderer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.vector.Vector2f;
+import net.minecraftforge.client.event.InputEvent;
 
 public abstract class AbstractKeystoneOverlay extends AbstractGui
 {
+    private int previousWidth;
+    private int previousHeight;
+
     protected Vector2f normalizedPosition;
     protected Vector2f normalizedSize;
 
@@ -39,16 +44,39 @@ public abstract class AbstractKeystoneOverlay extends AbstractGui
 
     public void doRender(MatrixStack stack)
     {
-        this.x = (int)(this.normalizedPosition.x * mc.getMainWindow().getScaledWidth());
-        this.y = (int)(this.normalizedPosition.y * mc.getMainWindow().getScaledHeight());
-        this.width = (int)(this.normalizedSize.x * mc.getMainWindow().getScaledWidth());
-        this.height = (int)(this.normalizedSize.y * mc.getMainWindow().getScaledHeight());
+        if (previousWidth != mc.getMainWindow().getFramebufferWidth() || previousHeight != mc.getMainWindow().getFramebufferHeight())
+        {
+            this.x = (int)(this.normalizedPosition.x * mc.getMainWindow().getScaledWidth());
+            this.y = (int)(this.normalizedPosition.y * mc.getMainWindow().getScaledHeight());
+            this.width = (int)(this.normalizedSize.x * mc.getMainWindow().getScaledWidth());
+            this.height = (int)(this.normalizedSize.y * mc.getMainWindow().getScaledHeight());
+
+            this.previousWidth = mc.getMainWindow().getFramebufferWidth();
+            this.previousHeight = mc.getMainWindow().getFramebufferHeight();
+
+            onWindowSizeChange();
+        }
 
         render(stack);
     }
-    protected abstract void render(MatrixStack stack);
 
-    protected boolean isMouseInBox(Vector2f normalizedPosition, Vector2f normalizedSize)
+    protected void onWindowSizeChange() {  }
+    protected abstract void render(MatrixStack stack);
+    protected void onMouseInput(final InputEvent.MouseInputEvent event) {  }
+
+    public boolean isMouseInBox(int minX, int minY, int width, int height)
+    {
+        int mouseX = (int)(mc.mouseHelper.getMouseX() / mc.getMainWindow().getGuiScaleFactor());
+        int mouseY = (int)(mc.mouseHelper.getMouseY() / mc.getMainWindow().getGuiScaleFactor());
+
+        boolean ret = !this.mc.mouseHelper.isMouseGrabbed() &&
+                mouseX >= minX && mouseX <= minX + width &&
+                mouseY >= minY && mouseY <= minY + height;
+
+        if (ret) KeystoneOverlayHandler.MouseOverGUI = true;
+        return ret;
+    }
+    public boolean isMouseInBox(Vector2f normalizedPosition, Vector2f normalizedSize)
     {
         double mouseX = mc.mouseHelper.getMouseX() / mc.getMainWindow().getWidth();
         double mouseY = mc.mouseHelper.getMouseY() / mc.getMainWindow().getHeight();
@@ -61,7 +89,11 @@ public abstract class AbstractKeystoneOverlay extends AbstractGui
         return ret;
     }
 
-    protected void drawItemStack(ItemStack stack, int x, int y)
+    public void drawItem(Item item, int x, int y)
+    {
+        drawItem(new ItemStack(item), x, y);
+    }
+    public void drawItem(ItemStack stack, int x, int y)
     {
         setBlitOffset(200);
         mc.getItemRenderer().zLevel = 200.0F;

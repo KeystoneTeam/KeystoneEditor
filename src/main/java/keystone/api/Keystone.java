@@ -46,6 +46,7 @@ public class Keystone
         {
             enabled = true;
             AllowPlayerLook = false;
+            Minecraft.getInstance().mouseHelper.ungrabMouse();
         }
     }
     public static boolean isActive()

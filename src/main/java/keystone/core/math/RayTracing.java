@@ -110,12 +110,7 @@ public class RayTracing
 
         if (near == null || far == null) return Vector3d.ZERO;
 
-        Vector4f unrotated = new Vector4f((float)(far.getX() - near.getX()), (float)(far.getY() - near.getY()), (float)(far.getZ() - near.getZ()), 1);
-        //float yaw = gr.getActiveRenderInfo().getYaw() + 180.0F;
-        //float pitch = gr.getActiveRenderInfo().getPitch();
-        //unrotated.transform(new Quaternion(Vector3f.YP, -2 * yaw, true));
-        //unrotated.transform(new Quaternion(Vector3f.XP, -2 * pitch, true));
-        return new Vector3d(unrotated.getX(), unrotated.getY(), unrotated.getZ()).normalize();
+        return new Vector3d(far.getX() - near.getX(), far.getY() - near.getY(), far.getZ() - near.getZ()).normalize();
     }
 
     private static Vector3d unproject(Vector3d point, Matrix4f projection, int[] viewport)
