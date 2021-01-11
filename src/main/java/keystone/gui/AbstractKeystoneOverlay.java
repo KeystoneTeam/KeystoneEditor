@@ -63,6 +63,7 @@ public abstract class AbstractKeystoneOverlay extends AbstractGui
     protected void onWindowSizeChange() {  }
     protected abstract void render(MatrixStack stack);
     protected void onMouseInput(final InputEvent.MouseInputEvent event) {  }
+    protected void onMouseScroll(final InputEvent.MouseScrollEvent event) {  }
 
     public boolean isMouseInBox(int minX, int minY, int width, int height)
     {

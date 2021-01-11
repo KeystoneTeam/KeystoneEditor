@@ -49,7 +49,7 @@ public class BlockPaletteButton
 
         if (item == null || item == Items.AIR)
         {
-            Keystone.LOGGER.info("No item for block " + block.getRegistryName().toString());
+            if (BlockPaletteOverlay.DEBUG_LOG) Keystone.LOGGER.info("No item for block " + block.getRegistryName().toString());
             return null;
         }
         else return new BlockPaletteButton(parent, new ItemStack(item), block, x, y);

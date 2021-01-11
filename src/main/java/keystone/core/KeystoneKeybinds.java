@@ -2,6 +2,7 @@ package keystone.core;
 
 import keystone.api.Keystone;
 import keystone.api.tools.interfaces.FillTool;
+import keystone.gui.block_palette.BlockPaletteOverlay;
 import keystone.modules.selection.SelectionModule;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
@@ -36,7 +37,7 @@ public class KeystoneKeybinds
         {
             if (CLEAR_SELECTIONS.isPressed()) Keystone.getModule(SelectionModule.class).onCancelPressed();
             if (DELETE_BLOCKS.isPressed()) Keystone.runTool(new FillTool(Blocks.AIR.getDefaultState()));
-            if (FILL_WITH_BLOCK.isPressed()) Keystone.runTool(new FillTool(Minecraft.getInstance().player.getHeldItemMainhand().getItem()));
+            if (FILL_WITH_BLOCK.isPressed()) BlockPaletteOverlay.promptBlockStateChoice(block -> Keystone.runTool(new FillTool(block)));
         }
     }
 }
