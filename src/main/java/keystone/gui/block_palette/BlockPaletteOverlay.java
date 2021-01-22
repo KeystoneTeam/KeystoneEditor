@@ -92,7 +92,7 @@ public class BlockPaletteOverlay extends AbstractKeystoneOverlay
     {
         if (buttons.size() == 0) rebuildButtons();
         highlightedButton = null;
-
+        
         fill(stack, x, y, x + width, y + height, 0x80000000);
         buttons.forEach(button -> button.render(stack));
 
