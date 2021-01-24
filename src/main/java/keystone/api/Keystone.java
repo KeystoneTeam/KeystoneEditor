@@ -151,7 +151,7 @@ public class Keystone
                 ServerPlayerEntity serverPlayer = (ServerPlayerEntity)event.player;
                 if (serverPlayer.getUniqueID().equals(clientPlayer.getUniqueID()))
                 {
-                    serverPlayer.setGameType(previousGamemode);
+                    if (previousGamemode != null) serverPlayer.setGameType(previousGamemode);
                     revertGamemode = false;
                 }
             }

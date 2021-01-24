@@ -1,6 +1,8 @@
 package keystone.gui;
 
 import keystone.api.Keystone;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -31,7 +33,7 @@ public class KeystoneOverlayHandler
         if (Keystone.isActive())
         {
             if (event.getType() != RenderGameOverlayEvent.ElementType.EXPERIENCE) return;
-            MouseOverGUI = false;
+            MouseOverGUI = Minecraft.getInstance().currentScreen != null;
 
             overlays.forEach(overlay -> overlay.doRender(event.getMatrixStack()));
             removeList.forEach(remove -> overlays.remove(remove));
