@@ -3,30 +3,32 @@ package keystone.api;
 import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.tools.interfaces.IKeystoneTool;
 import keystone.api.tools.interfaces.ISelectionBoxTool;
-import keystone.modules.history.IHistoryEntry;
-import keystone.modules.history.entries.WorldBlocksHistoryEntry;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.renderer.config.KeystoneConfig;
 import keystone.modules.IKeystoneModule;
 import keystone.modules.history.HistoryModule;
+import keystone.modules.history.IHistoryEntry;
+import keystone.modules.history.entries.WorldBlocksHistoryEntry;
 import keystone.modules.selection.SelectionModule;
 import keystone.modules.world_cache.WorldCacheModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.play.client.CSpectatePacket;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.DrawHighlightEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class Keystone
@@ -122,9 +124,10 @@ public class Keystone
     public static final void init()
     {
         MinecraftForge.EVENT_BUS.addListener(Keystone::onPlayerTick);
+        MinecraftForge.EVENT_BUS.addListener(Keystone::onRightClickBlock);
     }
 
-    private static final void onPlayerTick(TickEvent.PlayerTickEvent event)
+    private static final void onPlayerTick(final TickEvent.PlayerTickEvent event)
     {
         ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
         if (clientPlayer == null) return;
@@ -156,6 +159,10 @@ public class Keystone
                 }
             }
         }
+    }
+    private static final void onRightClickBlock(final PlayerInteractEvent.RightClickBlock event)
+    {
+        if (Keystone.isActive()) event.setCanceled(true);
     }
     //endregion
 }
