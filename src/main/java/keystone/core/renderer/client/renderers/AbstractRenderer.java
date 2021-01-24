@@ -23,30 +23,29 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
     public abstract void render(MatrixStack stack, T boundingBox);
     public void modifyRenderer(Renderer renderer, Direction faceDirection) {}
 
-    protected void renderCuboid(OffsetBox bb, Color color, boolean alwaysDrawFaces) { renderCuboid(bb, direction -> color, direction -> 32, alwaysDrawFaces); }
-    protected void renderCuboid(OffsetBox bb, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean alwaysDrawFaces)
+    protected void renderCuboid(OffsetBox bb, Color color, boolean alwaysDrawOutline, boolean alwaysDrawFaces) { renderCuboid(bb, direction -> color, direction -> 32, alwaysDrawOutline, alwaysDrawFaces); }
+    protected void renderCuboid(OffsetBox bb, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean alwaysDrawOutline, boolean alwaysDrawFaces)
     {
         OffsetBox nudge = bb.nudge();
-        renderOutlinedCuboid(nudge, colorProvider, direction -> 255);
-
-        if (alwaysDrawFaces) RenderHelper.disableDepthTest();
-        else RenderHelper.enableDepthTest();
-        renderFilledFaces(nudge.getMin(), nudge.getMax(), colorProvider, alphaProvider);
-        RenderHelper.enableDepthTest();
+        renderOutlinedCuboid(nudge, colorProvider, direction -> 255, alwaysDrawOutline);
+        renderFilledFaces(nudge.getMin(), nudge.getMax(), colorProvider, alphaProvider, alwaysDrawFaces);
     }
 
-    protected void renderOutlinedCuboid(OffsetBox bb, Color color) { renderOutlinedCuboid(bb, direction -> color, direction -> 255); }
-    protected void renderOutlinedCuboid(OffsetBox bb, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider)
+    protected void renderOutlinedCuboid(OffsetBox bb, Color color, boolean ignoreDepth) { renderOutlinedCuboid(bb, direction -> color, direction -> 255, ignoreDepth); }
+    protected void renderOutlinedCuboid(OffsetBox bb, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean ignoreDepth)
     {
         RenderHelper.polygonModeLine();
         OffsetPoint min = bb.getMin();
         OffsetPoint max = bb.getMax();
-        renderFaces(min, max, colorProvider, alphaProvider, min.getY() == max.getY() ? Renderer::startLineLoop : Renderer::startLines);
+        RenderQueue.deferRendering(() -> renderFaces(min, max, colorProvider, alphaProvider, min.getY() == max.getY() ? Renderer::startLineLoop : Renderer::startLines, ignoreDepth));
     }
 
-    private void renderFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha, Supplier<Renderer> rendererSupplier) { renderFaces(min, max, direction -> color, direction -> 255, rendererSupplier); }
-    private void renderFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, Supplier<Renderer> rendererSupplier)
+    private void renderFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha, Supplier<Renderer> rendererSupplier, boolean ignoreDepth) { renderFaces(min, max, direction -> color, direction -> 255, rendererSupplier, ignoreDepth); }
+    private void renderFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, Supplier<Renderer> rendererSupplier, boolean ignoreDepth)
     {
+        if (ignoreDepth) RenderHelper.disableDepthTest();
+        else RenderHelper.enableDepthTest();
+
         double minX = min.getX();
         double minY = min.getY();
         double minZ = min.getZ();
@@ -122,6 +121,8 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
             }
         }
         renderer.render();
+
+        RenderHelper.enableDepthTest();
     }
 
     private boolean playerInsideBoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
@@ -139,16 +140,16 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
                 .render();
     }
 
-    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color) { renderFilledFaces(min, max, direction -> color); }
-    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider)
+    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color, boolean ignoreDepth) { renderFilledFaces(min, max, direction -> color, ignoreDepth); }
+    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, boolean ignoreDepth)
     {
-        renderFilledFaces(min, max, colorProvider, direction -> 32);
+        renderFilledFaces(min, max, colorProvider, direction -> 32, ignoreDepth);
     }
 
-    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha) { renderFilledFaces(min, max, direction -> color, direction -> alpha); }
-    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider)
+    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha, boolean ignoreDepth) { renderFilledFaces(min, max, direction -> color, direction -> alpha, ignoreDepth); }
+    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean ignoreDepth)
     {
-        RenderQueue.deferRendering(() -> renderFaces(min, max, colorProvider, alphaProvider, Renderer::startQuads));
+        RenderQueue.deferRendering(() -> renderFaces(min, max, colorProvider, alphaProvider, Renderer::startQuads, ignoreDepth));
     }
 
     protected void renderText(OffsetPoint offsetPoint, String... texts)

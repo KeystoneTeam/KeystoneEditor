@@ -19,7 +19,7 @@ public class HighlightBoxRenderer extends AbstractRenderer<HighlightBoundingBox>
         {
             RenderHelper.enableDepthTest();
             OffsetBox bb = new OffsetBox(Player.getHighlightedBlock(), Player.getHighlightedBlock()).nudge();
-            renderOutlinedCuboid(bb, Color.yellow);
+            renderCuboid(bb, Color.yellow, true, false);
         }
     }
 }

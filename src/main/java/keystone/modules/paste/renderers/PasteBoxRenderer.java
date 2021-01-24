@@ -23,6 +23,6 @@ public class PasteBoxRenderer extends AbstractRenderer<PasteBoundingBox>
         {
             if (selectedFace != null && selectedFace.getBox().equals(box)) return 64;
             return 32;
-        }, true);
+        }, true, false);
     }
 }

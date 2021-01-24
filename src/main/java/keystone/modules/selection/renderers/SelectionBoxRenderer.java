@@ -22,15 +22,15 @@ public class SelectionBoxRenderer extends AbstractRenderer<SelectionBoundingBox>
         {
             if (selectedFace != null && selectedFace.getBox().equals(box) && selectedFace.getFaceDirection() == direction) return 128;
             else return 32;
-        }, true);
+        }, true, false);
 
         if (box.getMinCoords() != box.getMaxCoords())
         {
             OffsetBox min = new OffsetBox(box.getCorner1(), box.getCorner1()).nudge();
-            renderCuboid(min, Color.yellow, true);
+            renderCuboid(min, Color.yellow, true, false);
 
             OffsetBox max = new OffsetBox(box.getCorner2(), box.getCorner2()).nudge();
-            renderCuboid(max, Color.blue, true);
+            renderCuboid(max, Color.blue, true, false);
         }
     }
 }
