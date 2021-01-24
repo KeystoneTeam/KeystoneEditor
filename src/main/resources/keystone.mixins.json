@@ -5,7 +5,6 @@
   "refmap": "keystone.refmap.json",
   "mixins": [
     "MixinMinecraft",
-    "MixinEntity"
   ],
   "client": [
     "MixinWorldRenderer",

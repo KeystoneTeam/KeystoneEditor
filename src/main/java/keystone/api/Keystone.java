@@ -13,10 +13,15 @@ import keystone.modules.history.HistoryModule;
 import keystone.modules.selection.SelectionModule;
 import keystone.modules.world_cache.WorldCacheModule;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.play.client.CSpectatePacket;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawHighlightEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +39,8 @@ public class Keystone
     public static boolean AllowPlayerLook = false;
 
     private static boolean enabled = KeystoneConfig.startActive;
+    private static GameType previousGamemode;
+    private static boolean revertGamemode;
 
     public static void toggleKeystone()
     {
@@ -41,6 +48,7 @@ public class Keystone
         {
             enabled = false;
             Minecraft.getInstance().mouseHelper.grabMouse();
+            revertGamemode = true;
         }
         else
         {
@@ -113,15 +121,41 @@ public class Keystone
     //region Event Handling
     public static final void init()
     {
-        MinecraftForge.EVENT_BUS.addListener(Keystone::drawHighlight);
-        MinecraftForge.EVENT_BUS.addListener(Keystone::onBreakBlock);
-        MinecraftForge.EVENT_BUS.addListener(Keystone::onPlaceBlock);
-        MinecraftForge.EVENT_BUS.addListener(Keystone::onPlaceBlocks);
+        MinecraftForge.EVENT_BUS.addListener(Keystone::onPlayerTick);
     }
 
-    private static void drawHighlight(final DrawHighlightEvent event) { if (isActive()) event.setCanceled(true); }
-    private static void onBreakBlock(final BlockEvent.BreakEvent event) { if (isActive()) event.setCanceled(true); }
-    private static void onPlaceBlock(final BlockEvent.EntityPlaceEvent event) { if (isActive()) event.setCanceled(true); }
-    private static void onPlaceBlocks(final BlockEvent.EntityMultiPlaceEvent event) { if (isActive()) event.setCanceled(true); }
+    private static final void onPlayerTick(TickEvent.PlayerTickEvent event)
+    {
+        ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
+        if (clientPlayer == null) return;
+
+        if (Keystone.isActive())
+        {
+            if (event.player instanceof ServerPlayerEntity)
+            {
+                ServerPlayerEntity serverPlayer = (ServerPlayerEntity)event.player;
+                if (serverPlayer.getUniqueID().equals(clientPlayer.getUniqueID()))
+                {
+                    if (serverPlayer.interactionManager.getGameType() != GameType.SPECTATOR)
+                    {
+                        previousGamemode = serverPlayer.interactionManager.getGameType();
+                        serverPlayer.setGameType(GameType.SPECTATOR);
+                    }
+                }
+            }
+        }
+        else if (revertGamemode)
+        {
+            if (event.player instanceof ServerPlayerEntity)
+            {
+                ServerPlayerEntity serverPlayer = (ServerPlayerEntity)event.player;
+                if (serverPlayer.getUniqueID().equals(clientPlayer.getUniqueID()))
+                {
+                    serverPlayer.setGameType(previousGamemode);
+                    revertGamemode = false;
+                }
+            }
+        }
+    }
     //endregion
 }
