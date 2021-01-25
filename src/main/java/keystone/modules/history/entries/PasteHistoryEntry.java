@@ -1,5 +1,6 @@
 package keystone.modules.history.entries;
 
+import keystone.api.IBlockBox;
 import keystone.api.Keystone;
 import keystone.api.SelectionBox;
 import keystone.modules.history.HistoryModule;
@@ -35,7 +36,7 @@ public class PasteHistoryEntry extends WorldBlocksHistoryEntry
 
     public void updateSelectionBuffers()
     {
-        for (SelectionBox selection : boxes) selection.forEachBlock(pos -> selection.setBlock(pos, world.getBlockState(pos)));
+        for (IBlockBox box : boxes) box.forEachBlock(pos -> box.setBlock(pos, world.getBlockState(pos)));
     }
 
     @Override

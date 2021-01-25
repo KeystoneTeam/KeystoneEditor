@@ -1,5 +1,6 @@
 package keystone.api;
 
+import keystone.api.filters.FilterBox;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.tools.interfaces.IKeystoneTool;
@@ -78,7 +79,6 @@ public class Keystone
     {
         if (modules.containsKey(clazz)) return (T)modules.get(clazz);
         else LOGGER.error("Trying to get unregistered keystone module '" + clazz.getSimpleName() + "'!");
-
         return null;
     }
     public static void forEachModule(Consumer<IKeystoneModule> consumer)
@@ -124,7 +124,39 @@ public class Keystone
     public static void runFilter(String filterPath)
     {
         KeystoneFilter filter = FilterCompiler.compileFilter(filterPath);
-        if (filter != null) runTool(filter);
+        if (filter != null)
+        {
+            DimensionId dimensionId = Player.getDimensionId();
+            World world = getModule(WorldCacheModule.class).getDimensionWorld(dimensionId);
+            if (world == null)
+            {
+                LOGGER.error("Trying to run keystone tool when there is no loaded world for dimension '" + dimensionId.getDimensionType().getRegistryName() + "'!");
+                return;
+            }
+
+            SelectionBox[] selectionBoxes = getModule(SelectionModule.class).buildSelectionBoxes(world);
+            FilterBox[] boxes = new FilterBox[selectionBoxes.length];
+            for (int i = 0; i < boxes.length; i++) boxes[i] = new FilterBox(selectionBoxes[i]);
+
+            Set<BlockPos> processedBlocks = new HashSet<>();
+            for (FilterBox box : boxes)
+            {
+                filter.processBox(box);
+                box.forEachBlock((x, y, z) ->
+                {
+                    BlockPos pos = new BlockPos(x, y, z);
+                    if (!filter.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
+                    {
+                        filter.processBlock(x, y, z, box);
+                        processedBlocks.add(pos);
+                    }
+                });
+            }
+
+            IHistoryEntry toolHistoryEntry = new WorldBlocksHistoryEntry(world, boxes);
+            getModule(HistoryModule.class).pushToHistory(toolHistoryEntry);
+            toolHistoryEntry.redo();
+        }
     }
     //endregion
     //region Event Handling

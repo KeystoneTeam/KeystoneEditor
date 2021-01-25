@@ -1,23 +1,28 @@
 package keystone.api.filters;
 
-import keystone.api.SelectionBox;
-import keystone.api.tools.interfaces.IBlockTool;
-import keystone.api.tools.interfaces.ISelectionBoxTool;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.block.Block;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.registries.IForgeRegistry;
 
-public class KeystoneFilter implements ISelectionBoxTool, IBlockTool
+public class KeystoneFilter
 {
-    public void processBox(SelectionBox box) {}
-    public void processBlock(int x, int y, int z, SelectionBox box)  {}
+    private final IForgeRegistry<Block> blockRegistry;
 
-    @Override
-    public final void process(SelectionBox box)
+    public KeystoneFilter()
     {
-        processBox(box);
+        blockRegistry = GameRegistry.findRegistry(Block.class);
     }
-    @Override
-    public final void process(BlockPos pos, SelectionBox box)
+
+    public boolean ignoreRepeatBlocks() { return true; }
+    public void processBox(FilterBox box) {}
+    public void processBlock(int x, int y, int z, FilterBox box)  {}
+
+    //region API
+    protected keystone.api.block.Block block(String id)
     {
-        processBlock(pos.getX(), pos.getY(), pos.getZ(), box);
+        Block block = blockRegistry.getValue(new ResourceLocation(id));
+        return new keystone.api.block.Block(block.getDefaultState());
     }
+    //endregion
 }

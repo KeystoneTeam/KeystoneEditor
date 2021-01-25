@@ -87,7 +87,7 @@ configurations {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.16.4-35.1.4'
-    shade "net.openhft:compiler:2.21ea0"
+    shade "org.codehaus.janino:janino:2.7.8"
 }
 
 artifacts {
@@ -106,9 +106,9 @@ shadowJar {
     archiveName = archivesBaseName + " " + version + " (Forge 1.16.4).jar";
     configurations = [project.configurations.shade]
 
-    relocate 'net.openhft', 'keystone.shade.net.openhft'
-    relocate 'net.openhft.compiler', 'keystone.shade.net.openhft.compiler'
-
+    // Exclude samples and maven metadata
+    exclude 'org/codehaus/commons/compiler/samples/**'
+    exclude 'org/codehaus/janino/samples/**'
     exclude 'META-INF/maven/**'
 
     manifest {

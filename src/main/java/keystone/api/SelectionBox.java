@@ -10,7 +10,7 @@ import net.minecraft.world.World;
 
 import java.util.function.Consumer;
 
-public class SelectionBox
+public class SelectionBox implements IBlockBox
 {
     private final BlockPos min;
     private final BlockPos max;
@@ -63,14 +63,13 @@ public class SelectionBox
     public BlockPos getMax() { return max; }
     public Vector3i getSize() { return size; }
 
-    public BlockState getBlock(int x, int y, int z) { return getBlock(new BlockPos(x, y, z)); }
-    public BlockState getBlock(int x, int y, int z, boolean getOriginalState) { return getBlock(new BlockPos(x, y, z), getOriginalState); }
     public BlockState getBlock(BlockPos pos)
     {
         int index = getBlockIndex(pos);
         if (index < 0) return Blocks.AIR.getDefaultState();
         else return buffer[index];
     }
+    @Override
     public BlockState getBlock(BlockPos pos, boolean getOriginalState)
     {
         int index = getBlockIndex(pos);
@@ -78,15 +77,17 @@ public class SelectionBox
         else return getOriginalState ? blocks[index] : buffer[index];
     }
 
-    public void setBlock(int x, int y, int z, Block block) { setBlock(new BlockPos(x, y, z), block); }
-    public void setBlock(int x, int y, int z, BlockState block) { setBlock(new BlockPos(x, y, z), block); }
-    public void setBlock(BlockPos pos, Block block) { setBlock(pos, block.getDefaultState()); }
-    public void setBlock(BlockPos pos, BlockState block)
+    public boolean setBlock(BlockPos pos, Block block) { return setBlock(pos, block.getDefaultState()); }
+    public boolean setBlock(BlockPos pos, BlockState block)
     {
         int index = getBlockIndex(pos);
-        if (index >= 0) buffer[index] = block;
+        if (index < 0) return false;
+
+        buffer[index] = block;
+        return true;
     }
 
+    @Override
     public void forEachBlock(Consumer<BlockPos> consumer)
     {
         for (int x = min.getX(); x <= max.getX(); x++)

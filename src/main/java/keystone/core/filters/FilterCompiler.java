@@ -2,11 +2,14 @@ package keystone.core.filters;
 
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
-import net.openhft.compiler.CachedCompiler;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.janino.Scanner;
+import org.codehaus.janino.SimpleCompiler;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Random;
@@ -27,7 +30,6 @@ public class FilterCompiler
     }
     public static KeystoneFilter compileFilter(String filterPath)
     {
-
         File filterFile = new File(filterPath);
         String filterName = filterFile.getName().replaceAll(" ", "").replaceFirst("[.][^.]+$", "");
         String className = createRandomClassName();
@@ -39,35 +41,50 @@ public class FilterCompiler
 
             try
             {
-                CachedCompiler compiler = new CachedCompiler(null, null);
-                Class loadedClass = compiler.loadFromJava(KeystoneFilter.class.getClassLoader(), className, filterCode);
+                Scanner scanner = new Scanner(filterFile.getName(), new StringReader(filterCode));
+                SimpleCompiler compiler = new SimpleCompiler();
 
+                compiler.setParentClassLoader(KeystoneFilter.class.getClassLoader());
+                compiler.cook(scanner);
+                ClassLoader classLoader = compiler.getClassLoader();
                 try
                 {
-                    Class<? extends KeystoneFilter> filterClass = loadedClass.asSubclass(KeystoneFilter.class);
+                    Class loadedClass = Class.forName(className, true, classLoader);
                     try
                     {
-                        KeystoneFilter filterInstance = filterClass.newInstance();
-                        return filterInstance;
+                        Class<? extends KeystoneFilter> filterClass = loadedClass.asSubclass(KeystoneFilter.class);
+                        return filterClass.newInstance();
                     }
-                    catch (InstantiationException | IllegalAccessException e)
+                    catch (ClassCastException e)
                     {
-                        Keystone.LOGGER.error("Could not instantiate filter class '" + filterName + "'!");
+                        Keystone.LOGGER.error("Class '" + filterName + "' does not extend KeystoneFilter!");
+                        return null;
+                    }
+                    catch (IllegalAccessException e)
+                    {
+                        Keystone.LOGGER.error("Cannot access filter constructor! Ensure the filter has a public zero-argument constructor.");
+                        return null;
+                    }
+                    catch (InstantiationException e)
+                    {
+                        Keystone.LOGGER.error("Error instantiating filter '" + filterName + "'!");
                         e.printStackTrace();
                         return null;
                     }
                 }
-                catch (ClassCastException e)
+                catch (ClassNotFoundException e)
                 {
-                    Keystone.LOGGER.error("Class '" + filterName + "' does not extend KeystoneFilter!");
+                    Keystone.LOGGER.error("Unable to find class '" + filterName + "'! Make sure your filter class and file share the same name.");
                     return null;
                 }
             }
-            catch (ClassNotFoundException e)
+            catch (CompileException e)
             {
-                Keystone.LOGGER.error("Filter class '" + filterName + "' not found! Make sure the filter class and file name are the same.");
+                Keystone.LOGGER.error("Unable to compile filter '" + filterName + "'!");
+                e.printStackTrace();
                 return null;
             }
+
         }
         catch (FileNotFoundException e)
         {
