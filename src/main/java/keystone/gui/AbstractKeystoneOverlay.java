@@ -15,6 +15,7 @@ public abstract class AbstractKeystoneOverlay extends AbstractGui
 {
     private int previousWidth;
     private int previousHeight;
+    private double previousScale;
 
     protected Vector2f normalizedPosition;
     protected Vector2f normalizedSize;
@@ -44,7 +45,9 @@ public abstract class AbstractKeystoneOverlay extends AbstractGui
 
     public void doRender(MatrixStack stack)
     {
-        if (previousWidth != mc.getMainWindow().getFramebufferWidth() || previousHeight != mc.getMainWindow().getFramebufferHeight())
+        if (previousWidth != mc.getMainWindow().getFramebufferWidth() ||
+                previousHeight != mc.getMainWindow().getFramebufferHeight() ||
+                previousScale != mc.getMainWindow().getGuiScaleFactor())
         {
             this.x = (int)(this.normalizedPosition.x * mc.getMainWindow().getScaledWidth());
             this.y = (int)(this.normalizedPosition.y * mc.getMainWindow().getScaledHeight());
@@ -53,6 +56,7 @@ public abstract class AbstractKeystoneOverlay extends AbstractGui
 
             this.previousWidth = mc.getMainWindow().getFramebufferWidth();
             this.previousHeight = mc.getMainWindow().getFramebufferHeight();
+            this.previousScale = mc.getMainWindow().getGuiScaleFactor();
 
             onWindowSizeChange();
         }

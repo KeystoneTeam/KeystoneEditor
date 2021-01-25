@@ -1,7 +1,7 @@
-package keystone.gui.block_selection;
+package keystone.gui.screens.block_selection;
 
-import keystone.gui.types.AbstractBlockSelectionScreen;
-import keystone.gui.widgets.AbstractBlockButton;
+import keystone.gui.screens.types.AbstractBlockSelectionScreen;
+import keystone.gui.screens.widgets.AbstractBlockButton;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

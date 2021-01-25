@@ -1,8 +1,8 @@
-package keystone.gui.widgets;
+package keystone.gui.screens.widgets;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
-import keystone.gui.types.AbstractBlockSelectionScreen;
+import keystone.gui.screens.types.AbstractBlockSelectionScreen;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;

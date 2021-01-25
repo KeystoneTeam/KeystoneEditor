@@ -21,6 +21,12 @@ public class WorldCacheModule implements IKeystoneModule
         MinecraftForge.EVENT_BUS.addListener(this::onWorldUnloaded);
     }
 
+    @Override
+    public boolean isEnabled()
+    {
+        return true;
+    }
+
     public boolean hasDimensionWorld(DimensionId dimensionId)
     {
         return loadedWorlds.containsKey(dimensionId);

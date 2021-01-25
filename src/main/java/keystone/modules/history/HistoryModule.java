@@ -31,6 +31,12 @@ public class HistoryModule implements IKeystoneModule
         }
     }
 
+    @Override
+    public boolean isEnabled()
+    {
+        return true;
+    }
+
     //region History
     public void pushToHistory(IHistoryEntry historyEntry)
     {

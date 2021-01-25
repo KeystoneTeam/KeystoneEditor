@@ -1,6 +1,6 @@
-package keystone.gui.block_selection;
+package keystone.gui.screens.block_selection;
 
-import keystone.gui.types.AbstractBlockSelectionScreen;
+import keystone.gui.screens.types.AbstractBlockSelectionScreen;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 

@@ -1,8 +1,8 @@
-package keystone.gui.types;
+package keystone.gui.screens.types;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.KeystoneMod;
-import keystone.gui.block_selection.BlockSelectionButton;
+import keystone.gui.screens.block_selection.BlockSelectionButton;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
@@ -37,7 +37,6 @@ public abstract class AbstractBlockSelectionScreen extends Screen
     private double scrollOffset;
 
     private TextFieldWidget searchBar;
-    private boolean clearedSearch;
 
     protected AbstractBlockSelectionScreen(String narrationTitle) { this(narrationTitle, 75, 75, 25, 25); }
     protected AbstractBlockSelectionScreen(String narrationTitle, int idealLeftMargin, int idealRightMargin, int idealTopMargin, int idealBottomMargin)
@@ -89,11 +88,6 @@ public abstract class AbstractBlockSelectionScreen extends Screen
     public void tick()
     {
         this.searchBar.tick();
-        if (!clearedSearch && !searchBar.getText().isEmpty())
-        {
-            searchBar.setText("");
-            clearedSearch = true;
-        }
     }
     @Override
     public void onClose()
@@ -154,8 +148,6 @@ public abstract class AbstractBlockSelectionScreen extends Screen
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
-        if (!clearedSearch) return;
-
         // Draw button panel
         fill(stack, panelOffsetX, panelOffsetY, panelOffsetX + panelWidth, panelOffsetY + panelHeight, 0x80000000);
         for (Widget button : this.buttons) button.render(stack, mouseX, mouseY, partialTicks);

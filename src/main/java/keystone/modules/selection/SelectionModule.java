@@ -9,10 +9,13 @@ import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.renderer.common.models.SelectableBoundingBox;
 import keystone.gui.KeystoneOverlayHandler;
+import keystone.gui.overlays.hotbar.KeystoneHotbar;
+import keystone.gui.overlays.hotbar.KeystoneHotbarSlot;
 import keystone.modules.IKeystoneModule;
 import keystone.modules.history.HistoryModule;
 import keystone.modules.history.entries.SelectionHistoryEntry;
-import keystone.modules.paste.PasteModule;
+import keystone.modules.paste.CloneModule;
+import keystone.modules.paste.boxes.PasteBoundingBox;
 import keystone.modules.selection.boxes.SelectionBoundingBox;
 import keystone.modules.selection.providers.HighlightBoxProvider;
 import keystone.modules.selection.providers.SelectionBoxProvider;
@@ -57,9 +60,15 @@ public class SelectionModule implements IKeystoneModule
     {
         return selectionBoxes;
     }
+    public int getSelectionBoxCount()
+    {
+        int count = selectionBoxes.size();
+        if (creatingSelection) count--;
+        return count;
+    }
     public void onCancelPressed()
     {
-        PasteModule paste = Keystone.getModule(PasteModule.class);
+        CloneModule paste = Keystone.getModule(CloneModule.class);
         if (paste.getPasteBoxes().size() > 0) paste.clearPasteBoxes();
         else clearSelectionBoxes();
     }
@@ -90,6 +99,11 @@ public class SelectionModule implements IKeystoneModule
     }
 
     //region Rendering
+    @Override
+    public boolean isEnabled()
+    {
+        return KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION;
+    }
     @Override
     public IBoundingBoxProvider[] getBoundingBoxProviders()
     {
@@ -142,10 +156,17 @@ public class SelectionModule implements IKeystoneModule
                 {
                     if (event.getAction() == GLFW.GLFW_PRESS)
                     {
-                        draggingBox = true;
                         if (selectedFace.getBox() instanceof SelectionBoundingBox)
                         {
-                            Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, true));
+                            if (isEnabled())
+                            {
+                                draggingBox = true;
+                                Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, true));
+                            }
+                        }
+                        else if (selectedFace.getBox() instanceof PasteBoundingBox)
+                        {
+                            if (Keystone.getModule(CloneModule.class).isEnabled()) draggingBox = true;
                         }
                     }
                     else if (event.getAction() == GLFW.GLFW_RELEASE) draggingBox = false;
@@ -172,6 +193,8 @@ public class SelectionModule implements IKeystoneModule
     //region Controls
     private void createSelectionBox(final InputEvent.MouseInputEvent event)
     {
+        if (!isEnabled()) return;
+
         // If press left click
         if (event.getAction() == GLFW.GLFW_PRESS)
         {

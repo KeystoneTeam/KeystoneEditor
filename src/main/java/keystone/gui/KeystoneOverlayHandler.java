@@ -1,8 +1,8 @@
 package keystone.gui;
 
 import keystone.api.Keystone;
+import keystone.gui.overlays.hotbar.KeystoneHotbar;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -18,6 +18,11 @@ public class KeystoneOverlayHandler
 
     private static List<AbstractKeystoneOverlay> overlays = new ArrayList<>();
     private static List<AbstractKeystoneOverlay> removeList = new ArrayList<>();
+
+    static
+    {
+        addOverlay(new KeystoneHotbar());
+    }
 
     public static void addOverlay(AbstractKeystoneOverlay overlay) { overlays.add(overlay); }
     public static void removeOverlay(AbstractKeystoneOverlay overlay) { removeList.add(overlay); }

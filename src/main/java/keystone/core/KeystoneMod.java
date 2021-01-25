@@ -3,7 +3,7 @@ package keystone.core;
 import keystone.api.Keystone;
 import keystone.core.events.KeystoneEvent;
 import keystone.modules.history.HistoryModule;
-import keystone.modules.paste.PasteModule;
+import keystone.modules.paste.CloneModule;
 import keystone.modules.paste.boxes.PasteBoundingBox;
 import keystone.modules.paste.renderers.PasteBoxRenderer;
 import keystone.modules.selection.SelectionModule;
@@ -56,6 +56,6 @@ public class KeystoneMod
         event.register(new WorldCacheModule());
         event.register(new HistoryModule());
         event.register(new SelectionModule());
-        event.register(new PasteModule());
+        event.register(new CloneModule());
     }
 }

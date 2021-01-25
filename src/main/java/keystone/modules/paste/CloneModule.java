@@ -4,6 +4,8 @@ import keystone.api.Keystone;
 import keystone.api.schematic.KeystoneSchematic;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
+import keystone.gui.overlays.hotbar.KeystoneHotbarSlot;
+import keystone.gui.overlays.hotbar.KeystoneHotbar;
 import keystone.modules.IKeystoneModule;
 import keystone.modules.history.HistoryModule;
 import keystone.modules.history.entries.PasteHistoryEntry;
@@ -20,11 +22,11 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PasteModule implements IKeystoneModule
+public class CloneModule implements IKeystoneModule
 {
     private List<PasteBoundingBox> pasteBoxes;
 
-    public PasteModule()
+    public CloneModule()
     {
         pasteBoxes = new ArrayList<>();
 
@@ -48,8 +50,14 @@ public class PasteModule implements IKeystoneModule
     {
         pasteBoxes.clear();
         SelectionModule.HideSelectionBoxes = false;
+        KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
 
+    @Override
+    public boolean isEnabled()
+    {
+        return KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.CLONE;
+    }
     @Override
     public IBoundingBoxProvider[] getBoundingBoxProviders()
     {
@@ -58,15 +66,19 @@ public class PasteModule implements IKeystoneModule
 
     private void onKeyPressed(final InputEvent.KeyInputEvent event)
     {
-        if ((event.getModifiers() & GLFW.GLFW_MOD_CONTROL) > 0 && event.getAction() == GLFW.GLFW_PRESS)
+        if (event.getAction() == GLFW.GLFW_PRESS)
         {
-            if (event.getKey() == GLFW.GLFW_KEY_V) paste();
-            else if (event.getKey() == GLFW.GLFW_KEY_C) copy();
+            if (event.getKey() == GLFW.GLFW_KEY_ENTER || event.getKey() == GLFW.GLFW_KEY_KP_ENTER)
+            {
+                if (pasteBoxes.size() > 0) paste();
+            }
         }
     }
 
     public void copy()
     {
+        KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.CLONE);
+
         World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimensionId());
         if (world == null)
         {
@@ -93,5 +105,7 @@ public class PasteModule implements IKeystoneModule
 
         Keystone.getModule(HistoryModule.class).pushToHistory(historyEntry);
         clearPasteBoxes();
+
+        KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
 }
