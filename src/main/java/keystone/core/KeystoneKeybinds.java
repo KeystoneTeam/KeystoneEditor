@@ -1,8 +1,7 @@
 package keystone.core;
 
 import keystone.api.Keystone;
-import keystone.api.tools.interfaces.FillTool;
-import keystone.gui.screens.block_selection.SingleBlockSelectionScreen;
+import keystone.api.tools.FillTool;
 import keystone.modules.selection.SelectionModule;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.settings.KeyBinding;
@@ -18,12 +17,14 @@ public class KeystoneKeybinds
     public static final KeyBinding TOGGLE_KEYSTONE = new KeyBinding("key.toggle_keystone", GLFW.GLFW_KEY_K, "key.categories.keystone");
     public static final KeyBinding CLEAR_SELECTIONS = new KeyBinding("key.clear_selections", GLFW.GLFW_KEY_ESCAPE, "key.categories.keystone");
     public static final KeyBinding DELETE_BLOCKS = new KeyBinding("key.delete_blocks", GLFW.GLFW_KEY_DELETE, "key.categories.keystone");
+    public static final KeyBinding FILTER_TEST = new KeyBinding("key.filter_test", GLFW.GLFW_KEY_R, "key.categories.keystone");
 
     public static void register()
     {
         ClientRegistry.registerKeyBinding(TOGGLE_KEYSTONE);
         ClientRegistry.registerKeyBinding(CLEAR_SELECTIONS);
         ClientRegistry.registerKeyBinding(DELETE_BLOCKS);
+        ClientRegistry.registerKeyBinding(FILTER_TEST);
     }
 
     @SubscribeEvent
@@ -34,6 +35,7 @@ public class KeystoneKeybinds
         {
             if (CLEAR_SELECTIONS.isPressed()) Keystone.getModule(SelectionModule.class).onCancelPressed();
             if (DELETE_BLOCKS.isPressed()) Keystone.runTool(new FillTool(Blocks.AIR.getDefaultState()));
+            if (FILTER_TEST.isPressed()) Keystone.runFilter("C:\\Users\\codec\\Desktop\\TestFilter.java");
         }
     }
 }

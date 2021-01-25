@@ -1,6 +1,7 @@
-package keystone.api.tools.interfaces;
+package keystone.api.tools;
 
 import keystone.api.SelectionBox;
+import keystone.api.tools.interfaces.IBlockTool;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.BlockItem;
@@ -11,11 +12,6 @@ public class FillTool implements IBlockTool
 {
     private BlockState block;
 
-    public FillTool(Item item)
-    {
-        if (item instanceof BlockItem) this.block = ((BlockItem) item).getBlock().getDefaultState();
-        else this.block = Blocks.AIR.getDefaultState();
-    }
     public FillTool(BlockState block)
     {
         this.block = block;

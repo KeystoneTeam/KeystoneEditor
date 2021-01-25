@@ -63,6 +63,8 @@ public class SelectionBox
     public BlockPos getMax() { return max; }
     public Vector3i getSize() { return size; }
 
+    public BlockState getBlock(int x, int y, int z) { return getBlock(new BlockPos(x, y, z)); }
+    public BlockState getBlock(int x, int y, int z, boolean getOriginalState) { return getBlock(new BlockPos(x, y, z), getOriginalState); }
     public BlockState getBlock(BlockPos pos)
     {
         int index = getBlockIndex(pos);
@@ -75,6 +77,9 @@ public class SelectionBox
         if (index < 0) return Blocks.AIR.getDefaultState();
         else return getOriginalState ? blocks[index] : buffer[index];
     }
+
+    public void setBlock(int x, int y, int z, Block block) { setBlock(new BlockPos(x, y, z), block); }
+    public void setBlock(int x, int y, int z, BlockState block) { setBlock(new BlockPos(x, y, z), block); }
     public void setBlock(BlockPos pos, Block block) { setBlock(pos, block.getDefaultState()); }
     public void setBlock(BlockPos pos, BlockState block)
     {

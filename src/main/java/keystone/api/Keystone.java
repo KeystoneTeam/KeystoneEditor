@@ -1,8 +1,10 @@
 package keystone.api;
 
+import keystone.api.filters.KeystoneFilter;
 import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.tools.interfaces.IKeystoneTool;
 import keystone.api.tools.interfaces.ISelectionBoxTool;
+import keystone.core.filters.FilterCompiler;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.renderer.config.KeystoneConfig;
@@ -118,6 +120,11 @@ public class Keystone
         IHistoryEntry toolHistoryEntry = new WorldBlocksHistoryEntry(world, boxes);
         getModule(HistoryModule.class).pushToHistory(toolHistoryEntry);
         toolHistoryEntry.redo();
+    }
+    public static void runFilter(String filterPath)
+    {
+        KeystoneFilter filter = FilterCompiler.compileFilter(filterPath);
+        if (filter != null) runTool(filter);
     }
     //endregion
     //region Event Handling

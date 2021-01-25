@@ -2,7 +2,7 @@ package keystone.gui.overlays.hotbar;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
-import keystone.api.tools.interfaces.FillTool;
+import keystone.api.tools.FillTool;
 import keystone.gui.AbstractKeystoneOverlay;
 import keystone.gui.screens.block_selection.SingleBlockSelectionScreen;
 import keystone.modules.paste.CloneModule;
