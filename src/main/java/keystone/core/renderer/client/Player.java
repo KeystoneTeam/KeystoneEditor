@@ -6,7 +6,7 @@ import keystone.core.renderer.client.interop.ClientInterop;
 import keystone.core.renderer.client.models.Point;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.DimensionId;
-import keystone.core.renderer.config.KeystoneConfig;
+import keystone.core.KeystoneConfig;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;

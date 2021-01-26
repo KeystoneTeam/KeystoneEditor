@@ -5,10 +5,11 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.tools.interfaces.IKeystoneTool;
 import keystone.api.tools.interfaces.ISelectionBoxTool;
+import keystone.core.KeystoneConfig;
+import keystone.core.filters.FilterCache;
 import keystone.core.filters.FilterCompiler;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.DimensionId;
-import keystone.core.renderer.config.KeystoneConfig;
 import keystone.modules.IKeystoneModule;
 import keystone.modules.history.HistoryModule;
 import keystone.modules.history.IHistoryEntry;
@@ -23,7 +24,6 @@ import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -156,6 +156,8 @@ public class Keystone
             IHistoryEntry toolHistoryEntry = new WorldBlocksHistoryEntry(world, boxes);
             getModule(HistoryModule.class).pushToHistory(toolHistoryEntry);
             toolHistoryEntry.redo();
+
+            FilterCache.clear();
         }
     }
     //endregion

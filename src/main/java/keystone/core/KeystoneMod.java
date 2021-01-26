@@ -2,6 +2,7 @@ package keystone.core;
 
 import keystone.api.Keystone;
 import keystone.core.events.KeystoneEvent;
+import keystone.core.filters.FilterImports;
 import keystone.modules.history.HistoryModule;
 import keystone.modules.paste.CloneModule;
 import keystone.modules.paste.boxes.PasteBoundingBox;

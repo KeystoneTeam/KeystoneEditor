@@ -1,5 +1,6 @@
 package keystone.api.filters;
 
+import keystone.core.filters.FilterCache;
 import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -22,7 +23,7 @@ public class KeystoneFilter
     protected keystone.api.block.Block block(String id)
     {
         Block block = blockRegistry.getValue(new ResourceLocation(id));
-        return new keystone.api.block.Block(block.getDefaultState());
+        return FilterCache.getBlock(block.getDefaultState());
     }
     //endregion
 }

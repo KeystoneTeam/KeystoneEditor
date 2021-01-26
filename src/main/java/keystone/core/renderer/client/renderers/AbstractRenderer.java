@@ -4,7 +4,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.renderer.client.models.Point;
 import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.common.models.AbstractBoundingBox;
-import keystone.core.renderer.config.KeystoneConfig;
+import keystone.core.KeystoneConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.Direction;

@@ -1,7 +1,7 @@
 package keystone.modules.history;
 
 import keystone.api.Keystone;
-import keystone.core.renderer.config.KeystoneConfig;
+import keystone.core.KeystoneConfig;
 import keystone.modules.IKeystoneModule;
 import keystone.modules.history.entries.PasteHistoryEntry;
 import net.minecraftforge.client.event.InputEvent;

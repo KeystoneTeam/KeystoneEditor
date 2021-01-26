@@ -1,15 +1,15 @@
 package keystone.core.filters;
 
+import javafx.stage.FileChooser;
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
+import keystone.core.KeystoneConfig;
+import net.minecraft.client.Minecraft;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Random;
@@ -17,16 +17,22 @@ import java.util.stream.Collectors;
 
 public class FilterCompiler
 {
-    private static String createRandomClassName()
+    private static File getFilterDirectory()
     {
-        StringBuilder sb = new StringBuilder();
-        char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-        Random rand = new Random();
-
-        sb.append("Filter_");
-        for (int i = 0; i < 32; i++) sb.append(chars[rand.nextInt(chars.length)]);
-
-        return sb.toString();
+        File filtersDirectory = Minecraft.getInstance().gameDir.toPath().resolve(KeystoneConfig.filtersDirectory).toFile();
+        if (!filtersDirectory.exists()) filtersDirectory.mkdirs();
+        return filtersDirectory;
+    }
+    public static File[] getInstalledFilters()
+    {
+        return getFilterDirectory().listFiles(new FilenameFilter()
+        {
+            @Override
+            public boolean accept(File dir, String name)
+            {
+                return name.endsWith(".java") || name.endsWith(".filter");
+            }
+        });
     }
     public static KeystoneFilter compileFilter(String filterPath)
     {
@@ -38,6 +44,7 @@ public class FilterCompiler
         {
             String filterCode = Files.lines(Paths.get(filterPath)).collect(Collectors.joining(System.lineSeparator()));
             filterCode = filterCode.replaceAll(filterName, className);
+            filterCode = FilterImports.addImportsToCode(filterCode);
 
             try
             {
@@ -97,5 +104,17 @@ public class FilterCompiler
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static String createRandomClassName()
+    {
+        StringBuilder sb = new StringBuilder();
+        char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+        Random rand = new Random();
+
+        sb.append("Filter_");
+        for (int i = 0; i < 32; i++) sb.append(chars[rand.nextInt(chars.length)]);
+
+        return sb.toString();
     }
 }

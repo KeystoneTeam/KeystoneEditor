@@ -1,6 +1,7 @@
 package keystone.api.block;
 
 import keystone.api.Keystone;
+import keystone.core.filters.FilterCache;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SlabBlock;
 import net.minecraft.state.Property;
@@ -12,6 +13,7 @@ public class Block
     public Block(BlockState state)
     {
         this.state = state;
+        FilterCache.setBlock(this);
     }
 
     public <T extends Comparable<T>, V extends T> Block with(String property, V value)
@@ -23,7 +25,7 @@ public class Block
             return this;
         }
 
-        if (propertyContainer.getAllowedValues().contains(value)) state = state.with(propertyContainer, value);
+        if (propertyContainer.getAllowedValues().contains(value)) return new Block(state.with(propertyContainer, value));
         else Keystone.LOGGER.error("Trying to set property '" + property + "' of block '" + state.getBlock().getRegistryName().toString() + "' with invalid value '" + value.toString() + "'!");
 
         return this;

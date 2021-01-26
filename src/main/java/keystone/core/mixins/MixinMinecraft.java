@@ -1,7 +1,7 @@
 package keystone.core.mixins;
 
 import keystone.api.Keystone;
-import keystone.core.renderer.config.KeystoneConfig;
+import keystone.core.KeystoneConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
