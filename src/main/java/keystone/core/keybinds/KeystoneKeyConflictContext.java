@@ -16,7 +16,7 @@ public enum KeystoneKeyConflictContext implements IKeyConflictContext
         @Override
         public boolean conflicts(IKeyConflictContext other)
         {
-            return this == other;
+            return this == other || other == KeyConflictContext.GUI;
         }
     },
     NOT_GUI_BLOCKING
@@ -29,7 +29,7 @@ public enum KeystoneKeyConflictContext implements IKeyConflictContext
         @Override
         public boolean conflicts(IKeyConflictContext other)
         {
-            return this == other;
+            return this == other || other == KeyConflictContext.IN_GAME;
         }
     }
 }

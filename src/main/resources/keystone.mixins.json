@@ -9,7 +9,8 @@
   ],
   "client": [
     "MixinWorldRenderer",
-    "MixinMouseHelper"
+    "MixinMouseHelper",
+    "MixinKeyboardListener"
   ],
   "minVersion": "0.8"
 }

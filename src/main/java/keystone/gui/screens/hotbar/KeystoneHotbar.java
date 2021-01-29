@@ -10,6 +10,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
 public class KeystoneHotbar extends Screen
@@ -104,24 +105,6 @@ public class KeystoneHotbar extends Screen
 
         stack.pop();
     }
-
-//    @Override
-//    public boolean mouseClicked(double mouseX, double mouseY, int button)
-//    {
-//        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
-//        {
-//            for (HotbarButton hotbarButton : hotbarButtons)
-//            {
-//                if (hotbarButton.isHovering())
-//                {
-//                    selectedSlot = hotbarButton.getSlot();
-//                    hotbarButton.onClick();
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//    }
 
     public static KeystoneHotbarSlot getSelectedSlot()
     {

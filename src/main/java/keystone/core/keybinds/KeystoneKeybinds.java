@@ -51,6 +51,16 @@ public class KeystoneKeybinds
         mc.gameSettings.keyBindCommand.setKeyConflictContext(notGuiBlocking);
         mc.gameSettings.keyBindTogglePerspective.setKeyConflictContext(notGuiBlocking);
         mc.gameSettings.keyBindSmoothCamera.setKeyConflictContext(notGuiBlocking);
+
+        mc.gameSettings.keyBindAdvancements.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindDrop.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindInventory.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindLoadToolbar.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindPickBlock.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindSaveToolbar.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindSwapHands.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindUseItem.setKeyConflictContext(notGuiBlocking);
+        for (KeyBinding keyBinding : mc.gameSettings.keyBindsHotbar) keyBinding.setKeyConflictContext(notGuiBlocking);
     }
 
     @SubscribeEvent

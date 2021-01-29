@@ -3,6 +3,8 @@ package keystone.core;
 import keystone.api.Keystone;
 import keystone.core.events.KeystoneEvent;
 import keystone.core.keybinds.KeystoneKeybinds;
+import keystone.gui.KeystoneOverlayHandler;
+import keystone.gui.screens.hotbar.KeystoneHotbar;
 import keystone.modules.history.HistoryModule;
 import keystone.modules.paste.CloneModule;
 import keystone.modules.paste.boxes.PasteBoundingBox;
@@ -43,6 +45,7 @@ public class KeystoneMod
     }
     private void clientSetup(final FMLClientSetupEvent event)
     {
+        KeystoneOverlayHandler.addOverlay(new KeystoneHotbar());
         KeystoneKeybinds.register();
     }
 

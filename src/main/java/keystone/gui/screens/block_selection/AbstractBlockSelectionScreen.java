@@ -57,12 +57,6 @@ public abstract class AbstractBlockSelectionScreen extends Screen
     public abstract void onBlockSelected(BlockState block);
 
     @Override
-    public void closeScreen()
-    {
-        KeystoneOverlayHandler.removeOverlay(this);
-    }
-
-    @Override
     protected void init()
     {
         this.minecraft.keyboardListener.enableRepeatEvents(true);

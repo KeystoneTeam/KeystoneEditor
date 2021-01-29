@@ -1,5 +1,6 @@
 package keystone.gui;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.gui.screens.hotbar.KeystoneHotbar;
 import net.minecraft.client.Minecraft;
@@ -7,7 +8,6 @@ import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.renderer.IWindowEventListener;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -28,14 +28,6 @@ public class KeystoneOverlayHandler
     private static List<Screen> overlays = new ArrayList<>();
     private static List<Screen> addList = new ArrayList<>();
     private static List<Screen> removeList = new ArrayList<>();
-    private static int previousWidth;
-    private static int previousHeight;
-    private static double previousScale;
-
-    static
-    {
-        addOverlay(new KeystoneHotbar());
-    }
 
     public static void addOverlay(Screen overlay)
     {
@@ -55,53 +47,23 @@ public class KeystoneOverlayHandler
         if (Keystone.isActive() && event.getType() == RenderGameOverlayEvent.ElementType.VIGNETTE) event.setCanceled(true);
     }
 
-    @SubscribeEvent
-    public static void tick(final TickEvent.ClientTickEvent event)
-    {
-        if (event.phase == TickEvent.Phase.START)
-        {
-            BlockingKeys = Minecraft.getInstance().currentScreen != null;
-            overlays.forEach(overlay ->
-            {
-                overlay.tick();
-                for (IGuiEventListener listener : overlay.getEventListeners())
-                {
-                    if (listener instanceof Widget)
-                    {
-                        if (((Widget) listener).isFocused()) BlockingKeys = true;
-                    }
-                }
-            });
-        }
-    }
+    //region Event Subscribers
     @SubscribeEvent
     public static void render(final RenderGameOverlayEvent.Post event)
     {
+        if (event.getType() != RenderGameOverlayEvent.ElementType.EXPERIENCE) return;
+
         Minecraft mc = Minecraft.getInstance();
+        int mouseX = (int)(mc.mouseHelper.getMouseX() * mc.getMainWindow().getScaledWidth() / mc.getMainWindow().getWidth());
+        int mouseY = (int)(mc.mouseHelper.getMouseY() * mc.getMainWindow().getScaledHeight() / mc.getMainWindow().getHeight());
+
         MouseOverGUI = mc.currentScreen != null;
-
-        if (mc.getMainWindow().getWidth() != previousWidth || mc.getMainWindow().getHeight() != previousHeight || mc.getMainWindow().getGuiScaleFactor() != previousScale)
-        {
-            overlays.forEach(overlay -> overlay.resize(mc, mc.getMainWindow().getScaledWidth(), mc.getMainWindow().getScaledHeight()));
-            previousWidth = mc.getMainWindow().getScaledWidth();
-            previousHeight = mc.getMainWindow().getScaledHeight();
-            previousScale = mc.getMainWindow().getGuiScaleFactor();
-        }
-
-        if (Keystone.isActive())
-        {
-            if (event.getType() != RenderGameOverlayEvent.ElementType.EXPERIENCE) return;
-
-            addList.forEach(add -> overlays.add(add));
-            addList.clear();
-
-            int mouseX = (int)(mc.mouseHelper.getMouseX() * mc.getMainWindow().getScaledWidth() / mc.getMainWindow().getWidth());
-            int mouseY = (int)(mc.mouseHelper.getMouseY() * mc.getMainWindow().getScaledHeight() / mc.getMainWindow().getHeight());
-            overlays.forEach(overlay -> overlay.render(event.getMatrixStack(), mouseX, mouseY, event.getPartialTicks()));
-
-            removeList.forEach(remove -> overlays.remove(remove));
-            removeList.clear();
-        }
+        if (Keystone.isActive()) render(event.getMatrixStack(), mouseX, mouseY, event.getPartialTicks());
+    }
+    @SubscribeEvent
+    public static void tick(final TickEvent.ClientTickEvent event)
+    {
+        if (event.phase == TickEvent.Phase.START) tick();
     }
     @SubscribeEvent
     public static void mouseClicked(final InputEvent.MouseInputEvent event)
@@ -112,36 +74,8 @@ public class KeystoneOverlayHandler
             double mouseX = mc.mouseHelper.getMouseX() * mc.getMainWindow().getScaledWidth() / mc.getMainWindow().getWidth();
             double mouseY = mc.mouseHelper.getMouseY() * mc.getMainWindow().getScaledHeight() / mc.getMainWindow().getHeight();
 
-            if (event.getAction() == GLFW.GLFW_PRESS)
-            {
-                for (int i = overlays.size() - 1; i >= 0; i--)
-                {
-                    Screen overlay = overlays.get(i);
-                    for (IGuiEventListener listener : overlay.getEventListeners())
-                    {
-                        if (listener.mouseClicked(mouseX, mouseY, event.getButton()))
-                        {
-                            return;
-                        }
-                    }
-                    if (overlay.mouseClicked(mouseX, mouseY, event.getButton())) return;
-                }
-            }
-            if (event.getAction() == GLFW.GLFW_RELEASE)
-            {
-                for (int i = overlays.size() - 1; i >= 0; i--)
-                {
-                    Screen overlay = overlays.get(i);
-                    for (IGuiEventListener listener : overlay.getEventListeners())
-                    {
-                        if (listener.mouseReleased(mouseX, mouseY, event.getButton()))
-                        {
-                            return;
-                        }
-                    }
-                    if (overlay.mouseReleased(mouseX, mouseY, event.getButton())) return;
-                }
-            }
+            if (event.getAction() == GLFW.GLFW_PRESS) mouseClicked(mouseX, mouseY, event.getButton());
+            if (event.getAction() == GLFW.GLFW_RELEASE) mouseReleased(mouseX, mouseY, event.getButton());
         }
     }
     @SubscribeEvent
@@ -152,56 +86,81 @@ public class KeystoneOverlayHandler
             Minecraft mc = Minecraft.getInstance();
             double mouseX = mc.mouseHelper.getMouseX() * mc.getMainWindow().getScaledWidth() / mc.getMainWindow().getWidth();
             double mouseY = mc.mouseHelper.getMouseY() * mc.getMainWindow().getScaledHeight() / mc.getMainWindow().getHeight();
-
-            for (int i = overlays.size() - 1; i >= 0; i--)
-            {
-                Screen overlay = overlays.get(i);
-                for (IGuiEventListener listener : overlay.getEventListeners())
-                {
-                    if (listener.mouseScrolled(mouseX, mouseY, event.getScrollDelta()))
-                    {
-                        return;
-                    }
-                }
-                if (overlay.mouseScrolled(mouseX, mouseY, event.getScrollDelta())) return;
-            }
+            mouseScrolled(mouseX, mouseY, event.getScrollDelta());
         }
     }
-    @SubscribeEvent
-    public static void keyInput(final InputEvent.KeyInputEvent event)
+    //endregion
+    //region Event Forwarding
+    private static void tick()
     {
-        if (Keystone.isActive())
+        BlockingKeys = Minecraft.getInstance().currentScreen != null;
+        overlays.forEach(screen ->
         {
-            if (event.getAction() == GLFW.GLFW_PRESS)
+            screen.tick();
+            for (IGuiEventListener listener : screen.getEventListeners())
             {
-                for (int i = overlays.size() - 1; i >= 0; i--)
+                if (listener instanceof TextFieldWidget)
                 {
-                    Screen overlay = overlays.get(i);
-                    for (IGuiEventListener listener : overlay.getEventListeners())
-                    {
-                        if (listener.keyPressed(event.getKey(), event.getScanCode(), event.getModifiers()))
-                        {
-                            return;
-                        }
-                    }
-                    if (overlay.keyPressed(event.getKey(), event.getScanCode(), event.getModifiers())) return;
+                    if (((TextFieldWidget) listener).isFocused()) BlockingKeys = true;
                 }
             }
-            if (event.getAction() == GLFW.GLFW_RELEASE)
-            {
-                for (int i = overlays.size() - 1; i >= 0; i--)
-                {
-                    Screen overlay = overlays.get(i);
-                    for (IGuiEventListener listener : overlay.getEventListeners())
-                    {
-                        if (listener.keyReleased(event.getKey(), event.getScanCode(), event.getModifiers()))
-                        {
-                            return;
-                        }
-                    }
-                    if (overlay.keyReleased(event.getKey(), event.getScanCode(), event.getModifiers())) return;
-                }
-            }
-        }
+        });
     }
+    public static void resize(Minecraft minecraft, int width, int height)
+    {
+        overlays.forEach(overlay -> overlay.resize(minecraft, width, height));
+    }
+    private static void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    {
+        MouseOverGUI = Minecraft.getInstance().currentScreen != null;
+
+        addList.forEach(add -> overlays.add(add));
+        addList.clear();
+
+        overlays.forEach(screen -> screen.render(matrixStack, mouseX, mouseY, partialTicks));
+
+        removeList.forEach(remove -> overlays.remove(remove));
+        removeList.clear();
+    }
+
+    public static boolean keyPressed(int keyCode, int scanCode, int modifiers)
+    {
+        for (Screen screen : overlays) if (screen.keyPressed(keyCode, scanCode, modifiers)) return true;
+        return false;
+    }
+    public static boolean keyReleased(int keyCode, int scanCode, int modifiers)
+    {
+        for (Screen screen : overlays) if (screen.keyReleased(keyCode, scanCode, modifiers)) return true;
+        return false;
+    }
+    private static boolean mouseClicked(double mouseX, double mouseY, int button)
+    {
+        for (Screen screen : overlays) if (screen.mouseClicked(mouseX, mouseY, button)) return true;
+        return false;
+    }
+    private static boolean mouseReleased(double mouseX, double mouseY, int button)
+    {
+        for (Screen screen : overlays) if (screen.mouseReleased(mouseX, mouseY, button)) return true;
+        return false;
+    }
+    private static boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY)
+    {
+        for (Screen screen : overlays) if (screen.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
+        return false;
+    }
+    private static boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    {
+        for (Screen screen : overlays) if (screen.mouseScrolled(mouseX, mouseY, delta)) return true;
+        return false;
+    }
+    public static boolean charTyped(char codePoint, int modifiers)
+    {
+        for (Screen screen : overlays) if (screen.charTyped(codePoint, modifiers)) return true;
+        return false;
+    }
+    private static void mouseMoved(double xPos, double mouseY)
+    {
+        overlays.forEach(screen -> screen.mouseMoved(xPos, mouseY));
+    }
+    //endregion
 }
