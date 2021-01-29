@@ -4,13 +4,14 @@ import keystone.core.renderer.common.models.Coords;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.World;
 
 import java.util.function.Consumer;
 
-public class SelectionBox implements IBlockBox
+public class SelectionBox
 {
     private final BlockPos min;
     private final BlockPos max;
@@ -69,7 +70,6 @@ public class SelectionBox implements IBlockBox
         if (index < 0) return Blocks.AIR.getDefaultState();
         else return buffer[index];
     }
-    @Override
     public BlockState getBlock(BlockPos pos, boolean getOriginalState)
     {
         int index = getBlockIndex(pos);
@@ -87,7 +87,6 @@ public class SelectionBox implements IBlockBox
         return true;
     }
 
-    @Override
     public void forEachBlock(Consumer<BlockPos> consumer)
     {
         for (int x = min.getX(); x <= max.getX(); x++)
@@ -97,21 +96,6 @@ public class SelectionBox implements IBlockBox
                 for (int z = min.getZ(); z <= max.getZ(); z++)
                 {
                     consumer.accept(new BlockPos(x, y, z));
-                }
-            }
-        }
-    }
-    public void applyChanges(World world)
-    {
-        int i = 0;
-        for (int x = min.getX(); x <= max.getX(); x++)
-        {
-            for (int y = min.getY(); y <= max.getY(); y++)
-            {
-                for (int z = min.getZ(); z <= max.getZ(); z++)
-                {
-                    world.setBlockState(new BlockPos(x, y, z), buffer[i]);
-                    i++;
                 }
             }
         }

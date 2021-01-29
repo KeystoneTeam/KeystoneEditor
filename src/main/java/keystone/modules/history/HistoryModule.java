@@ -68,27 +68,33 @@ public class HistoryModule implements IKeystoneModule
 
     public void undo()
     {
-        IHistoryEntry historyEntry = popFromHistory();
-        if (historyEntry != null)
+        Keystone.runOnMainThread(() ->
         {
-            historyEntry.undo();
-            if (historyEntry.addToUnsavedChanges()) unsavedChanges++;
-        }
+            IHistoryEntry historyEntry = popFromHistory();
+            if (historyEntry != null)
+            {
+                historyEntry.undo();
+                if (historyEntry.addToUnsavedChanges()) unsavedChanges++;
+            }
 
-        if (KeystoneConfig.debugHistoryLog) logHistoryStack();
+            if (KeystoneConfig.debugHistoryLog) logHistoryStack();
+        });
     }
     public void redo()
     {
-        if (currentHistoryIndex < history.size() - 1)
+        Keystone.runOnMainThread(() ->
         {
-            currentHistoryIndex++;
-            IHistoryEntry historyEntry = history.get(currentHistoryIndex);
+            if (currentHistoryIndex < history.size() - 1)
+            {
+                currentHistoryIndex++;
+                IHistoryEntry historyEntry = history.get(currentHistoryIndex);
 
-            historyEntry.redo();
-            if (historyEntry.addToUnsavedChanges()) unsavedChanges++;
-        }
+                historyEntry.redo();
+                if (historyEntry.addToUnsavedChanges()) unsavedChanges++;
+            }
 
-        if (KeystoneConfig.debugHistoryLog) logHistoryStack();
+            if (KeystoneConfig.debugHistoryLog) logHistoryStack();
+        });
     }
 
     public void logHistoryStack()

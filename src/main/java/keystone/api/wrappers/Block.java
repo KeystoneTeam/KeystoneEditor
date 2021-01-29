@@ -1,32 +1,126 @@
 package keystone.api.wrappers;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
 import net.minecraft.block.BlockState;
+import net.minecraft.command.arguments.BlockStateParser;
+import net.minecraft.command.arguments.NBTPathArgument;
+import net.minecraft.command.arguments.NBTTagArgument;
+import net.minecraft.command.impl.data.DataCommand;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
 import net.minecraft.state.Property;
+import net.minecraft.tileentity.TileEntity;
+
+import java.util.Collections;
+import java.util.Map;
 
 public class Block
 {
     private BlockState state;
+    private CompoundNBT tileEntity;
 
-    public Block(BlockState state)
+    public Block(BlockState state) { this(state, (CompoundNBT)null); }
+    public Block(BlockState state, TileEntity tileEntity) { this(state, tileEntity != null ? tileEntity.serializeNBT() : null); }
+    public Block(BlockState state, CompoundNBT tileEntity)
     {
         this.state = state;
+        if (tileEntity != null) this.tileEntity = tileEntity;
     }
 
-    public <T extends Comparable<T>, V extends T> Block with(String property, V value)
+    public Block properties(String properties)
     {
-        Property<T> propertyContainer = (Property<T>) state.getBlock().getStateContainer().getProperty(property);
-        if (propertyContainer == null)
+        try
         {
-            Keystone.LOGGER.error("Trying to set non-existant property '" + property + "' of block '" + state.getBlock().getRegistryName().toString() + "'!");
+            Block copy = new Block(this.state, this.tileEntity != null ? this.tileEntity.copy() : null);
+
+            String blockStr = BlockStateParser.toString(copy.state);
+            String[] tokens = properties.split(",");
+
+            for (String token : tokens)
+            {
+                String propertyName = token.split("=")[0];
+
+                if (blockStr.contains(propertyName)) blockStr = blockStr.replaceFirst(propertyName + "=[^,\\]]*", token);
+                else if (blockStr.contains("["))
+                {
+                    StringBuilder newBlockStr = new StringBuilder();
+                    for (char c : blockStr.toCharArray())
+                    {
+                        if (c == ']') newBlockStr.append("," + token);
+                        newBlockStr.append(c);
+                    }
+                    blockStr = newBlockStr.toString();
+                }
+                else blockStr = blockStr + "[" + token + "]";
+            }
+
+            BlockStateParser parser = new BlockStateParser(new StringReader(blockStr), false).parse(false);
+            copy.state = parser.getState();
+            return copy;
+        }
+        catch (ArrayIndexOutOfBoundsException e)
+        {
+            Keystone.abortFilter("Malformed block properties set " + properties);
             return this;
         }
+        catch (CommandSyntaxException e)
+        {
+            Keystone.abortFilter(e.getLocalizedMessage());
+            return this;
+        }
+    }
+    public Block property(String property, String value)
+    {
+        try
+        {
+            Block copy = new Block(this.state, this.tileEntity != null ? this.tileEntity.copy() : null);
 
-        if (propertyContainer.getAllowedValues().contains(value)) return new Block(state.with(propertyContainer, value));
-        else Keystone.LOGGER.error("Trying to set property '" + property + "' of block '" + state.getBlock().getRegistryName().toString() + "' with invalid value '" + value.toString() + "'!");
+            String blockStr = BlockStateParser.toString(copy.state);
+            if (blockStr.contains(property)) blockStr = blockStr.replaceFirst("(" + property + ")=([^,\\]]*)", "$1=" + value);
+            else if (blockStr.contains("["))
+            {
+                StringBuilder newBlockStr = new StringBuilder();
+                for (char c : blockStr.toCharArray())
+                {
+                    if (c == ']') newBlockStr.append("," + property + "=" + value);
+                    newBlockStr.append(c);
+                }
+                blockStr = newBlockStr.toString();
+            }
+            else blockStr = blockStr + "[" + property + "=" + value + "]";
 
-        return this;
+            BlockStateParser parser = new BlockStateParser(new StringReader(blockStr), false).parse(false);
+            copy.state = parser.getState();
+            return copy;
+        }
+        catch (CommandSyntaxException e)
+        {
+            Keystone.abortFilter(e.getLocalizedMessage());
+            return this;
+        }
+    }
+    public Block data(String path, String data)
+    {
+        try
+        {
+            Block copy = new Block(this.state, this.tileEntity != null ? this.tileEntity.copy() : new CompoundNBT());
+
+            NBTPathArgument.NBTPath nbtPath = NBTPathArgument.nbtPath().parse(new StringReader(path));
+            INBT nbt = NBTTagArgument.func_218085_a().parse(new StringReader(data));
+            nbtPath.func_218076_b(copy.tileEntity, () -> nbt);
+
+            return copy;
+        }
+        catch (CommandSyntaxException e)
+        {
+            Keystone.abortFilter(e.getLocalizedMessage());
+            return this;
+        }
     }
 
+    public boolean isAir() { return this.state.isAir(); }
     public BlockState getMinecraftBlock() { return state; }
+    public CompoundNBT getTileEntityData() { return tileEntity; }
 }

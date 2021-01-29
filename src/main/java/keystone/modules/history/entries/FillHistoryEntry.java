@@ -1,15 +1,17 @@
 package keystone.modules.history.entries;
 
-import keystone.api.IBlockBox;
+import keystone.api.SelectionBox;
 import keystone.modules.history.IHistoryEntry;
+import net.minecraft.block.ChestBlock;
+import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.world.World;
 
-public class WorldBlocksHistoryEntry implements IHistoryEntry
+public class FillHistoryEntry implements IHistoryEntry
 {
     protected World world;
-    protected IBlockBox[] boxes;
+    protected SelectionBox[] boxes;
 
-    public WorldBlocksHistoryEntry(World world, IBlockBox[] boxes)
+    public FillHistoryEntry(World world, SelectionBox[] boxes)
     {
         this.world = world;
         this.boxes = boxes;
@@ -18,7 +20,7 @@ public class WorldBlocksHistoryEntry implements IHistoryEntry
     @Override
     public void undo()
     {
-        for (IBlockBox box : boxes)
+        for (SelectionBox box : boxes)
         {
             box.forEachBlock(pos ->
             {
@@ -29,7 +31,7 @@ public class WorldBlocksHistoryEntry implements IHistoryEntry
     @Override
     public void redo()
     {
-        for (IBlockBox box : boxes)
+        for (SelectionBox box : boxes)
         {
             box.forEachBlock(pos ->
             {

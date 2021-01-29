@@ -1,6 +1,5 @@
 package keystone.modules.history.entries;
 
-import keystone.api.IBlockBox;
 import keystone.api.Keystone;
 import keystone.api.SelectionBox;
 import keystone.modules.history.HistoryModule;
@@ -12,7 +11,7 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PasteHistoryEntry extends WorldBlocksHistoryEntry
+public class PasteHistoryEntry extends FillHistoryEntry
 {
     private List<PasteBoundingBox> pastes;
 
@@ -36,7 +35,7 @@ public class PasteHistoryEntry extends WorldBlocksHistoryEntry
 
     public void updateSelectionBuffers()
     {
-        for (IBlockBox box : boxes) box.forEachBlock(pos -> box.setBlock(pos, world.getBlockState(pos)));
+        for (SelectionBox box : boxes) box.forEachBlock(pos -> box.setBlock(pos, world.getBlockState(pos)));
     }
 
     @Override

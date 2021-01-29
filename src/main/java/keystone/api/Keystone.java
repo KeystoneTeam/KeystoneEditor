@@ -12,7 +12,8 @@ import keystone.core.renderer.common.models.DimensionId;
 import keystone.modules.IKeystoneModule;
 import keystone.modules.history.HistoryModule;
 import keystone.modules.history.IHistoryEntry;
-import keystone.modules.history.entries.WorldBlocksHistoryEntry;
+import keystone.modules.history.entries.FillHistoryEntry;
+import keystone.modules.history.entries.FilterHistoryEntry;
 import keystone.modules.selection.SelectionModule;
 import keystone.modules.world_cache.WorldCacheModule;
 import net.minecraft.client.Minecraft;
@@ -31,10 +32,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class Keystone
@@ -90,53 +88,17 @@ public class Keystone
         modules.values().forEach(consumer);
     }
     //endregion
+    //region Threading
+    private static List<Runnable> runOnMainThread = new ArrayList<>();
+    public static void runOnMainThread(Runnable runnable)
+    {
+        runOnMainThread.add(runnable);
+    }
+    //endregion
     //region Tools
     public static void runTool(IKeystoneTool tool)
     {
-        DimensionId dimensionId = Player.getDimensionId();
-        World world = getModule(WorldCacheModule.class).getDimensionWorld(dimensionId);
-        if (world == null)
-        {
-            LOGGER.error("Trying to run keystone tool when there is no loaded world for dimension '" + dimensionId.getDimensionType().getRegistryName() + "'!");
-            return;
-        }
-
-        SelectionBox[] boxes = getModule(SelectionModule.class).buildSelectionBoxes(world);
-
-        Set<BlockPos> processedBlocks = new HashSet<>();
-        for (SelectionBox box : boxes)
-        {
-            if (tool instanceof ISelectionBoxTool) ((ISelectionBoxTool)tool).process(box);
-            if (tool instanceof IBlockTool)
-            {
-                IBlockTool blockTool = (IBlockTool)tool;
-                box.forEachBlock((pos ->
-                {
-                    if (!blockTool.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
-                    {
-                        blockTool.process(pos, box);
-                        processedBlocks.add(pos);
-                    }
-                }));
-            }
-        }
-
-        IHistoryEntry toolHistoryEntry = new WorldBlocksHistoryEntry(world, boxes);
-        getModule(HistoryModule.class).pushToHistory(toolHistoryEntry);
-        toolHistoryEntry.redo();
-    }
-    public static void runFilter(String filterPath)
-    {
-        abortFilter = null;
-
-        KeystoneFilter filter = FilterCompiler.compileFilter(filterPath);
-        if (abortFilter != null)
-        {
-            Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
-            return;
-        }
-
-        if (filter != null)
+        runOnMainThread(() ->
         {
             DimensionId dimensionId = Player.getDimensionId();
             World world = getModule(WorldCacheModule.class).getDimensionWorld(dimensionId);
@@ -146,47 +108,96 @@ public class Keystone
                 return;
             }
 
-            SelectionBox[] selectionBoxes = getModule(SelectionModule.class).buildSelectionBoxes(world);
-            FilterBox[] boxes = new FilterBox[selectionBoxes.length];
-            for (int i = 0; i < boxes.length; i++) boxes[i] = new FilterBox(selectionBoxes[i], filter);
+            SelectionBox[] boxes = getModule(SelectionModule.class).buildSelectionBoxes(world);
 
             Set<BlockPos> processedBlocks = new HashSet<>();
-            for (FilterBox box : boxes)
+            for (SelectionBox box : boxes)
             {
-                filter.processBox(box);
-                if (abortFilter != null)
+                if (tool instanceof ISelectionBoxTool) ((ISelectionBoxTool)tool).process(box);
+                if (tool instanceof IBlockTool)
                 {
-                    Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
-                    return;
+                    IBlockTool blockTool = (IBlockTool)tool;
+                    box.forEachBlock((pos ->
+                    {
+                        if (!blockTool.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
+                        {
+                            blockTool.process(pos, box);
+                            processedBlocks.add(pos);
+                        }
+                    }));
                 }
-
-                box.forEachBlock((x, y, z) ->
-                {
-                    BlockPos pos = new BlockPos(x, y, z);
-                    if (!filter.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
-                    {
-                        filter.processBlock(x, y, z, box);
-                        processedBlocks.add(pos);
-                    }
-
-                    if (abortFilter != null)
-                    {
-                        Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
-                        return;
-                    }
-                });
             }
 
+            IHistoryEntry toolHistoryEntry = new FillHistoryEntry(world, boxes);
+            getModule(HistoryModule.class).pushToHistory(toolHistoryEntry);
+            toolHistoryEntry.redo();
+        });
+    }
+    public static void runFilter(String filterPath)
+    {
+        runOnMainThread(() ->
+        {
+            abortFilter = null;
+
+            KeystoneFilter filter = FilterCompiler.compileFilter(filterPath);
             if (abortFilter != null)
             {
                 Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
                 return;
             }
 
-            IHistoryEntry toolHistoryEntry = new WorldBlocksHistoryEntry(world, boxes);
-            getModule(HistoryModule.class).pushToHistory(toolHistoryEntry);
-            toolHistoryEntry.redo();
-        }
+            if (filter != null)
+            {
+                DimensionId dimensionId = Player.getDimensionId();
+                World world = getModule(WorldCacheModule.class).getDimensionWorld(dimensionId);
+                if (world == null)
+                {
+                    LOGGER.error("Trying to run keystone tool when there is no loaded world for dimension '" + dimensionId.getDimensionType().getRegistryName() + "'!");
+                    return;
+                }
+
+                SelectionBox[] selectionBoxes = getModule(SelectionModule.class).buildSelectionBoxes(world);
+                FilterBox[] boxes = new FilterBox[selectionBoxes.length];
+                for (int i = 0; i < boxes.length; i++) boxes[i] = new FilterBox(world, selectionBoxes[i], filter);
+
+                Set<BlockPos> processedBlocks = new HashSet<>();
+                for (FilterBox box : boxes)
+                {
+                    filter.processBox(box);
+                    if (abortFilter != null)
+                    {
+                        Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
+                        return;
+                    }
+
+                    box.forEachBlock((x, y, z) ->
+                    {
+                        BlockPos pos = new BlockPos(x, y, z);
+                        if (!filter.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
+                        {
+                            filter.processBlock(x, y, z, box);
+                            processedBlocks.add(pos);
+                        }
+
+                        if (abortFilter != null)
+                        {
+                            Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
+                            return;
+                        }
+                    });
+                }
+
+                if (abortFilter != null)
+                {
+                    Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
+                    return;
+                }
+
+                IHistoryEntry toolHistoryEntry = new FilterHistoryEntry(world, boxes);
+                getModule(HistoryModule.class).pushToHistory(toolHistoryEntry);
+                toolHistoryEntry.redo();
+            }
+        });
     }
     public static void abortFilter(String reason)
     {
@@ -196,10 +207,19 @@ public class Keystone
     //region Event Handling
     public static final void init()
     {
+        MinecraftForge.EVENT_BUS.addListener(Keystone::onWorldTick);
         MinecraftForge.EVENT_BUS.addListener(Keystone::onPlayerTick);
         MinecraftForge.EVENT_BUS.addListener(Keystone::onRightClickBlock);
     }
 
+    private static final void onWorldTick(final TickEvent.WorldTickEvent event)
+    {
+        if (Keystone.isActive() && event.phase == TickEvent.Phase.START)
+        {
+            for (Runnable runnable : runOnMainThread) runnable.run();
+            runOnMainThread.clear();
+        }
+    }
     private static final void onPlayerTick(final TickEvent.PlayerTickEvent event)
     {
         ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
