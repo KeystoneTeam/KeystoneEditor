@@ -2,6 +2,7 @@ package keystone.core.mixins;
 
 import keystone.api.Keystone;
 import keystone.core.KeystoneConfig;
+import keystone.gui.KeystoneOverlayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;

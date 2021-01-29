@@ -4,5 +4,13 @@
   "key.delete_blocks": "Delete Selection",
   "key.fill_blocks": "Fill Selection",
 
-  "key.categories.keystone": "Keystone"
+  "key.categories.keystone": "Keystone",
+
+  "keystone.hotbar.selection": "Selection",
+  "keystone.hotbar.brush": "Brush",
+  "keystone.hotbar.clone": "Clone",
+  "keystone.hotbar.fill": "Fill",
+  "keystone.hotbar.filter": "Filter",
+  "keystone.hotbar.import": "Import",
+  "keystone.hotbar.spawn": "Spawn"
 }

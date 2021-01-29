@@ -7,7 +7,7 @@ public class FilterImports
 {
     private static List<String> imports;
 
-    public static void rebuildPackageList()
+    private static void rebuildPackageList()
     {
         scanPackagesIntoTree(
                 Package.getPackage("keystone.api"),

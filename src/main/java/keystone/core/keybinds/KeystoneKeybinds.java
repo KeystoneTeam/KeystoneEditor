@@ -1,11 +1,15 @@
-package keystone.core;
+package keystone.core.keybinds;
 
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
+import keystone.core.KeystoneMod;
 import keystone.modules.selection.SelectionModule;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.GameSettings;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -21,10 +25,32 @@ public class KeystoneKeybinds
 
     public static void register()
     {
+        Minecraft mc = Minecraft.getInstance();
+        IKeyConflictContext notGuiBlocking = KeystoneKeyConflictContext.NOT_GUI_BLOCKING;
+
+        TOGGLE_KEYSTONE.setKeyConflictContext(notGuiBlocking);
+        CLEAR_SELECTIONS.setKeyConflictContext(notGuiBlocking);
+        DELETE_BLOCKS.setKeyConflictContext(notGuiBlocking);
+        FILTER_TEST.setKeyConflictContext(notGuiBlocking);
+
         ClientRegistry.registerKeyBinding(TOGGLE_KEYSTONE);
         ClientRegistry.registerKeyBinding(CLEAR_SELECTIONS);
         ClientRegistry.registerKeyBinding(DELETE_BLOCKS);
         ClientRegistry.registerKeyBinding(FILTER_TEST);
+
+        mc.gameSettings.keyBindForward.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindLeft.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindBack.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindRight.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindJump.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindSneak.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindSprint.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindAttack.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindChat.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindPlayerList.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindCommand.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindTogglePerspective.setKeyConflictContext(notGuiBlocking);
+        mc.gameSettings.keyBindSmoothCamera.setKeyConflictContext(notGuiBlocking);
     }
 
     @SubscribeEvent

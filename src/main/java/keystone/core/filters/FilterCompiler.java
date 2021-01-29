@@ -25,14 +25,7 @@ public class FilterCompiler
     }
     public static File[] getInstalledFilters()
     {
-        return getFilterDirectory().listFiles(new FilenameFilter()
-        {
-            @Override
-            public boolean accept(File dir, String name)
-            {
-                return name.endsWith(".java") || name.endsWith(".filter");
-            }
-        });
+        return getFilterDirectory().listFiles((dir, name) -> name.endsWith(".java") || name.endsWith(".filter"));
     }
     public static KeystoneFilter compileFilter(String filterPath)
     {

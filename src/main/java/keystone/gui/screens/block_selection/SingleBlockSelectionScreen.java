@@ -1,6 +1,6 @@
 package keystone.gui.screens.block_selection;
 
-import keystone.gui.screens.types.AbstractBlockSelectionScreen;
+import keystone.gui.KeystoneOverlayHandler;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 
@@ -17,7 +17,8 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
     }
     public static void promptBlockStateChoice(Consumer<BlockState> callback)
     {
-        Minecraft.getInstance().displayGuiScreen(new SingleBlockSelectionScreen(callback));
+        //Minecraft.getInstance().displayGuiScreen(new SingleBlockSelectionScreen(callback));
+        KeystoneOverlayHandler.addOverlay(new SingleBlockSelectionScreen(callback));
     }
 
     @Override

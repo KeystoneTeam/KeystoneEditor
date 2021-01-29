@@ -1,7 +1,8 @@
-package keystone.gui.screens.types;
+package keystone.gui.screens.block_selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.KeystoneMod;
+import keystone.gui.KeystoneOverlayHandler;
 import keystone.gui.screens.block_selection.BlockSelectionButton;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -54,6 +55,12 @@ public abstract class AbstractBlockSelectionScreen extends Screen
 
     public IForgeRegistry<Item> getItemRegistry() { return itemRegistry; }
     public abstract void onBlockSelected(BlockState block);
+
+    @Override
+    public void closeScreen()
+    {
+        KeystoneOverlayHandler.removeOverlay(this);
+    }
 
     @Override
     protected void init()
