@@ -88,6 +88,7 @@ configurations {
 dependencies {
     minecraft 'net.minecraftforge:forge:1.16.4-35.1.4'
     shade "org.codehaus.janino:janino:2.7.8"
+    shade "org.reflections:reflections:0.9.12"
 }
 
 artifacts {

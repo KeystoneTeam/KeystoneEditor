@@ -1,13 +1,11 @@
 package keystone.gui.screens.hotbar;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import keystone.gui.KeystoneOverlayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
 
 import java.util.function.Supplier;
 

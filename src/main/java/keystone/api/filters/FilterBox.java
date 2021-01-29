@@ -2,7 +2,7 @@ package keystone.api.filters;
 
 import keystone.api.IBlockBox;
 import keystone.api.SelectionBox;
-import keystone.api.block.Block;
+import keystone.api.wrappers.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
@@ -19,10 +19,12 @@ public class FilterBox implements IBlockBox
     //endregion
 
     private SelectionBox selectionBox;
+    private KeystoneFilter filter;
 
-    public FilterBox(SelectionBox box)
+    public FilterBox(SelectionBox box, KeystoneFilter filter)
     {
         this.selectionBox = box;
+        this.filter = filter;
     }
 
     public BlockPos getMin() { return selectionBox.getMin(); }
@@ -35,6 +37,10 @@ public class FilterBox implements IBlockBox
         return new Block(selectionBox.getBlock(new BlockPos(x, y, z), getOriginalState));
     }
 
+    public boolean setBlock(int x, int y, int z, String block)
+    {
+        return setBlock(x, y, z, filter.block(block));
+    }
     public boolean setBlock(int x, int y, int z, Block block)
     {
         return selectionBox.setBlock(new BlockPos(x, y, z), block.getMinecraftBlock());

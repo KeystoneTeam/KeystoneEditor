@@ -1,9 +1,7 @@
-package keystone.api.block;
+package keystone.api.wrappers;
 
 import keystone.api.Keystone;
-import keystone.core.filters.FilterCache;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.SlabBlock;
 import net.minecraft.state.Property;
 
 public class Block
@@ -13,7 +11,6 @@ public class Block
     public Block(BlockState state)
     {
         this.state = state;
-        FilterCache.setBlock(this);
     }
 
     public <T extends Comparable<T>, V extends T> Block with(String property, V value)

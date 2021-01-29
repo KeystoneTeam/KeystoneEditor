@@ -6,7 +6,6 @@ import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.tools.interfaces.IKeystoneTool;
 import keystone.api.tools.interfaces.ISelectionBoxTool;
 import keystone.core.KeystoneConfig;
-import keystone.core.filters.FilterCache;
 import keystone.core.filters.FilterCompiler;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.DimensionId;
@@ -19,7 +18,11 @@ import keystone.modules.world_cache.WorldCacheModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -46,6 +49,7 @@ public class Keystone
     private static boolean enabled = KeystoneConfig.startActive;
     private static GameType previousGamemode;
     private static boolean revertGamemode;
+    private static ITextComponent abortFilter;
 
     public static void toggleKeystone()
     {
@@ -123,7 +127,15 @@ public class Keystone
     }
     public static void runFilter(String filterPath)
     {
+        abortFilter = null;
+
         KeystoneFilter filter = FilterCompiler.compileFilter(filterPath);
+        if (abortFilter != null)
+        {
+            Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
+            return;
+        }
+
         if (filter != null)
         {
             DimensionId dimensionId = Player.getDimensionId();
@@ -136,12 +148,18 @@ public class Keystone
 
             SelectionBox[] selectionBoxes = getModule(SelectionModule.class).buildSelectionBoxes(world);
             FilterBox[] boxes = new FilterBox[selectionBoxes.length];
-            for (int i = 0; i < boxes.length; i++) boxes[i] = new FilterBox(selectionBoxes[i]);
+            for (int i = 0; i < boxes.length; i++) boxes[i] = new FilterBox(selectionBoxes[i], filter);
 
             Set<BlockPos> processedBlocks = new HashSet<>();
             for (FilterBox box : boxes)
             {
                 filter.processBox(box);
+                if (abortFilter != null)
+                {
+                    Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
+                    return;
+                }
+
                 box.forEachBlock((x, y, z) ->
                 {
                     BlockPos pos = new BlockPos(x, y, z);
@@ -150,15 +168,29 @@ public class Keystone
                         filter.processBlock(x, y, z, box);
                         processedBlocks.add(pos);
                     }
+
+                    if (abortFilter != null)
+                    {
+                        Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
+                        return;
+                    }
                 });
+            }
+
+            if (abortFilter != null)
+            {
+                Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
+                return;
             }
 
             IHistoryEntry toolHistoryEntry = new WorldBlocksHistoryEntry(world, boxes);
             getModule(HistoryModule.class).pushToHistory(toolHistoryEntry);
             toolHistoryEntry.redo();
-
-            FilterCache.clear();
         }
+    }
+    public static void abortFilter(String reason)
+    {
+        abortFilter = new StringTextComponent(reason).mergeStyle(TextFormatting.RED);
     }
     //endregion
     //region Event Handling

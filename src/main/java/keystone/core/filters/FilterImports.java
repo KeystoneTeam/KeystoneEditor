@@ -1,42 +1,66 @@
 package keystone.core.filters;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
 
 public class FilterImports
 {
-    private static List<String> imports;
+    private static Map<String, List<String>> importMap;
 
     private static void rebuildPackageList()
     {
         scanPackagesIntoTree(
-                Package.getPackage("keystone.api"),
-                Package.getPackage("net.minecraft.state")
+                Package.getPackage("keystone.api")
         );
     }
     public static String addImportsToCode(String code)
     {
-        if (imports == null) rebuildPackageList();
+        if (importMap == null) rebuildPackageList();
 
         StringBuilder importsAdded = new StringBuilder();
-        for (String test : imports) if (!code.contains(test)) importsAdded.append(test + System.lineSeparator());
+        for (Map.Entry<String, List<String>> entry : importMap.entrySet())
+        {
+            if (code.contains(entry.getKey()))
+            {
+                for (String _import : entry.getValue())
+                {
+                    if (!code.contains(_import)) importsAdded.append(_import + System.lineSeparator());
+                }
+            }
+        }
         return importsAdded.toString() + System.lineSeparator() + code;
     }
 
     private static void scanPackagesIntoTree(Package... packages)
     {
-        imports = new ArrayList<>();
-        Package[] loadedPackages = Package.getPackages();
+        importMap = new HashMap<>();
+        List<Class<?>> denestBuffer = new ArrayList<>();
 
-        for (Package loadedPackage : loadedPackages)
+        for (Package loadedPackage : packages)
         {
-            for (Package test : packages)
+            Reflections reflections = new Reflections(loadedPackage.getName(), new SubTypesScanner(false));
+            Set<Class<?>> classes = reflections.getSubTypesOf(Object.class);
+            Set<Class<? extends Enum>> enumClasses = reflections.getSubTypesOf(Enum.class);
+            for (Class<? extends Enum> enumClass : enumClasses) if (!classes.contains(enumClass)) classes.add(enumClass);
+
+            for (Class<?> clazz : classes)
             {
-                if (loadedPackage.getName().startsWith(test.getName()))
+                if (!importMap.containsKey(clazz.getSimpleName())) importMap.put(clazz.getSimpleName(), new ArrayList<>());
+
+                denestBuffer.clear();
+                Class<?> current = clazz;
+                while (current != null)
                 {
-                    imports.add("import " + loadedPackage.getName() + ".*;");
-                    break;
+                    denestBuffer.add(current);
+                    current = current.getEnclosingClass();
                 }
+                StringBuffer denested = new StringBuffer();
+                for (int i = denestBuffer.size() - 1; i > 0; i--) denested.append(denestBuffer.get(i).getSimpleName() + ".");
+                denested.append(denestBuffer.get(0).getSimpleName());
+
+                importMap.get(clazz.getSimpleName()).add("import " + clazz.getPackage().getName() + "." + denested + ";");
             }
         }
     }
