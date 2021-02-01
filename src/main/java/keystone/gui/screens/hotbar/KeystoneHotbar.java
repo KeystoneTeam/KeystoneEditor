@@ -4,6 +4,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
 import keystone.gui.screens.block_selection.SingleBlockSelectionScreen;
+import keystone.gui.screens.filters.FilterSelectionScreen;
 import keystone.modules.paste.CloneModule;
 import keystone.modules.selection.SelectionModule;
 import net.minecraft.client.gui.screen.Screen;
@@ -18,8 +19,8 @@ public class KeystoneHotbar extends Screen
     private static KeystoneHotbarSlot selectedSlot;
     private static final ResourceLocation hotbarTexture = new ResourceLocation("keystone:textures/gui/hotbar.png");
 
-    private int offsetX;
-    private int offsetY;
+    private static int offsetX;
+    private static int offsetY;
     private HotbarButton[] hotbarButtons;
 
     public KeystoneHotbar()
@@ -53,6 +54,7 @@ public class KeystoneHotbar extends Screen
     private void filterPressed(Button button)
     {
         selectedSlot = KeystoneHotbarSlot.FILTER;
+        FilterSelectionScreen.openScreen();
     }
     private void importPressed(Button button)
     {
@@ -101,9 +103,21 @@ public class KeystoneHotbar extends Screen
         blit(stack, offsetX, offsetY, 142, 22, 0, 0, 142, 22, 256, 256);
 
         // Render slots
-        for (Widget button : this.buttons) button.render(stack, mouseX, mouseY, partialTicks);
+        boolean drawCurrentToolName = true;
+        for (Widget button : this.buttons)
+        {
+            button.render(stack, mouseX, mouseY, partialTicks);
+            if (button.isHovered()) drawCurrentToolName = false;
+        }
+
+        // Draw current tool name if no others are being drawn
+        //if (drawCurrentToolName) renderToolName(stack, selectedSlot.getTitle(), 0xFFFFFF);
 
         stack.pop();
+    }
+    public void renderToolName(MatrixStack stack, ITextComponent toolName, int color)
+    {
+        drawCenteredString(stack, font, toolName, offsetX + 71, offsetY - 10, color);
     }
 
     public static KeystoneHotbarSlot getSelectedSlot()
@@ -115,6 +129,8 @@ public class KeystoneHotbar extends Screen
     {
         selectedSlot = slot;
     }
+    public static int getX() { return offsetX; }
+    public static int getY() { return offsetY; }
     private int getSlotX(int slot)
     {
         return offsetX + (3 + slot * 20);

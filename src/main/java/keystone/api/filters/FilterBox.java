@@ -17,6 +17,7 @@ public class FilterBox
     //endregion
 
     private final KeystoneFilter filter;
+    private final World world;
     private final BlockPos min;
     private final BlockPos max;
     private final Vector3i size;
@@ -27,6 +28,7 @@ public class FilterBox
     public FilterBox(World world, SelectionBox box, KeystoneFilter filter)
     {
         this.filter = filter;
+        this.world = world;
         this.min = new BlockPos(box.getMin());
         this.max = new BlockPos(box.getMax());
         this.size = new Vector3i(box.getSize());
@@ -76,6 +78,14 @@ public class FilterBox
     public Block getBlock(int x, int y, int z) { return getBlock(x, y, z, true); }
     public Block getBlock(int x, int y, int z, boolean getOriginalState)
     {
+        if (x < min.getX() || x > max.getX() ||
+                y < min.getY() || y > max.getY() ||
+                z < min.getZ() || z > max.getZ())
+        {
+            net.minecraft.util.math.BlockPos pos = new net.minecraft.util.math.BlockPos(x, y, z);
+            return new Block(world.getBlockState(pos), world.getTileEntity(pos));
+        }
+
         int index = getBlockIndex(x, y, z);
         if (index < 0) return filter.air();
         else return getOriginalState ? oldBlocks[index] : newBlocks[index];

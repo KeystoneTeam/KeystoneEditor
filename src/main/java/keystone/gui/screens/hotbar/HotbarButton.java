@@ -31,7 +31,7 @@ public class HotbarButton extends Button
         super((int)(x * SCALE), (int)(y * SCALE), (int)(16 * SCALE), (int)(16 * SCALE), slot.getTitle(), pressedAction, (button, stack, mouseX, mouseY) ->
         {
             HotbarButton casted = (HotbarButton)button;
-            //casted.parent.renderToolName(stack, slot.getTitle());
+            casted.parent.renderToolName(stack, slot.getTitle(), 0xFFFF00);
         });
 
         this.unscaledX = x;
@@ -63,10 +63,9 @@ public class HotbarButton extends Button
         else colorSlot(stack, 0x80FF0000);
     }
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
-    {
-        return false;
-    }
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) { return false; }
+    @Override
+    public boolean isHovered() { return super.isHovered() && enabledSupplier.get(); }
 
     public KeystoneHotbarSlot getSlot() { return slot; }
 

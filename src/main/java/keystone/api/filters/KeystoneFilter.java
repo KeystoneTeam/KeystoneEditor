@@ -7,14 +7,19 @@ import keystone.api.wrappers.Block;
 import keystone.api.wrappers.Item;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.Minecraft;
 import net.minecraft.command.arguments.BlockStateParser;
 import net.minecraft.command.arguments.ItemParser;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.Util;
+import net.minecraft.util.text.StringTextComponent;
 
 public class KeystoneFilter
 {
     private final Block air;
+    private String name;
+    private boolean compiledSuccessfully;
 
     public KeystoneFilter()
     {
@@ -26,12 +31,18 @@ public class KeystoneFilter
     public void processBlock(int x, int y, int z, FilterBox box)  {}
 
     //region API
-    protected void abort(String reason)
+    public final String getName() { return name; }
+    public final KeystoneFilter setName(String name) { this.name = name; return this; }
+    public final boolean isCompiledSuccessfully() { return compiledSuccessfully; }
+    public final KeystoneFilter compiledSuccessfully() { this.compiledSuccessfully = true; return this; }
+
+    protected final void print(Object message) { Minecraft.getInstance().player.sendMessage(new StringTextComponent(message.toString()), Util.DUMMY_UUID); }
+    protected final void abort(String reason)
     {
         Keystone.abortFilter(reason);
     }
 
-    protected Block block(String block)
+    protected final Block block(String block)
     {
         BlockState state = Blocks.RED_STAINED_GLASS.getDefaultState();
         CompoundNBT tileEntity = null;
@@ -49,7 +60,7 @@ public class KeystoneFilter
 
         return new Block(state, tileEntity);
     }
-    protected Item item(String item)
+    protected final Item item(String item)
     {
         ItemStack stack = ItemStack.EMPTY;
 
@@ -66,6 +77,6 @@ public class KeystoneFilter
         return new Item(stack);
     }
 
-    protected Block air() { return air; }
+    protected final Block air() { return air; }
     //endregion
 }

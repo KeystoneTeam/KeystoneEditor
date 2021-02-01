@@ -135,18 +135,23 @@ public class Keystone
     }
     public static void runFilter(String filterPath)
     {
+        abortFilter = null;
+
+        KeystoneFilter filter = FilterCompiler.compileFilter(filterPath);
+        if (abortFilter != null)
+        {
+            Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
+            return;
+        }
+        else runFilter(filter);
+    }
+    public static void runFilter(KeystoneFilter filter)
+    {
         runOnMainThread(() ->
         {
             abortFilter = null;
 
-            KeystoneFilter filter = FilterCompiler.compileFilter(filterPath);
-            if (abortFilter != null)
-            {
-                Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
-                return;
-            }
-
-            if (filter != null)
+            if (filter.isCompiledSuccessfully())
             {
                 DimensionId dimensionId = Player.getDimensionId();
                 World world = getModule(WorldCacheModule.class).getDimensionWorld(dimensionId);

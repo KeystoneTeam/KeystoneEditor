@@ -15,6 +15,7 @@ import net.minecraft.tileentity.TileEntity;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 public class Block
 {
@@ -123,4 +124,26 @@ public class Block
     public boolean isAir() { return this.state.isAir(); }
     public BlockState getMinecraftBlock() { return state; }
     public CompoundNBT getTileEntityData() { return tileEntity; }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Block block = (Block) o;
+        return state.equals(block.state) &&
+                Objects.equals(tileEntity, block.tileEntity);
+    }
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(state, tileEntity);
+    }
+
+    @Override
+    public String toString()
+    {
+        if (this.tileEntity == null) return this.state.toString();
+        else return this.state.toString() + this.tileEntity.toString();
+    }
 }

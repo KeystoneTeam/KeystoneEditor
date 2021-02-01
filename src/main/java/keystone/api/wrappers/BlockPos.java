@@ -15,4 +15,10 @@ public class BlockPos
     public int getZ() { return pos.getZ(); }
 
     public net.minecraft.util.math.BlockPos getMinecraftBlockPos() { return pos; }
+
+    @Override
+    public String toString()
+    {
+        return this.pos.toString();
+    }
 }

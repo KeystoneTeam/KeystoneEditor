@@ -12,5 +12,8 @@
   "keystone.hotbar.fill": "Fill",
   "keystone.hotbar.filter": "Filter",
   "keystone.hotbar.import": "Import",
-  "keystone.hotbar.spawn": "Spawn"
+  "keystone.hotbar.spawn": "Spawn",
+
+  "keystone.filter_panel.select": "Filter: ",
+  "keystone.filter_panel.runFilter": "Filter"
 }
