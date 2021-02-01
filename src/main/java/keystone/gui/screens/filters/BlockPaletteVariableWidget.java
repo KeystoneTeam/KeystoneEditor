@@ -30,12 +30,13 @@ public class BlockPaletteVariableWidget extends Button
     private final FilterVariable variable;
     private final Field field;
     private final String name;
+
     private final BlockPalette palette;
 
     private final IForgeRegistry<Item> itemRegistry;
     private final List<ItemStack> stacks;
 
-    public BlockPaletteVariableWidget(FilterSelectionScreen parent, FilterVariable variable, Field field, String name, int x, int y, int width, BlockPalette palette)
+    public BlockPaletteVariableWidget(FilterSelectionScreen parent, FilterVariable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(x, y, width, getHeight(), new StringTextComponent(name), (button) ->
         {
@@ -68,7 +69,7 @@ public class BlockPaletteVariableWidget extends Button
         this.variable = variable;
         this.field = field;
         this.name = name;
-        this.palette = palette;
+        this.palette = (BlockPalette)field.get(parent.getFilterInstance());
 
         this.itemRegistry = GameRegistry.findRegistry(Item.class);
         this.stacks = new ArrayList<>();

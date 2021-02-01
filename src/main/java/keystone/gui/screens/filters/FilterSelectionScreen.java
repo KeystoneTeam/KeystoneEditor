@@ -3,6 +3,7 @@ package keystone.gui.screens.filters;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.filters.FilterVariable;
+import keystone.api.filters.IntRange;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.utils.StringUtils;
 import keystone.api.wrappers.BlockPalette;
@@ -11,9 +12,11 @@ import keystone.gui.KeystoneOverlayHandler;
 import keystone.gui.screens.hotbar.HotbarButton;
 import keystone.gui.screens.hotbar.KeystoneHotbar;
 import keystone.gui.screens.hotbar.KeystoneHotbarSlot;
+import keystone.gui.widgets.ButtonNoHotkey;
 import keystone.gui.widgets.Dropdown;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.Util;
@@ -58,20 +61,6 @@ public class FilterSelectionScreen extends Screen
         }
     }
 
-    private void recreateFilterInstance()
-    {
-        if (selectedFilter == null) this.filterInstance = null;
-        else
-        {
-            try
-            {
-                this.filterInstance = selectedFilter.getClass().newInstance().setName(selectedFilter.getName());
-                if (selectedFilter.isCompiledSuccessfully()) this.filterInstance.compiledSuccessfully();
-            }
-            catch (InstantiationException | IllegalAccessException e) { e.printStackTrace(); }
-        }
-    }
-
     //region Screen Overrides
     @Override
     public void closeScreen()
@@ -111,7 +100,7 @@ public class FilterSelectionScreen extends Screen
 
         // Select Filter Button
         int selectButtonX = 5 + this.font.getStringWidth(new TranslationTextComponent("keystone.filter_panel.select").getString());
-        this.selectFilterButton = new Button(selectButtonX, panelMinY + 5, panelMaxX - selectButtonX - 5, 20, new StringTextComponent("!ERROR!"), (button) ->
+        this.selectFilterButton = new ButtonNoHotkey(selectButtonX, panelMinY + 5, panelMaxX - selectButtonX - 5, 20, new StringTextComponent("!ERROR!"), (button) ->
         {
             disableWidgets();
             this.dropdown.active = true;
@@ -141,8 +130,7 @@ public class FilterSelectionScreen extends Screen
         // Run Filter Button
         int buttonWidth = font.getStringWidth(new TranslationTextComponent("keystone.filter_panel.runFilter").getString()) + 10;
         int panelCenter = panelMaxX / 2;
-        Button runFilterButton = new Button(panelCenter - buttonWidth / 2, panelMaxY - 25, buttonWidth, 20, new TranslationTextComponent("keystone.filter_panel.runFilter"),
-                (button) -> Keystone.runFilter(this.filterInstance));
+        ButtonNoHotkey runFilterButton = new ButtonNoHotkey(panelCenter - buttonWidth / 2, panelMaxY - 25, buttonWidth, 20, new TranslationTextComponent("keystone.filter_panel.runFilter"), button -> runFilter());
 
         // Add buttons
         this.selectFilterButton.setMessage(this.dropdown.getSelectedEntryTitle());
@@ -169,20 +157,45 @@ public class FilterSelectionScreen extends Screen
     public void tick()
     {
         if (KeystoneHotbar.getSelectedSlot() != KeystoneHotbarSlot.FILTER) closeScreen();
+        else for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).tick();
     }
     //endregion
     //region Filter Variables
     private void updateTotalVariableHeight(Class<?> type)
     {
-        if (BlockPalette.class.isAssignableFrom(type)) totalVariableHeight += BlockPaletteVariableWidget.getHeight();
+        if (type == BlockPalette.class) totalVariableHeight += BlockPaletteVariableWidget.getHeight();
+        else if (type == float.class) totalVariableHeight += AbstractTextVariableWidget.getHeight();
+        else if (type == int.class) totalVariableHeight += AbstractTextVariableWidget.getHeight();
+        else if (type == String.class) totalVariableHeight += AbstractTextVariableWidget.getHeight();
     }
     private int createVariableEditor(Class<?> type, Field field, FilterVariable variable, String variableName, int y) throws IllegalAccessException
     {
         //region Block Palette
-        if (BlockPalette.class.isAssignableFrom(type))
+        if (type == BlockPalette.class)
         {
-            addButton(new BlockPaletteVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10, (BlockPalette)field.get(filterInstance)));
+            addButton(new BlockPaletteVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
             return BlockPaletteVariableWidget.getHeight();
+        }
+        //endregion
+        //region Float
+        else if (type == float.class)
+        {
+            addButton(new FloatVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
+            return AbstractTextVariableWidget.getHeight();
+        }
+        //endregion
+        //region Integer
+        else if (type == int.class)
+        {
+            addButton(new IntegerVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
+            return AbstractTextVariableWidget.getHeight();
+        }
+        //endregion
+        //region String
+        else if (type == String.class)
+        {
+            addButton(new StringVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
+            return AbstractTextVariableWidget.getHeight();
         }
         //endregion
 
@@ -214,7 +227,7 @@ public class FilterSelectionScreen extends Screen
             FilterVariable filterVariable = field.getAnnotation(FilterVariable.class);
             if (filterVariable == null) continue;
 
-            String variableName = filterVariable.name().trim().isEmpty() ? StringUtils.addSpacesToSentence(StringUtils.titleCase(field.getName().trim())) : filterVariable.name().trim();
+            String variableName = filterVariable.value().trim().isEmpty() ? StringUtils.addSpacesToSentence(StringUtils.titleCase(field.getName().trim())) : filterVariable.value().trim();
             try
             {
                 field.setAccessible(true);
@@ -242,7 +255,7 @@ public class FilterSelectionScreen extends Screen
             FilterVariable filterVariable = field.getAnnotation(FilterVariable.class);
             if (filterVariable == null) continue;
 
-            String variableName = filterVariable.name().trim().isEmpty() ? StringUtils.addSpacesToSentence(StringUtils.titleCase(field.getName().trim())) : filterVariable.name().trim();
+            String variableName = filterVariable.value().trim().isEmpty() ? StringUtils.addSpacesToSentence(StringUtils.titleCase(field.getName().trim())) : filterVariable.value().trim();
             try
             {
                 field.setAccessible(true);
@@ -267,5 +280,32 @@ public class FilterSelectionScreen extends Screen
     //endregion
     //region Getters
     public KeystoneFilter getFilterInstance() { return filterInstance; }
+    //endregion
+    //region Helpers
+    private void recreateFilterInstance()
+    {
+        if (selectedFilter == null) this.filterInstance = null;
+        else
+        {
+            try
+            {
+                this.filterInstance = selectedFilter.getClass().newInstance().setName(selectedFilter.getName());
+                if (selectedFilter.isCompiledSuccessfully()) this.filterInstance.compiledSuccessfully();
+            }
+            catch (InstantiationException | IllegalAccessException e) { e.printStackTrace(); }
+        }
+    }
+    private void runFilter()
+    {
+        for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).setFocused2(false);
+
+        if (this.filterInstance != null) Keystone.runFilter(this.filterInstance);
+        else
+        {
+            String error = "Could not create instance of filter '" + this.selectedFilter.getName() + "'!";
+            Keystone.LOGGER.error(error);
+            minecraft.player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+        }
+    }
     //endregion
 }

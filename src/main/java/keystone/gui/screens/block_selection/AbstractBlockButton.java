@@ -2,6 +2,7 @@ package keystone.gui.screens.block_selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
+import keystone.gui.widgets.ButtonNoHotkey;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
@@ -20,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractBlockButton extends Button
+public abstract class AbstractBlockButton extends ButtonNoHotkey
 {
     protected final Minecraft mc;
     protected final FontRenderer fontRenderer;
