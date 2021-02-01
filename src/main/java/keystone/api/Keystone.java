@@ -38,6 +38,7 @@ import java.util.function.Consumer;
 public class Keystone
 {
     public static final Logger LOGGER = LogManager.getLogger();
+    public static final Random RANDOM = new Random();
 
     //region Active Toggle
     public static boolean CloseSelection = false;

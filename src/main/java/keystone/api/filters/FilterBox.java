@@ -3,6 +3,7 @@ package keystone.api.filters;
 import keystone.api.Keystone;
 import keystone.api.SelectionBox;
 import keystone.api.wrappers.Block;
+import keystone.api.wrappers.BlockPalette;
 import keystone.api.wrappers.BlockPos;
 import keystone.api.wrappers.Vector3i;
 import net.minecraft.world.World;
@@ -95,6 +96,7 @@ public class FilterBox
     {
         return setBlock(x, y, z, filter.block(block));
     }
+    public boolean setBlock(int x, int y, int z, BlockPalette palette) { return setBlock(x, y, z, palette.randomBlock()); }
     public boolean setBlock(int x, int y, int z, Block block)
     {
         int index = getBlockIndex(x, y, z);

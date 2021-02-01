@@ -1,5 +1,6 @@
 package keystone.gui.screens.block_selection;
 
+import keystone.core.utils.BlockUtils;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -16,7 +17,7 @@ public class BlockSelectionButton extends AbstractBlockButton
     }
     public static BlockSelectionButton create(AbstractBlockSelectionScreen parent, Block block, int x, int y)
     {
-        Item item = AbstractBlockButton.getBlockItem(block, parent.getItemRegistry());
+        Item item = BlockUtils.getBlockItem(block, parent.getItemRegistry());
         if (item == null) return null;
         else return new BlockSelectionButton(parent, new ItemStack(item), block, x, y);
     }

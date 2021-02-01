@@ -22,14 +22,6 @@ import java.util.Map;
 
 public abstract class AbstractBlockButton extends Button
 {
-    private static final Map<String, String> blockToItemMap = new HashMap<>();
-    static
-    {
-        blockToItemMap.put("minecraft:air", "minecraft:barrier");
-        blockToItemMap.put("minecraft:water", "minecraft:water_bucket");
-        blockToItemMap.put("minecraft:lava", "minecraft:lava_bucket");
-    }
-
     protected final Minecraft mc;
     protected final FontRenderer fontRenderer;
     protected final ItemStack itemStack;
@@ -50,18 +42,6 @@ public abstract class AbstractBlockButton extends Button
         this.fontRenderer = mc.fontRenderer;
         this.itemStack = itemStack;
         this.block = block;
-    }
-    protected static Item getBlockItem(Block block, IForgeRegistry<Item> itemRegistry)
-    {
-        Item item = block.asItem();
-        if (blockToItemMap.containsKey(block.getRegistryName().toString())) item = itemRegistry.getValue(new ResourceLocation(blockToItemMap.get(block.getRegistryName().toString())));
-
-        if (item == null || item == Items.AIR)
-        {
-            if (AbstractBlockSelectionScreen.DEBUG_LOG) Keystone.LOGGER.info("No item for block " + block.getRegistryName().toString());
-            return null;
-        }
-        else return item;
     }
 
     protected abstract void onClicked();

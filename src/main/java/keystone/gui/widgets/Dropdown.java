@@ -80,4 +80,18 @@ public class Dropdown<T> extends Widget
 
     public T getSelectedEntry() { return selectedEntry; }
     public ITextComponent getSelectedEntryTitle() { return selectedEntryTitle; }
+
+    public void setSelectedEntry(T entry, boolean raiseEvent)
+    {
+        for (int i = 0; i < entries.length; i++)
+        {
+            if (entries[i] == entry)
+            {
+                visible = false;
+                selectedEntry = entries[i];
+                selectedEntryTitle = entryTitles[i];
+                if (raiseEvent) onSelectedEntryChanged.accept(selectedEntry, selectedEntryTitle);
+            }
+        }
+    }
 }

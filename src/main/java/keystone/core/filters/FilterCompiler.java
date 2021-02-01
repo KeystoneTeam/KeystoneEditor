@@ -1,6 +1,7 @@
 package keystone.core.filters;
 
 import keystone.api.Keystone;
+import keystone.api.filters.FilterVariable;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.KeystoneConfig;
 import net.minecraft.client.Minecraft;

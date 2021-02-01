@@ -5,32 +5,45 @@ import keystone.api.Keystone;
 import keystone.api.filters.FilterVariable;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.utils.StringUtils;
+import keystone.api.wrappers.BlockPalette;
 import keystone.core.filters.FilterCompiler;
 import keystone.gui.KeystoneOverlayHandler;
 import keystone.gui.screens.hotbar.HotbarButton;
 import keystone.gui.screens.hotbar.KeystoneHotbar;
 import keystone.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.gui.widgets.Dropdown;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import java.io.File;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FilterSelectionScreen extends Screen
 {
+    private static final int PADDING = 5;
     private static boolean open;
 
     private int panelMinY;
     private int panelMaxX;
     private int panelMaxY;
+    private int totalVariableHeight;
+
+    private KeystoneFilter[] compiledFilters;
+    private boolean restoreWidgets = false;
+    private Map<Widget, Boolean> widgetsActive = new HashMap<>();
 
     private Button selectFilterButton;
     private Dropdown<KeystoneFilter> dropdown;
+    private KeystoneFilter selectedFilter;
+    private KeystoneFilter filterInstance;
 
     protected FilterSelectionScreen()
     {
@@ -45,6 +58,21 @@ public class FilterSelectionScreen extends Screen
         }
     }
 
+    private void recreateFilterInstance()
+    {
+        if (selectedFilter == null) this.filterInstance = null;
+        else
+        {
+            try
+            {
+                this.filterInstance = selectedFilter.getClass().newInstance().setName(selectedFilter.getName());
+                if (selectedFilter.isCompiledSuccessfully()) this.filterInstance.compiledSuccessfully();
+            }
+            catch (InstantiationException | IllegalAccessException e) { e.printStackTrace(); }
+        }
+    }
+
+    //region Screen Overrides
     @Override
     public void closeScreen()
     {
@@ -54,28 +82,45 @@ public class FilterSelectionScreen extends Screen
     public void onClose()
     {
         open = false;
+        compiledFilters = null;
     }
-
     @Override
     public void init()
     {
-        panelMinY = 37;
+        // Compile filters
+        if (compiledFilters == null)
+        {
+            File[] filterFiles = FilterCompiler.getInstalledFilters();
+            compiledFilters = new KeystoneFilter[filterFiles.length];
+            for (int i = 0; i < filterFiles.length; i++) compiledFilters[i] = FilterCompiler.compileFilter(filterFiles[i].getPath());
+        }
+
+        // Calculate panel size
+        if (this.filterInstance == null)
+        {
+            this.selectedFilter = compiledFilters[0];
+            recreateFilterInstance();
+        }
+        recalculateVariablesHeight();
+
+        int centerHeight = height / 2;
+        int halfPanelHeight = 25 + PADDING + totalVariableHeight / 2;
+        panelMinY = centerHeight - halfPanelHeight;
         panelMaxX = (int)Math.floor(KeystoneHotbar.getX() * HotbarButton.SCALE) - 5;
-        panelMaxY = (int)Math.floor(KeystoneHotbar.getY() * HotbarButton.SCALE) - 5;
+        panelMaxY = centerHeight + halfPanelHeight;
 
         // Select Filter Button
-        int selectButtonX = 1 + this.font.getStringWidth(new TranslationTextComponent("keystone.filter_panel.select").getString());
-        this.selectFilterButton = new Button(selectButtonX, panelMinY + 1, panelMaxX - selectButtonX - 1, 20, new StringTextComponent("!ERROR!"), (button) ->
+        int selectButtonX = 5 + this.font.getStringWidth(new TranslationTextComponent("keystone.filter_panel.select").getString());
+        this.selectFilterButton = new Button(selectButtonX, panelMinY + 5, panelMaxX - selectButtonX - 5, 20, new StringTextComponent("!ERROR!"), (button) ->
         {
-            button.active = false;
+            disableWidgets();
+            this.dropdown.active = true;
+            this.widgetsActive.put(this.dropdown, true);
+
             this.dropdown.visible = true;
         });
 
         // Filter selection dropdown
-        File[] filterFiles = FilterCompiler.getInstalledFilters();
-        KeystoneFilter[] filters = new KeystoneFilter[filterFiles.length];
-        for (int i = 0; i < filterFiles.length; i++) filters[i] = FilterCompiler.compileFilter(filterFiles[i].getPath());
-
         this.dropdown = new Dropdown<>(selectFilterButton.x, selectFilterButton.y, selectFilterButton.getWidth(), panelMaxY - panelMinY, new TranslationTextComponent("keystone.tool.filter.dropdown"),
                 filter ->
                 {
@@ -84,45 +129,40 @@ public class FilterSelectionScreen extends Screen
                 },
                 (filter, title) ->
                 {
-                    this.selectFilterButton.active = true;
+                    restoreWidgets();
+                    this.selectedFilter = filter;
                     this.selectFilterButton.setMessage(title);
-                    this.rebuildFilterVariables();
-                }, filters);
+                    recreateFilterInstance();
+
+                    this.init(minecraft, width, height);
+                }, compiledFilters);
+        if (this.selectedFilter != null) this.dropdown.setSelectedEntry(this.selectedFilter, false);
 
         // Run Filter Button
         int buttonWidth = font.getStringWidth(new TranslationTextComponent("keystone.filter_panel.runFilter").getString()) + 10;
         int panelCenter = panelMaxX / 2;
-        Button runFilterButton = new Button(panelCenter - buttonWidth / 2, panelMaxY - 21, buttonWidth, 20, new TranslationTextComponent("keystone.filter_panel.runFilter"),
-                (button) -> Keystone.runFilter(this.dropdown.getSelectedEntry()));
+        Button runFilterButton = new Button(panelCenter - buttonWidth / 2, panelMaxY - 25, buttonWidth, 20, new TranslationTextComponent("keystone.filter_panel.runFilter"),
+                (button) -> Keystone.runFilter(this.filterInstance));
 
-        // Add event listeners
+        // Add buttons
         this.selectFilterButton.setMessage(this.dropdown.getSelectedEntryTitle());
         addButton(selectFilterButton);
         addButton(runFilterButton);
         addButton(dropdown);
+        rebuildFilterVariables();
     }
-    private void rebuildFilterVariables()
-    {
-        KeystoneFilter filter = this.dropdown.getSelectedEntry();
-        Field[] fields = filter.getClass().getDeclaredFields();
-        for (Field field : fields)
-        {
-            Annotation[] annotations = field.getAnnotations();
-            FilterVariable filterVariable = field.getAnnotation(FilterVariable.class);
-            if (filterVariable != null)
-            {
-                String variableName = filterVariable.name() != "" ? filterVariable.name() : StringUtils.addSpacesToSentence(StringUtils.titleCase(field.getName()));
-                Keystone.LOGGER.info(variableName);
-            }
-        }
-    }
-
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
+        if (restoreWidgets)
+        {
+            for (Map.Entry<Widget, Boolean> entry : widgetsActive.entrySet()) entry.getKey().active = entry.getValue();
+            restoreWidgets = false;
+        }
+
         fill(stack, 0, panelMinY, panelMaxX, panelMaxY, 0x80000000);
 
-        drawString(stack, font, new TranslationTextComponent("keystone.filter_panel.select"), 1, panelMinY + 6, 0x8080FF);
+        drawString(stack, font, new TranslationTextComponent("keystone.filter_panel.select"), 5, panelMinY + 11, 0x8080FF);
         super.render(stack, mouseX, mouseY, partialTicks);
     }
     @Override
@@ -130,4 +170,102 @@ public class FilterSelectionScreen extends Screen
     {
         if (KeystoneHotbar.getSelectedSlot() != KeystoneHotbarSlot.FILTER) closeScreen();
     }
+    //endregion
+    //region Filter Variables
+    private void updateTotalVariableHeight(Class<?> type)
+    {
+        if (BlockPalette.class.isAssignableFrom(type)) totalVariableHeight += BlockPaletteVariableWidget.getHeight();
+    }
+    private int createVariableEditor(Class<?> type, Field field, FilterVariable variable, String variableName, int y) throws IllegalAccessException
+    {
+        //region Block Palette
+        if (BlockPalette.class.isAssignableFrom(type))
+        {
+            addButton(new BlockPaletteVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10, (BlockPalette)field.get(filterInstance)));
+            return BlockPaletteVariableWidget.getHeight();
+        }
+        //endregion
+
+        return 0;
+    }
+    //endregion
+    //region Widgets
+    public void disableWidgets()
+    {
+        this.widgetsActive.clear();
+        for (Widget widget : this.buttons)
+        {
+            widgetsActive.put(widget, widget.active);
+            widget.active = false;
+        }
+    }
+    public void restoreWidgets()
+    {
+        this.restoreWidgets = true;
+    }
+    private void recalculateVariablesHeight()
+    {
+        totalVariableHeight = 0;
+        if (filterInstance == null) return;
+
+        Field[] fields = filterInstance.getClass().getDeclaredFields();
+        for (Field field : fields)
+        {
+            FilterVariable filterVariable = field.getAnnotation(FilterVariable.class);
+            if (filterVariable == null) continue;
+
+            String variableName = filterVariable.name().trim().isEmpty() ? StringUtils.addSpacesToSentence(StringUtils.titleCase(field.getName().trim())) : filterVariable.name().trim();
+            try
+            {
+                field.setAccessible(true);
+                updateTotalVariableHeight(field.getType());
+                totalVariableHeight += PADDING;
+            }
+            catch (SecurityException e)
+            {
+                String error = "Could not create editor for BlockPalette variable '" + variableName + "'!";
+                Keystone.LOGGER.error(error);
+                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+                e.printStackTrace();
+            }
+        }
+        if (totalVariableHeight > 0) totalVariableHeight -= PADDING;
+    }
+    private void rebuildFilterVariables()
+    {
+        if (filterInstance == null) return;
+
+        Field[] fields = filterInstance.getClass().getDeclaredFields();
+        int y = panelMinY + ((panelMaxY - panelMinY) / 2) - (totalVariableHeight / 2);
+        for (Field field : fields)
+        {
+            FilterVariable filterVariable = field.getAnnotation(FilterVariable.class);
+            if (filterVariable == null) continue;
+
+            String variableName = filterVariable.name().trim().isEmpty() ? StringUtils.addSpacesToSentence(StringUtils.titleCase(field.getName().trim())) : filterVariable.name().trim();
+            try
+            {
+                field.setAccessible(true);
+                y += createVariableEditor(field.getType(), field, filterVariable, variableName, y) + PADDING;
+            }
+            catch (SecurityException e)
+            {
+                String error = "Could not create editor for BlockPalette variable '" + variableName + "'!";
+                Keystone.LOGGER.error(error);
+                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+                e.printStackTrace();
+            }
+            catch (IllegalAccessException e)
+            {
+                String error = "Could not access BlockPalette variable '" + variableName + "'!";
+                Keystone.LOGGER.error(error);
+                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+                e.printStackTrace();
+            }
+        }
+    }
+    //endregion
+    //region Getters
+    public KeystoneFilter getFilterInstance() { return filterInstance; }
+    //endregion
 }

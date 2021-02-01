@@ -17,14 +17,10 @@ import net.minecraft.util.text.StringTextComponent;
 
 public class KeystoneFilter
 {
-    private final Block air;
+    private static final Block air = new Block(Blocks.AIR.getDefaultState());
+
     private String name;
     private boolean compiledSuccessfully;
-
-    public KeystoneFilter()
-    {
-        this.air = new Block(Blocks.AIR.getDefaultState());
-    }
 
     public boolean ignoreRepeatBlocks() { return true; }
     public void processBox(FilterBox box) {}
@@ -42,7 +38,7 @@ public class KeystoneFilter
         Keystone.abortFilter(reason);
     }
 
-    protected final Block block(String block)
+    public static final Block block(String block)
     {
         BlockState state = Blocks.RED_STAINED_GLASS.getDefaultState();
         CompoundNBT tileEntity = null;
@@ -60,7 +56,7 @@ public class KeystoneFilter
 
         return new Block(state, tileEntity);
     }
-    protected final Item item(String item)
+    public static final Item item(String item)
     {
         ItemStack stack = ItemStack.EMPTY;
 
@@ -77,6 +73,6 @@ public class KeystoneFilter
         return new Item(stack);
     }
 
-    protected final Block air() { return air; }
+    public static final Block air() { return air; }
     //endregion
 }
