@@ -9,6 +9,7 @@ import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.janino.CompilerFactory;
 import org.codehaus.janino.JavaSourceClassLoader;
 import org.codehaus.janino.Scanner;
@@ -103,7 +104,7 @@ public class FilterCompiler
                     return new KeystoneFilter().setName(getFilterName(filterFile, false));
                 }
             }
-            catch (CompileException e)
+            catch (CompileException | InternalCompilerException e)
             {
                 String error = "Unable to compile filter '" + oldClassName + "': " + e.getMessage();
                 Keystone.LOGGER.error(error);
@@ -111,7 +112,6 @@ public class FilterCompiler
                 Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
                 return new KeystoneFilter().setName(getFilterName(filterFile, false));
             }
-
         }
         catch (FileNotFoundException e)
         {

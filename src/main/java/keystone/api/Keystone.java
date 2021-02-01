@@ -90,10 +90,40 @@ public class Keystone
     }
     //endregion
     //region Threading
-    private static List<Runnable> runOnMainThread = new ArrayList<>();
-    public static void runOnMainThread(Runnable runnable)
+    private static class DelayedRunnable
     {
-        runOnMainThread.add(runnable);
+        private int delay;
+        private Runnable runnable;
+        private boolean executed;
+
+        public DelayedRunnable(int delay, Runnable runnable)
+        {
+            this.delay = delay;
+            this.runnable = runnable;
+            this.executed = false;
+        }
+        public void tick()
+        {
+            if (delay <= 0)
+            {
+                runnable.run();
+                executed = true;
+            }
+            else delay--;
+        }
+        public boolean executed()
+        {
+            return executed;
+        }
+    }
+
+    private static List<DelayedRunnable> runOnMainThread = new ArrayList<>();
+    private static List<DelayedRunnable> addList = new ArrayList<>();
+
+    public static void runOnMainThread(Runnable runnable) { runOnMainThread(0, runnable); }
+    public static void runOnMainThread(int delay, Runnable runnable)
+    {
+        addList.add(new DelayedRunnable(delay, runnable));
     }
     //endregion
     //region Tools
@@ -146,9 +176,10 @@ public class Keystone
         }
         else runFilter(filter);
     }
-    public static void runFilter(KeystoneFilter filter)
+    public static void runFilter(KeystoneFilter filter) { runFilter(filter, 0); }
+    public static void runFilter(KeystoneFilter filter, int ticksDelay)
     {
-        runOnMainThread(() ->
+        runOnMainThread(ticksDelay, () ->
         {
             abortFilter = null;
 
@@ -165,6 +196,13 @@ public class Keystone
                 SelectionBox[] selectionBoxes = getModule(SelectionModule.class).buildSelectionBoxes(world);
                 FilterBox[] boxes = new FilterBox[selectionBoxes.length];
                 for (int i = 0; i < boxes.length; i++) boxes[i] = new FilterBox(world, selectionBoxes[i], filter);
+
+                filter.prepare();
+                if (abortFilter != null)
+                {
+                    Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
+                    return;
+                }
 
                 Set<BlockPos> processedBlocks = new HashSet<>();
                 for (FilterBox box : boxes)
@@ -199,6 +237,13 @@ public class Keystone
                     return;
                 }
 
+                filter.finished();
+                if (abortFilter != null)
+                {
+                    Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
+                    return;
+                }
+
                 IHistoryEntry toolHistoryEntry = new FilterHistoryEntry(world, boxes);
                 getModule(HistoryModule.class).pushToHistory(toolHistoryEntry);
                 toolHistoryEntry.redo();
@@ -222,8 +267,11 @@ public class Keystone
     {
         if (Keystone.isActive() && event.phase == TickEvent.Phase.START)
         {
-            for (Runnable runnable : runOnMainThread) runnable.run();
-            runOnMainThread.clear();
+            runOnMainThread.addAll(addList);
+            addList.clear();
+
+            for (DelayedRunnable runnable : runOnMainThread) runnable.tick();
+            runOnMainThread.removeIf(runnable -> runnable.executed());
         }
     }
     private static final void onPlayerTick(final TickEvent.PlayerTickEvent event)

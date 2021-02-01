@@ -4,6 +4,8 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
 import keystone.api.wrappers.Block;
+import keystone.api.wrappers.BlockMask;
+import keystone.api.wrappers.BlockPalette;
 import keystone.api.wrappers.Item;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -23,8 +25,10 @@ public class KeystoneFilter
     private boolean compiledSuccessfully;
 
     public boolean ignoreRepeatBlocks() { return true; }
+    public void prepare() {}
     public void processBox(FilterBox box) {}
     public void processBlock(int x, int y, int z, FilterBox box)  {}
+    public void finished() {}
 
     //region API
     public final String getName() { return name; }
@@ -36,6 +40,50 @@ public class KeystoneFilter
     protected final void abort(String reason)
     {
         Keystone.abortFilter(reason);
+    }
+    protected final BlockPalette palette(String... contents)
+    {
+        BlockPalette palette = new BlockPalette();
+        for (String content : contents)
+        {
+            String[] tokens = content.split(" ");
+            if (tokens.length > 1)
+            {
+                String blockStr = tokens[0];
+                for (int i = 1; i < tokens.length - 1; i++) blockStr += tokens[i];
+
+                try
+                {
+                    int weight = Integer.parseInt(tokens[tokens.length - 1]);
+                    palette = palette.with(blockStr, weight);
+                }
+                catch (NumberFormatException e)
+                {
+                    blockStr += tokens[tokens.length - 1];
+                    palette = palette.with(blockStr);
+                }
+            }
+            else palette = palette.with(tokens[0]);
+        }
+        return palette;
+    }
+    protected final BlockPalette palette(Block... blocks)
+    {
+        BlockPalette palette = new BlockPalette();
+        for (Block block : blocks) palette = palette.with(block);
+        return palette;
+    }
+    protected final BlockMask mask(String... contents)
+    {
+        BlockMask mask = new BlockMask();
+        for (String content : contents) mask = mask.with(content);
+        return mask;
+    }
+    protected final BlockMask mask(Block... blocks)
+    {
+        BlockMask mask = new BlockMask();
+        for (Block block : blocks) mask = mask.with(block);
+        return mask;
     }
 
     public static final Block block(String block)

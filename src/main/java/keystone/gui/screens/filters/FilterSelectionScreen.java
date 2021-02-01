@@ -3,9 +3,9 @@ package keystone.gui.screens.filters;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.filters.FilterVariable;
-import keystone.api.filters.IntRange;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.utils.StringUtils;
+import keystone.api.wrappers.BlockMask;
 import keystone.api.wrappers.BlockPalette;
 import keystone.core.filters.FilterCompiler;
 import keystone.gui.KeystoneOverlayHandler;
@@ -164,9 +164,11 @@ public class FilterSelectionScreen extends Screen
     private void updateTotalVariableHeight(Class<?> type)
     {
         if (type == BlockPalette.class) totalVariableHeight += BlockPaletteVariableWidget.getHeight();
+        else if (type == BlockMask.class) totalVariableHeight += BlockMaskVariableWidget.getHeight();
         else if (type == float.class) totalVariableHeight += AbstractTextVariableWidget.getHeight();
         else if (type == int.class) totalVariableHeight += AbstractTextVariableWidget.getHeight();
         else if (type == String.class) totalVariableHeight += AbstractTextVariableWidget.getHeight();
+        else if (type == boolean.class) totalVariableHeight += BooleanVariableWidget.getHeight();
     }
     private int createVariableEditor(Class<?> type, Field field, FilterVariable variable, String variableName, int y) throws IllegalAccessException
     {
@@ -175,6 +177,13 @@ public class FilterSelectionScreen extends Screen
         {
             addButton(new BlockPaletteVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
             return BlockPaletteVariableWidget.getHeight();
+        }
+        //endregion
+        //region Block Mask
+        if (type == BlockMask.class)
+        {
+            addButton(new BlockMaskVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
+            return BlockMaskVariableWidget.getHeight();
         }
         //endregion
         //region Float
@@ -196,6 +205,13 @@ public class FilterSelectionScreen extends Screen
         {
             addButton(new StringVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
             return AbstractTextVariableWidget.getHeight();
+        }
+        //endregion
+        //region Boolean
+        else if (type == boolean.class)
+        {
+            addButton(new BooleanVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
+            return BooleanVariableWidget.getHeight();
         }
         //endregion
 

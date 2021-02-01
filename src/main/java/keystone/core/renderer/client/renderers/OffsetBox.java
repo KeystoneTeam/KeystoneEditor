@@ -4,6 +4,8 @@ import keystone.core.renderer.common.models.Coords;
 
 public class OffsetBox
 {
+    private static final double nudgeSize = 0.01F;
+
     private final OffsetPoint min;
     private final OffsetPoint max;
 
@@ -32,12 +34,11 @@ public class OffsetBox
 
     public OffsetBox nudge()
     {
-        double growXZ = 0.001F;
         if (min.getY() == max.getY())
         {
-            return new OffsetBox(min.offset(-growXZ, growXZ, -growXZ), max.offset(growXZ, growXZ, growXZ));
+            return new OffsetBox(min.offset(-nudgeSize, nudgeSize, -nudgeSize), max.offset(nudgeSize, nudgeSize, nudgeSize));
         }
-        return grow(growXZ, growXZ, growXZ);
+        return grow(nudgeSize, nudgeSize, nudgeSize);
     }
 
     public OffsetPoint getMin()
