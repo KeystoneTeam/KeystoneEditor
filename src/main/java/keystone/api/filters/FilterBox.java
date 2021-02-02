@@ -6,6 +6,7 @@ import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockPalette;
 import keystone.api.wrappers.BlockPos;
 import keystone.api.wrappers.Vector3i;
+import net.minecraft.block.Blocks;
 import net.minecraft.world.World;
 
 public class FilterBox
@@ -16,6 +17,8 @@ public class FilterBox
         void accept(int x, int y, int z);
     }
     //endregion
+
+    private static final Block air = new Block(Blocks.AIR.getDefaultState());
 
     private final KeystoneFilter filter;
     private final World world;
@@ -76,6 +79,18 @@ public class FilterBox
     public BlockPos getMax() { return this.max; }
     public Vector3i getSize() { return this.size; }
 
+    public int getTopBlock(int x, int z)
+    {
+        int y = this.max.getY();
+        Block block = getBlock(x, y, z);
+        while (block.isAir())
+        {
+            y--;
+            block = getBlock(x, y, z);
+        }
+        return y;
+    }
+
     public Block getBlock(int x, int y, int z) { return getBlock(x, y, z, true); }
     public Block getBlock(int x, int y, int z, boolean getOriginalState)
     {
@@ -88,7 +103,7 @@ public class FilterBox
         }
 
         int index = getBlockIndex(x, y, z);
-        if (index < 0) return filter.air();
+        if (index < 0) return air;
         else return getOriginalState ? oldBlocks[index] : newBlocks[index];
     }
 

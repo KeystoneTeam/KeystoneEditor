@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FloatRange
 {
-    float min();
-    float max();
+    float min() default Float.MIN_VALUE;
+    float max() default Float.MAX_VALUE;
+    float scrollStep() default 1.0f;
 }

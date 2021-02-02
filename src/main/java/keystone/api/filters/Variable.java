@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FilterVariable
+public @interface Variable
 {
     String value() default "";
 }

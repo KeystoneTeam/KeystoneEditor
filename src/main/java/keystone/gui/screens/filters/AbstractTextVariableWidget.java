@@ -2,7 +2,7 @@ package keystone.gui.screens.filters;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
-import keystone.api.filters.FilterVariable;
+import keystone.api.filters.Variable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -12,19 +12,18 @@ import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.Field;
-import java.util.function.Consumer;
 
 public abstract class AbstractTextVariableWidget<T> extends TextFieldWidget
 {
     protected final Minecraft mc;
     protected final FontRenderer font;
     protected final FilterSelectionScreen parent;
-    protected final FilterVariable variable;
+    protected final Variable variable;
     protected final Field field;
     protected final String name;
     private T value;
 
-    public AbstractTextVariableWidget(FilterSelectionScreen parent, FilterVariable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public AbstractTextVariableWidget(FilterSelectionScreen parent, Variable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(Minecraft.getInstance().fontRenderer, x, y + 11, width, getHeight() - 11, new StringTextComponent(name));
 

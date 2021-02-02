@@ -7,6 +7,7 @@ import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockMask;
 import keystone.api.wrappers.BlockPalette;
 import keystone.api.wrappers.Item;
+import keystone.modules.selection.SelectionModule;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
@@ -17,12 +18,15 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 
+import java.util.Random;
+
 public class KeystoneFilter
 {
     private static final Block air = new Block(Blocks.AIR.getDefaultState());
 
     private String name;
     private boolean compiledSuccessfully;
+    private FilterBox[] boxes;
 
     public boolean ignoreRepeatBlocks() { return true; }
     public void prepare() {}
@@ -30,17 +34,23 @@ public class KeystoneFilter
     public void processBlock(int x, int y, int z, FilterBox box)  {}
     public void finished() {}
 
+    //region Creation
+    public final KeystoneFilter setName(String name) { this.name = name; return this; }
+    public final KeystoneFilter compiledSuccessfully() { this.compiledSuccessfully = true; return this; }
+    public final KeystoneFilter setFilterBoxes(FilterBox[] boxes) { this.boxes = boxes; return this; }
+    //endregion
     //region API
     public final String getName() { return name; }
-    public final KeystoneFilter setName(String name) { this.name = name; return this; }
     public final boolean isCompiledSuccessfully() { return compiledSuccessfully; }
-    public final KeystoneFilter compiledSuccessfully() { this.compiledSuccessfully = true; return this; }
 
     protected final void print(Object message) { Minecraft.getInstance().player.sendMessage(new StringTextComponent(message.toString()), Util.DUMMY_UUID); }
     protected final void abort(String reason)
     {
         Keystone.abortFilter(reason);
     }
+
+    protected final int boxCount() { return Keystone.getModule(SelectionModule.class).getSelectionBoxCount(); }
+
     protected final BlockPalette palette(String... contents)
     {
         BlockPalette palette = new BlockPalette();
@@ -73,17 +83,30 @@ public class KeystoneFilter
         for (Block block : blocks) palette = palette.with(block);
         return palette;
     }
-    protected final BlockMask mask(String... contents)
+
+    protected final BlockMask blacklist(String... contents) { return whitelist(contents).blacklist(); }
+    protected final BlockMask blacklist(Block... blocks) { return whitelist(blocks).blacklist(); }
+    protected final BlockMask whitelist(String... contents)
     {
         BlockMask mask = new BlockMask();
         for (String content : contents) mask = mask.with(content);
         return mask;
     }
-    protected final BlockMask mask(Block... blocks)
+    protected final BlockMask whitelist(Block... blocks)
     {
         BlockMask mask = new BlockMask();
         for (Block block : blocks) mask = mask.with(block);
         return mask;
+    }
+
+    protected final Block[] resolvePalettes(BlockPalette... palettes)
+    {
+        Block[] ret = new Block[palettes.length];
+        if (palettes.length == 0) return ret;
+
+        int index = palettes[0].randomIndex();
+        for (int i = 0; i < ret.length; i++) ret[i] = palettes[i].getBlock(index);
+        return ret;
     }
 
     public static final Block block(String block)
@@ -120,7 +143,5 @@ public class KeystoneFilter
 
         return new Item(stack);
     }
-
-    public static final Block air() { return air; }
     //endregion
 }

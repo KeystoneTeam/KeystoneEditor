@@ -197,6 +197,7 @@ public class Keystone
                 FilterBox[] boxes = new FilterBox[selectionBoxes.length];
                 for (int i = 0; i < boxes.length; i++) boxes[i] = new FilterBox(world, selectionBoxes[i], filter);
 
+                filter.setFilterBoxes(boxes);
                 filter.prepare();
                 if (abortFilter != null)
                 {

@@ -3,12 +3,12 @@ package keystone.gui.screens.filters;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
-import keystone.api.filters.FilterVariable;
+import keystone.api.filters.Variable;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.utils.StringUtils;
 import keystone.api.wrappers.BlockMask;
 import keystone.api.wrappers.BlockPalette;
 import keystone.core.filters.FilterCompiler;
+import keystone.core.utils.AnnotationUtils;
 import keystone.gui.KeystoneOverlayHandler;
 import keystone.gui.screens.hotbar.HotbarButton;
 import keystone.gui.screens.hotbar.KeystoneHotbar;
@@ -178,7 +178,7 @@ public class FilterSelectionScreen extends Screen
         else if (type == String.class) totalVariableHeight += AbstractTextVariableWidget.getHeight();
         else if (type == boolean.class) totalVariableHeight += BooleanVariableWidget.getHeight();
     }
-    private int createVariableEditor(Class<?> type, Field field, FilterVariable variable, String variableName, int y) throws IllegalAccessException
+    private int createVariableEditor(Class<?> type, Field field, Variable variable, String variableName, int y) throws IllegalAccessException
     {
         //region Block Palette
         if (type == BlockPalette.class)
@@ -248,10 +248,10 @@ public class FilterSelectionScreen extends Screen
         Field[] fields = filterInstance.getClass().getDeclaredFields();
         for (Field field : fields)
         {
-            FilterVariable filterVariable = field.getAnnotation(FilterVariable.class);
-            if (filterVariable == null) continue;
+            Variable variable = field.getAnnotation(Variable.class);
+            if (variable == null) continue;
+            String variableName = AnnotationUtils.getFieldName(variable, field);
 
-            String variableName = filterVariable.value().trim().isEmpty() ? StringUtils.addSpacesToSentence(StringUtils.titleCase(field.getName().trim())) : filterVariable.value().trim();
             try
             {
                 field.setAccessible(true);
@@ -276,14 +276,14 @@ public class FilterSelectionScreen extends Screen
         int y = panelMinY + ((panelMaxY - panelMinY) / 2) - (totalVariableHeight / 2);
         for (Field field : fields)
         {
-            FilterVariable filterVariable = field.getAnnotation(FilterVariable.class);
-            if (filterVariable == null) continue;
+            Variable variable = field.getAnnotation(Variable.class);
+            if (variable == null) continue;
+            String variableName = AnnotationUtils.getFieldName(variable, field);
 
-            String variableName = filterVariable.value().trim().isEmpty() ? StringUtils.addSpacesToSentence(StringUtils.titleCase(field.getName().trim())) : filterVariable.value().trim();
             try
             {
                 field.setAccessible(true);
-                y += createVariableEditor(field.getType(), field, filterVariable, variableName, y) + PADDING;
+                y += createVariableEditor(field.getType(), field, variable, variableName, y) + PADDING;
             }
             catch (SecurityException e)
             {

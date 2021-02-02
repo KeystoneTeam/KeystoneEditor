@@ -1,6 +1,10 @@
 package keystone.api.wrappers;
 
 import keystone.api.filters.KeystoneFilter;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ITag;
+import net.minecraft.tags.ITagCollection;
+import net.minecraft.util.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,7 +17,21 @@ public class BlockMask
     private List<Block> mask = new ArrayList<>();
     private boolean blacklist;
 
-    public BlockMask with(String block) { return with(KeystoneFilter.block(block)); }
+    public BlockMask with(String block)
+    {
+        if (block.startsWith("#"))
+        {
+            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getCollection();
+            ITag<net.minecraft.block.Block> tag = tags.get(new ResourceLocation(block.substring(1)));
+            if (tag != null)
+            {
+                List<net.minecraft.block.Block> blocks = tag.getAllElements();
+                for (net.minecraft.block.Block add : blocks) with(new Block(add.getDefaultState()));
+            }
+            return this;
+        }
+        else return with(KeystoneFilter.block(block));
+    }
     public BlockMask with(Block block)
     {
         if (!mask.contains(block)) mask.add(block);

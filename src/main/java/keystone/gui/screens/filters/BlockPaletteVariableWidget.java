@@ -2,7 +2,7 @@ package keystone.gui.screens.filters;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
-import keystone.api.filters.FilterVariable;
+import keystone.api.filters.Variable;
 import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockPalette;
 import keystone.core.utils.BlockUtils;
@@ -27,7 +27,7 @@ public class BlockPaletteVariableWidget extends Button
     private final Minecraft mc;
     private final FontRenderer font;
     private final FilterSelectionScreen parent;
-    private final FilterVariable variable;
+    private final Variable variable;
     private final Field field;
     private final String name;
 
@@ -36,7 +36,7 @@ public class BlockPaletteVariableWidget extends Button
     private final IForgeRegistry<Item> itemRegistry;
     private final List<ItemStack> stacks;
 
-    public BlockPaletteVariableWidget(FilterSelectionScreen parent, FilterVariable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public BlockPaletteVariableWidget(FilterSelectionScreen parent, Variable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(x, y, width, getHeight(), new StringTextComponent(name), (button) ->
         {
@@ -95,6 +95,7 @@ public class BlockPaletteVariableWidget extends Button
         int x = this.x + 1;
         for (ItemStack stack : this.stacks)
         {
+            if (stack.isEmpty()) continue;
             drawItem(stack, x, this.y + 12);
             x += 20;
         }

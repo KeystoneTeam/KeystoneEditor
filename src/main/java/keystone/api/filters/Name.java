@@ -7,9 +7,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IntRange
+public @interface Name
 {
-    int min() default Integer.MIN_VALUE;
-    int max() default Integer.MAX_VALUE;
-    int scrollStep() default 1;
+    String value();
 }

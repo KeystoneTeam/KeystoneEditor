@@ -1,7 +1,7 @@
 package keystone.gui.screens.filters;
 
 import keystone.api.Keystone;
-import keystone.api.filters.FilterVariable;
+import keystone.api.filters.Variable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.CheckboxButton;
 import net.minecraft.util.Util;
@@ -16,7 +16,7 @@ public class BooleanVariableWidget extends CheckboxButton
     private final Field field;
     private final String name;
 
-    public BooleanVariableWidget(FilterSelectionScreen parent, FilterVariable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public BooleanVariableWidget(FilterSelectionScreen parent, Variable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(x, y, width, getHeight(), new StringTextComponent(name), (boolean)field.get(parent.getFilterInstance()), true);
 

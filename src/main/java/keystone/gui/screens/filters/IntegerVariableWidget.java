@@ -1,6 +1,6 @@
 package keystone.gui.screens.filters;
 
-import keystone.api.filters.FilterVariable;
+import keystone.api.filters.Variable;
 import keystone.api.filters.IntRange;
 
 import java.lang.reflect.Field;
@@ -9,7 +9,7 @@ public class IntegerVariableWidget extends AbstractTextVariableWidget<Integer>
 {
     private final IntRange range;
 
-    public IntegerVariableWidget(FilterSelectionScreen parent, FilterVariable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public IntegerVariableWidget(FilterSelectionScreen parent, Variable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(parent, variable, field, name, x, y, width);
         this.range = field.getAnnotation(IntRange.class);
@@ -36,8 +36,10 @@ public class IntegerVariableWidget extends AbstractTextVariableWidget<Integer>
     {
         if (isHovered())
         {
-            if (delta > 0) setValue(getValue() + 1);
-            else if (delta < 0) setValue(getValue() - 1);
+            int step = this.range != null ? this.range.scrollStep() : 1;
+
+            if (delta > 0) setValue(getValue() + step);
+            else if (delta < 0) setValue(getValue() - step);
             return true;
         }
         return false;

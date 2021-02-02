@@ -1,12 +1,12 @@
 package keystone.gui.screens.filters;
 
-import keystone.api.filters.FilterVariable;
+import keystone.api.filters.Variable;
 
 import java.lang.reflect.Field;
 
 public class StringVariableWidget extends AbstractTextVariableWidget<String>
 {
-    public StringVariableWidget(FilterSelectionScreen parent, FilterVariable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public StringVariableWidget(FilterSelectionScreen parent, Variable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(parent, variable, field, name, x, y, width);
     }

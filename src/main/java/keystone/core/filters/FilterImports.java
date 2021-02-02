@@ -11,7 +11,8 @@ public class FilterImports
 
     private static void rebuildPackageList()
     {
-        scanPackagesIntoTree(
+        importMap = new HashMap<>();
+        scanPackagesIntoTree(true,
                 Package.getPackage("keystone.api")
         );
     }
@@ -33,9 +34,8 @@ public class FilterImports
         return importsAdded.toString() + System.lineSeparator() + code;
     }
 
-    private static void scanPackagesIntoTree(Package... packages)
+    private static void scanPackagesIntoTree(boolean scanSubPackages, Package... packages)
     {
-        importMap = new HashMap<>();
         List<Class<?>> denestBuffer = new ArrayList<>();
 
         for (Package loadedPackage : packages)
@@ -47,8 +47,7 @@ public class FilterImports
 
             for (Class<?> clazz : classes)
             {
-                if (!importMap.containsKey(clazz.getSimpleName())) importMap.put(clazz.getSimpleName(), new ArrayList<>());
-
+                // De-nest class name
                 denestBuffer.clear();
                 Class<?> current = clazz;
                 while (current != null)
@@ -60,6 +59,15 @@ public class FilterImports
                 for (int i = denestBuffer.size() - 1; i > 0; i--) denested.append(denestBuffer.get(i).getSimpleName() + ".");
                 denested.append(denestBuffer.get(0).getSimpleName());
 
+                // Check if it is in root package
+                if (!scanSubPackages)
+                {
+                    String check = loadedPackage.getName().replace('$', '.') + "." + denested;
+                    if (!clazz.getName().contains(check)) continue;
+                }
+
+                // Add to map
+                if (!importMap.containsKey(clazz.getSimpleName())) importMap.put(clazz.getSimpleName(), new ArrayList<>());
                 importMap.get(clazz.getSimpleName()).add("import " + clazz.getPackage().getName() + "." + denested + ";");
             }
         }
