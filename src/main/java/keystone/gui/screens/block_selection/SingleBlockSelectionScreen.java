@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
 {
+    private boolean ranCallback = false;
     private final Consumer<BlockState> callback;
 
     protected SingleBlockSelectionScreen(Consumer<BlockState> callback)
@@ -20,9 +21,21 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
     }
 
     @Override
+    public void onClose()
+    {
+        if (!ranCallback)
+        {
+            callback.accept(null);
+            ranCallback = true;
+        }
+        super.onClose();
+    }
+
+    @Override
     public void onBlockSelected(BlockState block)
     {
-        closeScreen();
         callback.accept(block);
+        ranCallback = true;
+        closeScreen();
     }
 }

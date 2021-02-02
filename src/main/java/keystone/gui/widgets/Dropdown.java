@@ -24,9 +24,9 @@ public class Dropdown<T> extends Widget
     private T selectedEntry;
     private ITextComponent selectedEntryTitle;
 
-    public Dropdown(int x, int y, int width, int height, ITextComponent title, Converter<T> titleConverter, BiConsumer<T, ITextComponent> onSelectedEntryChanged, T... entries)
+    public Dropdown(int x, int y, int width, ITextComponent title, Converter<T> titleConverter, BiConsumer<T, ITextComponent> onSelectedEntryChanged, T... entries)
     {
-        super(x, y, width, height, title);
+        super(x, y, width, entries.length * 12 + 1, title);
         this.visible = false;
 
         this.entries = entries;

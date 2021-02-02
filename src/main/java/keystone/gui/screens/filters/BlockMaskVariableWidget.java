@@ -38,14 +38,14 @@ public class BlockMaskVariableWidget extends Button
 
     public BlockMaskVariableWidget(FilterSelectionScreen parent, Variable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(x, y, width, getHeight(), new StringTextComponent(name), (button) ->
+        super(x, y + 11, width, 20, new StringTextComponent(name), (button) ->
         {
             BlockMaskVariableWidget paletteWidget = (BlockMaskVariableWidget)button;
 
             paletteWidget.parent.disableWidgets();
             SingleBlockSelectionScreen.promptBlockStateChoice(block ->
             {
-                paletteWidget.mask.with(new Block(block));
+                if (block != null) paletteWidget.mask.with(new Block(block));
                 paletteWidget.rebuildStacks();
                 paletteWidget.parent.restoreWidgets();
 
@@ -89,14 +89,14 @@ public class BlockMaskVariableWidget extends Button
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        drawCenteredString(matrixStack, font, name, x + width / 2, y, 0xFFFFFF);
-        fill(matrixStack, x, y + 11, x + width, y + height, 0x80FFFFFF);
+        drawCenteredString(matrixStack, font, name, x + width / 2, y - 11, 0xFFFFFF);
+        fill(matrixStack, x, y, x + width, y + height, 0x80FFFFFF);
 
         int x = this.x + 1;
         for (ItemStack stack : this.stacks)
         {
             if (stack.isEmpty()) continue;
-            drawItem(stack, x, this.y + 12);
+            drawItem(stack, x, this.y + 1);
             x += 20;
         }
     }

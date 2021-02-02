@@ -24,11 +24,11 @@ import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
+import org.lwjgl.opengl.GL11;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class FilterSelectionScreen extends Screen
 {
@@ -43,6 +43,8 @@ public class FilterSelectionScreen extends Screen
     private KeystoneFilter[] compiledFilters;
     private boolean restoreWidgets = false;
     private Map<Widget, Boolean> widgetsActive = new HashMap<>();
+    private List<Widget> addWidgetQueue = new ArrayList<>();
+    private List<Boolean> addButtonQueue = new ArrayList<>();
 
     private Button selectFilterButton;
     private Dropdown<KeystoneFilter> dropdown;
@@ -77,6 +79,9 @@ public class FilterSelectionScreen extends Screen
     @Override
     public void init()
     {
+        addWidgetQueue.clear();
+        addButtonQueue.clear();
+
         // Compile filters
         if (compiledFilters == null)
         {
@@ -103,15 +108,12 @@ public class FilterSelectionScreen extends Screen
         int selectButtonX = 5 + this.font.getStringWidth(new TranslationTextComponent("keystone.filter_panel.select").getString());
         this.selectFilterButton = new ButtonNoHotkey(selectButtonX, panelMinY + 5, panelMaxX - selectButtonX - 5, 20, new StringTextComponent("!ERROR!"), (button) ->
         {
-            disableWidgets();
-            this.dropdown.active = true;
-            this.widgetsActive.put(this.dropdown, true);
-
+            disableWidgets(this.dropdown);
             this.dropdown.visible = true;
         });
 
         // Filter selection dropdown
-        this.dropdown = new Dropdown<>(selectFilterButton.x, selectFilterButton.y, selectFilterButton.getWidth(), panelMaxY - panelMinY, new TranslationTextComponent("keystone.tool.filter.dropdown"),
+        this.dropdown = new Dropdown<>(selectFilterButton.x, selectFilterButton.y, selectFilterButton.getWidth(), new TranslationTextComponent("keystone.tool.filter.dropdown"),
                 filter ->
                 {
                     if (filter.isCompiledSuccessfully()) return new StringTextComponent(filter.getName());
@@ -139,6 +141,17 @@ public class FilterSelectionScreen extends Screen
         addButton(runFilterButton);
         this.children.add(dropdown);
         rebuildFilterVariables();
+
+        // Add queued buttons
+        for (int i = 0; i < addWidgetQueue.size(); i++)
+        {
+            Widget widget = addWidgetQueue.get(i);
+            boolean button = addButtonQueue.get(i);
+            if (button) addButton(widget);
+            else this.children.add(widget);
+        }
+        this.addWidgetQueue.clear();
+        this.addButtonQueue.clear();
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
@@ -177,6 +190,7 @@ public class FilterSelectionScreen extends Screen
         else if (type == int.class) totalVariableHeight += AbstractTextVariableWidget.getHeight();
         else if (type == String.class) totalVariableHeight += AbstractTextVariableWidget.getHeight();
         else if (type == boolean.class) totalVariableHeight += BooleanVariableWidget.getHeight();
+        else if (Enum.class.isAssignableFrom(type)) totalVariableHeight += EnumVariableWidget.getHeight();
     }
     private int createVariableEditor(Class<?> type, Field field, Variable variable, String variableName, int y) throws IllegalAccessException
     {
@@ -222,18 +236,43 @@ public class FilterSelectionScreen extends Screen
             return BooleanVariableWidget.getHeight();
         }
         //endregion
+        //region Enum
+        else if (Enum.class.isAssignableFrom(type))
+        {
+            addButton(new EnumVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
+            return EnumVariableWidget.getHeight();
+        }
+        //endregion
 
         return 0;
     }
     //endregion
     //region Widgets
-    public void disableWidgets()
+    public void addWidget(Widget widget, boolean button, boolean queueAddition)
+    {
+        if (queueAddition)
+        {
+            addWidgetQueue.add(widget);
+            addButtonQueue.add(button);
+        }
+        else
+        {
+            if (button) addButton(widget);
+            else this.children.add(widget);
+        }
+    }
+    public void disableWidgets(Widget... keepActive)
     {
         this.widgetsActive.clear();
         for (Widget widget : this.buttons)
         {
             widgetsActive.put(widget, widget.active);
             widget.active = false;
+        }
+        for (Widget widget : keepActive)
+        {
+            widgetsActive.put(widget, true);
+            widget.active = true;
         }
     }
     public void restoreWidgets()

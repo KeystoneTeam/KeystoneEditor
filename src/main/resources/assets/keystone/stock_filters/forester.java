@@ -1,10 +1,22 @@
 import keystone.api.filters.FilterBox;
+import keystone.api.filters.KeystoneFilter;
 import keystone.api.filters.Variable;
 import keystone.api.filters.IntRange;
 import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockPalette;
 
 import java.util.Random;
+
+public enum TreeType
+{
+    SMALL_OAK,
+    SMALL_ACACIA,
+    SMALL_SPRUCE,
+    LARGE_OAK,
+    LARGE_SPRUCE,
+    LARGE_JUNGLE,
+    LARGE_DARK_OAK
+}
 
 public class Forester extends KeystoneFilter
 {
@@ -13,6 +25,7 @@ public class Forester extends KeystoneFilter
     @Variable BlockPalette leavesPalette = palette("minecraft:oak_leaves", "minecraft:spruce_leaves", "minecraft:birch_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves", "minecraft:dark_oak_leaves");
     @Variable boolean pairLogsAndLeaves = true;
     @Variable @IntRange(min = 1, scrollStep = 25) int treeRarity = 100;
+    @Variable TreeType treeType = TreeType.SMALL_OAK;
     @Variable int seed = 0;
 
     private Random random;

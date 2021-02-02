@@ -50,6 +50,14 @@ public abstract class AbstractTextVariableWidget<T> extends TextFieldWidget
         drawCenteredString(matrixStack, font, name, x + width / 2, y - 11, 0xFFFFFF);
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
     }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    {
+        if (active) return super.mouseClicked(mouseX, mouseY, button);
+        else return false;
+    }
+
     @Override
     public void setFocused2(boolean isFocusedIn)
     {
@@ -78,6 +86,8 @@ public abstract class AbstractTextVariableWidget<T> extends TextFieldWidget
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {
+        if (!active) return false;
+
         if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
         {
             setFocused2(false);

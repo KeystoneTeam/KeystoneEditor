@@ -2,6 +2,10 @@ package keystone.api.utils;
 
 public class StringUtils
 {
+    public static final String enumCaseToTitleCase(String text)
+    {
+        return titleCase(text.toLowerCase().replace('_', ' '));
+    }
     public static final String titleCase(String text)
     {
         if (text == null || text.isEmpty()) return text;

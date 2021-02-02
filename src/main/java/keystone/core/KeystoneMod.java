@@ -49,7 +49,7 @@ public class KeystoneMod
         KeystoneKeybinds.register();
     }
 
-    public void registerDefaultBoxes(final KeystoneEvent.RegisterBoundingBoxTypes event)
+    private void registerDefaultBoxes(final KeystoneEvent.RegisterBoundingBoxTypes event)
     {
         event.register(SelectionBoundingBox.class, new SelectionBoxRenderer(), "selection_box");
         event.register(HighlightBoundingBox.class, new HighlightBoxRenderer(), "highlight_box");
