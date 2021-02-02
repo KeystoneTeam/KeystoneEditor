@@ -129,8 +129,10 @@ public class KeystoneHotbar extends Screen
     {
         selectedSlot = slot;
     }
-    public static int getX() { return offsetX; }
-    public static int getY() { return offsetY; }
+    public static int getX() { return (int)(offsetX * HotbarButton.SCALE); }
+    public static int getY() { return (int)(offsetY * HotbarButton.SCALE); }
+    public static int getWidth() { return (int)(142 * HotbarButton.SCALE); }
+    public static int getHeight() { return (int)(22 * HotbarButton.SCALE); }
     private int getSlotX(int slot)
     {
         return offsetX + (3 + slot * 20);

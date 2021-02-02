@@ -101,7 +101,7 @@ public class FilterSelectionScreen extends Screen
         int centerHeight = height / 2;
         int halfPanelHeight = 25 + PADDING + totalVariableHeight / 2;
         panelMinY = centerHeight - halfPanelHeight;
-        panelMaxX = (int)Math.floor(KeystoneHotbar.getX() * HotbarButton.SCALE) - 5;
+        panelMaxX = KeystoneHotbar.getX() - 5;
         panelMaxY = centerHeight + halfPanelHeight;
 
         // Select Filter Button

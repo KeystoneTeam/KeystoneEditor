@@ -4,17 +4,17 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.filters.Variable;
 import keystone.core.utils.AnnotationUtils;
+import keystone.gui.widgets.ButtonNoHotkey;
 import keystone.gui.widgets.Dropdown;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
 import java.lang.reflect.Field;
 
-public class EnumVariableWidget extends Button
+public class EnumVariableWidget extends ButtonNoHotkey
 {
     private final Minecraft mc;
     private final FontRenderer font;

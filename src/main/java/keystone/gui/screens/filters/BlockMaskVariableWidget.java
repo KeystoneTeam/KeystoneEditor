@@ -6,10 +6,11 @@ import keystone.api.filters.Variable;
 import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockMask;
 import keystone.core.utils.BlockUtils;
+import keystone.gui.screens.block_selection.BlockMaskEditScreen;
 import keystone.gui.screens.block_selection.SingleBlockSelectionScreen;
+import keystone.gui.widgets.ButtonNoHotkey;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Util;
@@ -22,7 +23,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockMaskVariableWidget extends Button
+public class BlockMaskVariableWidget extends ButtonNoHotkey
 {
     private final Minecraft mc;
     private final FontRenderer font;
@@ -31,7 +32,7 @@ public class BlockMaskVariableWidget extends Button
     private final Field field;
     private final String name;
 
-    private final BlockMask mask;
+    private BlockMask mask;
 
     private final IForgeRegistry<Item> itemRegistry;
     private final List<ItemStack> stacks;
@@ -43,11 +44,13 @@ public class BlockMaskVariableWidget extends Button
             BlockMaskVariableWidget paletteWidget = (BlockMaskVariableWidget)button;
 
             paletteWidget.parent.disableWidgets();
-            SingleBlockSelectionScreen.promptBlockStateChoice(block ->
+            BlockMaskEditScreen.editBlockMask(paletteWidget.mask, (mask) ->
             {
-                if (block != null) paletteWidget.mask.with(new Block(block));
-                paletteWidget.rebuildStacks();
                 paletteWidget.parent.restoreWidgets();
+                if (mask == null) return;
+
+                paletteWidget.mask = mask;
+                paletteWidget.rebuildStacks();
 
                 try
                 {

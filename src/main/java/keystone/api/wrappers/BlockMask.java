@@ -17,6 +17,14 @@ public class BlockMask
     private List<Block> mask = new ArrayList<>();
     private boolean blacklist;
 
+    public BlockMask clone()
+    {
+        BlockMask clone = new BlockMask();
+        for (Block block : mask) clone.mask.add(new Block(block.getMinecraftBlock(), block.getTileEntityData()));
+        clone.blacklist = blacklist;
+        return clone;
+    }
+
     public BlockMask with(String block)
     {
         if (block.startsWith("#"))
@@ -35,6 +43,26 @@ public class BlockMask
     public BlockMask with(Block block)
     {
         if (!mask.contains(block)) mask.add(block);
+        return this;
+    }
+    public BlockMask without(String block)
+    {
+        if (block.startsWith("#"))
+        {
+            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getCollection();
+            ITag<net.minecraft.block.Block> tag = tags.get(new ResourceLocation(block.substring(1)));
+            if (tag != null)
+            {
+                List<net.minecraft.block.Block> blocks = tag.getAllElements();
+                for (net.minecraft.block.Block add : blocks) without(new Block(add.getDefaultState()));
+            }
+            return this;
+        }
+        else return without(KeystoneFilter.block(block));
+    }
+    public BlockMask without(Block block)
+    {
+        if (mask.contains(block)) mask.remove(block);
         return this;
     }
     public BlockMask blacklist()

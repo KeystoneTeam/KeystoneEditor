@@ -7,9 +7,9 @@ import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockPalette;
 import keystone.core.utils.BlockUtils;
 import keystone.gui.screens.block_selection.SingleBlockSelectionScreen;
+import keystone.gui.widgets.ButtonNoHotkey;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Util;
@@ -22,7 +22,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockPaletteVariableWidget extends Button
+public class BlockPaletteVariableWidget extends ButtonNoHotkey
 {
     private final Minecraft mc;
     private final FontRenderer font;
@@ -45,9 +45,11 @@ public class BlockPaletteVariableWidget extends Button
             paletteWidget.parent.disableWidgets();
             SingleBlockSelectionScreen.promptBlockStateChoice(block ->
             {
-                if (block != null) paletteWidget.palette.with(new Block(block));
-                paletteWidget.rebuildStacks();
                 paletteWidget.parent.restoreWidgets();
+                if (block == null) return;
+
+                paletteWidget.palette.with(new Block(block));
+                paletteWidget.rebuildStacks();
 
                 try
                 {

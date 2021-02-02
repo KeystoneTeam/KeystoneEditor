@@ -2,14 +2,14 @@ package keystone.gui.screens.hotbar;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.gui.KeystoneOverlayHandler;
+import keystone.gui.widgets.ButtonNoHotkey;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.function.Supplier;
 
-public class HotbarButton extends Button
+public class HotbarButton extends ButtonNoHotkey
 {
     public static final float SCALE = 1.5f;
     private static final ResourceLocation selectionTexture = new ResourceLocation("keystone:textures/gui/hotbar.png");
@@ -62,8 +62,6 @@ public class HotbarButton extends Button
         }
         else colorSlot(stack, 0x80FF0000);
     }
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) { return false; }
     @Override
     public boolean isHovered() { return super.isHovered() && enabledSupplier.get(); }
 
