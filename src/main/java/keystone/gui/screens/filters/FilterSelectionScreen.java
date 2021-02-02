@@ -1,6 +1,7 @@
 package keystone.gui.screens.filters;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
 import keystone.api.filters.FilterVariable;
 import keystone.api.filters.KeystoneFilter;
@@ -136,12 +137,15 @@ public class FilterSelectionScreen extends Screen
         this.selectFilterButton.setMessage(this.dropdown.getSelectedEntryTitle());
         addButton(selectFilterButton);
         addButton(runFilterButton);
-        addButton(dropdown);
+        this.children.add(dropdown);
         rebuildFilterVariables();
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+
         if (restoreWidgets)
         {
             for (Map.Entry<Widget, Boolean> entry : widgetsActive.entrySet()) entry.getKey().active = entry.getValue();
@@ -152,6 +156,10 @@ public class FilterSelectionScreen extends Screen
 
         drawString(stack, font, new TranslationTextComponent("keystone.filter_panel.select"), 5, panelMinY + 11, 0x8080FF);
         super.render(stack, mouseX, mouseY, partialTicks);
+        this.dropdown.render(stack, mouseX, mouseY, partialTicks);
+
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
     }
     @Override
     public void tick()

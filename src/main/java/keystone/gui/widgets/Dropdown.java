@@ -39,36 +39,38 @@ public class Dropdown<T> extends Widget
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
         Minecraft minecraft = Minecraft.getInstance();
         FontRenderer font = minecraft.fontRenderer;
 
+        fill(stack, this.x, this.y, this.x + width, this.y + 12 * entries.length + 2, 0xFFFFFFFF);
+
         // Draw Elements
         int hoveredElement = -1;
-        if (isHovered()) hoveredElement = (mouseY - this.y) / 11;
+        if (isHovered()) hoveredElement = (mouseY - this.y - 1) / 12;
         for (int i = 0; i < entries.length; i++)
         {
             T entry = entries[i];
             ITextComponent title = entryTitles[i];
             if (hoveredElement == i)
             {
-                fill(matrixStack, this.x, this.y + i * 11, this.x + this.width, this.y + (i + 1) * 11, 0xFFFFFFFF);
-                int color = (title.getStyle().getColor() != null) ? title.getStyle().getColor().getColor() : 0x808080;
-                minecraft.fontRenderer.drawString(matrixStack, title.getString(), this.x + 1, this.y + i * 11 + 1, color);
+                fill(stack, this.x + 1, this.y + i * 12 + 1, this.x + this.width - 1, this.y + (i + 1) * 12 + 1, 0xFFFFFFFF);
+                int color = (title.getStyle().getColor() != null) ? title.getStyle().getColor().getColor() : 0x404040;
+                font.drawString(stack, title.getString(), this.x + 2, this.y + i * 12 + 3, color);
             }
             else
             {
-                fill(matrixStack, this.x, this.y + i * 11, this.x + this.width, this.y + (i + 1) * 11, 0xFF808080);
+                fill(stack, this.x + 1, this.y + i * 12 + 1, this.x + this.width - 1, this.y + (i + 1) * 12 + 1, 0xFF404040);
                 int color = (title.getStyle().getColor() != null) ? title.getStyle().getColor().getColor() : 0xFFFFFF;
-                minecraft.fontRenderer.drawString(matrixStack, title.getString(), this.x + 1, this.y + i * 11 + 1, color);
+                font.drawString(stack, title.getString(), this.x + 2, this.y + i * 12 + 3, color);
             }
         }
     }
     @Override
     public void onClick(double mouseX, double mouseY)
     {
-        int hoveredElement = hoveredElement = ((int)mouseY - this.y) / 10;
+        int hoveredElement = hoveredElement = ((int)mouseY - this.y - 1) / 12;
         if (hoveredElement >= 0 && hoveredElement < entries.length)
         {
             visible = false;

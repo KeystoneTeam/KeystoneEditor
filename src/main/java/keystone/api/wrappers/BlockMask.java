@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 public class BlockMask
 {
     private List<Block> mask = new ArrayList<>();
+    private boolean blacklist;
 
     public BlockMask with(String block) { return with(KeystoneFilter.block(block)); }
     public BlockMask with(Block block)
@@ -18,7 +19,17 @@ public class BlockMask
         if (!mask.contains(block)) mask.add(block);
         return this;
     }
+    public BlockMask blacklist()
+    {
+        this.blacklist = true;
+        return this;
+    }
+    public BlockMask whitelist()
+    {
+        this.blacklist = false;
+        return this;
+    }
 
-    public boolean contains(Block block) { return mask.contains(block); }
+    public boolean valid(Block block) { return mask.contains(block) != blacklist; }
     public void forEach(Consumer<Block> consumer) { mask.forEach(block -> consumer.accept(block)); }
 }

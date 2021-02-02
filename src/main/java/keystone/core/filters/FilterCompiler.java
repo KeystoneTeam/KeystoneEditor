@@ -1,31 +1,74 @@
 package keystone.core.filters;
 
 import keystone.api.Keystone;
-import keystone.api.filters.FilterVariable;
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.utils.StringUtils;
 import keystone.core.KeystoneConfig;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.IResource;
+import net.minecraft.resources.IResourceManager;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.InternalCompilerException;
-import org.codehaus.janino.CompilerFactory;
-import org.codehaus.janino.JavaSourceClassLoader;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Random;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class FilterCompiler
 {
+    private static List<File> stockFilters;
+    private static void loadStockFilters()
+    {
+        stockFilters = new ArrayList<>();
+        File stockFilterCache = getStockFilterCache();
+
+        try
+        {
+            IResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
+            Collection<ResourceLocation> filterResources = resourceManager.getAllResourceLocations("stock_filters", path -> path.endsWith(".java") || path.endsWith(".filter"));
+
+            for (ResourceLocation filterResourceLocation : filterResources)
+            {
+                Matcher matcher = Pattern.compile("[0-9a-z_\\.]+$").matcher(filterResourceLocation.getPath());
+                matcher.find();
+                String fileName = matcher.group();
+                fileName = StringUtils.titleCase(fileName.replace('_', ' '));
+
+                File cacheFile = stockFilterCache.toPath().resolve(fileName).toFile();
+                if (!cacheFile.exists()) cacheFile.createNewFile();
+
+                try (IResource filterResource = resourceManager.getResource(filterResourceLocation);
+                     InputStream filterStream = filterResource.getInputStream();
+                     FileOutputStream fileOutputStream = new FileOutputStream(cacheFile))
+                {
+                    int read;
+                    byte[] bytes = new byte[8192];
+                    while ((read = filterStream.read(bytes)) != -1) fileOutputStream.write(bytes, 0, read);
+                }
+
+                stockFilters.add(cacheFile);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+    private static File getStockFilterCache()
+    {
+        File stockFilterCache = Minecraft.getInstance().gameDir.toPath().resolve(KeystoneConfig.stockFilterCache).toFile();
+        if (!stockFilterCache.exists()) stockFilterCache.mkdirs();
+        return stockFilterCache;
+    }
     private static File getFilterDirectory()
     {
         File filtersDirectory = Minecraft.getInstance().gameDir.toPath().resolve(KeystoneConfig.filtersDirectory).toFile();
@@ -35,7 +78,17 @@ public class FilterCompiler
 
     public static File[] getInstalledFilters()
     {
-        return getFilterDirectory().listFiles((dir, name) -> name.endsWith(".java") || name.endsWith(".filter"));
+        if (stockFilters == null || stockFilters.size() == 0) loadStockFilters();
+
+        List<File> filters = new ArrayList<>();
+        File[] customFilters = getFilterDirectory().listFiles((dir, name) -> name.endsWith(".java") || name.endsWith(".filter"));
+        for (File customFilter : customFilters) filters.add(customFilter);
+        filters.addAll(stockFilters);
+        Collections.sort(filters, Comparator.comparing(a -> getFilterName(a, true)));
+
+        File[] filtersArray = new File[filters.size()];
+        for (int i = 0; i < filtersArray.length; i++) filtersArray[i] = filters.get(i);
+        return filtersArray;
     }
     public static String getFilterName(File filterFile, boolean removeSpaces)
     {
