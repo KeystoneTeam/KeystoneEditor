@@ -2,6 +2,7 @@ package keystone.core.filters;
 
 import java.util.*;
 
+import keystone.api.Keystone;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 
@@ -13,7 +14,7 @@ public class FilterImports
     {
         importMap = new HashMap<>();
         scanPackagesIntoTree(true,
-                Package.getPackage("keystone.api")
+                Keystone.class.getPackage()
         );
     }
     public static String getImports(String code)
@@ -40,6 +41,8 @@ public class FilterImports
 
         for (Package loadedPackage : packages)
         {
+            Keystone.LOGGER.info("Scanning package " + loadedPackage.getName() + " for filter imports...");
+
             Reflections reflections = new Reflections(loadedPackage.getName(), new SubTypesScanner(false));
             Set<Class<?>> classes = reflections.getSubTypesOf(Object.class);
             Set<Class<? extends Enum>> enumClasses = reflections.getSubTypesOf(Enum.class);

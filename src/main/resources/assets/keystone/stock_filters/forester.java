@@ -3,6 +3,7 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.filters.Variable;
 import keystone.api.filters.IntRange;
 import keystone.api.wrappers.Block;
+import keystone.api.wrappers.BlockMask;
 import keystone.api.wrappers.BlockPalette;
 
 import java.util.List;

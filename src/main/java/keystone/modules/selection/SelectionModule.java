@@ -115,7 +115,8 @@ public class SelectionModule implements IKeystoneModule
         if (creatingSelection)
         {
             selectedFace = null;
-            selectionBoxes.get(selectionBoxes.size() - 1).setCorner2(Player.getHighlightedBlock());
+            if (selectionBoxes.size() == 0) creatingSelection = false;
+            else selectionBoxes.get(selectionBoxes.size() - 1).setCorner2(Player.getHighlightedBlock());
         }
         else
         {
