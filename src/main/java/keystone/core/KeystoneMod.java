@@ -1,7 +1,9 @@
 package keystone.core;
 
 import keystone.api.Keystone;
+import keystone.api.wrappers.Block;
 import keystone.core.events.KeystoneEvent;
+import keystone.core.filters.providers.BlockProvider;
 import keystone.core.keybinds.KeystoneKeybinds;
 import keystone.gui.KeystoneOverlayHandler;
 import keystone.gui.screens.hotbar.KeystoneHotbar;

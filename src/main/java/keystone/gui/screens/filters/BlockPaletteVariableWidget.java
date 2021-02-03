@@ -6,6 +6,8 @@ import keystone.api.filters.Variable;
 import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockPalette;
 import keystone.core.utils.BlockUtils;
+import keystone.gui.screens.block_selection.BlockMaskEditScreen;
+import keystone.gui.screens.block_selection.BlockPaletteEditScreen;
 import keystone.gui.screens.block_selection.SingleBlockSelectionScreen;
 import keystone.gui.widgets.ButtonNoHotkey;
 import net.minecraft.client.Minecraft;
@@ -31,7 +33,7 @@ public class BlockPaletteVariableWidget extends ButtonNoHotkey
     private final Field field;
     private final String name;
 
-    private final BlockPalette palette;
+    private BlockPalette palette;
 
     private final IForgeRegistry<Item> itemRegistry;
     private final List<ItemStack> stacks;
@@ -43,12 +45,12 @@ public class BlockPaletteVariableWidget extends ButtonNoHotkey
             BlockPaletteVariableWidget paletteWidget = (BlockPaletteVariableWidget)button;
 
             paletteWidget.parent.disableWidgets();
-            SingleBlockSelectionScreen.promptBlockStateChoice(block ->
+            BlockPaletteEditScreen.editBlockPalette(paletteWidget.palette, (palette) ->
             {
                 paletteWidget.parent.restoreWidgets();
-                if (block == null) return;
+                if (palette == null) return;
 
-                paletteWidget.palette.with(new Block(block));
+                paletteWidget.palette = palette;
                 paletteWidget.rebuildStacks();
 
                 try
@@ -85,7 +87,7 @@ public class BlockPaletteVariableWidget extends ButtonNoHotkey
     private void rebuildStacks()
     {
         this.stacks.clear();
-        this.palette.forEach((block, weight) -> this.stacks.add(new ItemStack(BlockUtils.getBlockItem(block.getMinecraftBlock().getBlock(), itemRegistry))));
+        this.palette.forEach((block, weight) -> this.stacks.add(new ItemStack(BlockUtils.getBlockItem(block.getFirst().getMinecraftBlock().getBlock(), itemRegistry))));
     }
 
     @Override

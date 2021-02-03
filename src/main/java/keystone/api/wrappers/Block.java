@@ -131,13 +131,12 @@ public class Block
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Block block = (Block) o;
-        return state.equals(block.state) &&
-                Objects.equals(tileEntity, block.tileEntity);
+        return toString().equals(block.toString());
     }
     @Override
     public int hashCode()
     {
-        return Objects.hash(state, tileEntity);
+        return toString().hashCode();
     }
 
     @Override

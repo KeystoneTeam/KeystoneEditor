@@ -41,24 +41,24 @@ public class BlockMaskVariableWidget extends ButtonNoHotkey
     {
         super(x, y + 11, width, 20, new StringTextComponent(name), (button) ->
         {
-            BlockMaskVariableWidget paletteWidget = (BlockMaskVariableWidget)button;
+            BlockMaskVariableWidget maskWidget = (BlockMaskVariableWidget)button;
 
-            paletteWidget.parent.disableWidgets();
-            BlockMaskEditScreen.editBlockMask(paletteWidget.mask, (mask) ->
+            maskWidget.parent.disableWidgets();
+            BlockMaskEditScreen.editBlockMask(maskWidget.mask, (mask) ->
             {
-                paletteWidget.parent.restoreWidgets();
+                maskWidget.parent.restoreWidgets();
                 if (mask == null) return;
 
-                paletteWidget.mask = mask;
-                paletteWidget.rebuildStacks();
+                maskWidget.mask = mask;
+                maskWidget.rebuildStacks();
 
                 try
                 {
-                    paletteWidget.field.set(paletteWidget.parent.getFilterInstance(), paletteWidget.mask);
+                    maskWidget.field.set(maskWidget.parent.getFilterInstance(), maskWidget.mask);
                 }
                 catch (IllegalAccessException e)
                 {
-                    String error = "Could not set BlockPalette variable '" + paletteWidget.name + "'!";
+                    String error = "Could not set BlockPalette variable '" + maskWidget.name + "'!";
                     Keystone.LOGGER.error(error);
                     Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
                     e.printStackTrace();

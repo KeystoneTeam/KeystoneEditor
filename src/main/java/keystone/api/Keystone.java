@@ -7,6 +7,7 @@ import keystone.api.tools.interfaces.IKeystoneTool;
 import keystone.api.tools.interfaces.ISelectionBoxTool;
 import keystone.core.KeystoneConfig;
 import keystone.core.filters.FilterCompiler;
+import keystone.core.filters.providers.BlockProvider;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.DimensionId;
 import keystone.modules.IKeystoneModule;
@@ -181,6 +182,12 @@ public class Keystone
     {
         runOnMainThread(ticksDelay, () ->
         {
+            BlockProvider a = new BlockProvider(KeystoneFilter.block("minecraft:stone_slab[type=top]"));
+            BlockProvider b = new BlockProvider(KeystoneFilter.block("minecraft:stone_slab[type=top]"));
+            Map<BlockProvider, String> test = new HashMap<>();
+            test.put(a, "Test");
+            LOGGER.info(a.hashCode() + "     " + b.hashCode() + "     " + (a.hashCode() == b.hashCode()) + "     " + a.equals(b) + "     " + test.containsKey(a) + "     " + test.containsKey(b));
+
             abortFilter = null;
 
             if (filter.isCompiledSuccessfully())

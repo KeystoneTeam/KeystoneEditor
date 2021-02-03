@@ -16,9 +16,9 @@ public enum TreeType
 
 public class Forester extends KeystoneFilter
 {
-    @Variable BlockMask groundMask = whitelist("minecraft:grass_block", "minecraft:podzol", "minecraft:mycelium");
-    @Variable BlockPalette logPalette = palette("minecraft:oak_log", "minecraft:spruce_log", "minecraft:birch_log", "minecraft:jungle_log", "minecraft:acacia_log", "minecraft:dark_oak_log");
-    @Variable BlockPalette leavesPalette = palette("minecraft:oak_leaves", "minecraft:spruce_leaves", "minecraft:birch_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves", "minecraft:dark_oak_leaves");
+    @Variable BlockMask groundMask = whitelist("minecraft:grass_block");
+    @Variable BlockPalette logPalette = palette("minecraft:oak_log");
+    @Variable BlockPalette leavesPalette = palette("minecraft:oak_leaves");
     @Variable boolean pairLogsAndLeaves = true;
     @Variable @IntRange(min = 1, scrollStep = 25) int treeRarity = 100;
     @Variable TreeType treeType = TreeType.SMALL_OAK;
