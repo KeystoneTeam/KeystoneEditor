@@ -107,7 +107,9 @@ public class FilterCompiler
             String filterCode = Files.lines(Paths.get(filterPath)).collect(Collectors.joining(System.lineSeparator()));
 
             filterCode = filterCode.replaceAll(oldClassName, newClassName);
-            filterCode = FilterImports.addImportsToCode(filterCode);
+            String imports = FilterImports.getImports(filterCode);
+            int linesOffset = imports.split(System.lineSeparator()).length;
+            filterCode = imports + filterCode;
 
             try
             {
@@ -160,9 +162,17 @@ public class FilterCompiler
             catch (CompileException | InternalCompilerException e)
             {
                 String error = "Unable to compile filter '" + oldClassName + "': " + e.getMessage();
-                Keystone.LOGGER.error(error);
-                e.printStackTrace();
-                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+                Matcher matcher = Pattern.compile("Line ([0-9]+)").matcher(error);
+                String fixedError = error;
+                while (matcher.find())
+                {
+                    String group = matcher.group();
+                    int line = Integer.parseInt(group.split(" ")[1]) - linesOffset;
+                    fixedError = fixedError.replace(matcher.group(), "Line " + line);
+                }
+
+                Keystone.LOGGER.error(fixedError);
+                Minecraft.getInstance().player.sendMessage(new StringTextComponent(fixedError).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
                 return new KeystoneFilter().setName(getFilterName(filterFile, false));
             }
         }

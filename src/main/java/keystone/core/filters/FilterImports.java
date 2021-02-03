@@ -16,7 +16,7 @@ public class FilterImports
                 Package.getPackage("keystone.api")
         );
     }
-    public static String addImportsToCode(String code)
+    public static String getImports(String code)
     {
         if (importMap == null) rebuildPackageList();
 
@@ -31,7 +31,7 @@ public class FilterImports
                 }
             }
         }
-        return importsAdded.toString() + System.lineSeparator() + code;
+        return importsAdded.toString();
     }
 
     private static void scanPackagesIntoTree(boolean scanSubPackages, Package... packages)

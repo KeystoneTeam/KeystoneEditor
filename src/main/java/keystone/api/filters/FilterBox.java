@@ -68,7 +68,6 @@ public class FilterBox
                 normalizedY < 0 || normalizedY >= size.getY() ||
                 normalizedZ < 0 || normalizedZ >= size.getZ())
         {
-            Keystone.LOGGER.error("Trying to get block outside of selection bounds!");
             return -1;
         }
 
@@ -94,16 +93,12 @@ public class FilterBox
     public Block getBlock(int x, int y, int z) { return getBlock(x, y, z, true); }
     public Block getBlock(int x, int y, int z, boolean getOriginalState)
     {
-        if (x < min.getX() || x > max.getX() ||
-                y < min.getY() || y > max.getY() ||
-                z < min.getZ() || z > max.getZ())
+        int index = getBlockIndex(x, y, z);
+        if (index < 0)
         {
             net.minecraft.util.math.BlockPos pos = new net.minecraft.util.math.BlockPos(x, y, z);
             return new Block(world.getBlockState(pos), world.getTileEntity(pos));
         }
-
-        int index = getBlockIndex(x, y, z);
-        if (index < 0) return air;
         else return getOriginalState ? oldBlocks[index] : newBlocks[index];
     }
 

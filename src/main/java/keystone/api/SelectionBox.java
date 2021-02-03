@@ -16,6 +16,7 @@ public class SelectionBox
     private final BlockPos min;
     private final BlockPos max;
     private final Vector3i size;
+    private final World world;
 
     private BlockState[] blocks;
     private BlockState[] buffer;
@@ -25,6 +26,7 @@ public class SelectionBox
         this.min = new BlockPos(min.getX(), min.getY(), min.getZ());
         this.max = new BlockPos(max.getX(), max.getY(), max.getZ());
         this.size = new Vector3i(max.getX() - min.getX() + 1, max.getY() - min.getY() + 1, max.getZ() - min.getZ() + 1);
+        this.world = world;
 
         blocks = new BlockState[size.getX() * size.getY() * size.getZ()];
         buffer = new BlockState[size.getX() * size.getY() * size.getZ()];
@@ -53,7 +55,6 @@ public class SelectionBox
                 normalized.getY() < 0 || normalized.getY() >= size.getY() ||
                 normalized.getZ() < 0 || normalized.getZ() >= size.getZ())
         {
-            Keystone.LOGGER.error("Trying to get block outside of selection bounds!");
             return -1;
         }
 
@@ -64,16 +65,11 @@ public class SelectionBox
     public BlockPos getMax() { return max; }
     public Vector3i getSize() { return size; }
 
-    public BlockState getBlock(BlockPos pos)
-    {
-        int index = getBlockIndex(pos);
-        if (index < 0) return Blocks.AIR.getDefaultState();
-        else return buffer[index];
-    }
+    public BlockState getBlock(BlockPos pos) { return getBlock(pos, true); }
     public BlockState getBlock(BlockPos pos, boolean getOriginalState)
     {
         int index = getBlockIndex(pos);
-        if (index < 0) return Blocks.AIR.getDefaultState();
+        if (index < 0) return world.getBlockState(pos);
         else return getOriginalState ? blocks[index] : buffer[index];
     }
 
