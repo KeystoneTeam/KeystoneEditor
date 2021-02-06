@@ -21,7 +21,7 @@ apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '0.2.6'
+version = '0.2.6a'
 group = 'io.github.keystone' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'Keystone'
 
@@ -100,6 +100,23 @@ reobf {
     shadowJar {
         dependsOn createMcpToSrg
         mappings = createMcpToSrg.outputs.files.singleFile
+    }
+}
+
+jar {
+    archiveName = archivesBaseName + " " + version + " API.jar";
+
+    manifest {
+        attributes([
+                "Specification-Title": "Keystone",
+                "Specification-Vendor": "CodeCracked",
+                "Specification-Version": "1", // We are version 1 of ourselves
+                "Implementation-Title": project.name,
+                "Implementation-Version": "${version}",
+                "Implementation-Vendor" :"CodeCracked",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                "MixinConfigs": "keystone.mixins.json"
+        ])
     }
 }
 
