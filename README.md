@@ -15,4 +15,4 @@ Compilation
 2) Load it into an IDE of your choice and import the project.
 3) Run `genIntellijRuns`, `genVSCodeRuns` or `genEclipseRuns` depending on the IDE you use.
 4) Run `build` to build the jar
-5) You'll find the built jar in the `/build/libs/` folder.
+5) You'll find the built jasr in the `/build/libs/` folder. The file ending with (Forge <version>) is the mod file with all required dependencies, the other jar file only contains the actual mod code and will not work in Minecraft
