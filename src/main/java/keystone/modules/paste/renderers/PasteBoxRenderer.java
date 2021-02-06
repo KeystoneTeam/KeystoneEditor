@@ -4,6 +4,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
 import keystone.core.renderer.client.renderers.OffsetBox;
+import keystone.modules.mouse.MouseModule;
 import keystone.modules.paste.boxes.PasteBoundingBox;
 import keystone.modules.selection.SelectedFace;
 import keystone.modules.selection.SelectionModule;
@@ -16,7 +17,7 @@ public class PasteBoxRenderer extends AbstractRenderer<PasteBoundingBox>
     public void render(MatrixStack stack, PasteBoundingBox box)
     {
         OffsetBox bb = new OffsetBox(box.getMinCoords(), box.getMaxCoords());
-        SelectedFace selectedFace = Keystone.getModule(SelectionModule.class).getSelectedFace();
+        SelectedFace selectedFace = Keystone.getModule(MouseModule.class).getSelectedFace();
 
         box.getGhostBlocks().render(stack, box.getMinCoords());
         renderCuboid(bb, direction -> Color.green, direction ->

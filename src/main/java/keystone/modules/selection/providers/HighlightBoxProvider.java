@@ -3,6 +3,7 @@ package keystone.modules.selection.providers;
 import keystone.api.Keystone;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.DimensionId;
+import keystone.modules.mouse.MouseModule;
 import keystone.modules.selection.SelectionModule;
 import keystone.modules.selection.boxes.HighlightBoundingBox;
 
@@ -12,6 +13,7 @@ import java.util.Set;
 public class HighlightBoxProvider implements IBoundingBoxProvider<HighlightBoundingBox>
 {
     private SelectionModule selectionModule;
+    private MouseModule mouseModule;
     private Set<HighlightBoundingBox> box = new HashSet<>();
 
     public HighlightBoxProvider()
@@ -23,7 +25,10 @@ public class HighlightBoxProvider implements IBoundingBoxProvider<HighlightBound
     public boolean canProvide(DimensionId dimensionId)
     {
         if (selectionModule == null) selectionModule = Keystone.getModule(SelectionModule.class);
-        return selectionModule != null && selectionModule.isEnabled();
+        if (mouseModule == null) mouseModule = Keystone.getModule(MouseModule.class);
+        if (selectionModule == null || mouseModule == null) return false;
+
+        return selectionModule.isEnabled() && !selectionModule.isCreatingSelection() && mouseModule.getSelectedFace() == null;
     }
 
     @Override

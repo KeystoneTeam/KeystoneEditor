@@ -1,13 +1,12 @@
 package keystone.core;
 
 import keystone.api.Keystone;
-import keystone.api.wrappers.Block;
 import keystone.core.events.KeystoneEvent;
-import keystone.core.filters.providers.BlockProvider;
 import keystone.core.keybinds.KeystoneKeybinds;
 import keystone.gui.KeystoneOverlayHandler;
 import keystone.gui.screens.hotbar.KeystoneHotbar;
 import keystone.modules.history.HistoryModule;
+import keystone.modules.mouse.MouseModule;
 import keystone.modules.paste.CloneModule;
 import keystone.modules.paste.boxes.PasteBoundingBox;
 import keystone.modules.paste.renderers.PasteBoxRenderer;
@@ -59,6 +58,7 @@ public class KeystoneMod
     }
     private void registerDefaultModules(final KeystoneEvent.RegisterModules event)
     {
+        event.register(new MouseModule());
         event.register(new WorldCacheModule());
         event.register(new HistoryModule());
         event.register(new SelectionModule());

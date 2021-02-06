@@ -4,6 +4,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
 import keystone.core.renderer.client.renderers.OffsetBox;
+import keystone.modules.mouse.MouseModule;
 import keystone.modules.selection.SelectedFace;
 import keystone.modules.selection.SelectionModule;
 import keystone.modules.selection.boxes.SelectionBoundingBox;
@@ -16,7 +17,7 @@ public class SelectionBoxRenderer extends AbstractRenderer<SelectionBoundingBox>
     public void render(MatrixStack stack, SelectionBoundingBox box)
     {
         OffsetBox bb = new OffsetBox(box.getMinCoords(), box.getMaxCoords());
-        SelectedFace selectedFace = Keystone.getModule(SelectionModule.class).getSelectedFace();
+        SelectedFace selectedFace = Keystone.getModule(MouseModule.class).getSelectedFace();
 
         renderCuboid(bb, direction -> Color.white, direction ->
         {

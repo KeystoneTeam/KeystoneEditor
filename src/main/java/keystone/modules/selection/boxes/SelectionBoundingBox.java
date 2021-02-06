@@ -1,19 +1,26 @@
 package keystone.modules.selection.boxes;
 
+import keystone.api.Keystone;
 import keystone.core.math.RayTracing;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.SelectableBoundingBox;
+import keystone.modules.history.HistoryModule;
+import keystone.modules.history.entries.SelectionHistoryEntry;
 import keystone.modules.selection.SelectedFace;
+import keystone.modules.selection.SelectionModule;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector3d;
 
 public class SelectionBoundingBox extends SelectableBoundingBox
 {
+    private final SelectionModule selectionModule;
+
     protected SelectionBoundingBox(Coords corner1, Coords corner2)
     {
         super(corner1, corner2, BoundingBoxType.get("selection_box"));
+        this.selectionModule = Keystone.getModule(SelectionModule.class);
     }
     public static SelectionBoundingBox startNew(Coords coords)
     {
@@ -29,6 +36,13 @@ public class SelectionBoundingBox extends SelectableBoundingBox
     public int getPriority()
     {
         return 1000;
+    }
+    @Override
+    public boolean isEnabled() { return selectionModule.isEnabled(); }
+    @Override
+    public void startDrag(SelectedFace face)
+    {
+        Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionModule.getSelectionBoundingBoxes(), true));
     }
     @Override
     public void drag(SelectedFace face)

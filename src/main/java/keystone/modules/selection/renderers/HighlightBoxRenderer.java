@@ -15,11 +15,8 @@ public class HighlightBoxRenderer extends AbstractRenderer<HighlightBoundingBox>
     @Override
     public void render(MatrixStack stack, HighlightBoundingBox box)
     {
-        if (Keystone.RenderHighlightBox)
-        {
-            RenderHelper.enableDepthTest();
-            OffsetBox bb = new OffsetBox(Player.getHighlightedBlock(), Player.getHighlightedBlock()).nudge();
-            renderCuboid(bb, Color.yellow, true, false);
-        }
+        RenderHelper.enableDepthTest();
+        OffsetBox bb = new OffsetBox(Player.getHighlightedBlock(), Player.getHighlightedBlock()).nudge();
+        renderCuboid(bb, Color.yellow, true, false);
     }
 }

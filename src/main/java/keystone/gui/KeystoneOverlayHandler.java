@@ -2,6 +2,8 @@ package keystone.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
+import keystone.core.events.KeystoneEvent;
+import keystone.core.events.KeystoneInputEvent;
 import keystone.gui.screens.hotbar.KeystoneHotbar;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IGuiEventListener;
@@ -88,6 +90,16 @@ public class KeystoneOverlayHandler
             double mouseY = mc.mouseHelper.getMouseY() * mc.getMainWindow().getScaledHeight() / mc.getMainWindow().getHeight();
             mouseScrolled(mouseX, mouseY, event.getScrollDelta());
         }
+    }
+    @SubscribeEvent
+    public static void mouseDragged(final KeystoneInputEvent.MouseDragEvent event)
+    {
+        if (Keystone.isActive()) mouseDragged(event.mouseX, event.mouseY, event.button, event.dragX, event.dragY);
+    }
+    @SubscribeEvent
+    public static void mouseMoved(final KeystoneInputEvent.MouseMoveEvent event)
+    {
+        if (Keystone.isActive()) mouseMoved(event.mouseX, event.mouseY);
     }
     //endregion
     //region Event Forwarding
