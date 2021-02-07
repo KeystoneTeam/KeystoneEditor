@@ -7,6 +7,8 @@ import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.text.ITextComponent;
 
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class Dropdown<T> extends Widget
 {
@@ -80,14 +82,17 @@ public class Dropdown<T> extends Widget
         }
     }
 
+    public int size() { return entries.length; }
+    public T getEntry(int index) { return entries[index]; }
     public T getSelectedEntry() { return selectedEntry; }
     public ITextComponent getSelectedEntryTitle() { return selectedEntryTitle; }
 
-    public void setSelectedEntry(T entry, boolean raiseEvent)
+    public void setSelectedEntry(T entry, boolean raiseEvent) { setSelectedEntry(entry, raiseEvent, T::equals); }
+    public void setSelectedEntry(T entry, boolean raiseEvent, BiFunction<T, T, Boolean> equalityFunction)
     {
         for (int i = 0; i < entries.length; i++)
         {
-            if (entries[i] == entry)
+            if (equalityFunction.apply(entry, entries[i]))
             {
                 visible = false;
                 selectedEntry = entries[i];

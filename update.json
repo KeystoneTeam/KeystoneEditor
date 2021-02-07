@@ -2,17 +2,19 @@
 	"homepage": "https://github.com/KeystoneTeam/KeystoneEditor/releases",
 	"promos":
 	{
-		"1.16.5-latest": "0.2.6",
-		"1.16.5-recommended": "0.2.6",
-		"1.16.4-latest": "0.2.6",
-		"1.16.4-recommended": "0.2.6"
+		"1.16.5-latest": "0.2.7",
+		"1.16.5-recommended": "0.2.7",
+		"1.16.4-latest": "0.2.7",
+		"1.16.4-recommended": "0.2.7"
 	},
 	"1.16.5":
 	{
+		"0.2.7": "New stock filters, WIP hotbar buttons",
 		"0.2.6": "Version checker, issue tracker, and releases page"
 	},
 	"1.16.4":
 	{
+		"0.2.7": "New stock filters, WIP hotbar buttons",
 		"0.2.6": "Version checker, issue tracker, and releases page"
 	}
 }

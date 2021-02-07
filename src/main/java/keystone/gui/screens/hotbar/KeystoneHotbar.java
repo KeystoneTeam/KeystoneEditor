@@ -87,6 +87,10 @@ public class KeystoneHotbar extends Screen
                 new HotbarButton(this, KeystoneHotbarSlot.IMPORT,    getSlotX(5), offsetY + 3, this::importPressed),
                 new HotbarButton(this, KeystoneHotbarSlot.SPAWN,     getSlotX(6), offsetY + 3, this::spawnPressed)
         };
+        hotbarButtons[1].active = false;
+        hotbarButtons[2].active = false;
+        hotbarButtons[5].active = false;
+        hotbarButtons[6].active = false;
         for (HotbarButton button : hotbarButtons) addButton(button);
 
         if (selectedSlot == null) selectedSlot = KeystoneHotbarSlot.SELECTION;

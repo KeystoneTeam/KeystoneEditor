@@ -9,12 +9,12 @@
   "key.categories.keystone": "Keystone",
 
   "keystone.hotbar.selection": "Selection",
-  "keystone.hotbar.brush": "Brush",
-  "keystone.hotbar.clone": "Clone",
+  "keystone.hotbar.brush": "Brush (WIP)",
+  "keystone.hotbar.clone": "Clone (WIP)",
   "keystone.hotbar.fill": "Fill",
   "keystone.hotbar.filter": "Filter",
-  "keystone.hotbar.import": "Import",
-  "keystone.hotbar.spawn": "Spawn",
+  "keystone.hotbar.import": "Import (WIP)",
+  "keystone.hotbar.spawn": "Spawn (WIP)",
 
   "keystone.filter_panel.select": "Filter: ",
   "keystone.filter_panel.runFilter": "Filter"

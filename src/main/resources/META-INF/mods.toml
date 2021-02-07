@@ -1,12 +1,12 @@
 modLoader="javafml"
 loaderVersion="[35,)"
 
-license="All rights reserved"
+license="GPL v3.0"
 
 issueTrackerURL="https://github.com/KeystoneTeam/KeystoneEditor/issues"
 updateJSONURL="https://github.com/KeystoneTeam/KeystoneEditor/raw/master/update.json"
 displayURL="https://github.com/KeystoneTeam/KeystoneEditor/releases"
-#logoFile="keystone.png"
+logoFile="keystone.png"
 
 [[mods]]
 modId="keystone" #mandatory
@@ -16,7 +16,7 @@ displayName="Keystone Editor"
 credits="Based off of MCEdit Unified" #optional
 authors="CodeCracked" #optional
 description='''
-A mod which turns the game into a powerful map editor with similar features to MCEdit Unified.
+    Keystone, a powerful world editing mod based of MCEdit Unified
 '''
 
 [[dependencies.keystone]]

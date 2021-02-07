@@ -46,21 +46,25 @@ public class HotbarButton extends ButtonNoHotkey
     @Override
     public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
-        if (enabledSupplier.get())
+        if (active)
         {
-            if (isHovered())
+            if (enabledSupplier.get())
             {
-                colorSlot(stack, 0x80FFFFFF);
-                renderToolTip(stack, mouseX, mouseY);
-                KeystoneOverlayHandler.MouseOverGUI = true;
+                if (isHovered())
+                {
+                    colorSlot(stack, 0x80FFFFFF);
+                    renderToolTip(stack, mouseX, mouseY);
+                    KeystoneOverlayHandler.MouseOverGUI = true;
+                }
+                if (KeystoneHotbar.getSelectedSlot() == slot)
+                {
+                    mc.getTextureManager().bindTexture(selectionTexture);
+                    blit(stack, unscaledX - 4, unscaledY - 4, 24, 24, 0, 22, 24, 24, 256, 256);
+                }
             }
-            if (KeystoneHotbar.getSelectedSlot() == slot)
-            {
-                mc.getTextureManager().bindTexture(selectionTexture);
-                blit(stack, unscaledX - 4, unscaledY - 4, 24, 24, 0, 22, 24, 24, 256, 256);
-            }
+            else colorSlot(stack, 0x80FF0000);
         }
-        else colorSlot(stack, 0x80FF0000);
+        else if (isHovered()) renderToolTip(stack, mouseX, mouseY);
     }
     @Override
     public boolean isHovered() { return super.isHovered() && enabledSupplier.get(); }

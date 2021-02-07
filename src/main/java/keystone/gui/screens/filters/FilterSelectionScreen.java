@@ -3,14 +3,13 @@ package keystone.gui.screens.filters;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
-import keystone.api.filters.Variable;
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.filters.Variable;
 import keystone.api.wrappers.BlockMask;
 import keystone.api.wrappers.BlockPalette;
 import keystone.core.filters.FilterCompiler;
 import keystone.core.utils.AnnotationUtils;
 import keystone.gui.KeystoneOverlayHandler;
-import keystone.gui.screens.hotbar.HotbarButton;
 import keystone.gui.screens.hotbar.KeystoneHotbar;
 import keystone.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.gui.widgets.ButtonNoHotkey;
@@ -24,16 +23,20 @@ import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
-import org.lwjgl.opengl.GL11;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FilterSelectionScreen extends Screen
 {
     private static final int PADDING = 5;
     private static boolean open;
+    private static KeystoneFilter selectedFilter;
+    private static KeystoneFilter filterInstance;
 
     private int panelMinY;
     private int panelMaxX;
@@ -48,8 +51,6 @@ public class FilterSelectionScreen extends Screen
 
     private Button selectFilterButton;
     private Dropdown<KeystoneFilter> dropdown;
-    private KeystoneFilter selectedFilter;
-    private KeystoneFilter filterInstance;
 
     protected FilterSelectionScreen()
     {
@@ -83,17 +84,31 @@ public class FilterSelectionScreen extends Screen
         addButtonQueue.clear();
 
         // Compile filters
+        boolean recompiled = false;
         if (compiledFilters == null)
         {
+            recompiled = true;
             File[] filterFiles = FilterCompiler.getInstalledFilters();
             compiledFilters = new KeystoneFilter[filterFiles.length];
             for (int i = 0; i < filterFiles.length; i++) compiledFilters[i] = FilterCompiler.compileFilter(filterFiles[i].getPath());
         }
 
         // Calculate panel size
-        if (this.filterInstance == null)
+        if (filterInstance == null)
         {
-            this.selectedFilter = compiledFilters[0];
+            selectedFilter = compiledFilters[0];
+            recreateFilterInstance();
+        }
+        else if (recompiled)
+        {
+            for (KeystoneFilter filter : compiledFilters)
+            {
+                if (filter.getName().equals(selectedFilter.getName()))
+                {
+                    selectedFilter = filter;
+                    break;
+                }
+            }
             recreateFilterInstance();
         }
         recalculateVariablesHeight();
@@ -122,13 +137,24 @@ public class FilterSelectionScreen extends Screen
                 (filter, title) ->
                 {
                     restoreWidgets();
-                    this.selectedFilter = filter;
+                    selectedFilter = filter;
                     this.selectFilterButton.setMessage(title);
                     recreateFilterInstance();
 
                     this.init(minecraft, width, height);
                 }, compiledFilters);
-        if (this.selectedFilter != null) this.dropdown.setSelectedEntry(this.selectedFilter, false);
+        if (selectedFilter != null)
+        {
+            for (int i = 0; i < dropdown.size(); i++)
+            {
+                KeystoneFilter filter = dropdown.getEntry(i);
+                if (filter.getName().equals(selectedFilter.getName()))
+                {
+                    dropdown.setSelectedEntry(filter, false);
+                    break;
+                }
+            }
+        }
 
         // Run Filter Button
         int buttonWidth = font.getStringWidth(new TranslationTextComponent("keystone.filter_panel.runFilter").getString()) + 10;
@@ -347,13 +373,13 @@ public class FilterSelectionScreen extends Screen
     //region Helpers
     private void recreateFilterInstance()
     {
-        if (selectedFilter == null) this.filterInstance = null;
+        if (selectedFilter == null) filterInstance = null;
         else
         {
             try
             {
-                this.filterInstance = selectedFilter.getClass().newInstance().setName(selectedFilter.getName());
-                if (selectedFilter.isCompiledSuccessfully()) this.filterInstance.compiledSuccessfully();
+                filterInstance = selectedFilter.getClass().newInstance().setName(selectedFilter.getName());
+                if (selectedFilter.isCompiledSuccessfully()) filterInstance.compiledSuccessfully();
             }
             catch (InstantiationException | IllegalAccessException e) { e.printStackTrace(); }
         }
@@ -362,10 +388,10 @@ public class FilterSelectionScreen extends Screen
     {
         for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).setFocused2(false);
 
-        if (this.filterInstance != null) Keystone.runFilter(this.filterInstance);
+        if (filterInstance != null) Keystone.runFilter(filterInstance);
         else
         {
-            String error = "Could not create instance of filter '" + this.selectedFilter.getName() + "'!";
+            String error = "Could not create instance of filter '" + selectedFilter.getName() + "'!";
             Keystone.LOGGER.error(error);
             minecraft.player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
         }
