@@ -2,7 +2,6 @@ package keystone.api.wrappers;
 
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.tools.interfaces.IBlockTool;
 import keystone.core.filters.providers.BlockProvider;
 import keystone.core.filters.providers.IBlockProvider;
 import keystone.core.filters.providers.TagBlockProvider;
@@ -13,9 +12,16 @@ import net.minecraft.tags.ITagCollection;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.WeightedRandom;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
+/**
+ * A weighted palette of {@link keystone.api.wrappers.Block Blocks} for a filter. Used to set a block to
+ * a random state from a list
+ */
 public class BlockPalette
 {
     private class PaletteEntry extends WeightedRandom.Item
@@ -33,6 +39,10 @@ public class BlockPalette
     private Map<IBlockProvider, PaletteEntry> weights = new HashMap<>();
     private int totalWeight;
 
+    /**
+     * Create a new {@link keystone.api.wrappers.BlockPalette} with the same contents as this one
+     * @return
+     */
     public BlockPalette clone()
     {
         BlockPalette clone = new BlockPalette();
@@ -47,6 +57,13 @@ public class BlockPalette
     }
 
     //region With
+    /**
+     * Add a block ID to the palette. Any ID that is a valid ID for the /setblock command will work. Add a number
+     * to the end to specify the block's weight in the palette, with a higher weight being more likely to be
+     * chosen. [e.g. "minecraft:stone_slab[type=top] 10"]
+     * @param block The block ID and optional weight
+     * @return The modified {@link keystone.api.wrappers.BlockPalette}
+     */
     public BlockPalette with(String block)
     {
         String[] tokens = block.split(" ");
@@ -68,6 +85,13 @@ public class BlockPalette
             }
         }
     }
+    /**
+     * Add a block ID to the palette with a given weight, with a higher weight being more likely to be
+     * chosen. Any ID that is a valid ID for the /setblock command will work
+     * @param block The block ID
+     * @param weight The weight
+     * @return The modified {@link keystone.api.wrappers.BlockPalette}
+     */
     public BlockPalette with(String block, int weight)
     {
         if (block.startsWith("#"))
@@ -79,9 +103,33 @@ public class BlockPalette
         }
         else return with(KeystoneFilter.block(block), weight);
     }
+    /**
+     * Add a {@link keystone.api.wrappers.Block} to the palette with a weight of 1
+     * @param block The {@link keystone.api.wrappers.Block} top add
+     * @return The modified {@link keystone.api.wrappers.BlockPalette}
+     */
     public BlockPalette with(Block block) { return with(block, 1); }
+    /**
+     * Add a {@link keystone.api.wrappers.Block} to the palette with a given weight. A higher weight is more
+     * likely to be chosen
+     * @param block The {@link keystone.api.wrappers.Block} to add
+     * @param weight The weight of the block
+     * @return The modified {@link keystone.api.wrappers.BlockPalette}
+     */
     public BlockPalette with(Block block, int weight) { return with(new BlockProvider(block), weight); }
+    /**
+     * Add an {@link keystone.core.filters.providers.IBlockProvider} to the palette with a weight of 1
+     * @param block The {@link keystone.core.filters.providers.IBlockProvider} to add
+     * @return The modified {@link keystone.api.wrappers.BlockPalette}
+     */
     public BlockPalette with(IBlockProvider block) { return with(block, 1); }
+    /**
+     * Add am {@link keystone.core.filters.providers.IBlockProvider} to the palette with a given weight. A
+     * higher weight is more likely to be chosen
+     * @param block The {@link keystone.core.filters.providers.IBlockProvider} to add
+     * @param weight The weight of the block provider
+     * @return The modified {@link keystone.api.wrappers.BlockPalette}
+     */
     public BlockPalette with(IBlockProvider block, int weight)
     {
         if (weights.containsKey(block))
@@ -102,6 +150,13 @@ public class BlockPalette
     }
     //endregion
     //region Without
+    /**
+     * Remove a block ID from the palette. Any ID that is a valid ID for the /setblock command will work. Add a number
+     * to the end to specify the weight to remove from the block in the palette instead of automatically removing it.
+     * [e.g. "minecraft:stone_slab[type=top] 10"]
+     * @param block The block ID and optional weight
+     * @return The modified {@link keystone.api.wrappers.BlockPalette}
+     */
     public BlockPalette without(String block)
     {
         String[] tokens = block.split(" ");
@@ -123,6 +178,13 @@ public class BlockPalette
             }
         }
     }
+    /**
+     * Remove weight from a block in the palette. Any ID that is a valid ID for the /setblock command will work. If the
+     * remaining weight is zero or less, the entry will be removed. [e.g. "minecraft:stone_slab[type=top] 10"]
+     * @param block The block ID
+     * @param weight The weight to remove
+     * @return The modified {@link keystone.api.wrappers.BlockPalette}
+     */
     public BlockPalette without(String block, int weight)
     {
         if (block.startsWith("#"))
@@ -134,12 +196,36 @@ public class BlockPalette
         }
         else return without(KeystoneFilter.block(block), weight);
     }
+    /**
+     * Remove a {@link keystone.api.wrappers.Block} from the palette
+     * @param block The {@link keystone.api.wrappers.Block} to remove
+     * @return The modified {@link keystone.api.wrappers.BlockPalette}
+     */
     public BlockPalette without(Block block) { return without(block, Integer.MAX_VALUE); }
+    /**
+     * Remove weight from a {@link keystone.api.wrappers.Block} in the palette. If the remaining weight is zero or less,
+     * the entry will be removed
+     * @param block The {@link keystone.api.wrappers.Block} to effect
+     * @param weight The weight to remove
+     * @return The modified {@link keystone.api.wrappers.BlockPalette}
+     */
     public BlockPalette without(Block block, int weight) { return without(new BlockProvider(block), weight); }
+    /**
+     * Remove an {@link keystone.core.filters.providers.IBlockProvider} from the palette
+     * @param block The {@link keystone.core.filters.providers.IBlockProvider} to remove
+     * @return The modified {@link keystone.api.wrappers.BlockPalette}
+     */
     public BlockPalette without(IBlockProvider block)
     {
         return without(block, Integer.MAX_VALUE);
     }
+    /**
+     * Remove weight from an {@link keystone.core.filters.providers.IBlockProvider} in the palette. If the remaining
+     * weight is zero or less, the entry will be removed
+     * @param block The {@link keystone.core.filters.providers.IBlockProvider} to effect
+     * @param weight The weight to remove
+     * @return The modified {@link keystone.api.wrappers.BlockPalette}
+     */
     public BlockPalette without(IBlockProvider block, int weight)
     {
         if (weights.containsKey(block))
@@ -162,16 +248,29 @@ public class BlockPalette
     }
     //endregion
     //region Contains
+    /**
+     * Check if the palette contains a {@link keystone.api.wrappers.Block}
+     * @param block The {@link keystone.api.wrappers.Block} to check
+     * @return Whether the palette contains the block
+     */
     public boolean contains(Block block)
     {
         return contains(new BlockProvider(block));
     }
+    /**
+     * Check if the palette contains an {@link keystone.core.filters.providers.IBlockProvider}
+     * @param provider The {@link keystone.core.filters.providers.IBlockProvider} to check
+     * @return Whether the palette contains the block provider
+     */
     public boolean contains(IBlockProvider provider)
     {
         return this.weights.containsKey(provider);
     }
     //endregion
 
+    /**
+     * @return A random {@link keystone.api.wrappers.Block} from the palette
+     */
     public Block randomBlock()
     {
         if (palette.size() == 0)
@@ -181,6 +280,9 @@ public class BlockPalette
         }
         return WeightedRandom.getRandomItem(Keystone.RANDOM, palette, totalWeight).blockProvider.get();
     }
+    /**
+     * @return A random index from the palette
+     */
     public int randomIndex()
     {
         if (palette.size() == 0)
@@ -192,16 +294,25 @@ public class BlockPalette
         PaletteEntry entry = WeightedRandom.getRandomItem(Keystone.RANDOM, palette, totalWeight);
         return palette.indexOf(entry);
     }
+    /**
+     * Get a {@link keystone.api.wrappers.Block} at a given index in the palette
+     * @param index The index
+     * @return The block at the given index
+     */
     public Block getBlock(int index)
     {
         if (palette.size() == 0)
         {
-            Keystone.abortFilter("Cannot get block from empty BlockPalette!");
+            Keystone.abortFilter("Cannot get block at index from empty BlockPalette!");
             return new Block(Blocks.AIR.getDefaultState());
         }
 
         while (index >= palette.size()) index -= palette.size();
         return palette.get(index).blockProvider.get();
     }
+    /**
+     * Run a function on every entry in the palette
+     * @param consumer The function to run
+     */
     public void forEach(BiConsumer<IBlockProvider, Integer> consumer) { palette.forEach(entry -> consumer.accept(entry.blockProvider, entry.itemWeight)); }
 }

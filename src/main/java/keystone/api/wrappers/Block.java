@@ -17,19 +17,54 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * A wrapper for a Minecraft block. Contains information about the block's state and NBT data
+ */
 public class Block
 {
     private BlockState state;
     private CompoundNBT tileEntity;
 
+    //region INTERNAL USE ONLY
+    /**
+     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @param state The Minecraft block state
+     */
     public Block(BlockState state) { this(state, (CompoundNBT)null); }
+    /**
+     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @param state The Minecraft block state
+     * @param tileEntity The Minecraft tile entity
+     */
     public Block(BlockState state, TileEntity tileEntity) { this(state, tileEntity != null ? tileEntity.serializeNBT() : null); }
+    /**
+     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @param state The Minecraft block state
+     * @param tileEntity The Minecraft NBT data
+     */
     public Block(BlockState state, CompoundNBT tileEntity)
     {
         this.state = state;
         if (tileEntity != null) this.tileEntity = tileEntity;
     }
 
+    /**
+     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @return This block's Minecraft block state
+     */
+    public BlockState getMinecraftBlock() { return state; }
+    /**
+     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @return This block's Minecraft NBT data
+     */
+    public CompoundNBT getTileEntityData() { return tileEntity; }
+    //endregion
+
+    /**
+     * Apply a given property set to this block
+     * @param properties A property set. [e.g. "type=top", "type=top,waterlogged=true"]
+     * @return The modified block instance
+     */
     public Block properties(String properties)
     {
         try
@@ -72,6 +107,12 @@ public class Block
             return this;
         }
     }
+    /**
+     * Apply a given property value to this block
+     * @param property The property to set. [e.g. "type"]
+     * @param value The value of the property. [e.g. "top"]
+     * @return The modified block instance
+     */
     public Block property(String property, String value)
     {
         try
@@ -102,6 +143,13 @@ public class Block
             return this;
         }
     }
+
+    /**
+     * Set NBT data at a given path to a given value
+     * @param path The NBT path. [e.g. "Items[0].Count", "Items[{Slot:0b}]"]
+     * @param data The value to set. [e.g. "32b", "{id:"minecraft:diamond",Count:2b}"]
+     * @return The modified block instance
+     */
     public Block data(String path, String data)
     {
         try
@@ -121,9 +169,10 @@ public class Block
         }
     }
 
+    /**
+     * @return Whether this block is an air block
+     */
     public boolean isAir() { return this.state.isAir(); }
-    public BlockState getMinecraftBlock() { return state; }
-    public CompoundNBT getTileEntityData() { return tileEntity; }
 
     @Override
     public boolean equals(Object o)
@@ -138,7 +187,6 @@ public class Block
     {
         return toString().hashCode();
     }
-
     @Override
     public String toString()
     {

@@ -38,9 +38,9 @@ public class Forester extends KeystoneFilter
     }
     public void processBox(FilterBox box)
     {
-        for (int x = box.getMin().getX(); x <= box.getMax().getX(); x++)
+        for (int x = box.min.x; x <= box.max.x; x++)
         {
-            for (int z = box.getMin().getZ(); z <= box.getMax().getZ(); z++)
+            for (int z = box.min.z; z <= box.max.z; z++)
             {
                 if (random.nextFloat() >= treeChance) continue;
 

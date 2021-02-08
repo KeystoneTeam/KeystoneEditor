@@ -1,7 +1,7 @@
 package keystone.modules.paste;
 
 import keystone.api.Keystone;
-import keystone.api.schematic.KeystoneSchematic;
+import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.gui.screens.hotbar.KeystoneHotbarSlot;

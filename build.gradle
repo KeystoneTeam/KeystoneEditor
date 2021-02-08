@@ -103,6 +103,11 @@ reobf {
     }
 }
 
+javadoc {
+    source = sourceSets.main.java
+    classpath = configurations.compile
+}
+
 jar {
     archiveName = archivesBaseName + " " + version + " API.jar";
 
@@ -146,6 +151,7 @@ shadowJar {
 // Example configuration to allow publishing using the maven-publish task
 // This is the preferred method to reobfuscate your jar file
 shadowJar.finalizedBy('reobfJar')
+jar.finalizedBy('javadoc')
 // However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing
 //publish.dependsOn('reobfJar')
 

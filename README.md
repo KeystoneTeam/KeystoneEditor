@@ -7,7 +7,7 @@ The mod is currently unfinished and in alpha. You can find a snapshot builds on 
 
 Contributing
 --------------
-If you'd like to contribute something to Keystone Editor, you're free to do so. Not all changes will be accepted. If you're unsure if your suggestion fits the mod, [open an issue](https://github.com/KeystoneTeam/KeystoneEditor/issues) to discuss it first!
+If you'd like to contribute something to Keystone Editor, you're free to do so. Any methods you change or add require javadoc comments saying what they do. Not all changes will be accepted. If you're unsure if your suggestion fits the mod, [open an issue](https://github.com/KeystoneTeam/KeystoneEditor/issues) to discuss it first!
 
 Compilation
 --------------

@@ -8,10 +8,16 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 
+/**
+ * A {@link keystone.api.tools.interfaces.IBlockTool} which sets every block to a given block state
+ */
 public class FillTool implements IBlockTool
 {
     private BlockState block;
 
+    /**
+     * @param block The block state to fill
+     */
     public FillTool(BlockState block)
     {
         this.block = block;

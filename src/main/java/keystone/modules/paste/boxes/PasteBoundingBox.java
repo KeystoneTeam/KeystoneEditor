@@ -1,7 +1,7 @@
 package keystone.modules.paste.boxes;
 
 import keystone.api.Keystone;
-import keystone.api.schematic.KeystoneSchematic;
+import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.renderer.blocks.GhostBlockRenderer;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.BoundingBoxType;

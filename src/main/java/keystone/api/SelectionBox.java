@@ -3,14 +3,15 @@ package keystone.api;
 import keystone.core.renderer.common.models.Coords;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.World;
 
 import java.util.function.Consumer;
 
+/**
+ * A selection box containing block state data
+ */
 public class SelectionBox
 {
     private final BlockPos min;
@@ -21,6 +22,12 @@ public class SelectionBox
     private BlockState[] blocks;
     private BlockState[] buffer;
 
+    /**
+     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @param min The minimum coordinates of the selection box
+     * @param max The maximum coordinates of the selection box
+     * @param world The {@link net.minecraft.world.World} the selection box is a part of
+     */
     public SelectionBox(Coords min, Coords max, World world)
     {
         this.min = new BlockPos(min.getX(), min.getY(), min.getZ());
@@ -47,6 +54,11 @@ public class SelectionBox
         }
     }
 
+    /**
+     * Convert a block position into an array index
+     * @param pos The block position
+     * @return The converted array index
+     */
     private int getBlockIndex(BlockPos pos)
     {
         Vector3i normalized = new Vector3i(pos.getX() - min.getX(), pos.getY() - min.getY(), pos.getZ() - min.getZ());
@@ -65,7 +77,18 @@ public class SelectionBox
     public BlockPos getMax() { return max; }
     public Vector3i getSize() { return size; }
 
+    /**
+     * Get the block state at a position, before tools have modified it
+     * @param pos The block position
+     * @return The block state before tool execution
+     */
     public BlockState getBlock(BlockPos pos) { return getBlock(pos, true); }
+    /**
+     * Get the block state at a position
+     * @param pos The block position
+     * @param getOriginalState Whether to get the state from before tool execution
+     * @return The block state
+     */
     public BlockState getBlock(BlockPos pos, boolean getOriginalState)
     {
         int index = getBlockIndex(pos);
@@ -73,7 +96,19 @@ public class SelectionBox
         else return getOriginalState ? blocks[index] : buffer[index];
     }
 
+    /**
+     * Set the block state at a position
+     * @param pos The block position
+     * @param block The block
+     * @return Whether the operation was successful
+     */
     public boolean setBlock(BlockPos pos, Block block) { return setBlock(pos, block.getDefaultState()); }
+    /**
+     * Set the block state at a position
+     * @param pos The block position
+     * @param block The block state
+     * @return Whether the operation was successful
+     */
     public boolean setBlock(BlockPos pos, BlockState block)
     {
         int index = getBlockIndex(pos);
@@ -83,6 +118,10 @@ public class SelectionBox
         return true;
     }
 
+    /**
+     * Run a function on every block position in the selection box
+     * @param consumer The function to run
+     */
     public void forEachBlock(Consumer<BlockPos> consumer)
     {
         for (int x = min.getX(); x <= max.getX(); x++)

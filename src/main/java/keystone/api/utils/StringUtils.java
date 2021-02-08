@@ -1,11 +1,24 @@
 package keystone.api.utils;
 
+/**
+ * A collection of static functions for manipulating Strings
+ */
 public class StringUtils
 {
+    /**
+     * Convert an enum name to title case. [e.g. TEST_VALUE -> "Test Value"]
+     * @param text The enum name to convert
+     * @return The title cased string
+     */
     public static final String enumCaseToTitleCase(String text)
     {
         return titleCase(text.toLowerCase().replace('_', ' '));
     }
+    /**
+     * Convert a string to title case. [e.g. "test string" -> "Test String"]
+     * @param text The text to convert
+     * @return The title cased string
+     */
     public static final String titleCase(String text)
     {
         if (text == null || text.isEmpty()) return text;
@@ -32,6 +45,11 @@ public class StringUtils
 
         return converted.toString();
     }
+    /**
+     * Add spaces to a sentence string. [e.g. "TestString" -> "Test String"]
+     * @param text The text to convert
+     * @return The spaced string
+     */
     public static final String addSpacesToSentence(String text)
     {
         if (text == null || text.isEmpty()) return text;
