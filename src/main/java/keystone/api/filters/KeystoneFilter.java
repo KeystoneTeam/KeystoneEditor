@@ -19,7 +19,7 @@ import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 
 /**
- * A filter compilable by Keystone. All filters must contain a class which extends {@link keystone.api.filters.KeystoneFilter}
+ * A filter compilable by Keystone. All filters must contain a class which extends {@link keystone.api.filters.KeystoneFilter}.
  * Contains information relating to which {@link keystone.api.filters.FilterBox FilterBoxes} the filter is modifying, as well
  * as several API functions
  */
@@ -75,9 +75,9 @@ public class KeystoneFilter
      * Ran for every block the filter is modifying after {@link keystone.api.filters.KeystoneFilter#processBox(FilterBox)}. Use this
      * for modifications that can be done on a per-block basis. Be sure that this code is self-contained, as this will be ran on
      * multiple threads for improved performance, and as such is subject to race conditions
-     * @param x
-     * @param y
-     * @param z
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
      * @param box The {@link keystone.api.filters.FilterBox} that the block is in
      */
     public void processBlock(int x, int y, int z, FilterBox box)  {}

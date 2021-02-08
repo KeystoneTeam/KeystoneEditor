@@ -6,7 +6,7 @@ package keystone.api.utils;
 public class StringUtils
 {
     /**
-     * Convert an enum name to title case. [e.g. TEST_VALUE -> "Test Value"]
+     * Convert an enum name to title case. [e.g. TEST_VALUE -&gt; "Test Value"]
      * @param text The enum name to convert
      * @return The title cased string
      */
@@ -15,7 +15,7 @@ public class StringUtils
         return titleCase(text.toLowerCase().replace('_', ' '));
     }
     /**
-     * Convert a string to title case. [e.g. "test string" -> "Test String"]
+     * Convert a string to title case. [e.g. "test string" -&gt; "Test String"]
      * @param text The text to convert
      * @return The title cased string
      */
@@ -46,7 +46,7 @@ public class StringUtils
         return converted.toString();
     }
     /**
-     * Add spaces to a sentence string. [e.g. "TestString" -> "Test String"]
+     * Add spaces to a sentence string. [e.g. "TestString" -&gt; "Test String"]
      * @param text The text to convert
      * @return The spaced string
      */

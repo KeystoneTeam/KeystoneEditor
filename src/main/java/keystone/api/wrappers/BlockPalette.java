@@ -41,7 +41,7 @@ public class BlockPalette
 
     /**
      * Create a new {@link keystone.api.wrappers.BlockPalette} with the same contents as this one
-     * @return
+     * @return The cloned {@link keystone.api.wrappers.BlockPalette}
      */
     public BlockPalette clone()
     {

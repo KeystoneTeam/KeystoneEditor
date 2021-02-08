@@ -66,9 +66,9 @@ public class FilterBox
 
     /**
      * Convert a block position to an array index
-     * @param x
-     * @param y
-     * @param z
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
      * @return The index of the position in the blocks array, or -1 if the position is not in the filter box
      */
     private int getBlockIndex(int x, int y, int z)
@@ -104,8 +104,8 @@ public class FilterBox
 
     /**
      * Retrieve the top-most block of a column in the filter box that is not air
-     * @param x
-     * @param z
+     * @param x The x coordinate
+     * @param z The z coordinate
      * @return The highest non-air block in the filter box
      */
     public int getTopBlock(int x, int z)
@@ -122,18 +122,18 @@ public class FilterBox
 
     /**
      * Get the block at a position in the filter box, before any changes were made by the filter
-     * @param x
-     * @param y
-     * @param z
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
      * @return The block at the given coordinates
      */
     public Block getBlock(int x, int y, int z) { return getBlock(x, y, z, true); }
 
     /**
      * Get the block at a position in the filter box
-     * @param x
-     * @param y
-     * @param z
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
      * @param getOriginalState If true, it will return the original block before the filter changed it
      * @return The block at the given coordinates
      */
@@ -150,9 +150,9 @@ public class FilterBox
 
     /**
      * Set the block at a position in the filter box. This will only work if the position is within the filter box
-     * @param x
-     * @param y
-     * @param z
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
      * @param block The block to change the position to. [e.g. "stone", "minecraft:stone", "stone_slab[type=top]", "chest{Items:[]}"]
      * @return Whether the change was successful
      */
@@ -164,9 +164,9 @@ public class FilterBox
     /**
      * Set the block at a position in the filter box to a random entry in a {@link keystone.api.wrappers.BlockPalette}.
      * This will only work if the position is within the filter box
-     * @param x
-     * @param y
-     * @param z
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
      * @param palette The {@link keystone.api.wrappers.BlockPalette} to change the position to
      * @return Whether the change was successful
      */
@@ -175,9 +175,9 @@ public class FilterBox
     /**
      * Set the block at a position in the filter box to a {@link keystone.api.wrappers.Block}.
      * This will only work if the position is within the filter box
-     * @param x
-     * @param y
-     * @param z
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
      * @param block The {@link keystone.api.wrappers.Block} to change the position to
      * @return Whether the change was successful
      */
