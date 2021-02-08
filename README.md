@@ -1,5 +1,5 @@
 # Keystone Editor
-A reimagining of [MCEdit Unified](https://www.mcedit-unified.net/). A Minecraft world editing mod which aims to make large scale editing as easy as possible using tools similar to the outdated program MCEdit.
+A reimagining of [MCEdit Unified](https://www.mcedit-unified.net/). A Minecraft world editing mod which aims to make large scale editing as easy as possible using tools similar to the outdated program MCEdit. You can view the Keystone javadoc [here](https://keystoneteam.github.io)
 
 Download
 --------------
