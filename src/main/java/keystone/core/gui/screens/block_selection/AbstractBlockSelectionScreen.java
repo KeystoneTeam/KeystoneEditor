@@ -1,6 +1,7 @@
 package keystone.core.gui.screens.block_selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.widgets.BlockGridWidget;
 import net.minecraft.block.Block;
@@ -12,7 +13,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 
-public abstract class AbstractBlockSelectionScreen extends Screen
+public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
 {
     public static final boolean DEBUG_LOG = false;
 
@@ -33,6 +34,11 @@ public abstract class AbstractBlockSelectionScreen extends Screen
     }
     public abstract void onBlockSelected(BlockState block);
 
+    @Override
+    public boolean shouldCloseOnEsc()
+    {
+        return true;
+    }
     @Override
     protected void init()
     {

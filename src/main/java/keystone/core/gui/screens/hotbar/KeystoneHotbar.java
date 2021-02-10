@@ -3,18 +3,19 @@ package keystone.core.gui.screens.hotbar;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
+import keystone.core.events.KeystoneHotbarEvent;
+import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.block_selection.SingleBlockSelectionScreen;
-import keystone.core.gui.screens.filters.FilterSelectionScreen;
-import keystone.core.modules.paste.CloneModule;
+import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.selection.SelectionModule;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
 
-public class KeystoneHotbar extends Screen
+public class KeystoneHotbar extends KeystoneOverlay
 {
     private static KeystoneHotbarSlot selectedSlot;
     private static final ResourceLocation hotbarTexture = new ResourceLocation("keystone:textures/gui/hotbar.png");
@@ -25,44 +26,29 @@ public class KeystoneHotbar extends Screen
 
     public KeystoneHotbar()
     {
-        super(new TranslationTextComponent("keystone.hotbar.title"));
+        super(new TranslationTextComponent("keystone.screen.hotbar"));
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onHotbarChanged);
     }
 
-    //region Button Callbacks
-    private void selectionPressed(Button button)
+    //region Hotbar Changed Event
+    private final void onHotbarChanged(final KeystoneHotbarEvent event)
     {
-        selectedSlot = KeystoneHotbarSlot.SELECTION;
-    }
-    private void brushPressed(Button button)
-    {
-        selectedSlot = KeystoneHotbarSlot.BRUSH;
-    }
-    private void clonePressed(Button button)
-    {
-        selectedSlot = KeystoneHotbarSlot.CLONE;
-        Keystone.getModule(CloneModule.class).copy();
-    }
-    private void fillPressed(Button button)
-    {
-        selectedSlot = KeystoneHotbarSlot.FILL;
-        SingleBlockSelectionScreen.promptBlockStateChoice(block ->
+        if (event.isCanceled()) return;
+
+        selectedSlot = event.slot;
+        switch (event.slot)
         {
-            Keystone.runTool(new FillTool(block));
-            selectedSlot = KeystoneHotbarSlot.SELECTION;
-        });
-    }
-    private void filterPressed(Button button)
-    {
-        selectedSlot = KeystoneHotbarSlot.FILTER;
-        FilterSelectionScreen.openScreen();
-    }
-    private void importPressed(Button button)
-    {
-        selectedSlot = KeystoneHotbarSlot.IMPORT;
-    }
-    private void spawnPressed(Button button)
-    {
-        selectedSlot = KeystoneHotbarSlot.SPAWN;
+            case CLONE:
+                Keystone.getModule(ClipboardModule.class).copy();
+                break;
+            case FILL:
+                SingleBlockSelectionScreen.promptBlockStateChoice(block ->
+                {
+                    Keystone.runTool(new FillTool(block));
+                    MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(KeystoneHotbarSlot.SELECTION));
+                });
+                break;
+        }
     }
 
     private boolean selectionBoxesPresent()
@@ -79,13 +65,13 @@ public class KeystoneHotbar extends Screen
 
         hotbarButtons = new HotbarButton[]
         {
-                new HotbarButton(this, KeystoneHotbarSlot.SELECTION, getSlotX(0), offsetY + 3, this::selectionPressed),
-                new HotbarButton(this, KeystoneHotbarSlot.BRUSH,     getSlotX(1), offsetY + 3, this::brushPressed),
-                new HotbarButton(this, KeystoneHotbarSlot.CLONE,     getSlotX(2), offsetY + 3, this::clonePressed, this::selectionBoxesPresent),
-                new HotbarButton(this, KeystoneHotbarSlot.FILL,      getSlotX(3), offsetY + 3, this::fillPressed, this::selectionBoxesPresent),
-                new HotbarButton(this, KeystoneHotbarSlot.FILTER,    getSlotX(4), offsetY + 3, this::filterPressed, this::selectionBoxesPresent),
-                new HotbarButton(this, KeystoneHotbarSlot.IMPORT,    getSlotX(5), offsetY + 3, this::importPressed),
-                new HotbarButton(this, KeystoneHotbarSlot.SPAWN,     getSlotX(6), offsetY + 3, this::spawnPressed)
+                new HotbarButton(this, KeystoneHotbarSlot.SELECTION, getSlotX(0), offsetY + 3),
+                new HotbarButton(this, KeystoneHotbarSlot.BRUSH,     getSlotX(1), offsetY + 3),
+                new HotbarButton(this, KeystoneHotbarSlot.CLONE,     getSlotX(2), offsetY + 3, this::selectionBoxesPresent),
+                new HotbarButton(this, KeystoneHotbarSlot.FILL,      getSlotX(3), offsetY + 3, this::selectionBoxesPresent),
+                new HotbarButton(this, KeystoneHotbarSlot.FILTER,    getSlotX(4), offsetY + 3, this::selectionBoxesPresent),
+                new HotbarButton(this, KeystoneHotbarSlot.IMPORT,    getSlotX(5), offsetY + 3),
+                new HotbarButton(this, KeystoneHotbarSlot.SPAWN,     getSlotX(6), offsetY + 3)
         };
         hotbarButtons[1].active = false;
         hotbarButtons[2].active = false;
@@ -93,7 +79,7 @@ public class KeystoneHotbar extends Screen
         hotbarButtons[6].active = false;
         for (HotbarButton button : hotbarButtons) addButton(button);
 
-        if (selectedSlot == null) selectedSlot = KeystoneHotbarSlot.SELECTION;
+        if (selectedSlot == null) MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(KeystoneHotbarSlot.SELECTION));
     }
 
     @Override
@@ -131,7 +117,7 @@ public class KeystoneHotbar extends Screen
     }
     public static void setSelectedSlot(KeystoneHotbarSlot slot)
     {
-        selectedSlot = slot;
+        MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(KeystoneHotbarSlot.SELECTION));
     }
     public static int getX() { return (int)(offsetX * HotbarButton.SCALE); }
     public static int getY() { return (int)(offsetY * HotbarButton.SCALE); }

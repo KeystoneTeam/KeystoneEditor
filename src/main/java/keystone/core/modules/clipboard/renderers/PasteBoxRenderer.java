@@ -1,11 +1,11 @@
-package keystone.core.modules.paste.renderers;
+package keystone.core.modules.clipboard.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
 import keystone.core.renderer.client.renderers.OffsetBox;
 import keystone.core.modules.mouse.MouseModule;
-import keystone.core.modules.paste.boxes.PasteBoundingBox;
+import keystone.core.modules.clipboard.boxes.PasteBoundingBox;
 import keystone.core.modules.selection.SelectedFace;
 
 import java.awt.*;

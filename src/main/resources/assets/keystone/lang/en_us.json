@@ -1,4 +1,10 @@
 {
+  "keystone.screen.blockSelection": "Select a block",
+  "keystone.screen.editMask": "Edit the block mask",
+  "keystone.screen.editPalette": "Edit the block palette",
+  "keystone.screen.filterPanel": "Filter panel",
+  "keystone.screen.hotbar": "Keystone hotbar",
+
   "keystone.done": "Done",
   "keystone.cancel": "Cancel",
 
@@ -15,6 +21,21 @@
   "keystone.hotbar.filter": "Filter",
   "keystone.hotbar.import": "Import (WIP)",
   "keystone.hotbar.spawn": "Spawn (WIP)",
+
+  "keystone.selection_panel.deselect": "Deselect",
+  "keystone.selection_panel.deleteBlocks": "Delete Blocks",
+  "keystone.selection_panel.deleteEntities": "Delete Entities",
+  "keystone.selection_panel.analyze": "Analyze",
+  "keystone.selection_panel.cut": "Cut",
+  "keystone.selection_panel.copy": "Copy",
+  "keystone.selection_panel.paste": "Paste",
+  "keystone.selection_panel.deselect.tooltip": "Remove all selection boxes. Shortcut: Ctrl-D",
+  "keystone.selection_panel.deleteBlocks.tooltip": "Fill the selection with air. Shortcut: Del",
+  "keystone.selection_panel.deleteEntities.tooltip": "Remove all entities within the selection",
+  "keystone.selection_panel.analyze.tooltip": "Count the different blocks in the selection and display the total",
+  "keystone.selection_panel.cut.tooltip": "Copy all blocks in the selection, then fill with air. Shortcut: Ctrl-X",
+  "keystone.selection_panel.copy.tooltip": "Copy all blocks in the selection. Shortcut: Ctrl+C",
+  "keystone.selection_panel.paste.tooltip": "Import the last item taken by Cut or Copy. Shortcut: Ctrl+P",
 
   "keystone.filter_panel.select": "Filter: ",
   "keystone.filter_panel.runFilter": "Filter"

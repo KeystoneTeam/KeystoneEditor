@@ -4,8 +4,8 @@ import keystone.api.Keystone;
 import keystone.api.SelectionBox;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.IHistoryEntry;
-import keystone.core.modules.paste.CloneModule;
-import keystone.core.modules.paste.boxes.PasteBoundingBox;
+import keystone.core.modules.clipboard.ClipboardModule;
+import keystone.core.modules.clipboard.boxes.PasteBoundingBox;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ public class PasteHistoryEntry extends FillHistoryEntry
     public void undo()
     {
         super.undo();
-        Keystone.getModule(CloneModule.class).setPasteBoxes(this.pastes);
+        Keystone.getModule(ClipboardModule.class).setPasteBoxes(this.pastes);
     }
 
     //region Pre
@@ -65,12 +65,12 @@ public class PasteHistoryEntry extends FillHistoryEntry
         @Override
         public void undo()
         {
-            Keystone.getModule(CloneModule.class).clearPasteBoxes();
+            Keystone.getModule(ClipboardModule.class).clearPasteBoxes();
         }
         @Override
         public void redo()
         {
-            Keystone.getModule(CloneModule.class).setPasteBoxes(this.main.pastes);
+            Keystone.getModule(ClipboardModule.class).setPasteBoxes(this.main.pastes);
         }
     }
     //endregion

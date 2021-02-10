@@ -23,7 +23,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
 
     protected BlockMaskEditScreen(BlockMask mask, Consumer<BlockMask> callback)
     {
-        super("keystone.block_mask_edit.title");
+        super("keystone.screen.editMask");
         this.callback = callback;
         this.mask = mask != null ? mask : new BlockMask();
     }

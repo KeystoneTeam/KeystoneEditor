@@ -1,14 +1,12 @@
-package keystone.core.modules.paste.boxes;
+package keystone.core.modules.clipboard.boxes;
 
-import keystone.api.Keystone;
-import keystone.core.schematic.KeystoneSchematic;
+import keystone.core.modules.selection.SelectedFace;
 import keystone.core.renderer.blocks.GhostBlockRenderer;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.SelectableBoundingBox;
-import keystone.core.modules.paste.CloneModule;
-import keystone.core.modules.selection.SelectedFace;
+import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 
@@ -38,7 +36,7 @@ public class PasteBoundingBox extends SelectableBoundingBox
     public GhostBlockRenderer getGhostBlocks() { return ghostBlocks; }
 
     @Override
-    public boolean isEnabled() { return Keystone.getModule(CloneModule.class).isEnabled(); }
+    public boolean isEnabled() { return true; /* return Keystone.getModule(ClipboardModule.class).isEnabled(); */ }
     @Override
     public void drag(SelectedFace face)
     {

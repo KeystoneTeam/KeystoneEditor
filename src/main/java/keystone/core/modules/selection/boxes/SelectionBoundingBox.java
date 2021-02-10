@@ -1,6 +1,7 @@
 package keystone.core.modules.selection.boxes;
 
 import keystone.api.Keystone;
+import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.math.RayTracing;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.BoundingBoxType;
@@ -12,6 +13,7 @@ import keystone.core.modules.selection.SelectedFace;
 import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraftforge.common.MinecraftForge;
 
 public class SelectionBoundingBox extends SelectableBoundingBox
 {
@@ -77,5 +79,8 @@ public class SelectionBoundingBox extends SelectableBoundingBox
         if (face.getFaceDirection() == Direction.UP || face.getFaceDirection() == Direction.DOWN) moveFace(face.getFaceDirection(), (int)projectedPoint.getY());
         if (face.getFaceDirection() == Direction.NORTH || face.getFaceDirection() == Direction.SOUTH) moveFace(face.getFaceDirection(), (int)projectedPoint.getZ());
         if (face.getFaceDirection() == Direction.WEST || face.getFaceDirection() == Direction.EAST) moveFace(face.getFaceDirection(), (int)projectedPoint.getX());
+
+        // Post event
+        MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionModule.getSelectionBoundingBoxes()));
     }
 }

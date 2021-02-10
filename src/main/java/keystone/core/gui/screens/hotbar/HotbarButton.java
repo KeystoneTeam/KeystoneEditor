@@ -1,11 +1,13 @@
 package keystone.core.gui.screens.hotbar;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.widgets.ButtonNoHotkey;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 
 import java.util.function.Supplier;
 
@@ -22,13 +24,13 @@ public class HotbarButton extends ButtonNoHotkey
     private final int unscaledX;
     private final int unscaledY;
 
-    public HotbarButton(KeystoneHotbar parent, KeystoneHotbarSlot slot, int x, int y, IPressable pressedAction)
+    public HotbarButton(KeystoneHotbar parent, KeystoneHotbarSlot slot, int x, int y)
     {
-        this(parent, slot, x, y, pressedAction, () -> true);
+        this(parent, slot, x, y, () -> true);
     }
-    public HotbarButton(KeystoneHotbar parent, KeystoneHotbarSlot slot, int x, int y, IPressable pressedAction, Supplier<Boolean> enabledSupplier)
+    public HotbarButton(KeystoneHotbar parent, KeystoneHotbarSlot slot, int x, int y, Supplier<Boolean> enabledSupplier)
     {
-        super((int)(x * SCALE), (int)(y * SCALE), (int)(16 * SCALE), (int)(16 * SCALE), slot.getTitle(), pressedAction, (button, stack, mouseX, mouseY) ->
+        super((int)(x * SCALE), (int)(y * SCALE), (int)(16 * SCALE), (int)(16 * SCALE), slot.getTitle(), (button) -> MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(slot)), (button, stack, mouseX, mouseY) ->
         {
             HotbarButton casted = (HotbarButton)button;
             casted.parent.renderToolName(stack, slot.getTitle(), 0xFFFF00);
@@ -54,7 +56,6 @@ public class HotbarButton extends ButtonNoHotkey
                 {
                     colorSlot(stack, 0x80FFFFFF);
                     renderToolTip(stack, mouseX, mouseY);
-                    KeystoneOverlayHandler.MouseOverGUI = true;
                 }
                 if (KeystoneHotbar.getSelectedSlot() == slot)
                 {

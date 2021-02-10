@@ -15,7 +15,7 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
 
     protected SingleBlockSelectionScreen(Consumer<BlockState> callback)
     {
-        super("keystone.block_selection.title");
+        super("keystone.screen.blockSelection");
         this.callback = callback;
     }
     public static void promptBlockStateChoice(Consumer<BlockState> callback)

@@ -1,6 +1,7 @@
-package keystone.core.modules.paste;
+package keystone.core.modules.clipboard;
 
 import keystone.api.Keystone;
+import keystone.api.tools.FillTool;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
@@ -9,11 +10,12 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.PasteHistoryEntry;
-import keystone.core.modules.paste.boxes.PasteBoundingBox;
-import keystone.core.modules.paste.providers.PasteBoxProvider;
+import keystone.core.modules.clipboard.boxes.PasteBoundingBox;
+import keystone.core.modules.clipboard.providers.PasteBoxProvider;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.world_cache.WorldCacheModule;
+import net.minecraft.block.Blocks;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -22,11 +24,11 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CloneModule implements IKeystoneModule
+public class ClipboardModule implements IKeystoneModule
 {
     private List<PasteBoundingBox> pasteBoxes;
 
-    public CloneModule()
+    public ClipboardModule()
     {
         pasteBoxes = new ArrayList<>();
 
@@ -72,9 +74,20 @@ public class CloneModule implements IKeystoneModule
             {
                 if (pasteBoxes.size() > 0) paste();
             }
+            else if (event.getModifiers() == GLFW.GLFW_MOD_CONTROL)
+            {
+                if (event.getKey() == GLFW.GLFW_KEY_X) cut();
+                else if (event.getKey() == GLFW.GLFW_KEY_C) copy();
+                else if (event.getKey() == GLFW.GLFW_KEY_V) paste();
+            }
         }
     }
 
+    public void cut()
+    {
+        copy();
+        Keystone.runTool(new FillTool(Blocks.AIR.getDefaultState()));
+    }
     public void copy()
     {
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.CLONE);

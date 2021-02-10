@@ -70,23 +70,23 @@ public class MouseModule implements IKeystoneModule
     //endregion
     //region Events
     @SubscribeEvent
-    public void onMouseClick(KeystoneInputEvent.MouseClickEvent event)
+    public final void onMouseClick(final KeystoneInputEvent.MouseClickEvent event)
     {
-        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null && event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(!Keystone.AllowPlayerLook);
+        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null && !event.gui && event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(!Keystone.AllowPlayerLook);
     }
     @SubscribeEvent
-    public void onMouseDragStart(KeystoneInputEvent.MouseDragStartEvent event)
+    public final void onMouseDragStart(final KeystoneInputEvent.MouseDragStartEvent event)
     {
-        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null)
+        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null && !event.gui)
         {
             if (event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(true);
             else if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT && selectedFace != null) startDraggingBox();
         }
     }
     @SubscribeEvent
-    public void onMouseDragEnd(KeystoneInputEvent.MouseDragEndEvent event)
+    public final void onMouseDragEnd(final KeystoneInputEvent.MouseDragEndEvent event)
     {
-        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null)
+        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null && !event.gui)
         {
             if (event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(false);
             else if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT) endDraggingBox();

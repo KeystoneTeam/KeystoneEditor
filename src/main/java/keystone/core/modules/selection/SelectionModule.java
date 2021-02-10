@@ -3,6 +3,7 @@ package keystone.core.modules.selection;
 import keystone.api.Keystone;
 import keystone.api.SelectionBox;
 import keystone.core.events.KeystoneInputEvent;
+import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
@@ -14,7 +15,7 @@ import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.mouse.MouseModule;
-import keystone.core.modules.paste.CloneModule;
+import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.selection.providers.HighlightBoxProvider;
 import keystone.core.modules.selection.providers.SelectionBoxProvider;
@@ -63,16 +64,17 @@ public class SelectionModule implements IKeystoneModule
     }
     public void onCancelPressed()
     {
-        CloneModule paste = Keystone.getModule(CloneModule.class);
+        ClipboardModule paste = Keystone.getModule(ClipboardModule.class);
         if (paste.getPasteBoxes().size() > 0) paste.clearPasteBoxes();
-        else clearSelectionBoxes();
+        else deselect();
     }
-    public void clearSelectionBoxes()
+    public void deselect()
     {
         if (selectionBoxes.size() > 0)
         {
             Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, true));
             selectionBoxes.clear();
+            MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes));
         }
     }
     public List<SelectionBoundingBox> restoreSelectionBoxes(List<SelectionBoundingBox> boxes)
@@ -124,7 +126,7 @@ public class SelectionModule implements IKeystoneModule
     @SubscribeEvent
     public void onMouseClick(final KeystoneInputEvent.MouseClickEvent event)
     {
-        if (!Keystone.isActive() || Minecraft.getInstance().currentScreen != null) return;
+        if (!Keystone.isActive() || Minecraft.getInstance().currentScreen != null || event.gui) return;
 
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
@@ -138,7 +140,7 @@ public class SelectionModule implements IKeystoneModule
     @SubscribeEvent
     public void onMouseDragStart(final KeystoneInputEvent.MouseDragStartEvent event)
     {
-        if (!Keystone.isActive() || Minecraft.getInstance().currentScreen != null) return;
+        if (!Keystone.isActive() || Minecraft.getInstance().currentScreen != null || event.gui) return;
 
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
@@ -148,7 +150,7 @@ public class SelectionModule implements IKeystoneModule
     @SubscribeEvent
     public void onMouseDragEnd(final KeystoneInputEvent.MouseDragEndEvent event)
     {
-        if (!Keystone.isActive() || Minecraft.getInstance().currentScreen != null) return;
+        if (!Keystone.isActive() || Minecraft.getInstance().currentScreen != null || event.gui) return;
 
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
@@ -175,6 +177,7 @@ public class SelectionModule implements IKeystoneModule
         if (creatingSelection)
         {
             Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, false));
+            MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes));
             firstSelectionPoint = null;
             creatingSelection = false;
         }

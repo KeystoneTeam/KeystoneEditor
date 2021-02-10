@@ -7,9 +7,9 @@ import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.mouse.MouseModule;
-import keystone.core.modules.paste.CloneModule;
-import keystone.core.modules.paste.boxes.PasteBoundingBox;
-import keystone.core.modules.paste.renderers.PasteBoxRenderer;
+import keystone.core.modules.clipboard.ClipboardModule;
+import keystone.core.modules.clipboard.boxes.PasteBoundingBox;
+import keystone.core.modules.clipboard.renderers.PasteBoxRenderer;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.selection.boxes.HighlightBoundingBox;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
@@ -62,6 +62,6 @@ public class KeystoneMod
         event.register(new WorldCacheModule());
         event.register(new HistoryModule());
         event.register(new SelectionModule());
-        event.register(new CloneModule());
+        event.register(new ClipboardModule());
     }
 }

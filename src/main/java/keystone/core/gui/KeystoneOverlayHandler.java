@@ -3,6 +3,7 @@ package keystone.core.gui;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.core.events.KeystoneInputEvent;
+import keystone.core.gui.screens.KeystoneOverlay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
@@ -29,6 +30,8 @@ public class KeystoneOverlayHandler
 
     public static void addOverlay(Screen overlay)
     {
+        if (!(overlay instanceof KeystoneOverlay)) Keystone.LOGGER.warn("Adding non-KeystoneOverlay screen to Keystone Overlay Handler! This is not recommended.");
+
         Minecraft mc = Minecraft.getInstance();
         overlay.init(mc, mc.getMainWindow().getScaledWidth(), mc.getMainWindow().getScaledHeight());
         addList.add(overlay);
@@ -42,7 +45,10 @@ public class KeystoneOverlayHandler
     @SubscribeEvent
     public static void onPreRenderGui(final RenderGameOverlayEvent.Pre event)
     {
-        if (Keystone.isActive() && event.getType() == RenderGameOverlayEvent.ElementType.VIGNETTE) event.setCanceled(true);
+        if (Keystone.isActive())
+        {
+            if (event.getType() == RenderGameOverlayEvent.ElementType.VIGNETTE) event.setCanceled(true);
+        }
     }
 
     //region Event Subscribers
@@ -120,12 +126,14 @@ public class KeystoneOverlayHandler
     }
     private static void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        MouseOverGUI = Minecraft.getInstance().currentScreen != null;
-
         addList.forEach(add -> overlays.add(add));
         addList.clear();
 
-        overlays.forEach(screen -> screen.render(matrixStack, mouseX, mouseY, partialTicks));
+        overlays.forEach(screen ->
+        {
+            screen.render(matrixStack, mouseX, mouseY, partialTicks);
+            if (!MouseOverGUI && screen instanceof KeystoneOverlay) ((KeystoneOverlay) screen).checkMouseOverGui();
+        });
 
         removeList.forEach(remove -> overlays.remove(remove));
         removeList.clear();

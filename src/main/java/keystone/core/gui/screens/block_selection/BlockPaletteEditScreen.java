@@ -23,7 +23,7 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
 
     protected BlockPaletteEditScreen(BlockPalette palette, Consumer<BlockPalette> callback)
     {
-        super("keystone.block_palette_edit.title");
+        super("keystone.screen.editPalette");
         this.callback = callback;
         this.palette = palette != null ? palette : new BlockPalette();
     }

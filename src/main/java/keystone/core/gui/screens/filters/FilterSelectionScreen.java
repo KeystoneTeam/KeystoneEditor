@@ -7,15 +7,16 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.filters.Variable;
 import keystone.api.wrappers.BlockMask;
 import keystone.api.wrappers.BlockPalette;
+import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.filters.FilterCompiler;
-import keystone.core.utils.AnnotationUtils;
 import keystone.core.gui.KeystoneOverlayHandler;
+import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.ButtonNoHotkey;
 import keystone.core.gui.widgets.Dropdown;
+import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
@@ -23,6 +24,9 @@ import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -31,10 +35,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FilterSelectionScreen extends Screen
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
+public class FilterSelectionScreen extends KeystoneOverlay
 {
     private static final int PADDING = 5;
-    private static boolean open;
+    private static FilterSelectionScreen open;
     private static KeystoneFilter selectedFilter;
     private static KeystoneFilter filterInstance;
 
@@ -54,16 +59,27 @@ public class FilterSelectionScreen extends Screen
 
     protected FilterSelectionScreen()
     {
-        super(new TranslationTextComponent("keystone.filter_panel.title"));
+        super(new TranslationTextComponent("keystone.screen.filterPanel"));
     }
-    public static void openScreen()
+    public static void open()
     {
-        if (!open)
+        if (open == null)
         {
-            KeystoneOverlayHandler.addOverlay(new FilterSelectionScreen());
-            open = true;
+            open = new FilterSelectionScreen();
+            KeystoneOverlayHandler.addOverlay(open);
         }
     }
+
+    //region Static Event Handlers
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static final void onHotbarChanged(final KeystoneHotbarEvent event)
+    {
+        if (event.isCanceled()) return;
+
+        if (event.slot == KeystoneHotbarSlot.FILTER) open();
+        else if (open != null) open.closeScreen();
+    }
+    //endregion
 
     //region Screen Overrides
     @Override
@@ -74,7 +90,7 @@ public class FilterSelectionScreen extends Screen
     @Override
     public void onClose()
     {
-        open = false;
+        open = null;
         compiledFilters = null;
     }
     @Override
@@ -203,8 +219,7 @@ public class FilterSelectionScreen extends Screen
     @Override
     public void tick()
     {
-        if (KeystoneHotbar.getSelectedSlot() != KeystoneHotbarSlot.FILTER) closeScreen();
-        else for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).tick();
+        for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).tick();
     }
     //endregion
     //region Filter Variables

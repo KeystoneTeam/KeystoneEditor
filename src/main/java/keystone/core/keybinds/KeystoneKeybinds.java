@@ -60,7 +60,7 @@ public class KeystoneKeybinds
     }
 
     @SubscribeEvent
-    public static void onKeyInput(InputEvent.KeyInputEvent event)
+    public static final void onKeyInput(final InputEvent.KeyInputEvent event)
     {
         if (TOGGLE_KEYSTONE.isPressed()) Keystone.toggleKeystone();
         else if (Keystone.isActive())
