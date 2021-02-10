@@ -1,6 +1,6 @@
 package keystone.core.keybinds;
 
-import keystone.gui.KeystoneOverlayHandler;
+import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.client.settings.KeyConflictContext;
 

@@ -6,7 +6,7 @@ import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
 import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.models.AbstractBoundingBox;
-import keystone.modules.IKeystoneModule;
+import keystone.core.modules.IKeystoneModule;
 import net.minecraftforge.eventbus.api.Event;
 
 public class KeystoneEvent extends Event

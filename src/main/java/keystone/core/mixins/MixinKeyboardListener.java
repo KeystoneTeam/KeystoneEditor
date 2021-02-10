@@ -1,7 +1,7 @@
 package keystone.core.mixins;
 
 import keystone.api.Keystone;
-import keystone.gui.KeystoneOverlayHandler;
+import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.KeyboardListener;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;

@@ -16,8 +16,7 @@ displayName="Keystone Editor"
 credits="Based off of MCEdit Unified" #optional
 authors="CodeCracked" #optional
 description='''
-    Keystone, a powerful world editing mod based of MCEdit Unified
-'''
+    Keystone, a powerful world editing mod based off of MCEdit Unified'''
 
 [[dependencies.keystone]]
     modId="forge"

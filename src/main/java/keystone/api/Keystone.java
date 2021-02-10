@@ -9,13 +9,13 @@ import keystone.core.KeystoneConfig;
 import keystone.core.filters.FilterCompiler;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.DimensionId;
-import keystone.modules.IKeystoneModule;
-import keystone.modules.history.HistoryModule;
-import keystone.modules.history.IHistoryEntry;
-import keystone.modules.history.entries.FillHistoryEntry;
-import keystone.modules.history.entries.FilterHistoryEntry;
-import keystone.modules.selection.SelectionModule;
-import keystone.modules.world_cache.WorldCacheModule;
+import keystone.core.modules.IKeystoneModule;
+import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.history.IHistoryEntry;
+import keystone.core.modules.history.entries.FillHistoryEntry;
+import keystone.core.modules.history.entries.FilterHistoryEntry;
+import keystone.core.modules.selection.SelectionModule;
+import keystone.core.modules.world_cache.WorldCacheModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -37,7 +37,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 /**
- * Base Keystone API class, used to retrieve {@link keystone.modules.IKeystoneModule Modules},
+ * Base Keystone API class, used to retrieve {@link keystone.core.modules.IKeystoneModule Modules},
  * retrieve global state, and toggle whether Keystone is active. Also contains
  * {@link org.apache.logging.log4j.Logger} and {@link java.util.Random} instance
  */
@@ -93,7 +93,7 @@ public class Keystone
     private static Map<Class, IKeystoneModule> modules = new HashMap<>();
 
     /**
-     * Register a new {@link keystone.modules.IKeystoneModule Module}
+     * Register a new {@link keystone.core.modules.IKeystoneModule Module}
      * @param module The module to register
      */
     public static void registerModule(IKeystoneModule module)
@@ -102,9 +102,9 @@ public class Keystone
         else modules.put(module.getClass(), module);
     }
     /**
-     * Get a registered {@link keystone.modules.IKeystoneModule Module} by class
+     * Get a registered {@link keystone.core.modules.IKeystoneModule Module} by class
      * @param clazz The module class to retrieve
-     * @param <T> A class implementing {@link keystone.modules.IKeystoneModule}
+     * @param <T> A class implementing {@link keystone.core.modules.IKeystoneModule}
      * @return The module, or null if it is not registered
      */
     public static <T extends IKeystoneModule> T getModule(Class<T> clazz)
@@ -114,7 +114,7 @@ public class Keystone
         return null;
     }
     /**
-     * Run a function on every {@link keystone.modules.IKeystoneModule Module} in the registry
+     * Run a function on every {@link keystone.core.modules.IKeystoneModule Module} in the registry
      * @param consumer The function to run
      */
     public static void forEachModule(Consumer<IKeystoneModule> consumer)

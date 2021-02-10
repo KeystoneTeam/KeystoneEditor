@@ -7,7 +7,7 @@ import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockMask;
 import keystone.api.wrappers.BlockPalette;
 import keystone.api.wrappers.Item;
-import keystone.modules.selection.SelectionModule;
+import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;

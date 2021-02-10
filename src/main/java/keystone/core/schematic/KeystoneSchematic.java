@@ -1,7 +1,7 @@
 package keystone.core.schematic;
 
 import keystone.api.Keystone;
-import keystone.modules.selection.boxes.SelectionBoundingBox;
+import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -31,7 +31,7 @@ public class KeystoneSchematic
 
     /**
      * Create a schematic from a selection box
-     * @param box The {@link keystone.modules.selection.boxes.SelectionBoundingBox} to create the schematic from
+     * @param box The {@link keystone.core.modules.selection.boxes.SelectionBoundingBox} to create the schematic from
      * @param world The world that the schematic contents is read from
      * @return The generated {@link keystone.core.schematic.KeystoneSchematic}
      */

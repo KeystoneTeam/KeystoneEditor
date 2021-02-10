@@ -21,7 +21,7 @@ apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '0.2.7'
+version = '0.3.0'
 group = 'io.github.keystone' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'Keystone'
 
