@@ -21,6 +21,7 @@ import keystone.core.modules.selection.providers.HighlightBoxProvider;
 import keystone.core.modules.selection.providers.SelectionBoxProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
@@ -123,6 +124,13 @@ public class SelectionModule implements IKeystoneModule
     }
     //endregion
     //region Events
+    @SubscribeEvent
+    public void onKeyInput(final InputEvent.KeyInputEvent event)
+    {
+        if (!Keystone.isActive() || Minecraft.getInstance().currentScreen != null) return;
+
+        if (event.getKey() == GLFW.GLFW_KEY_D && event.getModifiers() == GLFW.GLFW_MOD_CONTROL) deselect();
+    }
     @SubscribeEvent
     public void onMouseClick(final KeystoneInputEvent.MouseClickEvent event)
     {

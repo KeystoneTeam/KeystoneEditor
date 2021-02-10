@@ -18,7 +18,6 @@ import org.lwjgl.glfw.GLFW;
 public class KeystoneKeybinds
 {
     public static final KeyBinding TOGGLE_KEYSTONE = new KeyBinding("key.toggle_keystone", GLFW.GLFW_KEY_K, "key.categories.keystone");
-    public static final KeyBinding CLEAR_SELECTIONS = new KeyBinding("key.clear_selections", GLFW.GLFW_KEY_ESCAPE, "key.categories.keystone");
     public static final KeyBinding DELETE_BLOCKS = new KeyBinding("key.delete_blocks", GLFW.GLFW_KEY_DELETE, "key.categories.keystone");
 
     public static void register()
@@ -27,11 +26,9 @@ public class KeystoneKeybinds
         IKeyConflictContext notGuiBlocking = KeystoneKeyConflictContext.NOT_GUI_BLOCKING;
 
         TOGGLE_KEYSTONE.setKeyConflictContext(notGuiBlocking);
-        CLEAR_SELECTIONS.setKeyConflictContext(notGuiBlocking);
         DELETE_BLOCKS.setKeyConflictContext(notGuiBlocking);
 
         ClientRegistry.registerKeyBinding(TOGGLE_KEYSTONE);
-        ClientRegistry.registerKeyBinding(CLEAR_SELECTIONS);
         ClientRegistry.registerKeyBinding(DELETE_BLOCKS);
 
         mc.gameSettings.keyBindForward.setKeyConflictContext(notGuiBlocking);
@@ -65,7 +62,6 @@ public class KeystoneKeybinds
         if (TOGGLE_KEYSTONE.isPressed()) Keystone.toggleKeystone();
         else if (Keystone.isActive())
         {
-            if (CLEAR_SELECTIONS.isPressed()) Keystone.getModule(SelectionModule.class).onCancelPressed();
             if (DELETE_BLOCKS.isPressed()) Keystone.runTool(new FillTool(Blocks.AIR.getDefaultState()));
         }
     }

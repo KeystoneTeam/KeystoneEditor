@@ -10,7 +10,9 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
@@ -24,6 +26,7 @@ public class KeystoneOverlayHandler
     public static boolean MouseOverGUI = false;
     public static boolean BlockingKeys = false;
 
+    private static boolean worldFinishedLoading = false;
     private static List<Screen> overlays = new ArrayList<>();
     private static List<Screen> addList = new ArrayList<>();
     private static List<Screen> removeList = new ArrayList<>();
@@ -47,11 +50,28 @@ public class KeystoneOverlayHandler
     {
         if (Keystone.isActive())
         {
-            if (event.getType() == RenderGameOverlayEvent.ElementType.VIGNETTE) event.setCanceled(true);
+            if (event.getType() == RenderGameOverlayEvent.ElementType.VIGNETTE)
+            {
+                if (!worldFinishedLoading)
+                {
+                    addList.forEach(add -> overlays.add(add));
+                    addList.clear();
+
+                    Minecraft mc = Minecraft.getInstance();
+                    resize(mc, mc.getMainWindow().getScaledWidth(), mc.getMainWindow().getScaledHeight());
+                    worldFinishedLoading = true;
+                }
+                event.setCanceled(true);
+            }
         }
     }
 
     //region Event Subscribers
+    @SubscribeEvent
+    public static void onWorldUnload(final WorldEvent.Unload event)
+    {
+        worldFinishedLoading = false;
+    }
     @SubscribeEvent
     public static void render(final RenderGameOverlayEvent.Post event)
     {
