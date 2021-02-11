@@ -6,6 +6,7 @@ import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.tools.interfaces.IKeystoneTool;
 import keystone.api.tools.interfaces.ISelectionBoxTool;
 import keystone.core.KeystoneConfig;
+import keystone.core.KeystoneStateFlags;
 import keystone.core.filters.FilterCompiler;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.DimensionId;
@@ -46,17 +47,6 @@ public class Keystone
     public static final Logger LOGGER = LogManager.getLogger();
     public static final Random RANDOM = new Random();
 
-    //region Global State
-    /**
-     * If true, target the block 4 blocks in front of player. If false, target the block
-     * the player is looking at, ignoring distance
-     */
-    public static boolean CloseSelection = false;
-    /**
-     * Whether mouse movement should move the player camera
-     */
-    public static boolean AllowPlayerLook = false;
-    //endregion
     //region Active Toggle
     private static boolean enabled = KeystoneConfig.startActive;
     private static GameType previousGamemode;
@@ -76,7 +66,7 @@ public class Keystone
         else
         {
             enabled = true;
-            AllowPlayerLook = false;
+            KeystoneStateFlags.AllowPlayerLook = false;
             Minecraft.getInstance().mouseHelper.ungrabMouse();
         }
     }

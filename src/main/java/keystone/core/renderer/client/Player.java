@@ -1,6 +1,7 @@
 package keystone.core.renderer.client;
 
 import keystone.api.Keystone;
+import keystone.core.KeystoneStateFlags;
 import keystone.core.math.RayTracing;
 import keystone.core.renderer.client.interop.ClientInterop;
 import keystone.core.renderer.client.models.Point;
@@ -32,10 +33,10 @@ public class Player
         pitch = player.getPitch((float)partialTicks);
         yaw = player.getYaw((float)partialTicks);
         eyePosition = player.getEyePosition((float)partialTicks);
-        lookDirection = Keystone.CloseSelection ? player.getLook((float)partialTicks) : RayTracing.screenPointToRayDirection((float)partialTicks);
+        lookDirection = KeystoneStateFlags.CloseSelection ? player.getLook((float)partialTicks) : RayTracing.screenPointToRayDirection((float)partialTicks);
 
         dimensionId = DimensionId.from(player.getEntityWorld().getDimensionKey());
-        rayTrace = Keystone.CloseSelection ? null : RayTracing.rayTraceBlock(eyePosition, lookDirection, player, ClientInterop.getRenderDistanceChunks() * 16, true);
+        rayTrace = KeystoneStateFlags.CloseSelection ? null : RayTracing.rayTraceBlock(eyePosition, lookDirection, player, ClientInterop.getRenderDistanceChunks() * 16, true);
     }
 
     public static double getX() {

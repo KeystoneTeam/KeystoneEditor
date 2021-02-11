@@ -81,6 +81,6 @@ public class SelectionBoundingBox extends SelectableBoundingBox
         if (face.getFaceDirection() == Direction.WEST || face.getFaceDirection() == Direction.EAST) moveFace(face.getFaceDirection(), (int)projectedPoint.getX());
 
         // Post event
-        MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionModule.getSelectionBoundingBoxes()));
+        MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionModule.getSelectionBoundingBoxes(), false));
     }
 }

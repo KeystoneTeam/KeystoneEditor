@@ -1,4 +1,6 @@
 {
+  "keystone.screen.selection": "Selection tools",
+  "keystone.screen.selectionNudge": "Nudge selection bounds",
   "keystone.screen.blockSelection": "Select a block",
   "keystone.screen.editMask": "Edit the block mask",
   "keystone.screen.editPalette": "Edit the block palette",
@@ -7,6 +9,7 @@
 
   "keystone.done": "Done",
   "keystone.cancel": "Cancel",
+  "keystone.nudge": "Nudge",
 
   "key.toggle_keystone": "Toggle Keystone",
   "key.delete_blocks": "Delete Selection",

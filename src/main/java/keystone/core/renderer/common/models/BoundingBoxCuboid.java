@@ -18,14 +18,14 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
     private Coords maxCoords;
     private Coords corner1;
     private Coords corner2;
+    private Vector3i size;
 
     protected BoundingBoxCuboid(Coords corner1, Coords corner2, BoundingBoxType type)
     {
         super(type);
         this.corner1 = corner1;
         this.corner2 = corner2;
-        this.minCoords = new Coords(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
-        this.maxCoords = new Coords(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()), Math.max(corner1.getZ(), corner2.getZ()));
+        refreshMinMax();
     }
     public static BoundingBoxCuboid from(Coords minCoords, Coords maxCoords, BoundingBoxType type)
     {
@@ -62,11 +62,13 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
     {
         return corner2;
     }
+    public Vector3i getSize() { return size; }
 
     public final void refreshMinMax()
     {
         minCoords = new Coords(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
         maxCoords = new Coords(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()), Math.max(corner1.getZ(), corner2.getZ()));
+        size = new Vector3i(maxCoords.getX() - minCoords.getX() + 1, maxCoords.getY() - minCoords.getY() + 1, maxCoords.getZ() - minCoords.getZ() + 1);
     }
 
     public void setCorner1(Coords coords)
@@ -79,6 +81,45 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
         corner2 = coords;
         refreshMinMax();
     }
+    public boolean isFaceCorner1(Direction face)
+    {
+        switch (face)
+        {
+            case NORTH: return corner1.getZ() == minCoords.getZ();
+            case SOUTH: return corner1.getZ() == maxCoords.getZ();
+            case WEST: return corner1.getX() == minCoords.getX();
+            case EAST: return corner1.getX() == maxCoords.getX();
+            case UP: return corner1.getY() == maxCoords.getY();
+            case DOWN: return corner1.getY() == minCoords.getY();
+            default: return true;
+        }
+    }
+
+    public void nudgeCorner1(Direction direction, int amount)
+    {
+        corner1 = new Coords(corner1.getX() + direction.getDirectionVec().getX() * amount,
+                corner1.getY() + direction.getDirectionVec().getY() * amount,
+                corner1.getZ() + direction.getDirectionVec().getZ() * amount);
+        refreshMinMax();
+    }
+    public void nudgeCorner2(Direction direction, int amount)
+    {
+        corner2 = new Coords(corner2.getX() + direction.getDirectionVec().getX() * amount,
+                corner2.getY() + direction.getDirectionVec().getY() * amount,
+                corner2.getZ() + direction.getDirectionVec().getZ() * amount);
+        refreshMinMax();
+    }
+    public void nudgeBox(Direction direction, int amount)
+    {
+        corner1 = new Coords(corner1.getX() + direction.getDirectionVec().getX() * amount,
+                corner1.getY() + direction.getDirectionVec().getY() * amount,
+                corner1.getZ() + direction.getDirectionVec().getZ() * amount);
+        corner2 = new Coords(corner2.getX() + direction.getDirectionVec().getX() * amount,
+                corner2.getY() + direction.getDirectionVec().getY() * amount,
+                corner2.getZ() + direction.getDirectionVec().getZ() * amount);
+        refreshMinMax();
+    }
+
     public void moveFace(Direction direction, int newPosition)
     {
         switch (direction)

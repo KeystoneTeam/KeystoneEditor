@@ -1,5 +1,6 @@
 package keystone.core.gui.screens;
 
+import keystone.core.KeystoneStateFlags;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.text.ITextComponent;
@@ -24,6 +25,6 @@ public class KeystoneOverlay extends Screen
     }
     public void checkMouseOverGui()
     {
-        this.buttons.forEach(widget -> { if (widget.isHovered() && widget.visible && widget.active) KeystoneOverlayHandler.MouseOverGUI = true; });
+        this.buttons.forEach(widget -> { if (widget.isHovered() && widget.visible && widget.active) KeystoneStateFlags.MouseOverGUI = true; });
     }
 }

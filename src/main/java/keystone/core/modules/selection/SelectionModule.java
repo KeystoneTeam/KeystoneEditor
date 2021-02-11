@@ -2,6 +2,7 @@ package keystone.core.modules.selection;
 
 import keystone.api.Keystone;
 import keystone.api.SelectionBox;
+import keystone.core.KeystoneStateFlags;
 import keystone.core.events.KeystoneInputEvent;
 import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.renderer.client.Player;
@@ -31,8 +32,6 @@ import java.util.List;
 
 public class SelectionModule implements IKeystoneModule
 {
-    public static boolean HideSelectionBoxes = false;
-
     private final MouseModule mouseModule;
     private List<SelectionBoundingBox> selectionBoxes;
     private IBoundingBoxProvider[] renderProviders;
@@ -75,7 +74,7 @@ public class SelectionModule implements IKeystoneModule
         {
             Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, true));
             selectionBoxes.clear();
-            MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes));
+            MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes, false));
         }
     }
     public List<SelectionBoundingBox> restoreSelectionBoxes(List<SelectionBoundingBox> boxes)
@@ -86,6 +85,7 @@ public class SelectionModule implements IKeystoneModule
         selectionBoxes.clear();
         boxes.forEach(box -> selectionBoxes.add(box.clone()));
 
+        MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes, false));
         return old;
     }
 
@@ -171,7 +171,7 @@ public class SelectionModule implements IKeystoneModule
     {
         if (!isEnabled()) return;
 
-        if (!creatingSelection && !KeystoneOverlayHandler.MouseOverGUI)
+        if (!creatingSelection && !KeystoneStateFlags.MouseOverGUI)
         {
             firstSelectionPoint = Player.getHighlightedBlock();
             creatingSelection = true;
@@ -185,9 +185,9 @@ public class SelectionModule implements IKeystoneModule
         if (creatingSelection)
         {
             Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, false));
-            MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes));
             firstSelectionPoint = null;
             creatingSelection = false;
+            MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes, true));
         }
     }
     //endregion

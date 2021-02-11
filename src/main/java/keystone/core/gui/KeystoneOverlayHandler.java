@@ -2,6 +2,7 @@ package keystone.core.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
+import keystone.core.KeystoneStateFlags;
 import keystone.core.events.KeystoneInputEvent;
 import keystone.core.gui.screens.KeystoneOverlay;
 import net.minecraft.client.Minecraft;
@@ -23,9 +24,6 @@ import java.util.List;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class KeystoneOverlayHandler
 {
-    public static boolean MouseOverGUI = false;
-    public static boolean BlockingKeys = false;
-
     private static boolean worldFinishedLoading = false;
     private static List<Screen> overlays = new ArrayList<>();
     private static List<Screen> addList = new ArrayList<>();
@@ -81,7 +79,7 @@ public class KeystoneOverlayHandler
         int mouseX = (int)(mc.mouseHelper.getMouseX() * mc.getMainWindow().getScaledWidth() / mc.getMainWindow().getWidth());
         int mouseY = (int)(mc.mouseHelper.getMouseY() * mc.getMainWindow().getScaledHeight() / mc.getMainWindow().getHeight());
 
-        MouseOverGUI = mc.currentScreen != null;
+        KeystoneStateFlags.MouseOverGUI = mc.currentScreen != null;
         if (Keystone.isActive()) render(event.getMatrixStack(), mouseX, mouseY, event.getPartialTicks());
     }
     @SubscribeEvent
@@ -127,7 +125,7 @@ public class KeystoneOverlayHandler
     //region Event Forwarding
     private static void tick()
     {
-        BlockingKeys = Minecraft.getInstance().currentScreen != null;
+        KeystoneStateFlags.BlockingKeys = Minecraft.getInstance().currentScreen != null;
         overlays.forEach(screen ->
         {
             screen.tick();
@@ -135,7 +133,7 @@ public class KeystoneOverlayHandler
             {
                 if (listener instanceof TextFieldWidget)
                 {
-                    if (((TextFieldWidget) listener).isFocused()) BlockingKeys = true;
+                    if (((TextFieldWidget) listener).isFocused()) KeystoneStateFlags.BlockingKeys = true;
                 }
             }
         });
@@ -152,7 +150,7 @@ public class KeystoneOverlayHandler
         overlays.forEach(screen ->
         {
             screen.render(matrixStack, mouseX, mouseY, partialTicks);
-            if (!MouseOverGUI && screen instanceof KeystoneOverlay) ((KeystoneOverlay) screen).checkMouseOverGui();
+            if (!KeystoneStateFlags.MouseOverGUI && screen instanceof KeystoneOverlay) ((KeystoneOverlay) screen).checkMouseOverGui();
         });
 
         removeList.forEach(remove -> overlays.remove(remove));

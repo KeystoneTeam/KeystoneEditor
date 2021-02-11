@@ -2,6 +2,7 @@ package keystone.core.modules.clipboard;
 
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
+import keystone.core.KeystoneStateFlags;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
@@ -40,18 +41,18 @@ public class ClipboardModule implements IKeystoneModule
     {
         clearPasteBoxes();
         for (PasteBoundingBox box : boxes) pasteBoxes.add(box);
-        if (pasteBoxes.size() > 0) SelectionModule.HideSelectionBoxes = true;
+        if (pasteBoxes.size() > 0) KeystoneStateFlags.HideSelectionBoxes = true;
     }
     public void setPasteBoxes(Iterable<PasteBoundingBox> boxes)
     {
         clearPasteBoxes();
         for (PasteBoundingBox box : boxes) pasteBoxes.add(box);
-        if (pasteBoxes.size() > 0) SelectionModule.HideSelectionBoxes = true;
+        if (pasteBoxes.size() > 0) KeystoneStateFlags.HideSelectionBoxes = true;
     }
     public void clearPasteBoxes()
     {
         pasteBoxes.clear();
-        SelectionModule.HideSelectionBoxes = false;
+        KeystoneStateFlags.HideSelectionBoxes = false;
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
 
@@ -101,7 +102,7 @@ public class ClipboardModule implements IKeystoneModule
 
         pasteBoxes.clear();
         for (SelectionBoundingBox selection : Keystone.getModule(SelectionModule.class).getSelectionBoundingBoxes()) pasteBoxes.add(PasteBoundingBox.create(selection.getMinCoords(), KeystoneSchematic.createFromSelection(selection, world)));
-        SelectionModule.HideSelectionBoxes = true;
+        KeystoneStateFlags.HideSelectionBoxes = true;
     }
     public void paste()
     {

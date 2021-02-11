@@ -1,18 +1,23 @@
 package keystone.core.modules.mouse;
 
 import keystone.api.Keystone;
+import keystone.core.KeystoneStateFlags;
 import keystone.core.events.KeystoneInputEvent;
-import keystone.core.renderer.client.ClientRenderer;
-import keystone.core.renderer.client.Player;
-import keystone.core.renderer.common.models.DimensionId;
-import keystone.core.renderer.common.models.SelectableBoundingBox;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.selection.SelectedFace;
 import keystone.core.modules.selection.SelectionModule;
+import keystone.core.renderer.client.ClientRenderer;
+import keystone.core.renderer.client.Player;
+import keystone.core.renderer.common.models.AbstractBoundingBox;
+import keystone.core.renderer.common.models.DimensionId;
+import keystone.core.renderer.common.models.SelectableBoundingBox;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MouseModule implements IKeystoneModule
 {
@@ -43,22 +48,24 @@ public class MouseModule implements IKeystoneModule
             if (!draggingBox)
             {
                 selectedFace = null;
-                ClientRenderer.getBoundingBoxes(Player.getDimensionId()).forEachOrdered(box ->
+                List<AbstractBoundingBox> boxes = new ArrayList<>();
+                ClientRenderer.getBoundingBoxes(Player.getDimensionId()).forEachOrdered(box -> boxes.add(box));
+                for (AbstractBoundingBox box : boxes)
                 {
                     if (box instanceof SelectableBoundingBox)
                     {
                         SelectableBoundingBox selectable = (SelectableBoundingBox)box;
-                        if (!selectable.isEnabled()) return;
+                        if (!selectable.isEnabled()) continue;
 
                         SelectedFace face = selectable.getSelectedFace();
-                        if (face != null && selectedFace != null)
+                        if (face != null)
                         {
-                            if (selectedFace.getDistance() > face.getDistance()) selectedFace = face;
-                            else if (selectedFace.getDistance() == face.getDistance() && face.getBox().getPriority() > selectedFace.getBox().getPriority()) selectedFace = face;
+                            if (selectedFace == null) selectedFace = face;
+                            else if (face.getDistance() < selectedFace.getDistance()) selectedFace = face;
+                            else if (face.getDistance() == selectedFace.getDistance() && face.getBox().getPriority() > selectedFace.getBox().getPriority()) selectedFace = face;
                         }
-                        else selectedFace = face;
                     }
-                });
+                }
             }
             else if (selectedFace != null) selectedFace.getBox().drag(selectedFace);
         }
@@ -72,7 +79,7 @@ public class MouseModule implements IKeystoneModule
     @SubscribeEvent
     public final void onMouseClick(final KeystoneInputEvent.MouseClickEvent event)
     {
-        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null && !event.gui && event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(!Keystone.AllowPlayerLook);
+        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null && !event.gui && event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(!KeystoneStateFlags.AllowPlayerLook);
     }
     @SubscribeEvent
     public final void onMouseDragStart(final KeystoneInputEvent.MouseDragStartEvent event)
@@ -96,8 +103,8 @@ public class MouseModule implements IKeystoneModule
     //region Helpers
     private void setLookEnabled(boolean allowLook)
     {
-        Keystone.AllowPlayerLook = allowLook;
-        Keystone.CloseSelection = allowLook;
+        KeystoneStateFlags.AllowPlayerLook = allowLook;
+        KeystoneStateFlags.CloseSelection = allowLook;
         if (allowLook) Minecraft.getInstance().mouseHelper.grabMouse();
         else Minecraft.getInstance().mouseHelper.ungrabMouse();
     }

@@ -1,5 +1,6 @@
 package keystone.core.modules.selection.providers;
 
+import keystone.core.KeystoneStateFlags;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.modules.selection.SelectionModule;
@@ -17,7 +18,7 @@ public class SelectionBoxProvider implements IBoundingBoxProvider<SelectionBound
     @Override
     public boolean canProvide(DimensionId dimensionId)
     {
-        return !SelectionModule.HideSelectionBoxes;
+        return !KeystoneStateFlags.HideSelectionBoxes;
     }
     @Override
     public Iterable<SelectionBoundingBox> get(DimensionId dimensionId)

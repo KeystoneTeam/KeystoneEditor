@@ -1,6 +1,7 @@
 package keystone.core.mixins;
 
 import keystone.api.Keystone;
+import keystone.core.KeystoneStateFlags;
 import keystone.core.events.KeystoneInputHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHelper;
@@ -31,7 +32,7 @@ public abstract class MixinMouseHelper
     @Inject(method = "grabMouse", at = @At("HEAD"), cancellable = true)
     public void grabMouseHead(CallbackInfo callback)
     {
-        if (Keystone.isActive() && !Keystone.AllowPlayerLook) callback.cancel();
+        if (Keystone.isActive() && !KeystoneStateFlags.AllowPlayerLook) callback.cancel();
     }
 
     @Inject(method = "grabMouse", at = @At("TAIL"))
