@@ -363,9 +363,9 @@ public class Keystone
     private static final void onPlayerTick(final TickEvent.PlayerTickEvent event)
     {
         ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
-        if (clientPlayer == null) return;
+        if (clientPlayer == null || event.side != LogicalSide.SERVER) return;
 
-        if (Keystone.isActive() && event.side == LogicalSide.CLIENT)
+        if (Keystone.isActive())
         {
             if (event.player instanceof ServerPlayerEntity)
             {
