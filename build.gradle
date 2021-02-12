@@ -109,7 +109,7 @@ javadoc {
 }
 
 jar {
-    archiveName = archivesBaseName + " " + version + " API.jar";
+    archiveName = archivesBaseName + "_" + version + "_API.jar";
 
     manifest {
         attributes([
@@ -126,7 +126,7 @@ jar {
 }
 
 shadowJar {
-    archiveName = archivesBaseName + " " + version + " (Forge 1.16.4).jar";
+    archiveName = archivesBaseName + "_" + version + "_Forge_1.16.4.jar";
     configurations = [project.configurations.shade]
 
     // Exclude samples and maven metadata
