@@ -1,4 +1,4 @@
-package keystone.core.gui.widgets;
+package keystone.core.gui.widgets.buttons;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;

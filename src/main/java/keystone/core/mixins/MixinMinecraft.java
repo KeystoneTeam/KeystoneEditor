@@ -1,5 +1,7 @@
 package keystone.core.mixins;
 
+import keystone.api.Keystone;
+import keystone.core.KeystoneConfig;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
@@ -21,7 +23,7 @@ public class MixinMinecraft
     @Inject(method = "displayInGameMenu", at = @At(value = "HEAD"), cancellable = true)
     public void displayInGameMenu(boolean pauseOnly, CallbackInfo callback)
     {
-        //if (Keystone.isActive() && KeystoneConfig.disableInGameMenu) callback.cancel();
+        if (Keystone.isActive() && KeystoneConfig.disableInGameMenu) callback.cancel();
     }
 
     @Inject(method = "updateWindowSize", at = @At("RETURN"))

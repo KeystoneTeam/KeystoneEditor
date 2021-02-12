@@ -5,9 +5,10 @@ import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockMask;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.widgets.BlockGridWidget;
-import keystone.core.gui.widgets.ButtonNoHotkey;
+import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.widget.button.CheckboxButton;
 import net.minecraft.util.text.TranslationTextComponent;
 import org.lwjgl.glfw.GLFW;
 
@@ -36,7 +37,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
     protected void init()
     {
         super.init();
-        this.maskPanel = BlockGridWidget.createWithMargins(KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 50, false, new TranslationTextComponent("keystone.mask_panel"), state ->
+        this.maskPanel = BlockGridWidget.createWithMargins(KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 80, false, new TranslationTextComponent("keystone.mask_panel"), state ->
         {
             this.mask.without(new Block(state));
             this.maskPanel.removeBlock(state.getBlock());
@@ -46,7 +47,18 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         this.children.add(maskPanel);
 
         // Done and Cancel Buttons
-        addButton(new ButtonNoHotkey(maskPanel.x, maskPanel.y + maskPanel.getHeightRealms() + 5, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.done"), button ->
+        addButton(new CheckboxButton(maskPanel.x, maskPanel.y + maskPanel.getHeightRealms() + 5, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.blacklist"), this.mask.isBlacklist(), true)
+        {
+            @Override
+            public void onPress()
+            {
+                super.onPress();
+                if (isChecked()) mask.blacklist();
+                else mask.whitelist();
+            }
+        });
+        int gapCenter = (height - maskPanel.y - maskPanel.getHeightRealms()) / 2;
+        addButton(new ButtonNoHotkey(maskPanel.x, maskPanel.y + maskPanel.getHeightRealms() + gapCenter - 10, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.done"), button ->
         {
             if (!ranCallback)
             {
@@ -55,7 +67,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
             }
             closeScreen();
         }));
-        addButton(new ButtonNoHotkey(maskPanel.x, height - 20, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.cancel"), button -> closeScreen()));
+        addButton(new ButtonNoHotkey(maskPanel.x, height - 25, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.cancel"), button -> closeScreen()));
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)

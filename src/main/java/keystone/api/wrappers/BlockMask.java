@@ -116,6 +116,18 @@ public class BlockMask
     }
 
     /**
+     * @return Whether this {@link keystone.api.wrappers.BlockMask} is a blacklist. If true, this will match all blocks except
+     * the mask contents
+     */
+    public boolean isBlacklist() { return blacklist; }
+
+    /**
+     * @return Whether this {@link keystone.api.wrappers.BlockMask} is a whitelist. If true, this will match all blocks that are
+     * in the mask contents
+     */
+    public boolean isWhitelist() { return !blacklist; }
+
+    /**
      * Check if a {@link keystone.api.wrappers.Block} is matched by this mask
      * @param block The {@link keystone.api.wrappers.Block} to check
      * @return Whether the {@link keystone.api.wrappers.Block} is matched by this mask

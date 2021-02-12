@@ -1,4 +1,4 @@
-package keystone.core.gui.widgets;
+package keystone.core.gui.widgets.buttons;
 
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.ITextComponent;

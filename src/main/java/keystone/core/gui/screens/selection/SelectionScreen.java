@@ -8,7 +8,7 @@ import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
-import keystone.core.gui.widgets.SimpleButton;
+import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.block.Blocks;

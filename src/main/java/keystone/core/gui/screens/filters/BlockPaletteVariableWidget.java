@@ -1,118 +1,44 @@
 package keystone.core.gui.screens.filters;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.filters.Variable;
 import keystone.api.wrappers.BlockPalette;
-import keystone.core.utils.BlockUtils;
-import keystone.core.gui.screens.block_selection.BlockPaletteEditScreen;
-import keystone.core.gui.widgets.ButtonNoHotkey;
+import keystone.core.gui.widgets.inputs.BlockPaletteWidget;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.registries.IForgeRegistry;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
-public class BlockPaletteVariableWidget extends ButtonNoHotkey
+public class BlockPaletteVariableWidget extends BlockPaletteWidget
 {
-    private final Minecraft mc;
-    private final FontRenderer font;
     private final FilterSelectionScreen parent;
     private final Variable variable;
     private final Field field;
-    private final String name;
-
-    private BlockPalette palette;
-
-    private final IForgeRegistry<Item> itemRegistry;
-    private final List<ItemStack> stacks;
 
     public BlockPaletteVariableWidget(FilterSelectionScreen parent, Variable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(x, y + 11, width, 20, new StringTextComponent(name), (button) ->
-        {
-            BlockPaletteVariableWidget paletteWidget = (BlockPaletteVariableWidget)button;
+        super(new StringTextComponent(name), x, y, width, (BlockPalette)field.get(parent.getFilterInstance()), parent::disableWidgets, parent::restoreWidgets);
 
-            paletteWidget.parent.disableWidgets();
-            BlockPaletteEditScreen.editBlockPalette(paletteWidget.palette, (palette) ->
-            {
-                paletteWidget.parent.restoreWidgets();
-                if (palette == null) return;
-
-                paletteWidget.palette = palette;
-                paletteWidget.rebuildStacks();
-
-                try
-                {
-                    paletteWidget.field.set(paletteWidget.parent.getFilterInstance(), paletteWidget.palette);
-                }
-                catch (IllegalAccessException e)
-                {
-                    String error = "Could not set BlockPalette variable '" + paletteWidget.name + "'!";
-                    Keystone.LOGGER.error(error);
-                    Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
-                    e.printStackTrace();
-                }
-            });
-        });
-
-        this.mc = Minecraft.getInstance();
-        this.font = mc.fontRenderer;
         this.parent = parent;
         this.variable = variable;
         this.field = field;
-        this.name = name;
-        this.palette = (BlockPalette)field.get(parent.getFilterInstance());
-
-        this.itemRegistry = GameRegistry.findRegistry(Item.class);
-        this.stacks = new ArrayList<>();
-        rebuildStacks();
-    }
-    public static final int getHeight()
-    {
-        return 31;
-    }
-
-    private void rebuildStacks()
-    {
-        this.stacks.clear();
-        this.palette.forEach((block, weight) -> this.stacks.add(new ItemStack(BlockUtils.getBlockItem(block.getFirst().getMinecraftBlock().getBlock(), itemRegistry))));
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    protected void onSetValue(BlockPalette value)
     {
-        drawCenteredString(matrixStack, font, name, x + width / 2, y - 11, 0xFFFFFF);
-        fill(matrixStack, x, y, x + width, y + height, 0x80FFFFFF);
-
-        int x = this.x + 1;
-        for (ItemStack stack : this.stacks)
+        try
         {
-            if (stack.isEmpty()) continue;
-            drawItem(stack, x, this.y + 1);
-            x += 20;
+            field.set(parent.getFilterInstance(), value);
+        }
+        catch (IllegalAccessException e)
+        {
+            String error = "Could not set BlockPalette variable '" + getMessage().getString() + "'!";
+            Keystone.LOGGER.error(error);
+            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+            e.printStackTrace();
         }
     }
-    private void drawItem(ItemStack stack, int x, int y)
-    {
-        setBlitOffset(200);
-        this.mc.getItemRenderer().zLevel = 200.0F;
-        FontRenderer font = stack.getItem().getFontRenderer(stack);
-        if (font == null) font = this.font;
-
-        mc.getItemRenderer().renderItemAndEffectIntoGUI(stack, x, y);
-
-        setBlitOffset(0);
-        mc.getItemRenderer().zLevel = 0.0F;
-    }
-
-    public BlockPalette getPalette() { return palette; }
 }

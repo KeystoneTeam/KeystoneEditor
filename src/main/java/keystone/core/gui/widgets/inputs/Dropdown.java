@@ -1,4 +1,4 @@
-package keystone.core.gui.widgets;
+package keystone.core.gui.widgets.inputs;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;

@@ -81,6 +81,7 @@ public class ClipboardModule implements IKeystoneModule
                 else if (event.getKey() == GLFW.GLFW_KEY_C) copy();
                 else if (event.getKey() == GLFW.GLFW_KEY_V) paste();
             }
+            else if (event.getKey() == GLFW.GLFW_KEY_ESCAPE) clearPasteBoxes();
         }
     }
 

@@ -35,6 +35,11 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
     public abstract void onBlockSelected(BlockState block);
 
     @Override
+    public void closeScreen()
+    {
+        Minecraft.getInstance().displayGuiScreen(null);
+    }
+    @Override
     public boolean shouldCloseOnEsc()
     {
         return true;

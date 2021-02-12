@@ -1,7 +1,7 @@
 package keystone.core.gui.screens.block_selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import keystone.core.gui.widgets.ButtonNoHotkey;
+import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;

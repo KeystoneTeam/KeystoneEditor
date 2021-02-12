@@ -10,6 +10,7 @@
   "keystone.done": "Done",
   "keystone.cancel": "Cancel",
   "keystone.nudge": "Nudge",
+  "keystone.blacklist": "Blacklist",
 
   "key.toggle_keystone": "Toggle Keystone",
   "key.delete_blocks": "Delete Selection",

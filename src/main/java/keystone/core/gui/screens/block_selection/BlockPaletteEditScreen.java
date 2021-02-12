@@ -5,7 +5,7 @@ import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockPalette;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.widgets.BlockGridWidget;
-import keystone.core.gui.widgets.ButtonNoHotkey;
+import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.TranslationTextComponent;

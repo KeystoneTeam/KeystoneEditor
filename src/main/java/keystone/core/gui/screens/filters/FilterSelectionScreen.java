@@ -13,8 +13,8 @@ import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
-import keystone.core.gui.widgets.ButtonNoHotkey;
-import keystone.core.gui.widgets.Dropdown;
+import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
+import keystone.core.gui.widgets.inputs.Dropdown;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -310,10 +310,13 @@ public class FilterSelectionScreen extends KeystoneOverlay
             widgetsActive.put(widget, widget.active);
             widget.active = false;
         }
-        for (Widget widget : keepActive)
+        if (keepActive != null)
         {
-            widgetsActive.put(widget, true);
-            widget.active = true;
+            for (Widget widget : keepActive)
+            {
+                widgetsActive.put(widget, true);
+                widget.active = true;
+            }
         }
     }
     public void restoreWidgets()
