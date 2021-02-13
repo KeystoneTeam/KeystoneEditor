@@ -65,6 +65,7 @@ public class NudgeButton extends SimpleButton
 
         boolean blockKeys = true;
         double yaw = Player.getYaw();
+        if (yaw > 180) yaw -= 360;
         // North
         Direction forward = Direction.NORTH;
         Direction back = Direction.SOUTH;
