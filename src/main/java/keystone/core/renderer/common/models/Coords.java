@@ -87,6 +87,14 @@ public class Coords
         return new Coords(x - add.x, y - add.y, z - add.z);
     }
 
+    public float distanceSqr(Coords other)
+    {
+        int deltaX = x - other.x;
+        int deltaY = y - other.y;
+        int deltaZ = z - other.z;
+        return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+    }
+
     @Override
     public int hashCode()
     {

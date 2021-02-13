@@ -41,5 +41,12 @@
   "keystone.selection_panel.paste.tooltip": "Import the last item taken by Cut or Copy. Shortcut: Ctrl+P",
 
   "keystone.filter_panel.select": "Filter: ",
-  "keystone.filter_panel.runFilter": "Filter"
+  "keystone.filter_panel.runFilter": "Filter",
+
+  "keystone.shape.round": "Round",
+  "keystone.shape.diamond": "Diamond",
+  "keystone.shape.box": "Box",
+
+  "keystone.operation.fill": "Fill",
+  "keystone.operation.erode": "Erode"
 }

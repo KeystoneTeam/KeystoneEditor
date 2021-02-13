@@ -5,6 +5,7 @@ import keystone.core.events.KeystoneEvent;
 import keystone.core.keybinds.KeystoneKeybinds;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
+import keystone.core.modules.brush.BrushModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.modules.clipboard.ClipboardModule;
@@ -62,6 +63,7 @@ public class KeystoneMod
         event.register(new WorldCacheModule());
         event.register(new HistoryModule());
         event.register(new SelectionModule());
+        event.register(new BrushModule());
         event.register(new ClipboardModule());
     }
 }

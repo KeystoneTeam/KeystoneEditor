@@ -67,7 +67,19 @@ public class HotbarButton extends ButtonNoHotkey
         else if (isHovered()) renderToolTip(stack, mouseX, mouseY);
     }
     @Override
-    public boolean isHovered() { return super.isHovered() && enabledSupplier.get(); }
+    public boolean isHovered() { return isHovered && enabledSupplier.get(); }
+
+    @Override
+    protected void setFocused(boolean focused)
+    {
+        super.setFocused(focused);
+    }
+
+    @Override
+    public boolean changeFocus(boolean focus)
+    {
+        return super.changeFocus(focus);
+    }
 
     public KeystoneHotbarSlot getSlot() { return slot; }
 
