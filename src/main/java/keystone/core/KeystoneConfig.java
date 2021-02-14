@@ -11,10 +11,6 @@ public class KeystoneConfig
     public static boolean disableInGameMenu = true;
     public static boolean debugHistoryLog = false;
 
-    public static double closeSelectDistance = 4.0;
-
-    public static boolean renderSphereAsDots = false;
-
     public static int clickThreshold = 200;
     public static int dragThresholdSqr = 8 * 8;
 }

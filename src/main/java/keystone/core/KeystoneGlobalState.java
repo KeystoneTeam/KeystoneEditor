@@ -1,12 +1,18 @@
 package keystone.core;
 
-public class KeystoneStateFlags
+public class KeystoneGlobalState
 {
     /**
-     * If true, target the block 4 blocks in front of player. If false, target the block
+     * If true, target the block a set distance in front of player. If false, target the block
      * the player is looking at, ignoring distance
      */
     public static boolean CloseSelection = false;
+    /**
+     * If {@link keystone.core.KeystoneGlobalState#CloseSelection} is true, this is the distance
+     * in front of the player that will be targeted
+     */
+    public static double CloseSelectionDistance = 4.0;
+
     /**
      * Whether mouse movement should move the player camera
      */

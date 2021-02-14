@@ -7,39 +7,70 @@ import keystone.core.events.KeystoneInputEvent;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.modules.IKeystoneModule;
+import keystone.core.modules.brush.boxes.BrushPositionBox;
+import keystone.core.modules.brush.providers.BrushPositionBoxProvider;
+import keystone.core.modules.brush.providers.BrushPreviewBoxProvider;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.client.Player;
+import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BrushModule implements IKeystoneModule
 {
+    private IBoundingBoxProvider[] providers;
     private float minDistanceSqr;
     private BrushShape brushShape;
     private BrushOperation brushOperation;
     private int[] brushSize;
     private List<Coords> brushPositions = new ArrayList<>();
+    private List<BrushPositionBox> brushPositionBoxes = new ArrayList<>();
+
+    private boolean dragging = false;
+    private Coords lastCheckedPosition;
 
     public BrushModule()
     {
+        providers = new IBoundingBoxProvider[]
+        {
+                new BrushPositionBoxProvider(),
+                new BrushPreviewBoxProvider()
+        };
+
         MinecraftForge.EVENT_BUS.register(this);
         setMinDistance(1);
-        setBrushShape(BrushShape.ROUND);
+        setBrushShape(BrushShape.DIAMOND);
         setBrushOperation(BrushOperation.FILL);
-        setBrushSize(5, 5, 5);
+        //setBrushSize(9, 9, 9);
+        setBrushSize(8, 8, 8);
     }
 
     @Override
     public boolean isEnabled() { return KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.BRUSH; }
 
-    //region Input Handlers
+    @Override
+    public IBoundingBoxProvider[] getBoundingBoxProviders()
+    {
+        return providers;
+    }
+
+    public BrushShape getBrushShape() { return brushShape; }
+    public BrushOperation getBrushOperation() { return brushOperation; }
+    public int[] getBrushSize() { return brushSize; }
+    public List<BrushPositionBox> getBrushPositionBoxes() { return brushPositionBoxes; }
+
+    //region Event Handlers
     @SubscribeEvent
     public final void onMouseClick(final KeystoneInputEvent.MouseClickEvent event)
     {
@@ -61,14 +92,21 @@ public class BrushModule implements IKeystoneModule
         {
             prepareBrush();
             addBrushPosition(Player.getHighlightedBlock(), true);
+            dragging = true;
         }
     }
     @SubscribeEvent
-    public final void onMouseDrag(final KeystoneInputEvent.MouseDragEvent event)
+    public final void onRender(final RenderWorldLastEvent event)
     {
-        if (!Keystone.isActive() || !isEnabled() || event.gui) return;
-
-        if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT) addBrushPosition(Player.getHighlightedBlock());
+        if (dragging)
+        {
+            Coords pos = Player.getHighlightedBlock();
+            if (pos != lastCheckedPosition)
+            {
+                addBrushPosition(pos);
+                lastCheckedPosition = pos;
+            }
+        }
     }
     @SubscribeEvent
     public final void onMouseDragEnd(final KeystoneInputEvent.MouseDragEndEvent event)
@@ -78,6 +116,7 @@ public class BrushModule implements IKeystoneModule
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
             addBrushPosition(Player.getHighlightedBlock());
+            dragging = false;
             executeBrush();
         }
     }
@@ -106,6 +145,7 @@ public class BrushModule implements IKeystoneModule
     public void prepareBrush()
     {
         brushPositions.clear();
+        brushPositionBoxes.clear();
     }
 
     public void addBrushPosition(Coords position) { addBrushPosition(position, false); }
@@ -113,16 +153,10 @@ public class BrushModule implements IKeystoneModule
     {
         if (position == null) return;
 
-        if (force) brushPositions.add(position);
-        else
+        if (force || getDistanceToNearestPositionSqr(position) >= minDistanceSqr)
         {
-            float dist = -1;
-            for (Coords test : brushPositions)
-            {
-                float testDist = position.distanceSqr(test);
-                if (dist < 0 || testDist < dist) dist = testDist;
-            }
-            if (dist >= minDistanceSqr || dist < 0) brushPositions.add(position);
+            brushPositions.add(position);
+            brushPositionBoxes.add(new BrushPositionBox(position));
         }
     }
 
@@ -152,6 +186,9 @@ public class BrushModule implements IKeystoneModule
                     world.setBlockState(pos, box.getBlock(pos, false));
                 });
             }
+
+            brushPositions.clear();
+            brushPositionBoxes.clear();
         });
     }
     private void executeBrush(SelectionBox box, List<BlockPos> processedBlocks, boolean[] shapeMask)
@@ -168,6 +205,19 @@ public class BrushModule implements IKeystoneModule
                 processedBlocks.add(pos);
             }
         });
+    }
+    //endregion
+    //region Helpers
+    private float getDistanceToNearestPositionSqr(Coords position)
+    {
+        float dist = -1;
+        for (Coords test : brushPositions)
+        {
+            float testDist = position.distanceSqr(test);
+            if (dist < 0 || testDist < dist) dist = testDist;
+        }
+        if (dist < 0) dist = minDistanceSqr;
+        return dist;
     }
     //endregion
 }

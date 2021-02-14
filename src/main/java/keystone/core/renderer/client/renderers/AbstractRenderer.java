@@ -4,7 +4,6 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.renderer.client.models.Point;
 import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.common.models.AbstractBoundingBox;
-import keystone.core.KeystoneConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.Direction;
@@ -28,7 +27,13 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
     {
         OffsetBox nudge = bb.nudge();
         renderOutlinedCuboid(nudge, colorProvider, direction -> 255, alwaysDrawOutline);
-        renderFilledFaces(nudge.getMin(), nudge.getMax(), colorProvider, alphaProvider, alwaysDrawFaces);
+        renderCuboidFaces(nudge.getMin(), nudge.getMax(), colorProvider, alphaProvider, alwaysDrawFaces);
+    }
+
+    protected void renderDiamond(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, boolean alwaysDrawOutline, boolean alwaysDrawFaces)
+    {
+        renderOutlinedDiamond(center, xRadius, yRadius, zRadius, color, 255, alwaysDrawOutline);
+        renderFilledDiamond(center, xRadius, yRadius, zRadius, color, alpha, alwaysDrawFaces);
     }
 
     protected void renderOutlinedCuboid(OffsetBox bb, Color color, boolean ignoreDepth) { renderOutlinedCuboid(bb, direction -> color, direction -> 255, ignoreDepth); }
@@ -37,11 +42,28 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         RenderHelper.polygonModeLine();
         OffsetPoint min = bb.getMin();
         OffsetPoint max = bb.getMax();
-        RenderQueue.deferRendering(() -> renderFaces(min, max, colorProvider, alphaProvider, min.getY() == max.getY() ? Renderer::startLineLoop : Renderer::startLines, ignoreDepth));
+        RenderQueue.deferRendering(() -> renderCuboidFaces(min, max, colorProvider, alphaProvider, min.getY() == max.getY() ? Renderer::startLineLoop : Renderer::startLines, ignoreDepth));
     }
 
-    private void renderFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha, Supplier<Renderer> rendererSupplier, boolean ignoreDepth) { renderFaces(min, max, direction -> color, direction -> 255, rendererSupplier, ignoreDepth); }
-    private void renderFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, Supplier<Renderer> rendererSupplier, boolean ignoreDepth)
+    protected void renderOutlinedDiamond(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, boolean ignoreDepth)
+    {
+        RenderQueue.deferRendering(() ->
+        {
+            RenderHelper.polygonModeLine();
+            renderDiamondFaces(center, xRadius, yRadius, zRadius, color, alpha, Renderer::startTriangles, ignoreDepth);
+        });
+    }
+    protected void renderFilledDiamond(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, boolean ignoreDepth)
+    {
+        RenderQueue.deferRendering(() ->
+        {
+            RenderHelper.polygonModeFill(true);
+            renderDiamondFaces(center, xRadius, yRadius, zRadius, color, alpha, Renderer::startTriangles, ignoreDepth);
+        });
+    }
+
+    private void renderCuboidFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha, Supplier<Renderer> rendererSupplier, boolean ignoreDepth) { renderCuboidFaces(min, max, direction -> color, direction -> 255, rendererSupplier, ignoreDepth); }
+    private void renderCuboidFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, Supplier<Renderer> rendererSupplier, boolean ignoreDepth)
     {
         if (ignoreDepth) RenderHelper.disableDepthTest();
         else RenderHelper.enableDepthTest();
@@ -125,6 +147,40 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         RenderHelper.enableDepthTest();
     }
 
+    private void renderDiamondFaces(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, Supplier<Renderer> rendererSupplier, boolean ignoreDepth)
+    {
+        if (ignoreDepth) RenderHelper.disableDepthTest();
+        else RenderHelper.enableDepthTest();
+
+        Renderer renderer = rendererSupplier.get();
+        renderer.setColor(color).setAlpha(alpha);
+
+        OffsetPoint nX = center.offset(-xRadius, 0, 0);
+        OffsetPoint pX = center.offset(xRadius, 0, 0);
+        OffsetPoint nY = center.offset(0, -yRadius, 0);
+        OffsetPoint pY = center.offset(0, yRadius, 0);
+        OffsetPoint nZ = center.offset(0, 0, -zRadius);
+        OffsetPoint pZ = center.offset(0, 0, zRadius);
+
+        renderer.addPoints(new OffsetPoint[]
+        {
+                pY, pX, nZ,
+                nY, nZ, pX,
+
+                pY, nZ, nX,
+                nY, nX, nZ,
+
+                pY, nX, pZ,
+                nY, pZ, nX,
+
+                pY, pZ, pX,
+                nY, pX, pZ
+        });
+
+        renderer.render();
+        RenderHelper.enableDepthTest();
+    }
+
     private boolean playerInsideBoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
     {
         return minX < 0 && maxX > 0 && minY < 0 && maxY > 0 && minZ < 0 && maxZ > 0;
@@ -140,16 +196,15 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
                 .render();
     }
 
-    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color, boolean ignoreDepth) { renderFilledFaces(min, max, direction -> color, ignoreDepth); }
-    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, boolean ignoreDepth)
+    protected void renderCuboidFaces(OffsetPoint min, OffsetPoint max, Color color, boolean ignoreDepth) { renderCuboidFaces(min, max, direction -> color, ignoreDepth); }
+    protected void renderCuboidFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, boolean ignoreDepth)
     {
-        renderFilledFaces(min, max, colorProvider, direction -> 32, ignoreDepth);
+        renderCuboidFaces(min, max, colorProvider, direction -> 32, ignoreDepth);
     }
-
-    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha, boolean ignoreDepth) { renderFilledFaces(min, max, direction -> color, direction -> alpha, ignoreDepth); }
-    protected void renderFilledFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean ignoreDepth)
+    protected void renderCuboidFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha, boolean ignoreDepth) { renderCuboidFaces(min, max, direction -> color, direction -> alpha, ignoreDepth); }
+    protected void renderCuboidFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean ignoreDepth)
     {
-        RenderQueue.deferRendering(() -> renderFaces(min, max, colorProvider, alphaProvider, Renderer::startQuads, ignoreDepth));
+        RenderQueue.deferRendering(() -> renderCuboidFaces(min, max, colorProvider, alphaProvider, Renderer::startQuads, ignoreDepth));
     }
 
     protected void renderText(OffsetPoint offsetPoint, String... texts)
@@ -167,17 +222,6 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         RenderHelper.afterRenderFont();
     }
 
-    protected void renderSphere(Point center, double radius, Color color)
-    {
-        if (KeystoneConfig.renderSphereAsDots)
-        {
-            renderDotSphere(center, radius, color);
-        } else
-        {
-            renderLineSphere(center, radius, color);
-        }
-    }
-
     protected void renderPoint(Point center, Color color)
     {
         RenderHelper.enablePointSmooth();
@@ -188,7 +232,7 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         renderer.render();
     }
 
-    private void renderLineSphere(Point center, double radius, Color color)
+    protected void renderLineSphere(Point center, double radius, Color color)
     {
         RenderHelper.lineWidth2();
 
@@ -215,7 +259,7 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         renderer.render();
     }
 
-    private void renderDotSphere(Point center, double radius, Color color)
+    protected void renderDotSphere(Point center, double radius, Color color)
     {
         RenderHelper.enablePointSmooth();
         RenderHelper.pointSize5();
@@ -232,6 +276,35 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
                 double dz = radiusBySinPhi * Math.sin(theta);
 
                 renderer.addPoint(new OffsetPoint(center.offset(dx, dy, dz)));
+            }
+        }
+        renderer.render();
+    }
+
+    protected void renderSpheroid(Color color, Point center, double xRadius, double yRadius, double zRadius)
+    {
+        RenderHelper.enablePointSmooth();
+        RenderHelper.pointSize5();
+        Renderer renderer = Renderer.startPoints()
+                .setColor(color);
+
+        if (yRadius <= 0) yRadius = xRadius;
+        if (zRadius <= 0) zRadius = xRadius;
+
+        // TODO: Implement full sphere rendering with triangles
+//        Renderer renderer = Renderer.startTriangles()
+//                .setColor(color);
+
+        for (double phi = 0.0D; phi < TAU; phi += PHI_SEGMENT)
+        {
+            double dy = Math.cos(phi);
+            double radiusBySinPhi = Math.sin(phi);
+            for (double theta = 0.0D; theta < PI; theta += THETA_SEGMENT)
+            {
+                double dx = radiusBySinPhi * Math.cos(theta);
+                double dz = radiusBySinPhi * Math.sin(theta);
+
+                renderer.addPoint(new OffsetPoint(center.offset(xRadius * dx, yRadius * dy, zRadius * dz)));
             }
         }
         renderer.render();

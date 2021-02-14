@@ -6,6 +6,10 @@ import keystone.core.keybinds.KeystoneKeybinds;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.modules.brush.BrushModule;
+import keystone.core.modules.brush.boxes.BrushPositionBox;
+import keystone.core.modules.brush.boxes.BrushPreviewBox;
+import keystone.core.modules.brush.renderers.BrushPositionBoxRenderer;
+import keystone.core.modules.brush.renderers.BrushPreviewBoxRenderer;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.modules.clipboard.ClipboardModule;
@@ -56,6 +60,8 @@ public class KeystoneMod
         event.register(SelectionBoundingBox.class, new SelectionBoxRenderer(), "selection_box");
         event.register(HighlightBoundingBox.class, new HighlightBoxRenderer(), "highlight_box");
         event.register(PasteBoundingBox.class, new PasteBoxRenderer(), "paste_box");
+        event.register(BrushPositionBox.class, new BrushPositionBoxRenderer(), "brush_position");
+        event.register(BrushPreviewBox.class, new BrushPreviewBoxRenderer(), "brush_preview");
     }
     private void registerDefaultModules(final KeystoneEvent.RegisterModules event)
     {

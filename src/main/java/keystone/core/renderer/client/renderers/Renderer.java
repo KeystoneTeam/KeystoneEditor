@@ -27,6 +27,8 @@ public class Renderer
         return new Renderer(RenderHelper.QUADS, DefaultVertexFormats.POSITION_COLOR);
     }
 
+    static Renderer startTriangles() { return new Renderer(RenderHelper.TRIANGLES, DefaultVertexFormats.POSITION_COLOR); }
+
     static Renderer startPoints()
     {
         return new Renderer(RenderHelper.POINTS, DefaultVertexFormats.POSITION_COLOR);

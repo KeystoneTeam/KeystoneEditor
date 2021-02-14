@@ -6,7 +6,7 @@ import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.tools.interfaces.IKeystoneTool;
 import keystone.api.tools.interfaces.ISelectionBoxTool;
 import keystone.core.KeystoneConfig;
-import keystone.core.KeystoneStateFlags;
+import keystone.core.KeystoneGlobalState;
 import keystone.core.filters.FilterCompiler;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.DimensionId;
@@ -66,7 +66,7 @@ public class Keystone
         else
         {
             enabled = true;
-            KeystoneStateFlags.AllowPlayerLook = false;
+            KeystoneGlobalState.AllowPlayerLook = false;
             Minecraft.getInstance().mouseHelper.ungrabMouse();
         }
     }

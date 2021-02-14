@@ -1,7 +1,6 @@
 package keystone.core.renderer.client;
 
-import keystone.api.Keystone;
-import keystone.core.KeystoneStateFlags;
+import keystone.core.KeystoneGlobalState;
 import keystone.core.math.RayTracing;
 import keystone.core.renderer.client.interop.ClientInterop;
 import keystone.core.renderer.client.models.Point;
@@ -33,10 +32,10 @@ public class Player
         pitch = player.getPitch((float)partialTicks);
         yaw = player.getYaw((float)partialTicks);
         eyePosition = player.getEyePosition((float)partialTicks);
-        lookDirection = KeystoneStateFlags.CloseSelection ? player.getLook((float)partialTicks) : RayTracing.screenPointToRayDirection((float)partialTicks);
+        lookDirection = KeystoneGlobalState.CloseSelection ? player.getLook((float)partialTicks) : RayTracing.screenPointToRayDirection((float)partialTicks);
 
         dimensionId = DimensionId.from(player.getEntityWorld().getDimensionKey());
-        rayTrace = KeystoneStateFlags.CloseSelection ? null : RayTracing.rayTraceBlock(eyePosition, lookDirection, player, ClientInterop.getRenderDistanceChunks() * 16, true);
+        rayTrace = KeystoneGlobalState.CloseSelection ? null : RayTracing.rayTraceBlock(eyePosition, lookDirection, player, ClientInterop.getRenderDistanceChunks() * 16, true);
     }
 
     public static double getX() {
@@ -66,7 +65,7 @@ public class Player
 
     public static Coords getHighlightedBlock()
     {
-        if (rayTrace == null || rayTrace.getType() != RayTraceResult.Type.BLOCK) return new Coords(getEyePosition().add(lookDirection.scale(KeystoneConfig.closeSelectDistance)));
+        if (rayTrace == null || rayTrace.getType() != RayTraceResult.Type.BLOCK) return new Coords(getEyePosition().add(lookDirection.scale(KeystoneGlobalState.CloseSelectionDistance)));
         else
         {
             BlockRayTraceResult blockRay = (BlockRayTraceResult)rayTrace;

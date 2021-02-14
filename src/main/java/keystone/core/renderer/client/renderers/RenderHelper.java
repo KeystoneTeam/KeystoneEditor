@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL11;
 
 public class RenderHelper
 {
+    public static final int TRIANGLES = GL11.GL_TRIANGLES;
     public static final int QUADS = GL11.GL_QUADS;
     public static final int LINES = GL11.GL_LINES;
     public static final int LINE_LOOP = GL11.GL_LINE_LOOP;
@@ -123,12 +124,21 @@ public class RenderHelper
 
     public static void polygonModeLine()
     {
-        GlStateManager.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+        polygonModeLine(false);
     }
-
+    public static void polygonModeLine(boolean doCulling)
+    {
+        if (doCulling) GlStateManager.polygonMode(GL11.GL_FRONT, GL11.GL_LINE);
+        else GlStateManager.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+    }
     public static void polygonModeFill()
     {
-        GlStateManager.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+        polygonModeFill(false);
+    }
+    public static void polygonModeFill(boolean doCulling)
+    {
+        if (doCulling) GlStateManager.polygonMode(GL11.GL_FRONT, GL11.GL_FILL);
+        else GlStateManager.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
     }
 
     public static void polygonOffsetMinusOne()

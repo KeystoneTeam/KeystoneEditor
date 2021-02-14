@@ -1,7 +1,7 @@
 package keystone.core.modules.mouse;
 
 import keystone.api.Keystone;
-import keystone.core.KeystoneStateFlags;
+import keystone.core.KeystoneGlobalState;
 import keystone.core.events.KeystoneInputEvent;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.selection.SelectedFace;
@@ -12,6 +12,7 @@ import keystone.core.renderer.common.models.AbstractBoundingBox;
 import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.renderer.common.models.SelectableBoundingBox;
 import net.minecraft.client.Minecraft;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
@@ -79,7 +80,7 @@ public class MouseModule implements IKeystoneModule
     @SubscribeEvent
     public final void onMouseClick(final KeystoneInputEvent.MouseClickEvent event)
     {
-        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null && !event.gui && event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(!KeystoneStateFlags.AllowPlayerLook);
+        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null && !event.gui && event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(!KeystoneGlobalState.AllowPlayerLook);
     }
     @SubscribeEvent
     public final void onMouseDragStart(final KeystoneInputEvent.MouseDragStartEvent event)
@@ -99,12 +100,21 @@ public class MouseModule implements IKeystoneModule
             else if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT) endDraggingBox();
         }
     }
+    @SubscribeEvent
+    public final void onScroll(final InputEvent.MouseScrollEvent event)
+    {
+        if (Keystone.isActive() && !KeystoneGlobalState.MouseOverGUI && KeystoneGlobalState.CloseSelection)
+        {
+            KeystoneGlobalState.CloseSelectionDistance += event.getScrollDelta();
+            if (KeystoneGlobalState.CloseSelectionDistance < 0) KeystoneGlobalState.CloseSelectionDistance = 0;
+        }
+    }
     //endregion
     //region Helpers
     private void setLookEnabled(boolean allowLook)
     {
-        KeystoneStateFlags.AllowPlayerLook = allowLook;
-        KeystoneStateFlags.CloseSelection = allowLook;
+        KeystoneGlobalState.AllowPlayerLook = allowLook;
+        KeystoneGlobalState.CloseSelection = allowLook;
         if (allowLook) Minecraft.getInstance().mouseHelper.grabMouse();
         else Minecraft.getInstance().mouseHelper.ungrabMouse();
     }

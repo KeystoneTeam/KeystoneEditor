@@ -2,10 +2,9 @@ package keystone.core.gui.screens;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import keystone.core.KeystoneStateFlags;
+import keystone.core.KeystoneGlobalState;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
@@ -32,7 +31,7 @@ public class KeystoneOverlay extends Screen
     }
     public void checkMouseOverGui()
     {
-        this.buttons.forEach(widget -> { if (widget.isHovered() && widget.visible && widget.active) KeystoneStateFlags.MouseOverGUI = true; });
+        this.buttons.forEach(widget -> { if (widget.isHovered() && widget.visible && widget.active) KeystoneGlobalState.MouseOverGUI = true; });
     }
 
     public static void fillRounded(MatrixStack stack, int minX, int minY, int maxX, int maxY)

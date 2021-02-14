@@ -17,6 +17,7 @@ public class RenderQueue
         while (!queue.isEmpty())
         {
             queue.poll().render();
+            RenderHelper.polygonModeFill();
         }
     }
 

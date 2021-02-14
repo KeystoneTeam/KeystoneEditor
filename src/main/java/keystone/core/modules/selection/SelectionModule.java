@@ -2,14 +2,14 @@ package keystone.core.modules.selection;
 
 import keystone.api.Keystone;
 import keystone.api.SelectionBox;
-import keystone.core.KeystoneStateFlags;
+import keystone.core.KeystoneGlobalState;
+import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.events.KeystoneInputEvent;
 import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.DimensionId;
-import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.modules.IKeystoneModule;
@@ -24,6 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
@@ -165,13 +166,18 @@ public class SelectionModule implements IKeystoneModule
             if (mouseModule.getSelectedFace() == null) endSelectionBox();
         }
     }
+    @SubscribeEvent
+    public void onHotbarChanged(final KeystoneHotbarEvent event)
+    {
+        if (creatingSelection) event.setCanceled(true);
+    }
     //endregion
     //region Controls
     private void startSelectionBox()
     {
         if (!isEnabled()) return;
 
-        if (!creatingSelection && !KeystoneStateFlags.MouseOverGUI)
+        if (!creatingSelection && !KeystoneGlobalState.MouseOverGUI)
         {
             firstSelectionPoint = Player.getHighlightedBlock();
             creatingSelection = true;

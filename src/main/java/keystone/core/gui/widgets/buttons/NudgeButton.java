@@ -2,7 +2,7 @@ package keystone.core.gui.widgets.buttons;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
-import keystone.core.KeystoneStateFlags;
+import keystone.core.KeystoneGlobalState;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.selection.SelectionModule;
@@ -157,7 +157,7 @@ public class NudgeButton extends SimpleButton
             }
         }
 
-        if (blockKeys) KeystoneStateFlags.BlockingKeys = true;
+        if (blockKeys) KeystoneGlobalState.BlockingKeys = true;
     }
 
     //region Input

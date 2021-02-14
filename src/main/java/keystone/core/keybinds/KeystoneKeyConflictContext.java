@@ -1,7 +1,6 @@
 package keystone.core.keybinds;
 
-import keystone.core.KeystoneStateFlags;
-import keystone.core.gui.KeystoneOverlayHandler;
+import keystone.core.KeystoneGlobalState;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.client.settings.KeyConflictContext;
 
@@ -12,7 +11,7 @@ public enum KeystoneKeyConflictContext implements IKeyConflictContext
         @Override
         public boolean isActive()
         {
-            return KeyConflictContext.GUI.isActive() || KeystoneStateFlags.BlockingKeys;
+            return KeyConflictContext.GUI.isActive() || KeystoneGlobalState.BlockingKeys;
         }
         @Override
         public boolean conflicts(IKeyConflictContext other)
