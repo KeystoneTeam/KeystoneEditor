@@ -18,6 +18,7 @@ public class RenderQueue
         {
             queue.poll().render();
             RenderHelper.polygonModeFill();
+            RenderHelper.disableCull();
         }
     }
 

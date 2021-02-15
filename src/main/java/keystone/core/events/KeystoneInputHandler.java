@@ -2,6 +2,7 @@ package keystone.core.events;
 
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
+import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHelper;
 import net.minecraft.util.math.vector.Vector3d;
@@ -53,6 +54,7 @@ public class KeystoneInputHandler
     public static final void postRender(final RenderWorldLastEvent event)
     {
         MouseHelper mouse = Minecraft.getInstance().mouseHelper;
+
         if (leftClickTimestamp > 0)
         {
             long time = System.currentTimeMillis();
@@ -175,6 +177,45 @@ public class KeystoneInputHandler
                 }
                 else if (rightDragging == 2) rightDragging--;
                 else if (rightDragging == 1) MinecraftForge.EVENT_BUS.post(new KeystoneInputEvent.MouseDragEvent(button, mouseX, mouseY, dragX, dragY, rightClickGui));
+            }
+        }
+    }
+    @SubscribeEvent
+    public static final void onKeyInput(final InputEvent.KeyInputEvent event)
+    {
+        GameSettings settings = Minecraft.getInstance().gameSettings;
+        MouseHelper mouse = Minecraft.getInstance().mouseHelper;
+
+        if (event.getKey() == settings.keyBindForward.getKey().getKeyCode() ||
+                event.getKey() == settings.keyBindBack.getKey().getKeyCode() ||
+                event.getKey() == settings.keyBindLeft.getKey().getKeyCode() ||
+                event.getKey() == settings.keyBindRight.getKey().getKeyCode() ||
+                event.getKey() == settings.keyBindJump.getKey().getKeyCode() ||
+                event.getKey() == settings.keyBindSneak.getKey().getKeyCode())
+        {
+            if (leftClickTimestamp > 0)
+            {
+                if (leftDragging == 0)
+                {
+                    MinecraftForge.EVENT_BUS.post(new KeystoneInputEvent.MouseDragStartEvent(GLFW.GLFW_MOUSE_BUTTON_LEFT, mouse.getMouseX(), mouse.getYVelocity(), leftClickGui));
+                    leftDragging = 3;
+                }
+            }
+            if (middleClickTimestamp > 0)
+            {
+                if (middleDragging == 0)
+                {
+                    MinecraftForge.EVENT_BUS.post(new KeystoneInputEvent.MouseDragStartEvent(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, mouse.getMouseX(), mouse.getYVelocity(), middleClickGui));
+                    middleDragging = 3;
+                }
+            }
+            if (rightClickTimestamp > 0)
+            {
+                if (rightDragging == 0)
+                {
+                    MinecraftForge.EVENT_BUS.post(new KeystoneInputEvent.MouseDragStartEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, mouse.getMouseX(), mouse.getYVelocity(), rightClickGui));
+                    rightDragging = 3;
+                }
             }
         }
     }

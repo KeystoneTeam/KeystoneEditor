@@ -124,21 +124,20 @@ public class RenderHelper
 
     public static void polygonModeLine()
     {
-        polygonModeLine(false);
-    }
-    public static void polygonModeLine(boolean doCulling)
-    {
-        if (doCulling) GlStateManager.polygonMode(GL11.GL_FRONT, GL11.GL_LINE);
-        else GlStateManager.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+        GlStateManager.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
     }
     public static void polygonModeFill()
     {
-        polygonModeFill(false);
+        GlStateManager.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
     }
-    public static void polygonModeFill(boolean doCulling)
+
+    public static void enableCull()
     {
-        if (doCulling) GlStateManager.polygonMode(GL11.GL_FRONT, GL11.GL_FILL);
-        else GlStateManager.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+        GlStateManager.enableCull();
+    }
+    public static void disableCull()
+    {
+        GlStateManager.disableCull();
     }
 
     public static void polygonOffsetMinusOne()

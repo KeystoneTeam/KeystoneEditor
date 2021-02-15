@@ -33,6 +33,7 @@ public class OffsetPoint
     {
         return point.getZ() - Camera.getZ();
     }
+    public Point getPoint() { return point; }
 
     public OffsetPoint offset(double x, double y, double z)
     {

@@ -7,8 +7,11 @@ import keystone.core.renderer.common.models.AbstractBoundingBox;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.Direction;
+import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.math.vector.Vector3d;
 
 import java.awt.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -18,6 +21,8 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
     public static final double PHI_SEGMENT = TAU / 90D;
     private static final double PI = TAU / 2D;
     public static final double THETA_SEGMENT = PHI_SEGMENT / 2D;
+
+    private static final Point[] UNIT_SPHERE_VERTICES = new SphereMesh(50).getPoints();
 
     public abstract void render(MatrixStack stack, T boundingBox);
     public void modifyRenderer(Renderer renderer, Direction faceDirection) {}
@@ -30,10 +35,16 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         renderCuboidFaces(nudge.getMin(), nudge.getMax(), colorProvider, alphaProvider, alwaysDrawFaces);
     }
 
-    protected void renderDiamond(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, boolean alwaysDrawOutline, boolean alwaysDrawFaces)
+    protected void renderDiamond(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, boolean alwaysDrawOutline, boolean alwaysDrawFaces, boolean cull)
     {
         renderOutlinedDiamond(center, xRadius, yRadius, zRadius, color, 255, alwaysDrawOutline);
-        renderFilledDiamond(center, xRadius, yRadius, zRadius, color, alpha, alwaysDrawFaces);
+        renderFilledDiamond(center, xRadius, yRadius, zRadius, color, alpha, alwaysDrawFaces, cull);
+    }
+
+    protected void renderSphere(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, boolean alwaysDrawOutline, boolean alwaysDrawFaces, boolean cull)
+    {
+        renderOutlinedSphere(center, xRadius, yRadius, zRadius, color, 255, alwaysDrawOutline);
+        renderFilledSphere(center, xRadius, yRadius, zRadius, color, alpha, alwaysDrawFaces, cull);
     }
 
     protected void renderOutlinedCuboid(OffsetBox bb, Color color, boolean ignoreDepth) { renderOutlinedCuboid(bb, direction -> color, direction -> 255, ignoreDepth); }
@@ -53,16 +64,35 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
             renderDiamondFaces(center, xRadius, yRadius, zRadius, color, alpha, Renderer::startTriangles, ignoreDepth);
         });
     }
-    protected void renderFilledDiamond(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, boolean ignoreDepth)
+    protected void renderFilledDiamond(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, boolean ignoreDepth, boolean cull)
     {
         RenderQueue.deferRendering(() ->
         {
-            RenderHelper.polygonModeFill(true);
+            RenderHelper.polygonModeFill();
+            if (cull) RenderHelper.enableCull();
             renderDiamondFaces(center, xRadius, yRadius, zRadius, color, alpha, Renderer::startTriangles, ignoreDepth);
         });
     }
 
-    private void renderCuboidFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha, Supplier<Renderer> rendererSupplier, boolean ignoreDepth) { renderCuboidFaces(min, max, direction -> color, direction -> 255, rendererSupplier, ignoreDepth); }
+    protected void renderOutlinedSphere(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, boolean ignoreDepth)
+    {
+        RenderQueue.deferRendering(() ->
+        {
+            renderCircle(center, (x, y) -> new Vector3d(0, x * yRadius, y * zRadius), color, alpha);
+            renderCircle(center, (x, y) -> new Vector3d(x * xRadius, 0, y * zRadius), color, alpha);
+            renderCircle(center, (x, y) -> new Vector3d(x * xRadius, y * yRadius, 0), color, alpha);
+        });
+    }
+    protected void renderFilledSphere(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, boolean ignoreDepth, boolean cull)
+    {
+        RenderQueue.deferRendering(() ->
+        {
+            RenderHelper.polygonModeFill();
+            if (cull) RenderHelper.enableCull();
+            renderSphereSurface(center, xRadius, yRadius, zRadius, color, alpha, Renderer::startTriangles, ignoreDepth);
+        });
+    }
+
     private void renderCuboidFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, Supplier<Renderer> rendererSupplier, boolean ignoreDepth)
     {
         if (ignoreDepth) RenderHelper.disableDepthTest();
@@ -146,7 +176,6 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
 
         RenderHelper.enableDepthTest();
     }
-
     private void renderDiamondFaces(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, Supplier<Renderer> rendererSupplier, boolean ignoreDepth)
     {
         if (ignoreDepth) RenderHelper.disableDepthTest();
@@ -180,28 +209,25 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         renderer.render();
         RenderHelper.enableDepthTest();
     }
-
-    private boolean playerInsideBoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
+    private void renderSphereSurface(OffsetPoint center, double xRadius, double yRadius, double zRadius, Color color, int alpha, Supplier<Renderer> rendererSupplier, boolean ignoreDepth)
     {
-        return minX < 0 && maxX > 0 && minY < 0 && maxY > 0 && minZ < 0 && maxZ > 0;
+        if (ignoreDepth) RenderHelper.disableDepthTest();
+        else RenderHelper.enableDepthTest();
+
+        Renderer renderer = rendererSupplier.get();
+        renderer.setColor(color).setAlpha(alpha);
+
+        if (yRadius <= 0) yRadius = xRadius;
+        if (zRadius <= 0) zRadius = xRadius;
+
+        for (Point point : UNIT_SPHERE_VERTICES)
+        {
+            renderer.addPoint(center.offset(point.getX() * xRadius, point.getY() * yRadius, point.getZ() * zRadius));
+        }
+        renderer.render();
+        RenderHelper.enableDepthTest();
     }
 
-    protected void renderLine(OffsetPoint startPoint, OffsetPoint endPoint, Color color)
-    {
-        RenderHelper.polygonModeLine();
-        Renderer.startLines()
-                .setColor(color)
-                .addPoint(startPoint)
-                .addPoint(endPoint)
-                .render();
-    }
-
-    protected void renderCuboidFaces(OffsetPoint min, OffsetPoint max, Color color, boolean ignoreDepth) { renderCuboidFaces(min, max, direction -> color, ignoreDepth); }
-    protected void renderCuboidFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, boolean ignoreDepth)
-    {
-        renderCuboidFaces(min, max, colorProvider, direction -> 32, ignoreDepth);
-    }
-    protected void renderCuboidFaces(OffsetPoint min, OffsetPoint max, Color color, int alpha, boolean ignoreDepth) { renderCuboidFaces(min, max, direction -> color, direction -> alpha, ignoreDepth); }
     protected void renderCuboidFaces(OffsetPoint min, OffsetPoint max, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean ignoreDepth)
     {
         RenderQueue.deferRendering(() -> renderCuboidFaces(min, max, colorProvider, alphaProvider, Renderer::startQuads, ignoreDepth));
@@ -232,81 +258,18 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         renderer.render();
     }
 
-    protected void renderLineSphere(Point center, double radius, Color color)
+    private void renderCircle(OffsetPoint center, BiFunction<Double, Double, Vector3d> pointTransformer, Color color, int alpha)
     {
-        RenderHelper.lineWidth2();
-
-        double offset = ((radius - (int) radius) == 0) ? center.getY() - (int) center.getY() : 0;
-        int dyStep = radius < 64 ? 1 : MathHelper.floor(radius / 32);
-        for (double dy = offset - radius; dy <= radius + 1; dy += dyStep)
-        {
-            double circleRadius = Math.sqrt((radius * radius) - (dy * dy));
-            if (circleRadius == 0) circleRadius = Math.sqrt(2) / 2;
-            renderCircle(center, circleRadius, color, dy + 0.001F);
-        }
-    }
-
-    private void renderCircle(Point center, double radius, Color color, double dy)
-    {
-        Renderer renderer = Renderer.startLineLoop()
-                .setColor(color);
+        Renderer renderer = Renderer.startLineLoop().setColor(color).setAlpha(alpha);
 
         for (double phi = 0.0D; phi < TAU; phi += PHI_SEGMENT)
         {
-            renderer.addPoint(new OffsetPoint(center.offset(Math.cos(phi) * radius, dy, Math.sin(phi) * radius)));
+            double localX = Math.cos(phi);
+            double localY = Math.sin(phi);
+            Vector3d point = pointTransformer.apply(localX, localY);
+            renderer.addPoint(center.offset(point.x, point.y, point.z));
         }
 
-        renderer.render();
-    }
-
-    protected void renderDotSphere(Point center, double radius, Color color)
-    {
-        RenderHelper.enablePointSmooth();
-        RenderHelper.pointSize5();
-        Renderer renderer = Renderer.startPoints()
-                .setColor(color);
-
-        for (double phi = 0.0D; phi < TAU; phi += PHI_SEGMENT)
-        {
-            double dy = radius * Math.cos(phi);
-            double radiusBySinPhi = radius * Math.sin(phi);
-            for (double theta = 0.0D; theta < PI; theta += THETA_SEGMENT)
-            {
-                double dx = radiusBySinPhi * Math.cos(theta);
-                double dz = radiusBySinPhi * Math.sin(theta);
-
-                renderer.addPoint(new OffsetPoint(center.offset(dx, dy, dz)));
-            }
-        }
-        renderer.render();
-    }
-
-    protected void renderSpheroid(Color color, Point center, double xRadius, double yRadius, double zRadius)
-    {
-        RenderHelper.enablePointSmooth();
-        RenderHelper.pointSize5();
-        Renderer renderer = Renderer.startPoints()
-                .setColor(color);
-
-        if (yRadius <= 0) yRadius = xRadius;
-        if (zRadius <= 0) zRadius = xRadius;
-
-        // TODO: Implement full sphere rendering with triangles
-//        Renderer renderer = Renderer.startTriangles()
-//                .setColor(color);
-
-        for (double phi = 0.0D; phi < TAU; phi += PHI_SEGMENT)
-        {
-            double dy = Math.cos(phi);
-            double radiusBySinPhi = Math.sin(phi);
-            for (double theta = 0.0D; theta < PI; theta += THETA_SEGMENT)
-            {
-                double dx = radiusBySinPhi * Math.cos(theta);
-                double dz = radiusBySinPhi * Math.sin(theta);
-
-                renderer.addPoint(new OffsetPoint(center.offset(xRadius * dx, yRadius * dy, zRadius * dz)));
-            }
-        }
         renderer.render();
     }
 }

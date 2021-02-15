@@ -50,10 +50,10 @@ public class BrushModule implements IKeystoneModule
 
         MinecraftForge.EVENT_BUS.register(this);
         setMinDistance(1);
-        setBrushShape(BrushShape.DIAMOND);
+        setBrushShape(BrushShape.ROUND);
         setBrushOperation(BrushOperation.FILL);
-        //setBrushSize(9, 9, 9);
-        setBrushSize(8, 8, 8);
+        setBrushSize(9, 9, 9);
+        //setBrushSize(8, 8, 8);
     }
 
     @Override

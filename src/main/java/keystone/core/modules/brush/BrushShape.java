@@ -1,5 +1,7 @@
 package keystone.core.modules.brush;
 
+import keystone.core.renderer.client.models.Point;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -10,7 +12,7 @@ public abstract class BrushShape
     public static final BrushShape ROUND = new BrushShape()
     {
         public ITextComponent getName() { return new TranslationTextComponent("keystone.shape.round"); }
-        protected boolean isPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ)
+        protected boolean isLocalizedPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ)
         {
             float nX = (2 * x / sizeX);
             float nY = (2 * y / sizeY);
@@ -21,7 +23,7 @@ public abstract class BrushShape
     public static final BrushShape DIAMOND = new BrushShape()
     {
         public ITextComponent getName() { return new TranslationTextComponent("keystone.shape.diamond"); }
-        protected boolean isPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ)
+        protected boolean isLocalizedPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ)
         {
             x = Math.abs(x) - (sizeX % 2 == 0 ? 0.5f : 0);
             y = Math.abs(y) - (sizeY % 2 == 0 ? 0.5f : 0);
@@ -38,12 +40,12 @@ public abstract class BrushShape
     public static final BrushShape SQUARE = new BrushShape()
     {
         public ITextComponent getName() { return new TranslationTextComponent("keystone.shape.square"); }
-        protected boolean isPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ) { return true; }
+        protected boolean isLocalizedPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ) { return true; }
     };
     //endregion
 
     public abstract ITextComponent getName();
-    protected abstract boolean isPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ);
+    protected abstract boolean isLocalizedPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ);
 
     private int getArrayIndex(int x, int y, int z, int sizeX, int sizeY, int sizeZ)
     {
@@ -75,8 +77,26 @@ public abstract class BrushShape
         for (int i = 0; i < mask.length; i++)
         {
             Vector3f center = blockCenters[i];
-            mask[i] = isPositionInShape(center.getX(), center.getY(), center.getZ(), sizeX, sizeY, sizeZ);
+            mask[i] = isLocalizedPositionInShape(center.getX(), center.getY(), center.getZ(), sizeX, sizeY, sizeZ);
         }
         return mask;
+    }
+
+    public final boolean isPositionInShape(Vector3d position, Point center, int sizeX, int sizeY, int sizeZ)
+    {
+        float x = (float)(position.x - center.getX() + sizeX * 0.5);
+        float y = (float)(position.y - center.getY() + sizeY * 0.5);
+        float z = (float)(position.z - center.getZ() + sizeZ * 0.5);
+        return isPositionInShape(x, y, z, sizeX, sizeY, sizeZ);
+    }
+    private final boolean isPositionInShape(float x, float y, float z, int sizeX, int sizeY, int sizeZ)
+    {
+        float[] halfSize = new float[]
+        {
+                (sizeX >> 1) - ((sizeX & 1) == 0 ? 0.5f : 0),
+                (sizeY >> 1) - ((sizeY & 1) == 0 ? 0.5f : 0),
+                (sizeZ >> 1) - ((sizeZ & 1) == 0 ? 0.5f : 0)
+        };
+        return isLocalizedPositionInShape(x - halfSize[0], y - halfSize[1], z - halfSize[2], sizeX, sizeY, sizeZ);
     }
 }
