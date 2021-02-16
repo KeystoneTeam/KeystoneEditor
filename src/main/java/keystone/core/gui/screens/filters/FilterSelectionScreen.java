@@ -83,11 +83,6 @@ public class FilterSelectionScreen extends KeystoneOverlay
 
     //region Screen Overrides
     @Override
-    public void closeScreen()
-    {
-        KeystoneOverlayHandler.removeOverlay(this);
-    }
-    @Override
     public void onClose()
     {
         open = null;

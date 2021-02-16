@@ -8,8 +8,14 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class BrushOperation
 {
+    public static final List<BrushOperation> VALUES = new ArrayList<>();
+    private final int listIndex;
+
     public static final BrushOperation FILL = new BrushOperation()
     {
         private BlockMask mask = new BlockMask().with("minecraft:air");
@@ -32,12 +38,20 @@ public abstract class BrushOperation
 
     private World world;
 
+    protected BrushOperation()
+    {
+        listIndex = VALUES.size();
+        VALUES.add(this);
+    }
+
     public void prepare(World world)
     {
         this.world = world;
     }
     public abstract ITextComponent getName();
     public abstract Block process(BlockPos pos);
+
+    public final BrushOperation getNextOperation() { return VALUES.get((listIndex + 1) % VALUES.size()); }
 
     protected final Block getBlock(BlockPos pos)
     {

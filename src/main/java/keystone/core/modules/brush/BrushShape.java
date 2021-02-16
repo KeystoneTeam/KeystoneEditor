@@ -6,8 +6,14 @@ import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class BrushShape
 {
+    public static final List<BrushShape> VALUES = new ArrayList<>();
+    private final int listIndex;
+
     //region Default Shapes
     public static final BrushShape ROUND = new BrushShape()
     {
@@ -44,13 +50,15 @@ public abstract class BrushShape
     };
     //endregion
 
+    protected BrushShape()
+    {
+        listIndex = VALUES.size();
+        VALUES.add(this);
+    }
+
     public abstract ITextComponent getName();
     protected abstract boolean isLocalizedPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ);
 
-    private int getArrayIndex(int x, int y, int z, int sizeX, int sizeY, int sizeZ)
-    {
-        return x + y * sizeX + z * sizeX * sizeY;
-    }
     public final boolean[] getShapeMask(int sizeX, int sizeY, int sizeZ)
     {
         // Calculate block centers, offset by -0.5 on each even axis
@@ -81,13 +89,22 @@ public abstract class BrushShape
         }
         return mask;
     }
-
     public final boolean isPositionInShape(Vector3d position, Point center, int sizeX, int sizeY, int sizeZ)
     {
         float x = (float)(position.x - center.getX() + sizeX * 0.5);
         float y = (float)(position.y - center.getY() + sizeY * 0.5);
         float z = (float)(position.z - center.getZ() + sizeZ * 0.5);
         return isPositionInShape(x, y, z, sizeX, sizeY, sizeZ);
+    }
+    public final BrushShape getNextShape()
+    {
+        return VALUES.get((listIndex + 1) % VALUES.size());
+    }
+
+    //region Helper Functions
+    private int getArrayIndex(int x, int y, int z, int sizeX, int sizeY, int sizeZ)
+    {
+        return x + y * sizeX + z * sizeX * sizeY;
     }
     private final boolean isPositionInShape(float x, float y, float z, int sizeX, int sizeY, int sizeZ)
     {
@@ -99,4 +116,5 @@ public abstract class BrushShape
         };
         return isLocalizedPositionInShape(x - halfSize[0], y - halfSize[1], z - halfSize[2], sizeX, sizeY, sizeZ);
     }
+    //endregion
 }

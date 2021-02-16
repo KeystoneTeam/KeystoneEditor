@@ -5,12 +5,17 @@
   "keystone.screen.editMask": "Edit the block mask",
   "keystone.screen.editPalette": "Edit the block palette",
   "keystone.screen.filterPanel": "Filter panel",
+  "keystone.screen.brushPanel": "Brush panel",
   "keystone.screen.hotbar": "Keystone hotbar",
 
   "keystone.done": "Done",
   "keystone.cancel": "Cancel",
   "keystone.nudge": "Nudge",
   "keystone.blacklist": "Blacklist",
+
+  "keystone.width": "Width",
+  "keystone.length": "Length",
+  "keystone.height": "Height",
 
   "key.toggle_keystone": "Toggle Keystone",
   "key.delete_blocks": "Delete Selection",
@@ -42,6 +47,8 @@
 
   "keystone.filter_panel.select": "Filter: ",
   "keystone.filter_panel.runFilter": "Filter",
+
+  "keystone.brush.fill": "Fill",
 
   "keystone.shape.round": "Round",
   "keystone.shape.diamond": "Diamond",
