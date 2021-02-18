@@ -30,7 +30,7 @@ public class Player
         y = player.lastTickPosY + (player.getPosY() - player.lastTickPosY) * partialTicks;
         z = player.lastTickPosZ + (player.getPosZ() - player.lastTickPosZ) * partialTicks;
         pitch = player.getPitch((float)partialTicks);
-        yaw = player.getYaw((float)partialTicks);
+        yaw = player.getYaw((float)partialTicks) % 360;
         eyePosition = player.getEyePosition((float)partialTicks);
         lookDirection = KeystoneGlobalState.CloseSelection ? player.getLook((float)partialTicks) : RayTracing.screenPointToRayDirection((float)partialTicks);
 

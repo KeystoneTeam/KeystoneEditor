@@ -3,6 +3,7 @@ package keystone.core.gui.screens.brush;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
+import keystone.core.KeystoneConfig;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
@@ -72,7 +73,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
         recalculateVariablesHeight();
 
         int centerHeight = height / 2;
-        int halfPanelHeight = (PADDING + 2 * (20 + PADDING) + IntegerWidget.getHeight() + totalVariableHeight) / 2;
+        int halfPanelHeight = (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getHeight() + PADDING) + totalVariableHeight) / 2;
         panelMinY = centerHeight - halfPanelHeight;
         panelMaxX = KeystoneHotbar.getX() - 5;
         panelMaxY = centerHeight + halfPanelHeight;
@@ -91,13 +92,12 @@ public class BrushSelectionScreen extends KeystoneOverlay
         addButton(new ButtonNoHotkey(PADDING, y, panelMaxX - 2 * PADDING, 20, brushModule.getBrushShape().getName(), (button) ->
         {
             brushModule.setBrushShape(brushModule.getBrushShape().getNextShape());
-            init(minecraft, width, height);
         }));
         y += 20 + PADDING;
 
         // Size Fields
         int sizeDimensionWidth = (panelMaxX - PADDING) / 3 - PADDING;
-        addButton(new IntegerWidget(new TranslationTextComponent("keystone.width"), PADDING, y, sizeDimensionWidth, brushModule.getBrushSize()[0])
+        addButton(new IntegerWidget(new TranslationTextComponent("keystone.width"), PADDING, y, sizeDimensionWidth, brushModule.getBrushSize()[0], 1, KeystoneConfig.maxBrushSize)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -107,7 +107,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
                 return true;
             }
         });
-        addButton(new IntegerWidget(new TranslationTextComponent("keystone.length"), PADDING + sizeDimensionWidth + PADDING, y, sizeDimensionWidth, brushModule.getBrushSize()[2])
+        addButton(new IntegerWidget(new TranslationTextComponent("keystone.length"), PADDING + sizeDimensionWidth + PADDING, y, sizeDimensionWidth, brushModule.getBrushSize()[2], 1, KeystoneConfig.maxBrushSize)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -117,7 +117,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
                 return true;
             }
         });
-        addButton(new IntegerWidget(new TranslationTextComponent("keystone.height"), PADDING + 2 * (sizeDimensionWidth + PADDING), y, sizeDimensionWidth, brushModule.getBrushSize()[1])
+        addButton(new IntegerWidget(new TranslationTextComponent("keystone.height"), PADDING + 2 * (sizeDimensionWidth + PADDING), y, sizeDimensionWidth, brushModule.getBrushSize()[1], 1, KeystoneConfig.maxBrushSize)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -127,7 +127,19 @@ public class BrushSelectionScreen extends KeystoneOverlay
                 return true;
             }
         });
-        y += ParsableTextFieldWidget.getHeight() + PADDING;
+        y += IntegerWidget.getHeight() + PADDING;
+
+        // Minimum Spacing
+        addButton(new IntegerWidget(new TranslationTextComponent("keystone.brush.minimumSpacing"), PADDING, y, panelMaxX - 2 * PADDING, brushModule.getMinSpacing(), 1, Integer.MAX_VALUE)
+        {
+            @Override
+            protected boolean onSetValue(Integer value)
+            {
+                brushModule.setMinSpacing(value);
+                return true;
+            }
+        });
+        y += IntegerWidget.getHeight() + PADDING;
 
         rebuildVariables(y);
     }
@@ -147,11 +159,11 @@ public class BrushSelectionScreen extends KeystoneOverlay
     //region Helpers
     private void recalculateVariablesHeight()
     {
-        totalVariableHeight = PADDING;
+
     }
     private void rebuildVariables(int y)
     {
-        
+
     }
     //endregion
 }

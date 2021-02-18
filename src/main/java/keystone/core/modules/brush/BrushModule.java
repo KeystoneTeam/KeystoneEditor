@@ -18,19 +18,17 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class BrushModule implements IKeystoneModule
 {
     private IBoundingBoxProvider[] providers;
-    private float minDistanceSqr;
+    private int minSpacing;
+    private float minSpacingSqr;
     private BrushShape brushShape;
     private BrushOperation brushOperation;
     private int[] brushSize;
@@ -49,11 +47,10 @@ public class BrushModule implements IKeystoneModule
         };
 
         MinecraftForge.EVENT_BUS.register(this);
-        setMinDistance(1);
+        setMinSpacing(1);
         setBrushShape(BrushShape.ROUND);
         setBrushOperation(BrushOperation.FILL);
         setBrushSize(9, 9, 9);
-        //setBrushSize(8, 8, 8);
     }
 
     @Override
@@ -65,6 +62,7 @@ public class BrushModule implements IKeystoneModule
         return providers;
     }
 
+    public int getMinSpacing() { return minSpacing; }
     public BrushShape getBrushShape() { return brushShape; }
     public BrushOperation getBrushOperation() { return brushOperation; }
     public int[] getBrushSize() { return brushSize; }
@@ -122,9 +120,10 @@ public class BrushModule implements IKeystoneModule
     }
     //endregion
     //region Brush Functions
-    public void setMinDistance(int minDistance)
+    public void setMinSpacing(int minSpacing)
     {
-        this.minDistanceSqr = minDistance * minDistance;
+        this.minSpacingSqr = minSpacing * minSpacing;
+        this.minSpacing = minSpacing;
     }
     public void setBrushShape(BrushShape shape)
     {
@@ -153,7 +152,7 @@ public class BrushModule implements IKeystoneModule
     {
         if (position == null) return;
 
-        if (force || getDistanceToNearestPositionSqr(position) >= minDistanceSqr)
+        if (force || getDistanceToNearestPositionSqr(position) >= minSpacingSqr)
         {
             brushPositions.add(position);
             brushPositionBoxes.add(new BrushPositionBox(position));
@@ -216,7 +215,7 @@ public class BrushModule implements IKeystoneModule
             float testDist = position.distanceSqr(test);
             if (dist < 0 || testDist < dist) dist = testDist;
         }
-        if (dist < 0) dist = minDistanceSqr;
+        if (dist < 0) dist = minSpacingSqr;
         return dist;
     }
     //endregion

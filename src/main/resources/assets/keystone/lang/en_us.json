@@ -48,6 +48,7 @@
   "keystone.filter_panel.select": "Filter: ",
   "keystone.filter_panel.runFilter": "Filter",
 
+  "keystone.brush.minimumSpacing": "Minimum Spacing",
   "keystone.brush.fill": "Fill",
 
   "keystone.shape.round": "Round",

@@ -13,4 +13,5 @@ public class KeystoneConfig
 
     public static int clickThreshold = 200;
     public static int dragThresholdSqr = 8 * 8;
+    public static int maxBrushSize = 512;
 }
