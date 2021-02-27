@@ -1,6 +1,7 @@
 package keystone.core.schematic;
 
 import keystone.api.Keystone;
+import keystone.api.wrappers.Block;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -17,13 +18,13 @@ import java.util.function.BiConsumer;
 public class KeystoneSchematic
 {
     private Vector3i size;
-    private BlockState[] blocks;
+    private Block[] blocks;
 
     /**
      * @param size The size of the schematic
-     * @param blocks The block state contents of the schematic
+     * @param blocks The {@link keystone.api.wrappers.Block} contents of the schematic
      */
-    private KeystoneSchematic(Vector3i size, BlockState[] blocks)
+    private KeystoneSchematic(Vector3i size, Block[] blocks)
     {
         this.size = size;
         this.blocks = blocks;
@@ -43,7 +44,7 @@ public class KeystoneSchematic
                 box.getMaxCoords().getZ() - box.getMinCoords().getZ() + 1);
 
         // Get blocks
-        BlockState[] blocks = new BlockState[size.getX() * size.getY() * size.getZ()];
+        Block[] blocks = new Block[size.getX() * size.getY() * size.getZ()];
         int i = 0;
         for (int x = 0; x < size.getX(); x++)
         {
@@ -51,7 +52,8 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    blocks[i] = world.getBlockState(new BlockPos(x + box.getMinCoords().getX(), y + box.getMinCoords().getY(), z + box.getMinCoords().getZ()));
+                    BlockPos pos = new BlockPos(x + box.getMinCoords().getX(), y + box.getMinCoords().getY(), z + box.getMinCoords().getZ());
+                    blocks[i] = new Block(world.getBlockState(pos), world.getTileEntity(pos));
                     i++;
                 }
             }
@@ -95,21 +97,21 @@ public class KeystoneSchematic
         return size;
     }
     /**
-     * Get the block state at a relative block position in the schematic
+     * Get the {@link keystone.api.wrappers.Block} at a relative block position in the schematic
      * @param relativePos The relative block position
-     * @return The block state at the position, or air if it is outside the schematic
+     * @return The {@link keystone.api.wrappers.Block} at the position, or air if it is outside the schematic
      */
-    public BlockState getBlock(BlockPos relativePos)
+    public Block getBlock(BlockPos relativePos)
     {
         int index = getIndex(relativePos);
-        if (index < 0) return Blocks.AIR.getDefaultState();
+        if (index < 0) return new Block(Blocks.AIR.getDefaultState());
         else return blocks[getIndex(relativePos)];
     }
     /**
      * Run a function for every block position and state in the schematic
      * @param consumer The function to run
      */
-    public void forEachBlock(BiConsumer<BlockPos, BlockState> consumer)
+    public void forEachBlock(BiConsumer<BlockPos, Block> consumer)
     {
         int i = 0;
         for (int x = 0; x < size.getX(); x++)

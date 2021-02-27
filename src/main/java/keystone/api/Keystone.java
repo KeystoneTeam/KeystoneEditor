@@ -5,18 +5,17 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.tools.interfaces.IKeystoneTool;
 import keystone.api.tools.interfaces.ISelectionBoxTool;
+import keystone.api.wrappers.Block;
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.filters.FilterCompiler;
-import keystone.core.renderer.client.Player;
-import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.IHistoryEntry;
-import keystone.core.modules.history.entries.FillHistoryEntry;
-import keystone.core.modules.history.entries.FilterHistoryEntry;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
+import keystone.core.renderer.client.Player;
+import keystone.core.renderer.common.models.DimensionId;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -46,6 +45,8 @@ public class Keystone
 {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final Random RANDOM = new Random();
+
+    private static HistoryModule historyModule;
 
     //region Active Toggle
     private static boolean enabled = KeystoneConfig.startActive;
@@ -176,6 +177,20 @@ public class Keystone
     private static ITextComponent abortFilter;
 
     /**
+     * Set a {@link keystone.api.wrappers.Block} in the current world. This will automatically hook into the history system, allowing
+     * for undo and redo support. Be sure that the {@link keystone.core.modules.history.HistoryModule}
+     * has an entry open first
+     * @param x The x-coordinate
+     * @param y The y-coordinate
+     * @param z The z-coordinate
+     * @param block The {@link keystone.api.wrappers.Block} to set
+     */
+    public static void setBlock(int x, int y, int z, Block block)
+    {
+        historyModule.getOpenEntry().setBlock(x, y, z, block);
+    }
+
+    /**
      * Run an {@link keystone.api.tools.interfaces.IKeystoneTool} on the current selection boxes
      * @param tool The tool to run
      */
@@ -200,20 +215,20 @@ public class Keystone
                 if (tool instanceof IBlockTool)
                 {
                     IBlockTool blockTool = (IBlockTool)tool;
-                    box.forEachBlock((pos ->
+                    box.forEachBlock(((pos, block) ->
                     {
                         if (!blockTool.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
                         {
-                            blockTool.process(pos, box);
-                            processedBlocks.add(pos);
+                            blockTool.process(pos.getMinecraftBlockPos(), box);
+                            processedBlocks.add(pos.getMinecraftBlockPos());
                         }
                     }));
                 }
             }
 
-            IHistoryEntry toolHistoryEntry = new FillHistoryEntry(world, boxes);
-            getModule(HistoryModule.class).pushToHistory(toolHistoryEntry);
-            toolHistoryEntry.redo();
+            historyModule.beginHistoryEntry();
+            for (SelectionBox box : boxes) box.forEachBlock((pos, block) -> setBlock(pos.x, pos.y, pos.z, block));
+            historyModule.endHistoryEntry();
         });
     }
 
@@ -281,7 +296,7 @@ public class Keystone
                         return;
                     }
 
-                    box.forEachBlock((x, y, z) ->
+                    box.forEachBlock((x, y, z, block) ->
                     {
                         BlockPos pos = new BlockPos(x, y, z);
                         if (!filter.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
@@ -311,9 +326,9 @@ public class Keystone
                     return;
                 }
 
-                IHistoryEntry toolHistoryEntry = new FilterHistoryEntry(world, boxes);
-                getModule(HistoryModule.class).pushToHistory(toolHistoryEntry);
-                toolHistoryEntry.redo();
+                historyModule.beginHistoryEntry();
+                for (FilterBox box : boxes) box.forEachBlock((x, y, z, block) -> setBlock(x, y, z, block));
+                historyModule.endHistoryEntry();
             }
         });
     }
@@ -339,6 +354,14 @@ public class Keystone
         MinecraftForge.EVENT_BUS.addListener(Keystone::onRightClickBlock);
     }
 
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Post-initialize keystone. Ran once after all modules have been registered
+     */
+    public static final void postInit()
+    {
+        historyModule = getModule(HistoryModule.class);
+    }
     /**
      * Ran every world tick. Used to execute scheduled {@link keystone.api.Keystone.DelayedRunnable DelayedRunnables}
      * on the server thread

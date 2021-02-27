@@ -73,7 +73,11 @@ public class SelectionModule implements IKeystoneModule
     {
         if (selectionBoxes.size() > 0)
         {
-            Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, true));
+            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+            historyModule.beginHistoryEntry();
+            historyModule.pushToEntry(new SelectionHistoryEntry(selectionBoxes, true));
+            historyModule.endHistoryEntry();
+
             selectionBoxes.clear();
             MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes, false));
         }
@@ -190,7 +194,11 @@ public class SelectionModule implements IKeystoneModule
 
         if (creatingSelection)
         {
-            Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionBoxes, false));
+            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+            historyModule.beginHistoryEntry();
+            historyModule.pushToEntry(new SelectionHistoryEntry(selectionBoxes, false));
+            historyModule.endHistoryEntry();
+
             firstSelectionPoint = null;
             creatingSelection = false;
             MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes, true));

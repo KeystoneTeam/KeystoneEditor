@@ -44,7 +44,10 @@ public class SelectionBoundingBox extends SelectableBoundingBox
     @Override
     public void startDrag(SelectedFace face)
     {
-        Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionModule.getSelectionBoundingBoxes(), true));
+        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        historyModule.beginHistoryEntry();
+        historyModule.pushToEntry(new SelectionHistoryEntry(selectionModule.getSelectionBoundingBoxes(), true));
+        historyModule.endHistoryEntry();
     }
     @Override
     public void drag(SelectedFace face)

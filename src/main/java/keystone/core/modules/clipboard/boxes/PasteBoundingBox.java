@@ -1,5 +1,6 @@
 package keystone.core.modules.clipboard.boxes;
 
+import keystone.api.Keystone;
 import keystone.core.modules.selection.SelectedFace;
 import keystone.core.renderer.blocks.GhostBlockRenderer;
 import keystone.core.renderer.client.Player;
@@ -7,6 +8,7 @@ import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.SelectableBoundingBox;
 import keystone.core.schematic.KeystoneSchematic;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 
@@ -21,7 +23,7 @@ public class PasteBoundingBox extends SelectableBoundingBox
         this.schematic = schematic;
 
         this.ghostBlocks = new GhostBlockRenderer();
-        schematic.forEachBlock((pos, block) -> ghostBlocks.setBlock(pos, block));
+        schematic.forEachBlock((pos, block) -> ghostBlocks.setBlock(pos, block.getMinecraftBlock()));
     }
     public static PasteBoundingBox create(Coords minCoords, KeystoneSchematic contents)
     {
@@ -46,6 +48,10 @@ public class PasteBoundingBox extends SelectableBoundingBox
 
     public void paste(World world)
     {
-        schematic.forEachBlock((pos, block) -> world.setBlockState(pos.add(getMinCoords().getX(), getMinCoords().getY(), getMinCoords().getZ()), block));
+        schematic.forEachBlock((pos, block) ->
+        {
+            BlockPos offset = pos.add(getMinCoords().getX(), getMinCoords().getY(), getMinCoords().getZ());
+            Keystone.setBlock(offset.getX(), offset.getY(), offset.getZ(), block);
+        });
     }
 }

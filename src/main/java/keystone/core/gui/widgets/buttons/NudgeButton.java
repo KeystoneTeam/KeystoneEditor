@@ -173,7 +173,10 @@ public class NudgeButton extends SimpleButton
                 if (nudgeStep > 0)
                 {
                     SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
-                    Keystone.getModule(HistoryModule.class).pushToHistory(new SelectionHistoryEntry(selectionModule.getSelectionBoundingBoxes(), true));
+                    HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+                    historyModule.beginHistoryEntry();
+                    historyModule.pushToEntry(new SelectionHistoryEntry(selectionModule.getSelectionBoundingBoxes(), true));
+                    historyModule.endHistoryEntry();
                     return true;
                 }
                 else return false;

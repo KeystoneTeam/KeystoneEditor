@@ -13,7 +13,7 @@ public class FilterBox
     //region Function Types
     public interface BlockConsumer
     {
-        void accept(int x, int y, int z);
+        void accept(int x, int y, int z, Block block);
     }
     //endregion
 
@@ -202,7 +202,7 @@ public class FilterBox
             {
                 for (int z = min.z; z <= max.z; z++)
                 {
-                    consumer.accept(x, y, z);
+                    consumer.accept(x, y, z, getBlock(x, y, z, false));
                 }
             }
         }

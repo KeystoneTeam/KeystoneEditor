@@ -3,6 +3,8 @@ package keystone.core.modules.clipboard;
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
 import keystone.core.KeystoneGlobalState;
+import keystone.core.events.KeystoneSelectionChangedEvent;
+import keystone.core.modules.history.entries.PasteBoxHistoryEntry;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
@@ -10,7 +12,6 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.history.entries.PasteHistoryEntry;
 import keystone.core.modules.clipboard.boxes.PasteBoundingBox;
 import keystone.core.modules.clipboard.providers.PasteBoxProvider;
 import keystone.core.modules.selection.SelectionModule;
@@ -37,17 +38,15 @@ public class ClipboardModule implements IKeystoneModule
     }
 
     public List<PasteBoundingBox> getPasteBoxes() { return pasteBoxes; }
-    public void setPasteBoxes(PasteBoundingBox...  boxes)
+    public List<PasteBoundingBox> restorePasteBoxes(List<PasteBoundingBox> boxes)
     {
-        clearPasteBoxes();
-        for (PasteBoundingBox box : boxes) pasteBoxes.add(box);
-        if (pasteBoxes.size() > 0) KeystoneGlobalState.HideSelectionBoxes = true;
-    }
-    public void setPasteBoxes(Iterable<PasteBoundingBox> boxes)
-    {
-        clearPasteBoxes();
-        for (PasteBoundingBox box : boxes) pasteBoxes.add(box);
-        if (pasteBoxes.size() > 0) KeystoneGlobalState.HideSelectionBoxes = true;
+        List<PasteBoundingBox> old = new ArrayList<>();
+        pasteBoxes.forEach(box -> old.add(box.clone()));
+
+        pasteBoxes.clear();
+        boxes.forEach(box -> pasteBoxes.add(box.clone()));
+
+        return old;
     }
     public void clearPasteBoxes()
     {
@@ -114,13 +113,8 @@ public class ClipboardModule implements IKeystoneModule
             return;
         }
 
-        PasteHistoryEntry historyEntry = new PasteHistoryEntry(world, pasteBoxes);
         pasteBoxes.forEach(paste -> paste.paste(world));
-        historyEntry.updateSelectionBuffers();
-
-        Keystone.getModule(HistoryModule.class).pushToHistory(historyEntry);
         clearPasteBoxes();
-
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
 }

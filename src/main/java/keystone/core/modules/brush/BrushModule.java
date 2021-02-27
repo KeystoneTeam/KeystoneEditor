@@ -10,6 +10,7 @@ import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.brush.boxes.BrushPositionBox;
 import keystone.core.modules.brush.providers.BrushPositionBoxProvider;
 import keystone.core.modules.brush.providers.BrushPreviewBoxProvider;
+import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
@@ -163,13 +164,18 @@ public class BrushModule implements IKeystoneModule
     {
         Keystone.runOnMainThread(() ->
         {
+            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
             World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimensionId());
             if (world == null)
             {
                 brushPositions.clear();
                 return;
             }
-            else brushOperation.prepare(world);
+            else
+            {
+                historyModule.beginHistoryEntry();
+                brushOperation.prepare(world);
+            }
 
             boolean[] shapeMask = this.brushShape.getShapeMask(brushSize[0], brushSize[1], brushSize[2]);
             List<BlockPos> processedBlocks = new ArrayList<>();
@@ -177,33 +183,35 @@ public class BrushModule implements IKeystoneModule
             {
                 Coords min = position.sub(brushSize[0] / 2, brushSize[1] / 2, brushSize[2] / 2);
                 Coords max = min.add(brushSize[0] - 1, brushSize[1] - 1, brushSize[2] - 1);
-                SelectionBox box = new SelectionBox(min, max, world);
-                executeBrush(box, processedBlocks, shapeMask);
-
-                box.forEachBlock(pos ->
-                {
-                    world.setBlockState(pos, box.getBlock(pos, false));
-                });
+                executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, shapeMask);
             }
 
             brushPositions.clear();
             brushPositionBoxes.clear();
+            historyModule.endHistoryEntry();
         });
     }
-    private void executeBrush(SelectionBox box, List<BlockPos> processedBlocks, boolean[] shapeMask)
+    private void executeBrush(BlockPos min, BlockPos max, List<BlockPos> processedBlocks, boolean[] shapeMask)
     {
-        box.forEachBlock(pos ->
+        for (int x = min.getX(); x <= max.getX(); x++)
         {
-            BlockPos nPos = pos.subtract(box.getMin());
-
-            int maskIndex = nPos.getX() + nPos.getY() * brushSize[0] + nPos.getZ() * brushSize[0] * brushSize[1];
-            if (!processedBlocks.contains(pos) && shapeMask[maskIndex])
+            for (int y = min.getY(); y <= max.getY(); y++)
             {
-                Block brushResult = brushOperation.process(pos);
-                if (brushResult != null) box.setBlock(pos, brushResult.getMinecraftBlock());
-                processedBlocks.add(pos);
+                for (int z = min.getZ(); z <= max.getZ(); z++)
+                {
+                    BlockPos pos = new BlockPos(x, y, z);
+                    BlockPos nPos = pos.subtract(min);
+
+                    int maskIndex = nPos.getX() + nPos.getY() * brushSize[0] + nPos.getZ() * brushSize[0] * brushSize[1];
+                    if (!processedBlocks.contains(pos) && shapeMask[maskIndex])
+                    {
+                        Block brushResult = brushOperation.process(pos);
+                        if (brushResult != null) Keystone.setBlock(x, y, z, brushResult);
+                        processedBlocks.add(pos);
+                    }
+                }
             }
-        });
+        }
     }
     //endregion
     //region Helpers

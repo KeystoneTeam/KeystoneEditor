@@ -44,6 +44,7 @@ public class KeystoneMod
         Keystone.init();
         registerDefaultBoxes(new KeystoneEvent.RegisterBoundingBoxTypes());
         registerDefaultModules(new KeystoneEvent.RegisterModules());
+        Keystone.postInit();
 
 //        TODO: Figure out why events aren't working
 //        MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterBoundingBoxTypes());

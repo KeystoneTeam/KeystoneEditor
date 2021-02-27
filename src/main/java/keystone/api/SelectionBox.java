@@ -1,12 +1,13 @@
 package keystone.api;
 
+import keystone.api.wrappers.Block;
 import keystone.core.renderer.common.models.Coords;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.World;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -19,8 +20,8 @@ public class SelectionBox
     private final Vector3i size;
     private final World world;
 
-    private BlockState[] blocks;
-    private BlockState[] buffer;
+    private Block[] blocks;
+    private Block[] buffer;
 
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
@@ -35,8 +36,8 @@ public class SelectionBox
         this.size = new Vector3i(max.getX() - min.getX() + 1, max.getY() - min.getY() + 1, max.getZ() - min.getZ() + 1);
         this.world = world;
 
-        blocks = new BlockState[size.getX() * size.getY() * size.getZ()];
-        buffer = new BlockState[size.getX() * size.getY() * size.getZ()];
+        blocks = new Block[size.getX() * size.getY() * size.getZ()];
+        buffer = new Block[size.getX() * size.getY() * size.getZ()];
 
         int i = 0;
         for (int x = min.getX(); x <= max.getX(); x++)
@@ -45,7 +46,8 @@ public class SelectionBox
             {
                 for (int z = min.getZ(); z <= max.getZ(); z++)
                 {
-                    BlockState block = world.getBlockState(new BlockPos(x, y, z));
+                    BlockPos pos = new BlockPos(x, y, z);
+                    Block block = new Block(world.getBlockState(pos), world.getTileEntity(pos));
                     blocks[i] = block;
                     buffer[i] = block;
                     i++;
@@ -78,38 +80,31 @@ public class SelectionBox
     public Vector3i getSize() { return size; }
 
     /**
-     * Get the block state at a position, before tools have modified it
+     * Get the {@link keystone.api.wrappers.Block} at a position, before tools have modified it
      * @param pos The block position
-     * @return The block state before tool execution
+     * @return The {@link keystone.api.wrappers.Block} before tool execution
      */
-    public BlockState getBlock(BlockPos pos) { return getBlock(pos, true); }
+    public Block getBlock(BlockPos pos) { return getBlock(pos, true); }
     /**
-     * Get the block state at a position
+     * Get the {@link keystone.api.wrappers.Block} at a position
      * @param pos The block position
      * @param getOriginalState Whether to get the state from before tool execution
-     * @return The block state
+     * @return The {@link keystone.api.wrappers.Block}
      */
-    public BlockState getBlock(BlockPos pos, boolean getOriginalState)
+    public Block getBlock(BlockPos pos, boolean getOriginalState)
     {
         int index = getBlockIndex(pos);
-        if (index < 0) return world.getBlockState(pos);
+        if (index < 0) return new Block(world.getBlockState(pos), world.getTileEntity(pos));
         else return getOriginalState ? blocks[index] : buffer[index];
     }
 
     /**
-     * Set the block state at a position
+     * Set the {@link keystone.api.wrappers.Block} at a position
      * @param pos The block position
-     * @param block The block
+     * @param block The {@link keystone.api.wrappers.Block}
      * @return Whether the operation was successful
      */
-    public boolean setBlock(BlockPos pos, Block block) { return setBlock(pos, block.getDefaultState()); }
-    /**
-     * Set the block state at a position
-     * @param pos The block position
-     * @param block The block state
-     * @return Whether the operation was successful
-     */
-    public boolean setBlock(BlockPos pos, BlockState block)
+    public boolean setBlock(BlockPos pos, Block block)
     {
         int index = getBlockIndex(pos);
         if (index < 0) return false;
@@ -119,10 +114,10 @@ public class SelectionBox
     }
 
     /**
-     * Run a function on every block position in the selection box
+     * Run a function on every {@link keystone.api.wrappers.BlockPos} and {@link keystone.api.wrappers.Block} in the selection box
      * @param consumer The function to run
      */
-    public void forEachBlock(Consumer<BlockPos> consumer)
+    public void forEachBlock(BiConsumer<keystone.api.wrappers.BlockPos, Block> consumer)
     {
         for (int x = min.getX(); x <= max.getX(); x++)
         {
@@ -130,7 +125,8 @@ public class SelectionBox
             {
                 for (int z = min.getZ(); z <= max.getZ(); z++)
                 {
-                    consumer.accept(new BlockPos(x, y, z));
+                    BlockPos pos = new BlockPos(x, y, z);
+                    consumer.accept(new keystone.api.wrappers.BlockPos(pos), getBlock(pos, false));
                 }
             }
         }

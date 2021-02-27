@@ -12,7 +12,8 @@ import java.util.List;
 
 public class HistoryModule implements IKeystoneModule
 {
-    private List<IHistoryEntry> history = new ArrayList<>();
+    private List<HistoryStackFrame> history = new ArrayList<>();
+    private HistoryStackFrame currentStackFrame;
     private int currentHistoryIndex = -1;
     private int unsavedChanges = 0;
 
@@ -37,23 +38,55 @@ public class HistoryModule implements IKeystoneModule
     }
 
     //region History
-    public void pushToHistory(IHistoryEntry historyEntry)
+    public void beginHistoryEntry()
     {
-        if (currentHistoryIndex < history.size() - 1) for (int i = history.size() - 1; i > currentHistoryIndex; i--) history.remove(i);
+        if (currentStackFrame != null)
+        {
+            Keystone.LOGGER.warn("Calling HistoryModule.beginHistoryEntry without first calling HistoryModule.endHistoryEntry! This may cause issues");
+            endHistoryEntry();
+        }
 
-        historyEntry.onPushToHistory(this, true);
-        history.add(historyEntry);
-        currentHistoryIndex++;
-        historyEntry.onPushToHistory(this, false);
-
-        if (historyEntry.addToUnsavedChanges()) unsavedChanges++;
-        if (KeystoneConfig.debugHistoryLog) logHistoryStack();
+        currentStackFrame = new HistoryStackFrame();
     }
-    private IHistoryEntry popFromHistory()
+    public void endHistoryEntry()
+    {
+        if (currentStackFrame == null)
+        {
+            Keystone.LOGGER.warn("Calling HistoryModule.endHistoryEntry without first calling HistoryModule.beginHistoryEntry! This may cause issues");
+            return;
+        }
+
+        if (currentHistoryIndex < history.size() - 1) for (int i = history.size() - 1; i > currentHistoryIndex; i--) history.remove(i);
+        history.add(currentStackFrame);
+        currentHistoryIndex++;
+
+        if (currentStackFrame.addToUnsavedChanges()) unsavedChanges++;
+        if (KeystoneConfig.debugHistoryLog) logHistoryStack();
+
+        currentStackFrame.applyBlocks();
+        currentStackFrame = null;
+    }
+    public void abortHistoryEntry()
+    {
+        currentStackFrame.undo();
+        currentStackFrame = null;
+    }
+
+    public void pushToEntry(IHistoryEntry historyEntry)
+    {
+        if (currentStackFrame == null)
+        {
+            Keystone.LOGGER.error("Calling HistoryModule.pushToEntry without first calling HistoryModule.beginHistoryEntry! This may cause issues");
+            beginHistoryEntry();
+        }
+
+        currentStackFrame.pushEntry(historyEntry);
+    }
+    private HistoryStackFrame popFromHistory()
     {
         if (currentHistoryIndex >= 0)
         {
-            IHistoryEntry ret = history.get(currentHistoryIndex);
+            HistoryStackFrame ret = history.get(currentHistoryIndex);
             currentHistoryIndex--;
             return ret;
         }
@@ -69,11 +102,11 @@ public class HistoryModule implements IKeystoneModule
     {
         Keystone.runOnMainThread(() ->
         {
-            IHistoryEntry historyEntry = popFromHistory();
-            if (historyEntry != null)
+            HistoryStackFrame historyStackFrame = popFromHistory();
+            if (historyStackFrame != null)
             {
-                historyEntry.undo();
-                if (historyEntry.addToUnsavedChanges()) unsavedChanges++;
+                historyStackFrame.undo();
+                if (historyStackFrame.addToUnsavedChanges()) unsavedChanges++;
             }
 
             if (KeystoneConfig.debugHistoryLog) logHistoryStack();
@@ -86,22 +119,29 @@ public class HistoryModule implements IKeystoneModule
             if (currentHistoryIndex < history.size() - 1)
             {
                 currentHistoryIndex++;
-                IHistoryEntry historyEntry = history.get(currentHistoryIndex);
+                HistoryStackFrame historyStackFrame = history.get(currentHistoryIndex);
 
-                historyEntry.redo();
-                if (historyEntry.addToUnsavedChanges()) unsavedChanges++;
+                historyStackFrame.redo();
+                if (historyStackFrame.addToUnsavedChanges()) unsavedChanges++;
             }
 
             if (KeystoneConfig.debugHistoryLog) logHistoryStack();
         });
     }
+    public HistoryStackFrame getOpenEntry()
+    {
+        if (currentStackFrame == null)
+        {
+            Keystone.LOGGER.error("Calling HistoryModule.getOpenEntry without first calling HistoryModule.beginHistoryEntry! This may cause issues");
+            beginHistoryEntry();
+        }
+
+        return currentStackFrame;
+    }
 
     public void logHistoryStack()
     {
-        for(int i = history.size() - 1; i >= 0; i--)
-        {
-            Keystone.LOGGER.info(i > currentHistoryIndex ? "*" + history.get(i).getClass().getSimpleName() : history.get(i).getClass().getSimpleName());
-        }
+        for(int i = history.size() - 1; i >= 0; i--) history.get(i).debugLog(i - currentHistoryIndex);
         Keystone.LOGGER.info("");
     }
     //endregion
