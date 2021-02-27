@@ -1,15 +1,13 @@
 package keystone.api.wrappers;
 
 import keystone.api.filters.KeystoneFilter;
+import net.minecraft.block.Blocks;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.tags.ITagCollection;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -18,6 +16,16 @@ import java.util.function.Consumer;
  */
 public class BlockMask
 {
+    private static final Map<Block, Block[]> forcedBlockAdditions = new HashMap<>();
+    static
+    {
+        forcedBlockAdditions.put(new Block(Blocks.AIR.getDefaultState()), new Block[]
+        {
+                new Block(Blocks.CAVE_AIR.getDefaultState()),
+                new Block(Blocks.VOID_AIR.getDefaultState())
+        });
+    }
+
     private List<Block> mask = new ArrayList<>();
     private boolean blacklist;
 
@@ -60,6 +68,11 @@ public class BlockMask
      */
     public BlockMask with(Block block)
     {
+        if (forcedBlockAdditions.containsKey(block))
+        {
+            for (Block add : forcedBlockAdditions.get(block)) if (!mask.contains(add)) mask.add(add);
+        }
+
         if (!mask.contains(block)) mask.add(block);
         return this;
     }
@@ -91,6 +104,11 @@ public class BlockMask
      */
     public BlockMask without(Block block)
     {
+        if (forcedBlockAdditions.containsKey(block))
+        {
+            for (Block remove : forcedBlockAdditions.get(block)) if (mask.contains(remove)) mask.remove(remove);
+        }
+
         if (mask.contains(block)) mask.remove(block);
         return this;
     }

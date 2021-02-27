@@ -1,5 +1,6 @@
 package keystone.core.modules.brush;
 
+import keystone.api.filters.Variable;
 import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockMask;
 import keystone.api.wrappers.BlockPalette;
@@ -18,9 +19,9 @@ public abstract class BrushOperation
 
     public static final BrushOperation FILL = new BrushOperation()
     {
-        private BlockMask mask = new BlockMask().with("minecraft:air");
-        private BlockPalette palette = new BlockPalette().with("minecraft:stone");
-        private boolean useMask = false;
+        @Variable BlockMask mask = new BlockMask().with("minecraft:air");
+        @Variable BlockPalette palette = new BlockPalette().with("minecraft:stone");
+        @Variable boolean useMask = false;
 
         @Override
         public ITextComponent getName()

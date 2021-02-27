@@ -70,7 +70,11 @@ public class BlockMaskWidget extends ButtonNoHotkey
     private void rebuildStacks()
     {
         this.stacks.clear();
-        this.mask.forEach(block -> this.stacks.add(new ItemStack(BlockUtils.getBlockItem(block.getMinecraftBlock().getBlock(), itemRegistry))));
+        this.mask.forEach(block ->
+        {
+            ItemStack stack = new ItemStack(BlockUtils.getBlockItem(block.getMinecraftBlock().getBlock(), itemRegistry));
+            if (!stack.isEmpty()) this.stacks.add(stack);
+        });
     }
 
     @Override

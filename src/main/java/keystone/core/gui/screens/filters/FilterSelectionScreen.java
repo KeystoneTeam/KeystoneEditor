@@ -49,8 +49,6 @@ public class FilterSelectionScreen extends KeystoneOverlay
     private int panelMaxY;
 
     private KeystoneFilter[] compiledFilters;
-    private boolean restoreWidgets = false;
-    private Map<Widget, Boolean> widgetsActive = new HashMap<>();
 
     private Button selectFilterButton;
     private Dropdown<KeystoneFilter> dropdown;
@@ -185,12 +183,6 @@ public class FilterSelectionScreen extends KeystoneOverlay
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
 
-        if (restoreWidgets)
-        {
-            for (Map.Entry<Widget, Boolean> entry : widgetsActive.entrySet()) entry.getKey().active = entry.getValue();
-            restoreWidgets = false;
-        }
-
         fill(stack, 0, panelMinY, panelMaxX, panelMaxY, 0x80000000);
 
         drawString(stack, font, new TranslationTextComponent("keystone.filter_panel.select"), 5, panelMinY + 11, 0x8080FF);
@@ -204,29 +196,6 @@ public class FilterSelectionScreen extends KeystoneOverlay
     public void tick()
     {
         for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).tick();
-    }
-    //endregion
-    //region Widgets
-    public void disableWidgets(Widget... keepActive)
-    {
-        this.widgetsActive.clear();
-        for (Widget widget : this.buttons)
-        {
-            widgetsActive.put(widget, widget.active);
-            widget.active = false;
-        }
-        if (keepActive != null)
-        {
-            for (Widget widget : keepActive)
-            {
-                widgetsActive.put(widget, true);
-                widget.active = true;
-            }
-        }
-    }
-    public void restoreWidgets()
-    {
-        this.restoreWidgets = true;
     }
     //endregion
     //region Getters

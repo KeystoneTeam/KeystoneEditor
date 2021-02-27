@@ -11,6 +11,7 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
+import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
 import keystone.core.modules.brush.BrushModule;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -31,9 +32,8 @@ public class BrushSelectionScreen extends KeystoneOverlay
     private int panelMinY;
     private int panelMaxX;
     private int panelMaxY;
-    private int totalVariableHeight;
 
-    private List<TextFieldWidget> textFields = new ArrayList<>();
+    private FieldWidgetList brushVariablesList;
 
     protected BrushSelectionScreen()
     {
@@ -66,14 +66,15 @@ public class BrushSelectionScreen extends KeystoneOverlay
     @Override
     protected void init()
     {
-        textFields.clear();
         brushModule = Keystone.getModule(BrushModule.class);
-        recalculateVariablesHeight();
 
-        int centerHeight = height / 2;
-        int halfPanelHeight = (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getHeight() + PADDING) + totalVariableHeight) / 2;
-        panelMinY = centerHeight - halfPanelHeight;
+        // Calculate panel size
         panelMaxX = KeystoneHotbar.getX() - 5;
+        brushVariablesList = new FieldWidgetList(brushModule::getBrushOperation, PADDING, panelMaxX - 2 * PADDING, this::disableWidgets, this::restoreWidgets);
+        brushVariablesList.bake();
+        int centerHeight = height / 2;
+        int halfPanelHeight = (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getHeight() + PADDING) + PADDING + brushVariablesList.getHeight()) / 2;
+        panelMinY = centerHeight - halfPanelHeight;
         panelMaxY = centerHeight + halfPanelHeight;
 
         int y = panelMinY + PADDING;
@@ -139,7 +140,10 @@ public class BrushSelectionScreen extends KeystoneOverlay
         });
         y += IntegerWidget.getHeight() + PADDING;
 
-        rebuildVariables(y);
+        // Brush variables
+        brushVariablesList.offset(PADDING, y);
+        brushVariablesList.addWidgets(this::addButton);
+        brushVariablesList.addQueuedWidgets(this::addButton);
     }
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
@@ -152,16 +156,6 @@ public class BrushSelectionScreen extends KeystoneOverlay
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
-    }
-    //endregion
-    //region Helpers
-    private void recalculateVariablesHeight()
-    {
-
-    }
-    private void rebuildVariables(int y)
-    {
-
     }
     //endregion
 }
