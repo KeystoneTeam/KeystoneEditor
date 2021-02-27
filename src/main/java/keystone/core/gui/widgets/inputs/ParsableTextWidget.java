@@ -15,13 +15,13 @@ import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.Field;
 
-public abstract class ParsableTextFieldWidget<T> extends TextFieldWidget
+public abstract class ParsableTextWidget<T> extends TextFieldWidget
 {
     protected final Minecraft mc;
     protected final FontRenderer font;
     private T value;
 
-    public ParsableTextFieldWidget(ITextComponent name, int x, int y, int width, T value)
+    public ParsableTextWidget(ITextComponent name, int x, int y, int width, T value)
     {
         super(Minecraft.getInstance().fontRenderer, x, y + 11, width, getHeight() - 11, name);
 
@@ -38,6 +38,12 @@ public abstract class ParsableTextFieldWidget<T> extends TextFieldWidget
     protected abstract T parse(String str) throws Exception;
     protected T postProcess(T value) { return value; }
     protected boolean onSetValue(T value) { return true; }
+
+    @Override
+    public int getHeightRealms()
+    {
+        return getHeight();
+    }
 
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)

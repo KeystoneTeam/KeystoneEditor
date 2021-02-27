@@ -74,6 +74,11 @@ public class BlockMaskWidget extends ButtonNoHotkey
     }
 
     @Override
+    public int getHeightRealms()
+    {
+        return getHeight();
+    }
+    @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
         drawCenteredString(matrixStack, font, getMessage(), x + width / 2, y - 11, 0xFFFFFF);

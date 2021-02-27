@@ -15,6 +15,7 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.Dropdown;
+import keystone.core.gui.widgets.inputs.fields.*;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -46,16 +47,14 @@ public class FilterSelectionScreen extends KeystoneOverlay
     private int panelMinY;
     private int panelMaxX;
     private int panelMaxY;
-    private int totalVariableHeight;
 
     private KeystoneFilter[] compiledFilters;
     private boolean restoreWidgets = false;
     private Map<Widget, Boolean> widgetsActive = new HashMap<>();
-    private List<Widget> addWidgetQueue = new ArrayList<>();
-    private List<Boolean> addButtonQueue = new ArrayList<>();
 
     private Button selectFilterButton;
     private Dropdown<KeystoneFilter> dropdown;
+    private FieldWidgetList filterVariablesList;
 
     protected FilterSelectionScreen()
     {
@@ -91,9 +90,6 @@ public class FilterSelectionScreen extends KeystoneOverlay
     @Override
     public void init()
     {
-        addWidgetQueue.clear();
-        addButtonQueue.clear();
-
         // Compile filters
         boolean recompiled = false;
         if (compiledFilters == null)
@@ -122,12 +118,12 @@ public class FilterSelectionScreen extends KeystoneOverlay
             }
             recreateFilterInstance();
         }
-        recalculateVariablesHeight();
-
-        int centerHeight = height / 2;
-        int halfPanelHeight = 25 + PADDING + totalVariableHeight / 2;
-        panelMinY = centerHeight - halfPanelHeight;
         panelMaxX = KeystoneHotbar.getX() - 5;
+        filterVariablesList = new FieldWidgetList(this::getFilterInstance, PADDING, panelMaxX - 10, this::disableWidgets, this::restoreWidgets);
+        filterVariablesList.bake();
+        int centerHeight = height / 2;
+        int halfPanelHeight = 25 + PADDING + filterVariablesList.getHeight() / 2;
+        panelMinY = centerHeight - halfPanelHeight;
         panelMaxY = centerHeight + halfPanelHeight;
 
         // Select Filter Button
@@ -177,18 +173,11 @@ public class FilterSelectionScreen extends KeystoneOverlay
         addButton(selectFilterButton);
         addButton(runFilterButton);
         this.children.add(dropdown);
-        rebuildFilterVariables();
 
-        // Add queued buttons
-        for (int i = 0; i < addWidgetQueue.size(); i++)
-        {
-            Widget widget = addWidgetQueue.get(i);
-            boolean button = addButtonQueue.get(i);
-            if (button) addButton(widget);
-            else this.children.add(widget);
-        }
-        this.addWidgetQueue.clear();
-        this.addButtonQueue.clear();
+        // Create Filter Variables
+        filterVariablesList.offset(5, panelMinY + ((panelMaxY - panelMinY) / 2) - (filterVariablesList.getHeight() / 2));
+        filterVariablesList.addWidgets(this::addButton);
+        filterVariablesList.addQueuedWidgets(this::addButton);
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
@@ -217,86 +206,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
         for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).tick();
     }
     //endregion
-    //region Filter Variables
-    private void updateTotalVariableHeight(Class<?> type)
-    {
-        if (type == BlockPalette.class) totalVariableHeight += BlockPaletteVariableWidget.getHeight();
-        else if (type == BlockMask.class) totalVariableHeight += BlockMaskVariableWidget.getHeight();
-        else if (type == float.class) totalVariableHeight += AbstractTextVariableWidget.getHeight();
-        else if (type == int.class) totalVariableHeight += AbstractTextVariableWidget.getHeight();
-        else if (type == String.class) totalVariableHeight += AbstractTextVariableWidget.getHeight();
-        else if (type == boolean.class) totalVariableHeight += BooleanVariableWidget.getHeight();
-        else if (Enum.class.isAssignableFrom(type)) totalVariableHeight += EnumVariableWidget.getHeight();
-    }
-    private int createVariableEditor(Class<?> type, Field field, Variable variable, String variableName, int y) throws IllegalAccessException
-    {
-        //region Block Palette
-        if (type == BlockPalette.class)
-        {
-            addButton(new BlockPaletteVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
-            return BlockPaletteVariableWidget.getHeight();
-        }
-        //endregion
-        //region Block Mask
-        if (type == BlockMask.class)
-        {
-            addButton(new BlockMaskVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
-            return BlockMaskVariableWidget.getHeight();
-        }
-        //endregion
-        //region Float
-        else if (type == float.class)
-        {
-            addButton(new FloatVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
-            return AbstractTextVariableWidget.getHeight();
-        }
-        //endregion
-        //region Integer
-        else if (type == int.class)
-        {
-            addButton(new IntegerVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
-            return AbstractTextVariableWidget.getHeight();
-        }
-        //endregion
-        //region String
-        else if (type == String.class)
-        {
-            addButton(new StringVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
-            return AbstractTextVariableWidget.getHeight();
-        }
-        //endregion
-        //region Boolean
-        else if (type == boolean.class)
-        {
-            addButton(new BooleanVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
-            return BooleanVariableWidget.getHeight();
-        }
-        //endregion
-        //region Enum
-        else if (Enum.class.isAssignableFrom(type))
-        {
-            addButton(new EnumVariableWidget(this, variable, field, variableName, 5, y, panelMaxX - 10));
-            return EnumVariableWidget.getHeight();
-        }
-        //endregion
-
-        return 0;
-    }
-    //endregion
     //region Widgets
-    public void addWidget(Widget widget, boolean button, boolean queueAddition)
-    {
-        if (queueAddition)
-        {
-            addWidgetQueue.add(widget);
-            addButtonQueue.add(button);
-        }
-        else
-        {
-            if (button) addButton(widget);
-            else this.children.add(widget);
-        }
-    }
     public void disableWidgets(Widget... keepActive)
     {
         this.widgetsActive.clear();
@@ -317,67 +227,6 @@ public class FilterSelectionScreen extends KeystoneOverlay
     public void restoreWidgets()
     {
         this.restoreWidgets = true;
-    }
-    private void recalculateVariablesHeight()
-    {
-        totalVariableHeight = 0;
-        if (filterInstance == null) return;
-
-        Field[] fields = filterInstance.getClass().getDeclaredFields();
-        for (Field field : fields)
-        {
-            Variable variable = field.getAnnotation(Variable.class);
-            if (variable == null) continue;
-            String variableName = AnnotationUtils.getFieldName(variable, field);
-
-            try
-            {
-                field.setAccessible(true);
-                updateTotalVariableHeight(field.getType());
-                totalVariableHeight += PADDING;
-            }
-            catch (SecurityException e)
-            {
-                String error = "Could not create editor for BlockPalette variable '" + variableName + "'!";
-                Keystone.LOGGER.error(error);
-                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
-                e.printStackTrace();
-            }
-        }
-        if (totalVariableHeight > 0) totalVariableHeight -= PADDING;
-    }
-    private void rebuildFilterVariables()
-    {
-        if (filterInstance == null) return;
-
-        Field[] fields = filterInstance.getClass().getDeclaredFields();
-        int y = panelMinY + ((panelMaxY - panelMinY) / 2) - (totalVariableHeight / 2);
-        for (Field field : fields)
-        {
-            Variable variable = field.getAnnotation(Variable.class);
-            if (variable == null) continue;
-            String variableName = AnnotationUtils.getFieldName(variable, field);
-
-            try
-            {
-                field.setAccessible(true);
-                y += createVariableEditor(field.getType(), field, variable, variableName, y) + PADDING;
-            }
-            catch (SecurityException e)
-            {
-                String error = "Could not create editor for BlockPalette variable '" + variableName + "'!";
-                Keystone.LOGGER.error(error);
-                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
-                e.printStackTrace();
-            }
-            catch (IllegalAccessException e)
-            {
-                String error = "Could not access BlockPalette variable '" + variableName + "'!";
-                Keystone.LOGGER.error(error);
-                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
-                e.printStackTrace();
-            }
-        }
     }
     //endregion
     //region Getters

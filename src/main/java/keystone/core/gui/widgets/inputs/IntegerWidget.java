@@ -2,7 +2,7 @@ package keystone.core.gui.widgets.inputs;
 
 import net.minecraft.util.text.ITextComponent;
 
-public class IntegerWidget extends ParsableTextFieldWidget<Integer>
+public class IntegerWidget extends ParsableTextWidget<Integer>
 {
     private int min;
     private int max;

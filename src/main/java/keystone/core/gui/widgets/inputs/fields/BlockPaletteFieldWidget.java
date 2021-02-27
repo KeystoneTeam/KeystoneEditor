@@ -1,28 +1,28 @@
-package keystone.core.gui.screens.filters;
+package keystone.core.gui.widgets.inputs.fields;
 
 import keystone.api.Keystone;
-import keystone.api.filters.Variable;
 import keystone.api.wrappers.BlockPalette;
 import keystone.core.gui.widgets.inputs.BlockPaletteWidget;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
 import java.lang.reflect.Field;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class BlockPaletteVariableWidget extends BlockPaletteWidget
+public class BlockPaletteFieldWidget extends BlockPaletteWidget
 {
-    private final FilterSelectionScreen parent;
-    private final Variable variable;
+    private final Supplier<Object> instance;
     private final Field field;
 
-    public BlockPaletteVariableWidget(FilterSelectionScreen parent, Variable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public BlockPaletteFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets) throws IllegalAccessException
     {
-        super(new StringTextComponent(name), x, y, width, (BlockPalette)field.get(parent.getFilterInstance()), parent::disableWidgets, parent::restoreWidgets);
+        super(new StringTextComponent(name), x, y, width, (BlockPalette)field.get(instance.get()), disableWidgets, restoreWidgets);
 
-        this.parent = parent;
-        this.variable = variable;
+        this.instance = instance;
         this.field = field;
     }
 
@@ -31,11 +31,11 @@ public class BlockPaletteVariableWidget extends BlockPaletteWidget
     {
         try
         {
-            field.set(parent.getFilterInstance(), value);
+            field.set(instance.get(), value);
         }
         catch (IllegalAccessException e)
         {
-            String error = "Could not set BlockPalette variable '" + getMessage().getString() + "'!";
+            String error = "Could not set BlockPalette field '" + getMessage().getString() + "'!";
             Keystone.LOGGER.error(error);
             Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
             e.printStackTrace();

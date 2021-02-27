@@ -1,17 +1,17 @@
-package keystone.core.gui.screens.filters;
+package keystone.core.gui.widgets.inputs.fields;
 
-import keystone.api.filters.Variable;
 import keystone.api.filters.FloatRange;
 
 import java.lang.reflect.Field;
+import java.util.function.Supplier;
 
-public class FloatVariableWidget extends AbstractTextVariableWidget<Float>
+public class FloatFieldWidget extends ParsableTextFieldWidget<Float>
 {
     private final FloatRange range;
 
-    public FloatVariableWidget(FilterSelectionScreen parent, Variable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public FloatFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(parent, variable, field, name, x, y, width);
+        super(instance, field, name, x, y, width);
         this.range = field.getAnnotation(FloatRange.class);
     }
 

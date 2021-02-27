@@ -1,17 +1,17 @@
-package keystone.core.gui.screens.filters;
+package keystone.core.gui.widgets.inputs.fields;
 
-import keystone.api.filters.Variable;
 import keystone.api.filters.IntRange;
 
 import java.lang.reflect.Field;
+import java.util.function.Supplier;
 
-public class IntegerVariableWidget extends AbstractTextVariableWidget<Integer>
+public class IntegerFieldWidget extends ParsableTextFieldWidget<Integer>
 {
     private final IntRange range;
 
-    public IntegerVariableWidget(FilterSelectionScreen parent, Variable variable, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public IntegerFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(parent, variable, field, name, x, y, width);
+        super(instance, field, name, x, y, width);
         this.range = field.getAnnotation(IntRange.class);
     }
 
