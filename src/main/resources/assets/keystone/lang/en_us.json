@@ -23,7 +23,7 @@
   "key.categories.keystone": "Keystone",
 
   "keystone.hotbar.selection": "Selection",
-  "keystone.hotbar.brush": "Brush (WIP)",
+  "keystone.hotbar.brush": "Brush",
   "keystone.hotbar.clone": "Clone (WIP)",
   "keystone.hotbar.fill": "Fill",
   "keystone.hotbar.filter": "Filter",
@@ -53,7 +53,7 @@
 
   "keystone.shape.round": "Round",
   "keystone.shape.diamond": "Diamond",
-  "keystone.shape.box": "Box",
+  "keystone.shape.square": "Square",
 
   "keystone.operation.fill": "Fill",
   "keystone.operation.erode": "Erode"
