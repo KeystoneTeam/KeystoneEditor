@@ -14,6 +14,7 @@ public class HistoryModule implements IKeystoneModule
 {
     private List<HistoryStackFrame> history = new ArrayList<>();
     private HistoryStackFrame currentStackFrame;
+    private int tryBeginHooksOpen = 0;
     private int currentHistoryIndex = -1;
     private int unsavedChanges = 0;
 
@@ -38,6 +39,25 @@ public class HistoryModule implements IKeystoneModule
     }
 
     //region History
+    public void tryBeginHistoryEntry()
+    {
+        tryBeginHooksOpen++;
+        if (currentStackFrame == null) beginHistoryEntry();
+    }
+    public void tryEndHistoryEntry()
+    {
+        if (tryBeginHooksOpen <= 0)
+        {
+            Keystone.LOGGER.warn("Calling HistoryModule.tryEndHistoryEntry without first calling HistoryModule.beginHistoryEntry! This may cause issues");
+            tryBeginHooksOpen = 0;
+            return;
+        }
+        else
+        {
+            tryBeginHooksOpen--;
+            if (tryBeginHooksOpen <= 0) endHistoryEntry();
+        }
+    }
     public void beginHistoryEntry()
     {
         if (currentStackFrame != null)
@@ -47,6 +67,7 @@ public class HistoryModule implements IKeystoneModule
         }
 
         currentStackFrame = new HistoryStackFrame();
+        if (tryBeginHooksOpen <= 0) tryBeginHooksOpen = 1;
     }
     public void endHistoryEntry()
     {
@@ -65,6 +86,7 @@ public class HistoryModule implements IKeystoneModule
 
         currentStackFrame.applyBlocks();
         currentStackFrame = null;
+        tryBeginHooksOpen = 0;
     }
     public void abortHistoryEntry()
     {
@@ -100,6 +122,12 @@ public class HistoryModule implements IKeystoneModule
 
     public void undo()
     {
+        if (currentStackFrame != null)
+        {
+            Keystone.LOGGER.error("Cannot call HistoryModule.undo while a history entry is open!");
+            return;
+        }
+
         Keystone.runOnMainThread(() ->
         {
             HistoryStackFrame historyStackFrame = popFromHistory();
@@ -114,6 +142,12 @@ public class HistoryModule implements IKeystoneModule
     }
     public void redo()
     {
+        if (currentStackFrame != null)
+        {
+            Keystone.LOGGER.error("Cannot call HistoryModule.redo while a history entry is open!");
+            return;
+        }
+
         Keystone.runOnMainThread(() ->
         {
             if (currentHistoryIndex < history.size() - 1)
@@ -138,10 +172,16 @@ public class HistoryModule implements IKeystoneModule
 
         return currentStackFrame;
     }
+    public boolean isEntryOpen()
+    {
+        return currentStackFrame != null;
+    }
 
     public void logHistoryStack()
     {
+        Keystone.LOGGER.info("###########################################################################");
         for(int i = history.size() - 1; i >= 0; i--) history.get(i).debugLog(i - currentHistoryIndex);
+        Keystone.LOGGER.info("###########################################################################");
         Keystone.LOGGER.info("");
     }
     //endregion

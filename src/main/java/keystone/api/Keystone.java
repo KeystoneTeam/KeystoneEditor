@@ -47,6 +47,7 @@ public class Keystone
     public static final Random RANDOM = new Random();
 
     private static HistoryModule historyModule;
+    private static Thread serverThread;
 
     //region Active Toggle
     private static boolean enabled = KeystoneConfig.startActive;
@@ -170,7 +171,8 @@ public class Keystone
      */
     public static void runOnMainThread(int delay, Runnable runnable)
     {
-        addList.add(new DelayedRunnable(delay, runnable));
+        if (delay == 0 && Thread.currentThread() == serverThread) runnable.run();
+        else addList.add(new DelayedRunnable(delay, runnable));
     }
     //endregion
     //region Tools
@@ -226,9 +228,9 @@ public class Keystone
                 }
             }
 
-            historyModule.beginHistoryEntry();
+            historyModule.tryBeginHistoryEntry();
             for (SelectionBox box : boxes) box.forEachBlock((pos, block) -> setBlock(pos.x, pos.y, pos.z, block));
-            historyModule.endHistoryEntry();
+            historyModule.tryEndHistoryEntry();
         });
     }
 
@@ -326,9 +328,9 @@ public class Keystone
                     return;
                 }
 
-                historyModule.beginHistoryEntry();
+                historyModule.tryBeginHistoryEntry();
                 for (FilterBox box : boxes) box.forEachBlock((x, y, z, block) -> setBlock(x, y, z, block));
-                historyModule.endHistoryEntry();
+                historyModule.tryEndHistoryEntry();
             }
         });
     }
@@ -371,6 +373,8 @@ public class Keystone
     {
         if (Keystone.isActive() && event.phase == TickEvent.Phase.START && event.side == LogicalSide.SERVER)
         {
+            serverThread = Thread.currentThread();
+
             runOnMainThread.addAll(addList);
             addList.clear();
 

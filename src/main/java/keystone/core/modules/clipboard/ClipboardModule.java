@@ -23,6 +23,7 @@ import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.glfw.GLFW;
 
+import javax.swing.text.AsyncBoxView;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,10 +47,26 @@ public class ClipboardModule implements IKeystoneModule
         pasteBoxes.clear();
         boxes.forEach(box -> pasteBoxes.add(box.clone()));
 
+        if (pasteBoxes.size() > 0)
+        {
+            KeystoneGlobalState.HideSelectionBoxes = true;
+            KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.CLONE);
+        }
+        else
+        {
+            KeystoneGlobalState.HideSelectionBoxes = false;
+            KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
+        }
+
         return old;
     }
     public void clearPasteBoxes()
     {
+        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        historyModule.tryBeginHistoryEntry();
+        historyModule.pushToEntry(new PasteBoxHistoryEntry(pasteBoxes));
+        historyModule.tryEndHistoryEntry();
+
         pasteBoxes.clear();
         KeystoneGlobalState.HideSelectionBoxes = false;
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
@@ -86,8 +103,14 @@ public class ClipboardModule implements IKeystoneModule
 
     public void cut()
     {
-        copy();
-        Keystone.runTool(new FillTool(Blocks.AIR.getDefaultState()));
+        Keystone.runOnMainThread(() ->
+        {
+            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+            historyModule.tryBeginHistoryEntry();
+            copy();
+            Keystone.runTool(new FillTool(Blocks.AIR.getDefaultState()));
+            historyModule.tryEndHistoryEntry();
+        });
     }
     public void copy()
     {
@@ -99,6 +122,11 @@ public class ClipboardModule implements IKeystoneModule
             Keystone.LOGGER.error("Trying to paste when there is no loaded world for dimension '" + Player.getDimensionId().getDimensionType().getRegistryName() + "'!");
             return;
         }
+
+        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        historyModule.tryBeginHistoryEntry();
+        historyModule.pushToEntry(new PasteBoxHistoryEntry(this.pasteBoxes));
+        historyModule.tryEndHistoryEntry();
 
         pasteBoxes.clear();
         for (SelectionBoundingBox selection : Keystone.getModule(SelectionModule.class).getSelectionBoundingBoxes()) pasteBoxes.add(PasteBoundingBox.create(selection.getMinCoords(), KeystoneSchematic.createFromSelection(selection, world)));
@@ -113,8 +141,12 @@ public class ClipboardModule implements IKeystoneModule
             return;
         }
 
+        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        historyModule.tryBeginHistoryEntry();
         pasteBoxes.forEach(paste -> paste.paste(world));
         clearPasteBoxes();
+        historyModule.tryEndHistoryEntry();
+
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
 }

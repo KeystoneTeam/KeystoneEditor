@@ -1,6 +1,10 @@
 package keystone.core.modules.clipboard.boxes;
 
 import keystone.api.Keystone;
+import keystone.core.modules.clipboard.ClipboardModule;
+import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.history.entries.PasteBoxHistoryEntry;
+import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.selection.SelectedFace;
 import keystone.core.renderer.blocks.GhostBlockRenderer;
 import keystone.core.renderer.client.Player;
@@ -39,6 +43,16 @@ public class PasteBoundingBox extends SelectableBoundingBox
 
     @Override
     public boolean isEnabled() { return true; /* return Keystone.getModule(ClipboardModule.class).isEnabled(); */ }
+
+    @Override
+    public void startDrag(SelectedFace face)
+    {
+        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        historyModule.beginHistoryEntry();
+        historyModule.pushToEntry(new PasteBoxHistoryEntry(Keystone.getModule(ClipboardModule.class).getPasteBoxes()));
+        historyModule.endHistoryEntry();
+    }
+
     @Override
     public void drag(SelectedFace face)
     {
