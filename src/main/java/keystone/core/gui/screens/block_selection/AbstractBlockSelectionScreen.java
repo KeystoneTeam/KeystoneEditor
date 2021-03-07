@@ -59,13 +59,8 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
         this.searchBar.setEnableBackgroundDrawing(false);
         this.searchBar.setText("");
         this.searchBar.setResponder((str) -> this.panel.filter(str));
-        this.children.add(this.searchBar);
+        addButton(this.searchBar);
         this.setFocusedDefault(this.searchBar);
-    }
-    @Override
-    public void tick()
-    {
-        this.searchBar.tick();
     }
     @Override
     public void onClose()

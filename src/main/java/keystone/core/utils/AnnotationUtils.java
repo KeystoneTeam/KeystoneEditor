@@ -1,11 +1,13 @@
 package keystone.core.utils;
 
-import keystone.api.filters.Name;
-import keystone.api.filters.Variable;
+import keystone.api.variables.Hook;
+import keystone.api.variables.Name;
+import keystone.api.variables.Variable;
 import keystone.api.utils.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 public class AnnotationUtils
 {
@@ -36,5 +38,21 @@ public class AnnotationUtils
             e.printStackTrace();
         }
         return null;
+    }
+    public static final <T> void runHook(Object instance, Hook hook)
+    {
+        if (instance != null && hook != null)
+        {
+            try
+            {
+                Method method = instance.getClass().getDeclaredMethod(hook.value());
+                method.setAccessible(true);
+                method.invoke(instance);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
     }
 }

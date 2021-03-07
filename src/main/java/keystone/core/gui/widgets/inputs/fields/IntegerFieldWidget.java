@@ -1,6 +1,7 @@
 package keystone.core.gui.widgets.inputs.fields;
 
-import keystone.api.filters.IntRange;
+import keystone.api.variables.Hook;
+import keystone.api.variables.IntRange;
 
 import java.lang.reflect.Field;
 import java.util.function.Supplier;
@@ -9,9 +10,9 @@ public class IntegerFieldWidget extends ParsableTextFieldWidget<Integer>
 {
     private final IntRange range;
 
-    public IntegerFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public IntegerFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(instance, field, name, x, y, width);
+        super(instance, field, hook, name, x, y, width);
         this.range = field.getAnnotation(IntRange.class);
     }
 

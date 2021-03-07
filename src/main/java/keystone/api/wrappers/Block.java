@@ -4,6 +4,7 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.FlowingFluidBlock;
 import net.minecraft.command.arguments.BlockStateParser;
 import net.minecraft.command.arguments.NBTPathArgument;
 import net.minecraft.command.arguments.NBTTagArgument;
@@ -58,6 +59,23 @@ public class Block
      * @return This block's Minecraft NBT data
      */
     public CompoundNBT getTileEntityData() { return tileEntity; }
+
+    /**
+     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @param block The block state to set
+     */
+    public void setMinecraftBlock(BlockState block) { this.state = block; }
+
+    /**
+     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @param tileEntity The TileEntity instance to set
+     */
+    public void setTileEntity(TileEntity tileEntity) { this.tileEntity = tileEntity == null ? null : tileEntity.serializeNBT(); }
+    /**
+     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @param tileEntity The tile entity NBT to set
+     */
+    public void setTileEntity(CompoundNBT tileEntity) { this.tileEntity = tileEntity; }
     //endregion
 
     /**
@@ -173,6 +191,8 @@ public class Block
      * @return Whether this block is an air block
      */
     public boolean isAir() { return this.state.isAir(); }
+    public boolean isLiquid() { return this.state.getBlock() instanceof FlowingFluidBlock; }
+    public boolean isAirOrLiquid() { return isAir() || isLiquid(); }
 
     @Override
     public boolean equals(Object o)

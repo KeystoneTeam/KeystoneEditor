@@ -146,6 +146,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         this.nudgeBox.tick();
         this.nudgeCorner1.tick();
         this.nudgeCorner2.tick();
+        super.tick();
     }
 
     //endregion

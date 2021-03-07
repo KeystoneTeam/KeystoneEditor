@@ -10,6 +10,7 @@ import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.filters.FilterCompiler;
 import keystone.core.modules.IKeystoneModule;
+import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.selection.SelectionModule;
@@ -47,6 +48,7 @@ public class Keystone
     public static final Random RANDOM = new Random();
 
     private static HistoryModule historyModule;
+    private static BlocksModule blocksModule;
     private static Thread serverThread;
 
     //region Active Toggle
@@ -179,20 +181,6 @@ public class Keystone
     private static ITextComponent abortFilter;
 
     /**
-     * Set a {@link keystone.api.wrappers.Block} in the current world. This will automatically hook into the history system, allowing
-     * for undo and redo support. Be sure that the {@link keystone.core.modules.history.HistoryModule}
-     * has an entry open first
-     * @param x The x-coordinate
-     * @param y The y-coordinate
-     * @param z The z-coordinate
-     * @param block The {@link keystone.api.wrappers.Block} to set
-     */
-    public static void setBlock(int x, int y, int z, Block block)
-    {
-        historyModule.getOpenEntry().setBlock(x, y, z, block);
-    }
-
-    /**
      * Run an {@link keystone.api.tools.interfaces.IKeystoneTool} on the current selection boxes
      * @param tool The tool to run
      */
@@ -229,7 +217,7 @@ public class Keystone
             }
 
             historyModule.tryBeginHistoryEntry();
-            for (SelectionBox box : boxes) box.forEachBlock((pos, block) -> setBlock(pos.x, pos.y, pos.z, block));
+            for (SelectionBox box : boxes) box.forEachBlock((pos, block) -> blocksModule.setBlock(pos.x, pos.y, pos.z, block));
             historyModule.tryEndHistoryEntry();
         });
     }
@@ -329,7 +317,7 @@ public class Keystone
                 }
 
                 historyModule.tryBeginHistoryEntry();
-                for (FilterBox box : boxes) box.forEachBlock((x, y, z, block) -> setBlock(x, y, z, block));
+                for (FilterBox box : boxes) box.forEachBlock((x, y, z, block) -> blocksModule.setBlock(x, y, z, block));
                 historyModule.tryEndHistoryEntry();
             }
         });
@@ -363,6 +351,8 @@ public class Keystone
     public static final void postInit()
     {
         historyModule = getModule(HistoryModule.class);
+        blocksModule = getModule(BlocksModule.class);
+        for (IKeystoneModule module : modules.values()) module.postInit();
     }
     /**
      * Ran every world tick. Used to execute scheduled {@link keystone.api.Keystone.DelayedRunnable DelayedRunnables}

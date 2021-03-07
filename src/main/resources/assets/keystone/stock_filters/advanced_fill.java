@@ -1,6 +1,6 @@
 import keystone.api.filters.FilterBox;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.filters.Variable;
+import keystone.api.variables.Variable;
 import keystone.api.wrappers.BlockMask;
 import keystone.api.wrappers.BlockPalette;
 

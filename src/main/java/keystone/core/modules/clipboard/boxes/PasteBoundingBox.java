@@ -1,6 +1,7 @@
 package keystone.core.modules.clipboard.boxes;
 
 import keystone.api.Keystone;
+import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.PasteBoxHistoryEntry;
@@ -62,10 +63,11 @@ public class PasteBoundingBox extends SelectableBoundingBox
 
     public void paste(World world)
     {
+        BlocksModule blocksModule = Keystone.getModule(BlocksModule.class);
         schematic.forEachBlock((pos, block) ->
         {
             BlockPos offset = pos.add(getMinCoords().getX(), getMinCoords().getY(), getMinCoords().getZ());
-            Keystone.setBlock(offset.getX(), offset.getY(), offset.getZ(), block);
+            blocksModule.setBlock(offset.getX(), offset.getY(), offset.getZ(), block);
         });
     }
 }

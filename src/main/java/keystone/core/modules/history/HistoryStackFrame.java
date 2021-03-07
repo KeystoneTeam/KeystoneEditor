@@ -65,4 +65,15 @@ public class HistoryStackFrame
         if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new BlockHistoryChunk(chunkPosition, world));
         chunks.get(chunkPosition).setBlock(x, y, z, block);
     }
+
+    public BlockHistoryChunk getChunk(int x, int y, int z)
+    {
+        Vector3i chunkPosition = new Vector3i(x >> 4, y >> 4, z >> 4);
+        if (chunks.containsKey(chunkPosition)) return chunks.get(chunkPosition);
+        else return null;
+    }
+    public void swapBlockBuffers(boolean copy)
+    {
+        for (BlockHistoryChunk chunk : chunks.values()) chunk.swapBuffers(copy);
+    }
 }

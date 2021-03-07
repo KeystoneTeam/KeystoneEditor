@@ -1,22 +1,19 @@
 package keystone.core.modules.brush;
 
 import keystone.api.Keystone;
-import keystone.api.SelectionBox;
-import keystone.api.wrappers.Block;
 import keystone.core.events.KeystoneInputEvent;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.modules.IKeystoneModule;
+import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.brush.boxes.BrushPositionBox;
 import keystone.core.modules.brush.providers.BrushPositionBoxProvider;
 import keystone.core.modules.brush.providers.BrushPreviewBoxProvider;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -27,12 +24,16 @@ import java.util.List;
 
 public class BrushModule implements IKeystoneModule
 {
+    private HistoryModule historyModule;
+    private BlocksModule blocksModule;
+
     private IBoundingBoxProvider[] providers;
+    private BrushOperation brushOperation;
+    private BrushShape brushShape;
+    private int[] brushSize;
     private int minSpacing;
     private float minSpacingSqr;
-    private BrushShape brushShape;
-    private BrushOperation brushOperation;
-    private int[] brushSize;
+    private int noise;
     private List<Coords> brushPositions = new ArrayList<>();
     private List<BrushPositionBox> brushPositionBoxes = new ArrayList<>();
 
@@ -49,11 +50,18 @@ public class BrushModule implements IKeystoneModule
 
         MinecraftForge.EVENT_BUS.register(this);
         setMinSpacing(1);
+        setNoise(100);
         setBrushShape(BrushShape.ROUND);
         setBrushOperation(BrushOperation.FILL);
         setBrushSize(9, 9, 9);
     }
 
+    @Override
+    public void postInit()
+    {
+        historyModule = Keystone.getModule(HistoryModule.class);
+        blocksModule = Keystone.getModule(BlocksModule.class);
+    }
     @Override
     public boolean isEnabled() { return KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.BRUSH; }
 
@@ -63,10 +71,11 @@ public class BrushModule implements IKeystoneModule
         return providers;
     }
 
-    public int getMinSpacing() { return minSpacing; }
-    public BrushShape getBrushShape() { return brushShape; }
     public BrushOperation getBrushOperation() { return brushOperation; }
+    public BrushShape getBrushShape() { return brushShape; }
     public int[] getBrushSize() { return brushSize; }
+    public int getMinSpacing() { return minSpacing; }
+    public int getNoise() { return noise; }
     public List<BrushPositionBox> getBrushPositionBoxes() { return brushPositionBoxes; }
 
     //region Event Handlers
@@ -121,18 +130,13 @@ public class BrushModule implements IKeystoneModule
     }
     //endregion
     //region Brush Functions
-    public void setMinSpacing(int minSpacing)
+    public void setBrushOperation(BrushOperation operation)
     {
-        this.minSpacingSqr = minSpacing * minSpacing;
-        this.minSpacing = minSpacing;
+        this.brushOperation = operation;
     }
     public void setBrushShape(BrushShape shape)
     {
         this.brushShape = shape;
-    }
-    public void setBrushOperation(BrushOperation operation)
-    {
-        this.brushOperation = operation;
     }
     public void setBrushSize(int x, int y, int z)
     {
@@ -140,6 +144,15 @@ public class BrushModule implements IKeystoneModule
         if (y <= 0) y = 1;
         if (z <= 0) z = 1;
         brushSize = new int[] { x, y, z };
+    }
+    public void setMinSpacing(int minSpacing)
+    {
+        this.minSpacingSqr = minSpacing * minSpacing;
+        this.minSpacing = minSpacing;
+    }
+    public void setNoise(int noise)
+    {
+        this.noise = noise;
     }
 
     public void prepareBrush()
@@ -164,26 +177,27 @@ public class BrushModule implements IKeystoneModule
     {
         Keystone.runOnMainThread(() ->
         {
-            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
-            World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimensionId());
-            if (world == null)
+            if (blocksModule.isEnabled()) historyModule.beginHistoryEntry();
+            else
             {
                 brushPositions.clear();
                 return;
             }
-            else
-            {
-                historyModule.beginHistoryEntry();
-                brushOperation.prepare(world);
-            }
 
-            boolean[] shapeMask = this.brushShape.getShapeMask(brushSize[0], brushSize[1], brushSize[2]);
+            ShapeMask shapeMask = this.brushShape.getShapeMask(brushSize[0], brushSize[1], brushSize[2]);
             List<BlockPos> processedBlocks = new ArrayList<>();
-            for (Coords position : brushPositions)
+
+            int iterations = brushOperation.iterations();
+            for (int iteration = 0; iteration < iterations; iteration++)
             {
-                Coords min = position.sub(brushSize[0] / 2, brushSize[1] / 2, brushSize[2] / 2);
-                Coords max = min.add(brushSize[0] - 1, brushSize[1] - 1, brushSize[2] - 1);
-                executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, shapeMask);
+                for (Coords position : brushPositions)
+                {
+                    Coords min = position.sub(brushSize[0] / 2, brushSize[1] / 2, brushSize[2] / 2);
+                    Coords max = min.add(brushSize[0] - 1, brushSize[1] - 1, brushSize[2] - 1);
+                    executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, shapeMask, iteration);
+                }
+                processedBlocks.clear();
+                if (iteration < iterations - 1) blocksModule.swapBuffers(true);
             }
 
             brushPositions.clear();
@@ -191,23 +205,20 @@ public class BrushModule implements IKeystoneModule
             historyModule.endHistoryEntry();
         });
     }
-    private void executeBrush(BlockPos min, BlockPos max, List<BlockPos> processedBlocks, boolean[] shapeMask)
+    private void executeBrush(BlockPos min, BlockPos max, List<BlockPos> processedBlocks, ShapeMask shapeMask, int iteration)
     {
-        for (int x = min.getX(); x <= max.getX(); x++)
+        for (int y = min.getY(); y <= max.getY(); y++)
         {
-            for (int y = min.getY(); y <= max.getY(); y++)
+            for (int x = min.getX(); x <= max.getX(); x++)
             {
                 for (int z = min.getZ(); z <= max.getZ(); z++)
                 {
                     BlockPos pos = new BlockPos(x, y, z);
                     BlockPos nPos = pos.subtract(min);
 
-                    int maskIndex = nPos.getX() + nPos.getY() * brushSize[0] + nPos.getZ() * brushSize[0] * brushSize[1];
-                    if (!processedBlocks.contains(pos) && shapeMask[maskIndex])
+                    if (!processedBlocks.contains(pos) && shapeMask.test(nPos.getX(), nPos.getY(), nPos.getZ()))
                     {
-                        Block brushResult = brushOperation.process(pos);
-                        if (brushResult != null) Keystone.setBlock(x, y, z, brushResult);
-                        processedBlocks.add(pos);
+                        if (brushOperation.process(x, y, z, blocksModule, iteration)) processedBlocks.add(pos);
                     }
                 }
             }

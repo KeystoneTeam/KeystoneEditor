@@ -120,6 +120,17 @@ public class HistoryModule implements IKeystoneModule
         currentHistoryIndex = -1;
     }
 
+    public void swapBlockBuffers(boolean copy)
+    {
+        if (currentStackFrame == null)
+        {
+            Keystone.LOGGER.error("Cannot call HistoryModule.swapBlockBuffers without an open history entry!");
+            return;
+        }
+
+        currentStackFrame.swapBlockBuffers(copy);
+    }
+
     public void undo()
     {
         if (currentStackFrame != null)

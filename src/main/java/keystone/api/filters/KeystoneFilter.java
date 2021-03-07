@@ -7,6 +7,7 @@ import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockMask;
 import keystone.api.wrappers.BlockPalette;
 import keystone.api.wrappers.Item;
+import keystone.core.gui.widgets.inputs.fields.EditableObject;
 import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -23,7 +24,7 @@ import net.minecraft.util.text.StringTextComponent;
  * Contains information relating to which {@link keystone.api.filters.FilterBox FilterBoxes} the filter is modifying, as well
  * as several API functions
  */
-public class KeystoneFilter
+public class KeystoneFilter extends EditableObject
 {
     private static final Block air = new Block(Blocks.AIR.getDefaultState());
 

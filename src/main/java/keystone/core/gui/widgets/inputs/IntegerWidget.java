@@ -4,9 +4,9 @@ import net.minecraft.util.text.ITextComponent;
 
 public class IntegerWidget extends ParsableTextWidget<Integer>
 {
-    private int min;
-    private int max;
-    private int step;
+    protected int min;
+    protected int max;
+    protected int step;
 
     public IntegerWidget(ITextComponent name, int x, int y, int width, int value) { this(name, x, y, width, value, Integer.MIN_VALUE, Integer.MAX_VALUE, 1); }
     public IntegerWidget(ITextComponent name, int x, int y, int width, int value, int min, int max) { this(name, x, y, width, value, min, max, 1); }

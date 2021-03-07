@@ -1,4 +1,4 @@
-package keystone.api.filters;
+package keystone.api.variables;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

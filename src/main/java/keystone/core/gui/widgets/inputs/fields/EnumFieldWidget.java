@@ -1,12 +1,10 @@
 package keystone.core.gui.widgets.inputs.fields;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
-import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
-import keystone.core.gui.widgets.inputs.Dropdown;
+import keystone.api.variables.Hook;
+import keystone.core.gui.widgets.inputs.EnumWidget;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
@@ -17,76 +15,36 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class EnumFieldWidget extends ButtonNoHotkey
+public class EnumFieldWidget<T extends Enum<T>> extends EnumWidget<T>
 {
-    private final Minecraft mc;
-    private final FontRenderer font;
     private final Supplier<Object> instance;
     private final Field field;
-    private final String name;
+    private final Hook hook;
 
-    private Enum value;
-    private Dropdown<Enum> dropdown;
-
-    public EnumFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets, BiConsumer<Widget, Boolean> addDropdown) throws IllegalAccessException
+    public EnumFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets, BiConsumer<Widget, Boolean> addDropdown) throws IllegalAccessException
     {
-        super(x, y + 11, width, 20, new StringTextComponent(name), (button) ->
-        {
-            EnumFieldWidget paletteWidget = (EnumFieldWidget)button;
+        super(new StringTextComponent(name), x, y, width, (T)field.get(instance.get()), disableWidgets, restoreWidgets, addDropdown);
 
-            disableWidgets.accept(new Widget[] { paletteWidget.dropdown });
-            paletteWidget.dropdown.visible = true;
-        });
-
-        this.mc = Minecraft.getInstance();
-        this.font = mc.fontRenderer;
         this.instance = instance;
         this.field = field;
-        this.name = name;
-        this.value = (Enum)field.get(instance.get());
+        this.hook = hook;
+        AnnotationUtils.runHook(instance.get(), hook);
+    }
 
-        Class<? extends Enum> enumClass = field.getType().asSubclass(Enum.class);
-        this.dropdown = null;
-        this.dropdown = new Dropdown<Enum>(x, y + 11, width, new StringTextComponent(name), entry -> new StringTextComponent(AnnotationUtils.getEnumValueName(enumClass.cast(entry))), (entry, title) ->
+    @Override
+    protected void onSetValue(Enum value)
+    {
+        try
         {
-            try
-            {
-                Enum newValue = (Enum)enumClass.cast(entry);
-                field.set(instance.get(), newValue);
-                value = newValue;
-                setMessage(title);
-            }
-            catch (IllegalAccessException e)
-            {
-                String error = "Cannot set Enum field '" + name + "'!";
-                Keystone.LOGGER.error(error);
-                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
-                e.printStackTrace();
-            }
-
-            restoreWidgets.run();
-            dropdown.visible = false;
-        }, enumClass.getEnumConstants());
-        this.dropdown.setSelectedEntry(this.value, false);
-        setMessage(this.dropdown.getSelectedEntryTitle());
-        addDropdown.accept(this.dropdown, true);
+            field.set(instance.get(), value);
+            AnnotationUtils.runHook(instance.get(), hook);
+        }
+        catch (IllegalAccessException e)
+        {
+            String error = "Cannot set Enum field '" + getMessage().getString() + "'!";
+            Keystone.LOGGER.error(error);
+            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+            e.printStackTrace();
+        }
     }
-    public static final int getHeight()
-    {
-        return 31;
-    }
-
-    @Override
-    public int getHeightRealms()
-    {
-        return getHeight();
-    }
-    @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
-    {
-        drawCenteredString(matrixStack, font, name, x + width / 2, y - 11, 0xFFFFFF);
-        super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
-    }
-
-    public Object getValue() { return value; }
 }

@@ -20,7 +20,9 @@ import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.selection.providers.HighlightBoxProvider;
 import keystone.core.modules.selection.providers.SelectionBoxProvider;
+import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -134,7 +136,12 @@ public class SelectionModule implements IKeystoneModule
     {
         if (!Keystone.isActive() || Minecraft.getInstance().currentScreen != null) return;
 
-        if (event.getKey() == GLFW.GLFW_KEY_D && event.getModifiers() == GLFW.GLFW_MOD_CONTROL) deselect();
+        if (event.getKey() == GLFW.GLFW_KEY_D && event.getModifiers() == GLFW.GLFW_MOD_CONTROL)
+        {
+            GameSettings settings = Minecraft.getInstance().gameSettings;
+            for (KeyBinding keyBinding : settings.keyBindings) if (keyBinding.getKey().getKeyCode() != GLFW.GLFW_KEY_D && keyBinding.isKeyDown()) return;
+            deselect();
+        }
     }
     @SubscribeEvent
     public void onMouseClick(final KeystoneInputEvent.MouseClickEvent event)

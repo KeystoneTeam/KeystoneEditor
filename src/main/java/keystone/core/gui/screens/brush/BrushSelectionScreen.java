@@ -125,13 +125,23 @@ public class BrushSelectionScreen extends KeystoneOverlay
         });
         y += IntegerWidget.getHeight() + PADDING;
 
-        // Minimum Spacing
-        addButton(new IntegerWidget(new TranslationTextComponent("keystone.brush.minimumSpacing"), PADDING, y, panelMaxX - 2 * PADDING, brushModule.getMinSpacing(), 1, Integer.MAX_VALUE)
+        // Spacing and Noise
+        int spacingNoiseWidth = (panelMaxX - PADDING) / 2 - PADDING;
+        addButton(new IntegerWidget(new TranslationTextComponent("keystone.brush.minimumSpacing"), PADDING, y, spacingNoiseWidth, brushModule.getMinSpacing(), 1, Integer.MAX_VALUE)
         {
             @Override
             protected boolean onSetValue(Integer value)
             {
                 brushModule.setMinSpacing(value);
+                return true;
+            }
+        });
+        addButton(new IntegerWidget(new TranslationTextComponent("keystone.brush.noise"), PADDING + spacingNoiseWidth + PADDING, y, spacingNoiseWidth, brushModule.getNoise(), 1, 100)
+        {
+            @Override
+            protected boolean onSetValue(Integer value)
+            {
+                brushModule.setNoise(value);
                 return true;
             }
         });
@@ -141,10 +151,14 @@ public class BrushSelectionScreen extends KeystoneOverlay
         brushVariablesList.offset(PADDING, y);
         brushVariablesList.addWidgets(this::addButton);
         brushVariablesList.addQueuedWidgets(this::addButton);
+
+        brushModule.getBrushOperation().undirtyEditor();
     }
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
+        if (brushModule.getBrushOperation().isEditorDirtied()) init(minecraft, width, height);
+
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
 

@@ -3,6 +3,7 @@ package keystone.core.modules.brush;
 import keystone.core.renderer.client.models.Point;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
@@ -59,7 +60,7 @@ public abstract class BrushShape
     public abstract ITextComponent getName();
     protected abstract boolean isLocalizedPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ);
 
-    public final boolean[] getShapeMask(int sizeX, int sizeY, int sizeZ)
+    public final ShapeMask getShapeMask(int sizeX, int sizeY, int sizeZ)
     {
         // Calculate block centers, offset by -0.5 on each even axis
         Vector3f[] blockCenters = new Vector3f[sizeX * sizeY * sizeZ];
@@ -81,13 +82,31 @@ public abstract class BrushShape
         }
 
         // Convert block centers to mask values by calling isPositionInShape()
-        boolean[] mask = new boolean[sizeX * sizeY * sizeZ];
+        byte[] mask = new byte[sizeX * sizeY * sizeZ];
         for (int i = 0; i < mask.length; i++)
         {
             Vector3f center = blockCenters[i];
-            mask[i] = isLocalizedPositionInShape(center.getX(), center.getY(), center.getZ(), sizeX, sizeY, sizeZ);
+            mask[i] = isLocalizedPositionInShape(center.getX(), center.getY(), center.getZ(), sizeX, sizeY, sizeZ) ? (byte)2 : (byte)0;
         }
-        return mask;
+        for (int z = 1; z < sizeZ - 1; z++)
+        {
+            for (int y = 1; y < sizeY - 1; y++)
+            {
+                for (int x = 1; x < sizeX - 1; x++)
+                {
+                    byte neighbors = (byte)0;
+                    if (mask[getArrayIndex(x + 1, y, z, sizeX, sizeY, sizeZ)] > 0) neighbors++;
+                    if (mask[getArrayIndex(x - 1, y, z, sizeX, sizeY, sizeZ)] > 0) neighbors++;
+                    if (mask[getArrayIndex(x, y + 1, z, sizeX, sizeY, sizeZ)] > 0) neighbors++;
+                    if (mask[getArrayIndex(x, y - 1, z, sizeX, sizeY, sizeZ)] > 0) neighbors++;
+                    if (mask[getArrayIndex(x, y, z + 1, sizeX, sizeY, sizeZ)] > 0) neighbors++;
+                    if (mask[getArrayIndex(x, y, z - 1, sizeX, sizeY, sizeZ)] > 0) neighbors++;
+
+                    if (neighbors == 6) mask[getArrayIndex(x, y, z, sizeX, sizeY, sizeZ)] = (byte)1;
+                }
+            }
+        }
+        return new ShapeMask(new Vector3i(sizeX, sizeY, sizeZ), mask);
     }
     public final boolean isPositionInShape(Vector3d position, Point center, int sizeX, int sizeY, int sizeZ)
     {

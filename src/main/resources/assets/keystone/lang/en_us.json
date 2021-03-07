@@ -49,7 +49,11 @@
   "keystone.filter_panel.runFilter": "Filter",
 
   "keystone.brush.minimumSpacing": "Minimum Spacing",
+  "keystone.brush.noise": "Noise",
   "keystone.brush.fill": "Fill",
+  "keystone.brush.erode": "Erode",
+  "keystone.brush.gravity": "Gravity",
+  "keystone.brush.stackFill": "Stack Fill",
 
   "keystone.shape.round": "Round",
   "keystone.shape.diamond": "Diamond",

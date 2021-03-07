@@ -1,43 +1,29 @@
 package keystone.core.modules.brush;
 
-import keystone.api.filters.Variable;
-import keystone.api.wrappers.Block;
-import keystone.api.wrappers.BlockMask;
-import keystone.api.wrappers.BlockPalette;
+import keystone.core.gui.widgets.inputs.fields.EditableObject;
+import keystone.core.modules.blocks.BlocksModule;
+import keystone.core.modules.brush.operations.ErodeBrushOperation;
+import keystone.core.modules.brush.operations.FillBrushOperation;
+import keystone.core.modules.brush.operations.GravityBrushOperation;
+import keystone.core.modules.brush.operations.StackFillBrushOperation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
-public abstract class BrushOperation
+public abstract class BrushOperation extends EditableObject
 {
+    public interface PositionValidator { boolean validate(int x, int y, int z); }
+
     public static final List<BrushOperation> VALUES = new ArrayList<>();
     private final int listIndex;
 
-    public static final BrushOperation FILL = new BrushOperation()
-    {
-        @Variable BlockMask mask = new BlockMask().with("minecraft:air");
-        @Variable BlockPalette palette = new BlockPalette().with("minecraft:stone");
-        @Variable boolean useMask = false;
-
-        @Override
-        public ITextComponent getName()
-        {
-            return new TranslationTextComponent("keystone.brush.fill");
-        }
-        @Override
-        public Block process(BlockPos pos)
-        {
-            Block existing = getBlock(pos);
-            if (!useMask || mask.valid(existing)) return palette.randomBlock();
-            else return existing;
-        }
-    };
-
-    private World world;
+    public static final BrushOperation FILL = new FillBrushOperation();
+    public static final BrushOperation ERODE = new ErodeBrushOperation();
+    public static final BrushOperation GRAVITY = new GravityBrushOperation();
+    public static final BrushOperation STACK_FILL = new StackFillBrushOperation();
 
     protected BrushOperation()
     {
@@ -45,17 +31,9 @@ public abstract class BrushOperation
         VALUES.add(this);
     }
 
-    public void prepare(World world)
-    {
-        this.world = world;
-    }
     public abstract ITextComponent getName();
-    public abstract Block process(BlockPos pos);
+    public int iterations() { return 1; }
+    public abstract boolean process(int x, int y, int z, BlocksModule blocks, int iteration);
 
     public final BrushOperation getNextOperation() { return VALUES.get((listIndex + 1) % VALUES.size()); }
-
-    protected final Block getBlock(BlockPos pos)
-    {
-        return new Block(world.getBlockState(pos), world.getTileEntity(pos));
-    }
 }

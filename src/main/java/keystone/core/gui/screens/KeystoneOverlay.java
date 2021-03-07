@@ -6,6 +6,7 @@ import keystone.core.KeystoneGlobalState;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
@@ -45,6 +46,11 @@ public class KeystoneOverlay extends Screen
             restoreWidgets = false;
         }
         super.render(matrixStack, mouseX, mouseY, partialTicks);
+    }
+    @Override
+    public void tick()
+    {
+        for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).tick();
     }
     //endregion
     //region Helper Functions

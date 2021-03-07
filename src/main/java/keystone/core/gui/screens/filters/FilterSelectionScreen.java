@@ -4,9 +4,6 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.filters.Variable;
-import keystone.api.wrappers.BlockMask;
-import keystone.api.wrappers.BlockPalette;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.filters.FilterCompiler;
 import keystone.core.gui.KeystoneOverlayHandler;
@@ -16,8 +13,6 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.Dropdown;
 import keystone.core.gui.widgets.inputs.fields.*;
-import keystone.core.utils.AnnotationUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
@@ -30,11 +25,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.io.File;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class FilterSelectionScreen extends KeystoneOverlay
@@ -176,10 +166,14 @@ public class FilterSelectionScreen extends KeystoneOverlay
         filterVariablesList.offset(5, panelMinY + ((panelMaxY - panelMinY) / 2) - (filterVariablesList.getHeight() / 2));
         filterVariablesList.addWidgets(this::addButton);
         filterVariablesList.addQueuedWidgets(this::addButton);
+
+        filterInstance.undirtyEditor();
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
+        if (filterInstance != null && filterInstance.isEditorDirtied()) init(minecraft, width, height);
+
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
 
@@ -191,11 +185,6 @@ public class FilterSelectionScreen extends KeystoneOverlay
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
-    }
-    @Override
-    public void tick()
-    {
-        for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).tick();
     }
     //endregion
     //region Getters

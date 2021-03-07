@@ -1,7 +1,8 @@
 package keystone.core.gui.widgets.inputs.fields;
 
 import keystone.api.Keystone;
-import keystone.api.filters.Variable;
+import keystone.api.variables.Hook;
+import keystone.api.variables.Variable;
 import keystone.api.wrappers.BlockMask;
 import keystone.api.wrappers.BlockPalette;
 import keystone.core.gui.widgets.WidgetList;
@@ -13,6 +14,7 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
 import java.lang.reflect.Field;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -22,6 +24,7 @@ public class FieldWidgetList extends WidgetList
     protected final int intendedWidth;
     protected final Consumer<Widget[]> disableWidgets;
     protected final Runnable restoreWidgets;
+    protected final BiConsumer<Widget, Boolean> addDropdown;
 
     public FieldWidgetList(Supplier<Object> instance, int padding, int width, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
     {
@@ -29,19 +32,21 @@ public class FieldWidgetList extends WidgetList
         this.intendedWidth = width;
         this.disableWidgets = disableWidgets;
         this.restoreWidgets = restoreWidgets;
+        this.addDropdown = this::add;
 
         int y = 0;
         Field[] fields = instance.get().getClass().getDeclaredFields();
         for (Field field : fields)
         {
             Variable variable = field.getAnnotation(Variable.class);
+            Hook hook = field.getAnnotation(Hook.class);
             if (variable == null) continue;
             String variableName = AnnotationUtils.getFieldName(variable, field);
 
             try
             {
                 field.setAccessible(true);
-                y += createVariableEditor(field.getType(), field, variableName, y) + padding;
+                y += createVariableEditor(field.getType(), field, hook, variableName, y) + padding;
             }
             catch (SecurityException e)
             {
@@ -68,54 +73,54 @@ public class FieldWidgetList extends WidgetList
         y = 0;
     }
 
-    private int createVariableEditor(Class<?> type, Field field, String name, int y) throws IllegalAccessException
+    private int createVariableEditor(Class<?> type, Field field, Hook hook, String name, int y) throws IllegalAccessException
     {
         //region Block Palette
         if (type == BlockPalette.class)
         {
-            add(new BlockPaletteFieldWidget(instance, field, name, 0, y, intendedWidth, disableWidgets, restoreWidgets));
+            add(new BlockPaletteFieldWidget(instance, field, hook, name, 0, y, intendedWidth, disableWidgets, restoreWidgets));
             return BlockPaletteFieldWidget.getHeight();
         }
         //endregion
         //region Block Mask
         if (type == BlockMask.class)
         {
-            add(new BlockMaskFieldWidget(instance, field, name, 0, y, intendedWidth, disableWidgets, restoreWidgets));
+            add(new BlockMaskFieldWidget(instance, field, hook, name, 0, y, intendedWidth, disableWidgets, restoreWidgets));
             return BlockMaskFieldWidget.getHeight();
         }
         //endregion
         //region Float
         else if (type == float.class)
         {
-            add(new FloatFieldWidget(instance, field, name, 0, y, intendedWidth));
+            add(new FloatFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
             return ParsableTextFieldWidget.getHeight();
         }
         //endregion
         //region Integer
         else if (type == int.class)
         {
-            add(new IntegerFieldWidget(instance, field, name, 0, y, intendedWidth));
+            add(new IntegerFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
             return ParsableTextFieldWidget.getHeight();
         }
         //endregion
         //region String
         else if (type == String.class)
         {
-            add(new StringFieldWidget(instance, field, name, 0, y, intendedWidth));
+            add(new StringFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
             return ParsableTextFieldWidget.getHeight();
         }
         //endregion
         //region Boolean
         else if (type == boolean.class)
         {
-            add(new BooleanFieldWidget(instance, field, name, 0, y, intendedWidth));
+            add(new BooleanFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
             return BooleanFieldWidget.getHeight();
         }
         //endregion
         //region Enum
         else if (Enum.class.isAssignableFrom(type))
         {
-            add(new EnumFieldWidget(instance, field, name, 0, y, intendedWidth, disableWidgets, restoreWidgets, this::add));
+            add(new EnumFieldWidget(instance, field, hook, name, 0, y, intendedWidth, disableWidgets, restoreWidgets, addDropdown));
             return EnumFieldWidget.getHeight();
         }
         //endregion

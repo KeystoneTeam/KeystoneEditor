@@ -2,8 +2,6 @@ package keystone.core.gui.widgets.inputs;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
-import keystone.api.filters.Variable;
-import keystone.core.gui.screens.filters.FilterSelectionScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -12,8 +10,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.glfw.GLFW;
-
-import java.lang.reflect.Field;
 
 public abstract class ParsableTextWidget<T> extends TextFieldWidget
 {

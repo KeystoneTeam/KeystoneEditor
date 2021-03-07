@@ -30,6 +30,15 @@ public class WidgetList
 
     public void bake()
     {
+        if (widgets.size() == 0 && queuedWidgets.size() == 0)
+        {
+            x = 0;
+            y = 0;
+            width = 0;
+            height = 0;
+            return;
+        }
+
         x = Integer.MAX_VALUE;
         y = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE;

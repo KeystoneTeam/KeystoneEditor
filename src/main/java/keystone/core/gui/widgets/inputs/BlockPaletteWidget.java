@@ -1,11 +1,8 @@
 package keystone.core.gui.widgets.inputs;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import keystone.api.Keystone;
-import keystone.api.filters.Variable;
 import keystone.api.wrappers.BlockPalette;
 import keystone.core.gui.screens.block_selection.BlockPaletteEditScreen;
-import keystone.core.gui.screens.filters.FilterSelectionScreen;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.utils.BlockUtils;
 import net.minecraft.client.Minecraft;
@@ -13,14 +10,10 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Util;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
