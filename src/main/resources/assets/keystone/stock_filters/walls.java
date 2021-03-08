@@ -1,4 +1,4 @@
-import keystone.api.filters.FilterBox;
+import keystone.api.BlockRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.BlockMask;
@@ -14,7 +14,7 @@ public class Walls extends KeystoneFilter
     @Variable boolean useMask = false;
 
     @Override
-    public void processBlock(int x, int y, int z, FilterBox box)
+    public void processBlock(int x, int y, int z, BlockRegion box)
     {
         if (!useMask || mask.valid(box.getBlock(x, y, z)))
         {

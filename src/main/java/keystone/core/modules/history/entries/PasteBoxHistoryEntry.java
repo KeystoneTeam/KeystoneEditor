@@ -1,13 +1,9 @@
 package keystone.core.modules.history.entries;
 
 import keystone.api.Keystone;
-import keystone.api.SelectionBox;
-import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.clipboard.boxes.PasteBoundingBox;
-import keystone.core.modules.selection.SelectionModule;
-import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 
 import java.util.ArrayList;
 import java.util.List;

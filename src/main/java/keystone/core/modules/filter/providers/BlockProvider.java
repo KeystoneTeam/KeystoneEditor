@@ -1,4 +1,4 @@
-package keystone.core.filters.providers;
+package keystone.core.modules.filter.providers;
 
 import keystone.api.wrappers.Block;
 

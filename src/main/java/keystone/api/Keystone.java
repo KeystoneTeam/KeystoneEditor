@@ -1,22 +1,17 @@
 package keystone.api;
 
-import keystone.api.filters.FilterBox;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.tools.interfaces.IKeystoneTool;
 import keystone.api.tools.interfaces.ISelectionBoxTool;
-import keystone.api.wrappers.Block;
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
-import keystone.core.filters.FilterCompiler;
+import keystone.core.modules.filter.FilterCompiler;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.blocks.BlocksModule;
+import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.modules.world_cache.WorldCacheModule;
-import keystone.core.renderer.client.Player;
-import keystone.core.renderer.common.models.DimensionId;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -26,7 +21,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.GameType;
-import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -34,6 +28,10 @@ import net.minecraftforge.fml.LogicalSide;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -42,13 +40,13 @@ import java.util.function.Consumer;
  * retrieve global state, and toggle whether Keystone is active. Also contains
  * {@link org.apache.logging.log4j.Logger} and {@link java.util.Random} instance
  */
-public class Keystone
+public final class Keystone
 {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final Random RANDOM = new Random();
 
     private static HistoryModule historyModule;
-    private static BlocksModule blocksModule;
+    private static FilterModule filterModule;
     private static Thread serverThread;
 
     //region Active Toggle
@@ -178,8 +176,6 @@ public class Keystone
     }
     //endregion
     //region Tools
-    private static ITextComponent abortFilter;
-
     /**
      * Run an {@link keystone.api.tools.interfaces.IKeystoneTool} on the current selection boxes
      * @param tool The tool to run
@@ -188,149 +184,34 @@ public class Keystone
     {
         runOnMainThread(() ->
         {
-            DimensionId dimensionId = Player.getDimensionId();
-            World world = getModule(WorldCacheModule.class).getDimensionWorld(dimensionId);
-            if (world == null)
-            {
-                LOGGER.error("Trying to run keystone tool when there is no loaded world for dimension '" + dimensionId.getDimensionType().getRegistryName() + "'!");
-                return;
-            }
-
-            SelectionBox[] boxes = getModule(SelectionModule.class).buildSelectionBoxes(world);
+            historyModule.tryBeginHistoryEntry();
+            BlockRegion[] regions = getModule(SelectionModule.class).buildRegions(false);
 
             Set<BlockPos> processedBlocks = new HashSet<>();
-            for (SelectionBox box : boxes)
+            for (BlockRegion region : regions)
             {
-                if (tool instanceof ISelectionBoxTool) ((ISelectionBoxTool)tool).process(box);
+                if (tool instanceof ISelectionBoxTool) ((ISelectionBoxTool)tool).process(region);
                 if (tool instanceof IBlockTool)
                 {
                     IBlockTool blockTool = (IBlockTool)tool;
-                    box.forEachBlock(((pos, block) ->
+                    region.forEachBlock(((x, y, z, block) ->
                     {
+                        BlockPos pos = new BlockPos(x, y, z);
                         if (!blockTool.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
                         {
-                            blockTool.process(pos.getMinecraftBlockPos(), box);
-                            processedBlocks.add(pos.getMinecraftBlockPos());
+                            blockTool.process(x, y, z, region);
+                            processedBlocks.add(pos);
                         }
                     }));
                 }
             }
-
-            historyModule.tryBeginHistoryEntry();
-            for (SelectionBox box : boxes) box.forEachBlock((pos, block) -> blocksModule.setBlock(pos.x, pos.y, pos.z, block));
             historyModule.tryEndHistoryEntry();
         });
     }
-
-    /**
-     * Compile and run a {@link keystone.api.filters.KeystoneFilter} on the current selection boxes
-     * @param filterPath The path to the filter file
-     */
-    public static void runFilter(String filterPath)
-    {
-        abortFilter = null;
-
-        KeystoneFilter filter = FilterCompiler.compileFilter(filterPath);
-        if (abortFilter != null)
-        {
-            Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
-            return;
-        }
-        else runFilter(filter);
-    }
-    /**
-     * Run a {@link keystone.api.filters.KeystoneFilter} on the current selection boxes
-     * @param filter The filter to run
-     */
-    public static void runFilter(KeystoneFilter filter) { runFilter(filter, 0); }
-    /**
-     * Run a {@link keystone.api.filters.KeystoneFilter} on the current selection boxes after a delay
-     * @param filter The filter to run
-     * @param ticksDelay The delay, in ticks
-     */
-    public static void runFilter(KeystoneFilter filter, int ticksDelay)
-    {
-        runOnMainThread(ticksDelay, () ->
-        {
-            abortFilter = null;
-
-            if (filter.isCompiledSuccessfully())
-            {
-                DimensionId dimensionId = Player.getDimensionId();
-                World world = getModule(WorldCacheModule.class).getDimensionWorld(dimensionId);
-                if (world == null)
-                {
-                    LOGGER.error("Trying to run keystone tool when there is no loaded world for dimension '" + dimensionId.getDimensionType().getRegistryName() + "'!");
-                    return;
-                }
-
-                SelectionBox[] selectionBoxes = getModule(SelectionModule.class).buildSelectionBoxes(world);
-                FilterBox[] boxes = new FilterBox[selectionBoxes.length];
-                for (int i = 0; i < boxes.length; i++) boxes[i] = new FilterBox(world, selectionBoxes[i], filter);
-
-                filter.setFilterBoxes(boxes);
-                filter.prepare();
-                if (abortFilter != null)
-                {
-                    Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
-                    return;
-                }
-
-                Set<BlockPos> processedBlocks = new HashSet<>();
-                for (FilterBox box : boxes)
-                {
-                    filter.processBox(box);
-                    if (abortFilter != null)
-                    {
-                        Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
-                        return;
-                    }
-
-                    box.forEachBlock((x, y, z, block) ->
-                    {
-                        BlockPos pos = new BlockPos(x, y, z);
-                        if (!filter.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
-                        {
-                            filter.processBlock(x, y, z, box);
-                            processedBlocks.add(pos);
-                        }
-
-                        if (abortFilter != null)
-                        {
-                            Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
-                            return;
-                        }
-                    });
-                }
-
-                if (abortFilter != null)
-                {
-                    Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
-                    return;
-                }
-
-                filter.finished();
-                if (abortFilter != null)
-                {
-                    Minecraft.getInstance().player.sendMessage(abortFilter, Util.DUMMY_UUID);
-                    return;
-                }
-
-                historyModule.tryBeginHistoryEntry();
-                for (FilterBox box : boxes) box.forEachBlock((x, y, z, block) -> blocksModule.setBlock(x, y, z, block));
-                historyModule.tryEndHistoryEntry();
-            }
-        });
-    }
-
-    /**
-     * Abort filter execution
-     * @param reason The reason for aborting the filter
-     */
-    public static void abortFilter(String reason)
-    {
-        abortFilter = new StringTextComponent(reason).mergeStyle(TextFormatting.RED);
-    }
+    //endregion
+    //region API
+    public static void abortFilter(String... reason) { filterModule.abortFilter(reason); }
+    public static void filterException(KeystoneFilter filter, Exception e) { filterModule.filterException(filter, e); }
     //endregion
     //region Event Handling
     /**
@@ -351,7 +232,7 @@ public class Keystone
     public static final void postInit()
     {
         historyModule = getModule(HistoryModule.class);
-        blocksModule = getModule(BlocksModule.class);
+        filterModule = getModule(FilterModule.class);
         for (IKeystoneModule module : modules.values()) module.postInit();
     }
     /**

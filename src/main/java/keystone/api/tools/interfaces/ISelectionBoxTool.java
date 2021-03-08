@@ -1,16 +1,16 @@
 package keystone.api.tools.interfaces;
 
-import keystone.api.SelectionBox;
+import keystone.api.BlockRegion;
 
 /**
- * A tool which performs a function on every {@link keystone.api.SelectionBox} in the current
- * {@link keystone.api.SelectionBox SelectionBoxes}
+ * A tool which performs a function on every {@link BlockRegion} in the current
+ * selection
  */
 public interface ISelectionBoxTool extends IKeystoneTool
 {
     /**
-     * Ran for every {@link keystone.api.SelectionBox} in the current {@link keystone.api.SelectionBox SelectionBoxes}
-     * @param box The {@link keystone.api.SelectionBox} that is being processed
+     * Ran for every {@link BlockRegion} in the current selection
+     * @param box The {@link BlockRegion} that is being processed
      */
-    void process(SelectionBox box);
+    void process(BlockRegion box);
 }

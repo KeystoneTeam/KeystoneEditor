@@ -2,6 +2,7 @@ package keystone.api.filters;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import keystone.api.BlockRegion;
 import keystone.api.Keystone;
 import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockMask;
@@ -21,67 +22,88 @@ import net.minecraft.util.text.StringTextComponent;
 
 /**
  * A filter compilable by Keystone. All filters must contain a class which extends {@link keystone.api.filters.KeystoneFilter}.
- * Contains information relating to which {@link keystone.api.filters.FilterBox FilterBoxes} the filter is modifying, as well
+ * Contains information relating to which {@link BlockRegion FilterBoxes} the filter is modifying, as well
  * as several API functions
  */
 public class KeystoneFilter extends EditableObject
 {
-    private static final Block air = new Block(Blocks.AIR.getDefaultState());
-
     private String name;
     private boolean compiledSuccessfully;
-    private FilterBox[] boxes;
+    private BlockRegion[] regions;
+    private int iteration;
 
-    //region Creation
+    //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Set the name of the filter
      * @param name The name of the filter
      * @return The modified filter instance
      */
     public final KeystoneFilter setName(String name) { this.name = name; return this; }
-
     /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Mark the filter as successfully compiled
      * @return The modified filter instance
      */
     public final KeystoneFilter compiledSuccessfully() { this.compiledSuccessfully = true; return this; }
 
     /**
-     * Set the {@link keystone.api.filters.FilterBox FilterBoxes} this filter is being run on
-     * @param boxes The filter boxes that the filter is modifying
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Set the {@link BlockRegion FilterBoxes} this filter is being run on
+     * @param regions The regions that the filter is modifying
      * @return The modified filter instance
      */
-    public final KeystoneFilter setFilterBoxes(FilterBox[] boxes) { this.boxes = boxes; return this; }
+    public final KeystoneFilter setBlockRegions(BlockRegion[] regions)
+    {
+        this.regions = regions;
+        return this;
+    }
+
+    public final void setIteration(int iteration)
+    {
+        this.iteration = iteration;
+    }
     //endregion
     //region Filter Steps
     /**
-     * @return Whether to ignore blocks that have already been processed in another {@link keystone.api.filters.FilterBox}
+     * @return Whether to ignore blocks that have already been processed in another {@link BlockRegion}
      */
     public boolean ignoreRepeatBlocks() { return true; }
 
     /**
-     * Ran before {@link keystone.api.filters.KeystoneFilter#processBox(FilterBox)}. Use this to do any initialization that cannot
+     * @return Whether to allow placing blocks outside the current {@link BlockRegion} the filter is
+     * modifying. You should only enable this if the filter is meant for population, such as foresting
+     */
+    public boolean allowBlocksOutsideRegion() { return false; }
+
+    /**
+     * @return The number of times to run this filter on the selection
+     */
+    public int iterations() { return 1; }
+
+    /**
+     * Ran before {@link keystone.api.filters.KeystoneFilter#processRegion(BlockRegion)}. Use this to do any initialization that cannot
      * be done in the constructor
      */
     public void prepare() {}
 
     /**
-     * Ran for every {@link keystone.api.filters.FilterBox} the filter is modifying. Use this for any modifications that
+     * Ran for every {@link BlockRegion} the filter is modifying. Use this for any modifications that
      * cannot be done on a per-block basis
-     * @param box The {@link keystone.api.filters.FilterBox} that is being modified
+     * @param region The {@link BlockRegion} that is being modified
      */
-    public void processBox(FilterBox box) {}
+    public void processRegion(BlockRegion region) {}
 
     /**
-     * Ran for every block the filter is modifying after {@link keystone.api.filters.KeystoneFilter#processBox(FilterBox)}. Use this
+     * Ran for every block the filter is modifying after {@link keystone.api.filters.KeystoneFilter#processRegion(BlockRegion)}. Use this
      * for modifications that can be done on a per-block basis. Be sure that this code is self-contained, as this will be ran on
      * multiple threads for improved performance, and as such is subject to race conditions
      * @param x The x coordinate
      * @param y The y coordinate
      * @param z The z coordinate
-     * @param box The {@link keystone.api.filters.FilterBox} that the block is in
+     * @param region The {@link BlockRegion} that the block is in
      */
-    public void processBlock(int x, int y, int z, FilterBox box)  {}
+    public void processBlock(int x, int y, int z, BlockRegion region)  {}
 
     /**
      * Ran after the filter has finished execution. Use this for any modifications that need to be done at the very end
@@ -97,6 +119,11 @@ public class KeystoneFilter extends EditableObject
      * @return Whether the filter was compiled successfully
      */
     public final boolean isCompiledSuccessfully() { return compiledSuccessfully; }
+
+    /**
+     * @return The current iteration this filter is processing
+     */
+    public final int iteration() { return iteration; }
 
     /**
      * Send a message to the player in in-game chat
@@ -115,10 +142,16 @@ public class KeystoneFilter extends EditableObject
     {
         Keystone.abortFilter(reason);
     }
+
     /**
-     * @return The number of {@link keystone.api.filters.FilterBox FilterBoxes} that the filter is modifiying
+     * Throw an exception and abort further execution
+     * @param exception The exception to be thrown
      */
-    protected final int boxCount() { return Keystone.getModule(SelectionModule.class).getSelectionBoxCount(); }
+    protected final void throwException(Exception exception) { Keystone.filterException(this, exception); }
+    /**
+     * @return The number of {@link BlockRegion FilterBoxes} that the filter is modifying
+     */
+    protected final int regionCount() { return Keystone.getModule(SelectionModule.class).getSelectionBoxCount(); }
 
     /**
      * Create a {@link keystone.api.wrappers.BlockPalette} from multiple block IDs. Any ID that is a valid ID

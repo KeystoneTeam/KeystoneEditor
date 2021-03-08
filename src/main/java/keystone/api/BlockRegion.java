@@ -1,14 +1,15 @@
-package keystone.api.filters;
+package keystone.api;
 
-import keystone.api.SelectionBox;
+import keystone.api.enums.BlockRetrievalMode;
+import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockPalette;
 import keystone.api.wrappers.BlockPos;
 import keystone.api.wrappers.Vector3i;
-import net.minecraft.block.Blocks;
-import net.minecraft.world.World;
+import keystone.core.modules.blocks.BlocksModule;
+import keystone.core.renderer.common.models.Coords;
 
-public class FilterBox
+public class BlockRegion
 {
     //region Function Types
     public interface BlockConsumer
@@ -17,74 +18,33 @@ public class FilterBox
     }
     //endregion
 
-    private static final Block air = new Block(Blocks.AIR.getDefaultState());
+    private final BlocksModule blocks;
 
-    private final KeystoneFilter filter;
-    private final World world;
+    public boolean allowBlocksOutside = false;
 
     public final BlockPos min;
     public final BlockPos max;
     public final Vector3i size;
 
-    private Block[] oldBlocks;
-    private Block[] newBlocks;
-
-    /**
-     * Filter Box constructor. INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @param world The world this filter box references
-     * @param box The selection box that this filter box is based off of
-     * @param filter The filter that will process this filter box
-     */
-    public FilterBox(World world, SelectionBox box, KeystoneFilter filter)
+    public BlockRegion(Coords min, Coords max)
     {
-        this.filter = filter;
-        this.world = world;
-        this.min = new BlockPos(box.getMin());
-        this.max = new BlockPos(box.getMax());
-        this.size = new Vector3i(box.getSize());
-
-        this.oldBlocks = new Block[this.size.x * this.size.y * this.size.z];
-        this.newBlocks = new Block[this.size.x * this.size.y * this.size.z];
-
-        int i = 0;
-        for (int x = min.x; x <= max.x; x++)
-        {
-            for (int y = min.y; y <= max.y; y++)
-            {
-                for (int z = min.z; z <= max.z; z++)
-                {
-                    BlockPos pos = new BlockPos(x, y, z);
-                    Block block = new Block(world.getBlockState(pos.getMinecraftBlockPos()), world.getTileEntity(pos.getMinecraftBlockPos()));
-
-                    oldBlocks[i] = block;
-                    newBlocks[i] = block;
-                    i++;
-                }
-            }
-        }
+        this.blocks = Keystone.getModule(BlocksModule.class);
+        this.min = new BlockPos(min.getX(), min.getY(), min.getZ());
+        this.max = new BlockPos(max.getX(), max.getY(), max.getZ());
+        this.size = new Vector3i(max.getX() - min.getX() + 1, max.getY() - min.getY() + 1, max.getZ() - min.getZ() + 1);
     }
-
     /**
-     * Convert a block position to an array index
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @param z The z coordinate
-     * @return The index of the position in the blocks array, or -1 if the position is not in the filter box
+     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @param min The minimum corner of the region
+     * @param max The maximum corner of the region
+     * @param blocks The block module to use for getting and setting blocks
      */
-    private int getBlockIndex(int x, int y, int z)
+    public BlockRegion(net.minecraft.util.math.BlockPos min, net.minecraft.util.math.BlockPos max, BlocksModule blocks)
     {
-        int normalizedX = x - min.x;
-        int normalizedY = y - min.y;
-        int normalizedZ = z - min.z;
-
-        if (normalizedX < 0 || normalizedX >= size.x ||
-                normalizedY < 0 || normalizedY >= size.y ||
-                normalizedZ < 0 || normalizedZ >= size.z)
-        {
-            return -1;
-        }
-
-        return normalizedZ + normalizedY * size.z + normalizedX * size.z * size.y;
+        this.blocks = blocks;
+        this.min = new BlockPos(min);
+        this.max = new BlockPos(max);
+        this.size = new Vector3i(max.subtract(min).add(1, 1, 1));
     }
 
     /**
@@ -101,6 +61,17 @@ public class FilterBox
      * @return The size of the filter box
      */
     public Vector3i getSize() { return this.size; }
+
+    /**
+     * @param x The x-coordinate
+     * @param y The y-coordinate
+     * @param z The z-coordinate
+     * @return Whether the position is in the box
+     */
+    public boolean isPositionInBox(int x, int y, int z)
+    {
+        return x >= min.x && x <= max.x && y >= min.y && y <= max.y && z >= min.z && z <= max.z;
+    }
 
     /**
      * Retrieve the top-most block of a column in the filter box that is not air
@@ -127,25 +98,19 @@ public class FilterBox
      * @param z The z coordinate
      * @return The block at the given coordinates
      */
-    public Block getBlock(int x, int y, int z) { return getBlock(x, y, z, true); }
+    public Block getBlock(int x, int y, int z) { return blocks.getBlock(x, y, z, BlockRetrievalMode.LAST_SWAPPED); }
 
     /**
      * Get the block at a position in the filter box
      * @param x The x coordinate
      * @param y The y coordinate
      * @param z The z coordinate
-     * @param getOriginalState If true, it will return the original block before the filter changed it
+     * @param retrievalMode The {@link BlockRetrievalMode} to use when getting the block
      * @return The block at the given coordinates
      */
-    public Block getBlock(int x, int y, int z, boolean getOriginalState)
+    public Block getBlock(int x, int y, int z, BlockRetrievalMode retrievalMode)
     {
-        int index = getBlockIndex(x, y, z);
-        if (index < 0)
-        {
-            net.minecraft.util.math.BlockPos pos = new net.minecraft.util.math.BlockPos(x, y, z);
-            return new Block(world.getBlockState(pos), world.getTileEntity(pos));
-        }
-        else return getOriginalState ? oldBlocks[index] : newBlocks[index];
+        return blocks.getBlock(x, y, z, retrievalMode);
     }
 
     /**
@@ -158,7 +123,7 @@ public class FilterBox
      */
     public boolean setBlock(int x, int y, int z, String block)
     {
-        return setBlock(x, y, z, filter.block(block));
+        return setBlock(x, y, z, KeystoneFilter.block(block));
     }
 
     /**
@@ -183,18 +148,28 @@ public class FilterBox
      */
     public boolean setBlock(int x, int y, int z, Block block)
     {
-        int index = getBlockIndex(x, y, z);
-        if (index < 0) return false;
-
-        newBlocks[index] = block;
-        return true;
+        if (allowBlocksOutside || isPositionInBox(x, y, z))
+        {
+            blocks.setBlock(x, y, z, block);
+            return true;
+        }
+        else return false;
     }
 
     /**
-     * Run a {@link keystone.api.filters.FilterBox.BlockConsumer} on every block in the filter box
-     * @param consumer The {@link keystone.api.filters.FilterBox.BlockConsumer} to run
+     * Run a {@link BlockRegion.BlockConsumer} on every block in the filter box
+     * @param consumer The {@link BlockRegion.BlockConsumer} to run
      */
     public void forEachBlock(BlockConsumer consumer)
+    {
+        forEachBlock(consumer, BlockRetrievalMode.LAST_SWAPPED);
+    }
+    /**
+     * Run a {@link BlockRegion.BlockConsumer} on every block in the filter box
+     * @param consumer The {@link BlockRegion.BlockConsumer} to run
+     * @param retrievalMode The {@link BlockRetrievalMode} to use when getting block states
+     */
+    public void forEachBlock(BlockConsumer consumer, BlockRetrievalMode retrievalMode)
     {
         for (int x = min.x; x <= max.x; x++)
         {
@@ -202,7 +177,7 @@ public class FilterBox
             {
                 for (int z = min.z; z <= max.z; z++)
                 {
-                    consumer.accept(x, y, z, getBlock(x, y, z, false));
+                    consumer.accept(x, y, z, getBlock(x, y, z, retrievalMode));
                 }
             }
         }

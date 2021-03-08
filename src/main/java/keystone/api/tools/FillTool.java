@@ -1,17 +1,14 @@
 package keystone.api.tools;
 
-import keystone.api.SelectionBox;
+import keystone.api.BlockRegion;
 import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.wrappers.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 
 /**
- * A {@link keystone.api.tools.interfaces.IBlockTool} which sets every block to a given block state
+ * An {@link keystone.api.tools.interfaces.IBlockTool} which sets every block to a given block state
  */
 public class FillTool implements IBlockTool
 {
@@ -35,8 +32,8 @@ public class FillTool implements IBlockTool
     }
 
     @Override
-    public void process(BlockPos pos, SelectionBox box)
+    public void process(int x, int y, int z, BlockRegion region)
     {
-        if (block != null) box.setBlock(pos, block);
+        if (block != null) region.setBlock(x, y, z, block);
     }
 }

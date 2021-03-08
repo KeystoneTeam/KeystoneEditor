@@ -1,32 +1,30 @@
 package keystone.core.modules.selection;
 
+import keystone.api.BlockRegion;
 import keystone.api.Keystone;
-import keystone.api.SelectionBox;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.events.KeystoneInputEvent;
 import keystone.core.events.KeystoneSelectionChangedEvent;
+import keystone.core.gui.screens.hotbar.KeystoneHotbar;
+import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
+import keystone.core.modules.IKeystoneModule;
+import keystone.core.modules.clipboard.ClipboardModule;
+import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.history.entries.SelectionHistoryEntry;
+import keystone.core.modules.mouse.MouseModule;
+import keystone.core.modules.selection.boxes.SelectionBoundingBox;
+import keystone.core.modules.selection.providers.HighlightBoxProvider;
+import keystone.core.modules.selection.providers.SelectionBoxProvider;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.DimensionId;
-import keystone.core.gui.screens.hotbar.KeystoneHotbar;
-import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
-import keystone.core.modules.IKeystoneModule;
-import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.history.entries.SelectionHistoryEntry;
-import keystone.core.modules.mouse.MouseModule;
-import keystone.core.modules.clipboard.ClipboardModule;
-import keystone.core.modules.selection.boxes.SelectionBoundingBox;
-import keystone.core.modules.selection.providers.HighlightBoxProvider;
-import keystone.core.modules.selection.providers.SelectionBoxProvider;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.world.World;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
@@ -96,11 +94,15 @@ public class SelectionModule implements IKeystoneModule
         return old;
     }
 
-    public SelectionBox[] buildSelectionBoxes(World world)
+    public BlockRegion[] buildRegions(boolean allowBlocksOutside)
     {
-        SelectionBox[] boxes = new SelectionBox[selectionBoxes.size()];
-        for (int i = 0; i < boxes.length; i++) boxes[i] = new SelectionBox(selectionBoxes.get(i).getMinCoords(), selectionBoxes.get(i).getMaxCoords(), world);
-        return boxes;
+        BlockRegion[] regions = new BlockRegion[selectionBoxes.size()];
+        for (int i = 0; i < regions.length; i++)
+        {
+            regions[i] = new BlockRegion(selectionBoxes.get(i).getMinCoords(), selectionBoxes.get(i).getMaxCoords());
+            regions[i].allowBlocksOutside = allowBlocksOutside;
+        }
+        return regions;
     }
 
     //region Getters

@@ -2,9 +2,9 @@ package keystone.api.wrappers;
 
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
-import keystone.core.filters.providers.BlockProvider;
-import keystone.core.filters.providers.IBlockProvider;
-import keystone.core.filters.providers.TagBlockProvider;
+import keystone.core.modules.filter.providers.BlockProvider;
+import keystone.core.modules.filter.providers.IBlockProvider;
+import keystone.core.modules.filter.providers.TagBlockProvider;
 import net.minecraft.block.Blocks;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
@@ -118,15 +118,15 @@ public class BlockPalette
      */
     public BlockPalette with(Block block, int weight) { return with(new BlockProvider(block), weight); }
     /**
-     * Add an {@link keystone.core.filters.providers.IBlockProvider} to the palette with a weight of 1
-     * @param block The {@link keystone.core.filters.providers.IBlockProvider} to add
+     * Add an {@link keystone.core.modules.filter.providers.IBlockProvider} to the palette with a weight of 1
+     * @param block The {@link keystone.core.modules.filter.providers.IBlockProvider} to add
      * @return The modified {@link keystone.api.wrappers.BlockPalette}
      */
     public BlockPalette with(IBlockProvider block) { return with(block, 1); }
     /**
-     * Add am {@link keystone.core.filters.providers.IBlockProvider} to the palette with a given weight. A
+     * Add am {@link keystone.core.modules.filter.providers.IBlockProvider} to the palette with a given weight. A
      * higher weight is more likely to be chosen
-     * @param block The {@link keystone.core.filters.providers.IBlockProvider} to add
+     * @param block The {@link keystone.core.modules.filter.providers.IBlockProvider} to add
      * @param weight The weight of the block provider
      * @return The modified {@link keystone.api.wrappers.BlockPalette}
      */
@@ -211,8 +211,8 @@ public class BlockPalette
      */
     public BlockPalette without(Block block, int weight) { return without(new BlockProvider(block), weight); }
     /**
-     * Remove an {@link keystone.core.filters.providers.IBlockProvider} from the palette
-     * @param block The {@link keystone.core.filters.providers.IBlockProvider} to remove
+     * Remove an {@link keystone.core.modules.filter.providers.IBlockProvider} from the palette
+     * @param block The {@link keystone.core.modules.filter.providers.IBlockProvider} to remove
      * @return The modified {@link keystone.api.wrappers.BlockPalette}
      */
     public BlockPalette without(IBlockProvider block)
@@ -220,9 +220,9 @@ public class BlockPalette
         return without(block, Integer.MAX_VALUE);
     }
     /**
-     * Remove weight from an {@link keystone.core.filters.providers.IBlockProvider} in the palette. If the remaining
+     * Remove weight from an {@link keystone.core.modules.filter.providers.IBlockProvider} in the palette. If the remaining
      * weight is zero or less, the entry will be removed
-     * @param block The {@link keystone.core.filters.providers.IBlockProvider} to effect
+     * @param block The {@link keystone.core.modules.filter.providers.IBlockProvider} to effect
      * @param weight The weight to remove
      * @return The modified {@link keystone.api.wrappers.BlockPalette}
      */
@@ -258,8 +258,8 @@ public class BlockPalette
         return contains(new BlockProvider(block));
     }
     /**
-     * Check if the palette contains an {@link keystone.core.filters.providers.IBlockProvider}
-     * @param provider The {@link keystone.core.filters.providers.IBlockProvider} to check
+     * Check if the palette contains an {@link keystone.core.modules.filter.providers.IBlockProvider}
+     * @param provider The {@link keystone.core.modules.filter.providers.IBlockProvider} to check
      * @return Whether the palette contains the block provider
      */
     public boolean contains(IBlockProvider provider)

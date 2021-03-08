@@ -1,4 +1,4 @@
-package keystone.core.filters;
+package keystone.core.modules.filter;
 
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
@@ -107,9 +107,8 @@ public class FilterCompiler
             String filterCode = Files.lines(Paths.get(filterPath)).collect(Collectors.joining(System.lineSeparator()));
 
             filterCode = filterCode.replaceAll(oldClassName, newClassName);
-            String imports = FilterImports.getImports(filterCode);
-            int linesOffset = imports.split(System.lineSeparator()).length;
-            filterCode = imports + filterCode;
+            FilterImports.Result imports = FilterImports.getImports(filterCode);
+            filterCode = imports.newCode;
 
             try
             {
@@ -161,13 +160,13 @@ public class FilterCompiler
             }
             catch (CompileException | InternalCompilerException e)
             {
-                String error = "Unable to compile filter '" + oldClassName + "': " + e.getMessage();
+                String error = "Unable to compile filter '" + oldClassName + "': " + e.getLocalizedMessage();
                 Matcher matcher = Pattern.compile("Line ([0-9]+)").matcher(error);
                 String fixedError = error;
                 while (matcher.find())
                 {
                     String group = matcher.group();
-                    int line = Integer.parseInt(group.split(" ")[1]) - linesOffset;
+                    int line = Integer.parseInt(group.split(" ")[1]) - imports.lineOffset;
                     fixedError = fixedError.replace(matcher.group(), "Line " + line);
                 }
 

@@ -11,6 +11,13 @@ public class Vector3i
     public final int z;
 
     /**
+     * Create a 3-dimensional integer vector
+     * @param x The x value
+     * @param y The y value
+     * @param z The z value
+     */
+    public Vector3i(int x, int y, int z) { this(new net.minecraft.util.math.vector.Vector3i(x, y, z)); }
+    /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
      * @param vec The Minecraft Vector3i
      */
