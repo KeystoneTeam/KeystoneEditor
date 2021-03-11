@@ -3,6 +3,7 @@ package keystone.core.gui.screens.block_selection;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockPalette;
+import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
@@ -29,20 +30,23 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
     }
     public static void editBlockPalette(BlockPalette palette, Consumer<BlockPalette> callback)
     {
-        Minecraft.getInstance().displayGuiScreen(new BlockPaletteEditScreen(palette.clone(), callback));
+        KeystoneOverlayHandler.addOverlay(new BlockPaletteEditScreen(palette.clone(), callback));
     }
 
     @Override
     protected void init()
     {
         super.init();
-        this.palettePanel = BlockGridWidget.createWithMargins(KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 50, false, new TranslationTextComponent("keystone.mask_panel"), state ->
+        this.palettePanel = BlockGridWidget.createWithMargins(KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 50, true, new TranslationTextComponent("keystone.mask_panel"), state ->
         {
             Block wrapper = new Block(state);
-            this.palette.without(wrapper);
-            if (!this.palette.contains(wrapper)) this.palettePanel.removeBlock(state.getBlock());
+            this.palette.without(wrapper, 1);
+            this.palettePanel.removeBlock(state);
+        }, this::disableWidgets, this::restoreWidgets);
+        this.palette.forEach((blockProvider, weight) ->
+        {
+            for (int i = 0; i < weight; i++) palettePanel.addBlock(blockProvider.getFirst().getMinecraftBlock(), false);
         });
-        this.palette.forEach((blockProvider, weight) -> palettePanel.addBlock(blockProvider.getFirst().getMinecraftBlock().getBlock(), false));
 
         this.palettePanel.rebuildButtons();
         this.children.add(palettePanel);
@@ -91,7 +95,7 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
     public void onBlockSelected(BlockState block)
     {
         Block wrapper = new Block(block);
-        if (!this.palette.contains(wrapper)) this.palettePanel.addBlock(block.getBlock());
+        this.palettePanel.addBlock(block);
         this.palette.with(wrapper);
     }
 }

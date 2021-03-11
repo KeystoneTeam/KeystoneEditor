@@ -46,9 +46,9 @@ public class BlockPalette
     public BlockPalette clone()
     {
         BlockPalette clone = new BlockPalette();
-        for (Map.Entry<IBlockProvider, PaletteEntry> entry : weights.entrySet())
+        for (PaletteEntry entry : palette)
         {
-            PaletteEntry entryClone = new PaletteEntry(entry.getValue().blockProvider.clone(), entry.getValue().itemWeight);
+            PaletteEntry entryClone = new PaletteEntry(entry.blockProvider.clone(), entry.itemWeight);
             clone.palette.add(entryClone);
             clone.weights.put(entryClone.blockProvider, entryClone);
         }

@@ -1,8 +1,8 @@
 package keystone.core.gui.screens.block_selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -18,18 +18,11 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
     protected final Minecraft mc;
     protected final FontRenderer fontRenderer;
     protected final ItemStack itemStack;
-    protected final Block block;
+    protected final BlockState block;
 
-    protected AbstractBlockButton(ItemStack itemStack, Block block, int x, int y, int width, int height)
+    protected AbstractBlockButton(ItemStack itemStack, BlockState block, int x, int y, int width, int height)
     {
-        super(x, y, width, height, itemStack.getDisplayName(), (button) ->
-        {
-            if (button instanceof AbstractBlockButton)
-            {
-                AbstractBlockButton paletteButton = (AbstractBlockButton)button;
-                paletteButton.onClicked();
-            }
-        });
+        super(x, y, width, height, itemStack.getDisplayName(), button -> {});
 
         this.mc = Minecraft.getInstance();
         this.fontRenderer = mc.fontRenderer;
@@ -37,39 +30,47 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
         this.block = block;
     }
 
-    protected abstract void onClicked();
+    protected void getBlockStateTooltip(List<IFormattableTextComponent> tooltip) { tooltip.add(block.getBlock().getTranslatedName()); }
+    protected abstract void onClicked(int button);
 
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        if (isHovered())
+        if (active && visible && isHovered())
         {
             Minecraft mc = Minecraft.getInstance();
             List<IFormattableTextComponent> text = new ArrayList<>();
-            text.add(block.getTranslatedName());
+            getBlockStateTooltip(text);
 
             fill(matrixStack, x, y, x + width, y + height, 0x80FFFFFF);
             GuiUtils.drawHoveringText(itemStack, matrixStack, text, mouseX, mouseY, mc.getMainWindow().getScaledWidth(), mc.getMainWindow().getScaledHeight(), -1, mc.fontRenderer);
         }
-        drawItem(itemStack, x + (width - 18) / 2, y + (height - 18) / 2);
+        KeystoneOverlay.drawItem(this, mc, itemStack, x + (width - 18) / 2 + 1, y + (height - 18) / 2 + 1);
     }
 
-    private void drawItem(ItemStack stack, int x, int y)
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button)
     {
-        setBlitOffset(200);
-        mc.getItemRenderer().zLevel = 200.0F;
-        FontRenderer font = stack.getItem().getFontRenderer(stack);
-        if (font == null) font = this.fontRenderer;
+        if (this.active && this.visible)
+        {
+            if (this.isValidClickButton(button))
+            {
+                boolean clicked = this.clicked(mouseX, mouseY);
+                if (clicked)
+                {
+                    this.playDownSound(Minecraft.getInstance().getSoundHandler());
+                    this.onClick(mouseX, mouseY);
+                    onClicked(button);
+                    return true;
+                }
+            }
 
-        mc.getItemRenderer().renderItemAndEffectIntoGUI(stack, x, y);
-
-        setBlitOffset(0);
-        mc.getItemRenderer().zLevel = 0.0F;
+        }
+        return false;
     }
 
-    protected BlockState getBlockState()
+    public BlockState getBlockState()
     {
-        // TODO: Add state modifier sub-menu
-        return block.getDefaultState();
+        return block;
     }
 }

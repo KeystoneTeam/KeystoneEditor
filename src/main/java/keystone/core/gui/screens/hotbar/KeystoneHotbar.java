@@ -99,9 +99,6 @@ public class KeystoneHotbar extends KeystoneOverlay
             if (button.isHovered()) drawCurrentToolName = false;
         }
 
-        // Draw current tool name if no others are being drawn
-        //if (drawCurrentToolName) renderToolName(stack, selectedSlot.getTitle(), 0xFFFFFF);
-
         stack.pop();
     }
     public void renderToolName(MatrixStack stack, ITextComponent toolName, int color)

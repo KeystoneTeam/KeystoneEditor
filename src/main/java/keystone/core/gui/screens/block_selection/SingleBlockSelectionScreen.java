@@ -1,5 +1,6 @@
 package keystone.core.gui.screens.block_selection;
 
+import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.widgets.BlockGridWidget;
 import net.minecraft.block.BlockState;
@@ -20,7 +21,7 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
     }
     public static void promptBlockStateChoice(Consumer<BlockState> callback)
     {
-        Minecraft.getInstance().displayGuiScreen(new SingleBlockSelectionScreen(callback));
+        KeystoneOverlayHandler.addOverlay(new SingleBlockSelectionScreen(callback));
     }
 
     @Override
@@ -37,7 +38,7 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
     @Override
     public BlockGridWidget createMainPanel()
     {
-        return BlockGridWidget.createWithMargins(75, 75, 25, KeystoneHotbar.getHeight(), true, new TranslationTextComponent("keystone.block_selection"), this::onBlockSelected);
+        return BlockGridWidget.createWithMargins(75, 75, 25, KeystoneHotbar.getHeight(), false, new TranslationTextComponent("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets);
     }
     @Override
     public void onBlockSelected(BlockState block)

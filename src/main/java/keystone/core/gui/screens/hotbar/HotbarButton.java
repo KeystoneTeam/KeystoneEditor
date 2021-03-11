@@ -85,6 +85,6 @@ public class HotbarButton extends ButtonNoHotkey
 
     public void colorSlot(MatrixStack stack, int color)
     {
-        AbstractGui.fill(stack, unscaledX, unscaledY, unscaledX + 16, unscaledY + 16, color);
+        fill(stack, unscaledX, unscaledY, unscaledX + 16, unscaledY + 16, color);
     }
 }

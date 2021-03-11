@@ -15,15 +15,19 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class BlockGridWidget extends Widget
 {
+    private final boolean allowMultiples;
     private final Consumer<BlockState> callback;
     private final IForgeRegistry<Item> itemRegistry;
-    private final boolean allowDuplicates;
+    private final Consumer<Widget[]> disableWidgets;
+    private final Runnable restoreWidgets;
 
     private int blockCount;
 
@@ -32,17 +36,20 @@ public class BlockGridWidget extends Widget
     private int buttonsInPanel;
     private double scrollOffset;
 
-    private List<Block> blocks;
+    private List<BlockState> blocks;
+    private Map<BlockState, Integer> blockCounts;
     private List<BlockGridButton> buttons;
-    private Predicate<Block> filter;
+    private Predicate<BlockState> filter;
 
     //region Creation
-    private BlockGridWidget(int x, int y, int width, int height, boolean allowDuplicates, ITextComponent title, Consumer<BlockState> callback)
+    private BlockGridWidget(int x, int y, int width, int height, boolean allowMultiples, ITextComponent title, Consumer<BlockState> callback, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
     {
         super(x, y, width, height, title);
+        this.allowMultiples = allowMultiples;
         this.callback = callback;
         this.itemRegistry = GameRegistry.findRegistry(Item.class);
-        this.allowDuplicates = allowDuplicates;
+        this.disableWidgets = disableWidgets;
+        this.restoreWidgets = restoreWidgets;
 
         buttonsPerRow = (width - BlockGridButton.SIZE) / BlockGridButton.SIZE;
         buttonsPerColumn = (height - BlockGridButton.SIZE) / BlockGridButton.SIZE;
@@ -50,9 +57,10 @@ public class BlockGridWidget extends Widget
         scrollOffset = 0;
 
         blocks = new ArrayList<>();
+        blockCounts = new HashMap<>();
         buttons = new ArrayList<>();
     }
-    public static BlockGridWidget createWithMargins(int idealLeftMargin, int idealRightMargin, int idealTopMargin, int idealBottomMargin, boolean allowDuplicates, ITextComponent title, Consumer<BlockState> callback)
+    public static BlockGridWidget createWithMargins(int idealLeftMargin, int idealRightMargin, int idealTopMargin, int idealBottomMargin, boolean allowMultiples, ITextComponent title, Consumer<BlockState> callback, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
     {
         MainWindow window = Minecraft.getInstance().getMainWindow();
 
@@ -64,13 +72,13 @@ public class BlockGridWidget extends Widget
         int panelOffsetX = (int)Math.floor((window.getScaledWidth() - panelWidth) * (idealLeftMargin / (float)(idealLeftMargin + idealRightMargin)));
         int panelOffsetY = (int)Math.floor((window.getScaledHeight() - panelHeight) * (idealTopMargin / (float)(idealTopMargin + idealBottomMargin)));
 
-        return new BlockGridWidget(panelOffsetX, panelOffsetY, panelWidth, panelHeight, allowDuplicates, title, callback);
+        return new BlockGridWidget(panelOffsetX, panelOffsetY, panelWidth, panelHeight, allowMultiples, title, callback, disableWidgets, restoreWidgets);
     }
-    public static BlockGridWidget create(int x, int y, int width, int height, boolean allowDuplicates, ITextComponent title, Consumer<BlockState> callback)
+    public static BlockGridWidget create(int x, int y, int width, int height, boolean allowMultiples, ITextComponent title, Consumer<BlockState> callback, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
     {
         width -= width % BlockGridButton.SIZE;
         height -= height % BlockGridButton.SIZE;
-        return new BlockGridWidget(x, y, width, height, allowDuplicates, title, callback);
+        return new BlockGridWidget(x, y, width, height, allowMultiples, title, callback, disableWidgets, restoreWidgets);
     }
     //endregion
 
@@ -132,38 +140,63 @@ public class BlockGridWidget extends Widget
     public void playDownSound(SoundHandler handler) {}
     //endregion
     //region Editing
-    public void addBlock(Block block) { addBlock(block, true); }
-    public void addBlock(Block block, boolean rebuildButtons)
+    public void addBlock(BlockState block) { addBlock(block, true); }
+    public void addBlock(BlockState block, boolean rebuildButtons)
     {
-        if (allowDuplicates || !blocks.contains(block)) blocks.add(block);
+        if (!blockCounts.containsKey(block))
+        {
+            blockCounts.put(block, 1);
+            blocks.add(block);
+        }
+        else if (allowMultiples) blockCounts.put(block, blockCounts.get(block) + 1);
+
         if (rebuildButtons) rebuildButtons();
     }
-    public void removeBlock(Block block) { removeBlock(block, true); }
-    public void removeBlock(Block block, boolean rebuildButtons)
+    public void removeBlock(BlockState block) { removeBlock(block, true); }
+    public void removeBlock(BlockState block, boolean rebuildButtons)
     {
-        if (blocks.contains(block)) blocks.remove(block);
-        if (rebuildButtons) rebuildButtons();
+        Integer count = blockCounts.get(block);
+        if (count != null)
+        {
+            count--;
+            if (count > 0) blockCounts.put(block, count);
+            else
+            {
+                blockCounts.remove(block);
+                blocks.remove(block);
+            }
+
+            if (rebuildButtons) rebuildButtons();
+        }
     }
     public void filter(String searchString)
     {
-        if (searchString == null || searchString.isEmpty()) filter((Predicate<Block>)null);
+        if (searchString == null || searchString.isEmpty()) filter((Predicate<BlockState>)null);
         else
         {
             String filterString = searchString.toLowerCase().trim();
             filter(block ->
             {
-                String blockName = block.getTranslatedName().getString().toLowerCase().trim();
+                String blockName = block.getBlock().getTranslatedName().getString().toLowerCase().trim();
                 return blockName.contains(filterString);
             });
         }
     }
-    public void filter(Predicate<Block> filter)
+    public void filter(Predicate<BlockState> filter)
     {
         this.filter = filter;
         rebuildButtons();
     }
     //endregion
     //region Helpers
+    public void disableWidgets(Widget... widgets)
+    {
+        disableWidgets.accept(widgets);
+    }
+    public void restoreWidgets()
+    {
+        restoreWidgets.run();
+    }
     public void rebuildButtons()
     {
         this.buttons.clear();
@@ -173,14 +206,16 @@ public class BlockGridWidget extends Widget
 
         blockCount = 0;
         int skipCount = (int)scrollOffset * buttonsPerRow;
-        for (Block block : this.blocks)
+        for (BlockState block : this.blocks)
         {
+            Integer count = blockCounts.get(block);
+
             // Check if block isn't from Keystone and matches filter
-            if (block.getRegistryName().getNamespace().equals(KeystoneMod.MODID)) continue;
+            if (block.getBlock().getRegistryName().getNamespace().equals(KeystoneMod.MODID)) continue;
             if (filter != null && !filter.test(block)) continue;
 
             // Create button instance
-            BlockGridButton button = BlockGridButton.create(this, block, x, y);
+            BlockGridButton button = BlockGridButton.create(this, block, count, x, y);
             if (button == null) continue;
             else blockCount++;
 

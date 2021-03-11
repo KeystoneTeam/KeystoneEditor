@@ -6,6 +6,10 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.text.ITextComponent;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -18,7 +22,7 @@ public class Dropdown<T> extends Widget
     }
     //endregion
 
-    private T[] entries;
+    private List<T> entries;
     private ITextComponent[] entryTitles;
     private BiConsumer<T, ITextComponent> onSelectedEntryChanged;
 
@@ -30,29 +34,52 @@ public class Dropdown<T> extends Widget
         super(x, y, width, entries.length * 12 + 1, title);
         this.visible = false;
 
-        this.entries = entries;
-        this.entryTitles = new ITextComponent[entries.length];
-        for (int i = 0; i < entries.length; i++) this.entryTitles[i] = titleConverter.get(entries[i]);
+        this.entries = new ArrayList<>(entries.length);
+        for (T entry : entries) this.entries.add(entry);
+
+        this.entryTitles = new ITextComponent[this.entries.size()];
+        for (int i = 0; i < this.entries.size(); i++) this.entryTitles[i] = titleConverter.get(this.entries.get(i));
         this.onSelectedEntryChanged = onSelectedEntryChanged;
 
-        this.selectedEntry = entries[0];
+        this.selectedEntry = this.entries.get(0);
         this.selectedEntryTitle = entryTitles[0];
+
+        this.entries = Collections.unmodifiableList(this.entries);
+    }
+    public Dropdown(int x, int y, int width, ITextComponent title, Converter<T> titleConverter, BiConsumer<T, ITextComponent> onSelectedEntryChanged, Collection<T> entries)
+    {
+        super(x, y, width, entries.size() * 12 + 1, title);
+        this.visible = false;
+
+        this.entries = new ArrayList<>(entries.size());
+        entries.forEach(entry -> this.entries.add(entry));
+
+        this.entryTitles = new ITextComponent[this.entries.size()];
+        for (int i = 0; i < this.entries.size(); i++) this.entryTitles[i] = titleConverter.get(this.entries.get(i));
+        this.onSelectedEntryChanged = onSelectedEntryChanged;
+
+        this.selectedEntry = this.entries.get(0);
+        this.selectedEntryTitle = entryTitles[0];
+
+        this.entries = Collections.unmodifiableList(this.entries);
     }
 
     @Override
     public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
+        stack.push();
+        stack.translate(0, 0, 200);
+
         Minecraft minecraft = Minecraft.getInstance();
         FontRenderer font = minecraft.fontRenderer;
 
-        fill(stack, this.x, this.y, this.x + width, this.y + 12 * entries.length + 2, 0xFFFFFFFF);
+        fill(stack, this.x, this.y, this.x + width, this.y + 12 * entryTitles.length + 2, 0xFFFFFFFF);
 
         // Draw Elements
         int hoveredElement = -1;
         if (isHovered()) hoveredElement = (mouseY - this.y - 1) / 12;
-        for (int i = 0; i < entries.length; i++)
+        for (int i = 0; i < entryTitles.length; i++)
         {
-            T entry = entries[i];
             ITextComponent title = entryTitles[i];
             if (hoveredElement == i)
             {
@@ -67,34 +94,36 @@ public class Dropdown<T> extends Widget
                 font.drawString(stack, title.getString(), this.x + 2, this.y + i * 12 + 3, color);
             }
         }
+
+        stack.pop();
     }
     @Override
     public void onClick(double mouseX, double mouseY)
     {
-        int hoveredElement = hoveredElement = ((int)mouseY - this.y - 1) / 12;
-        if (hoveredElement >= 0 && hoveredElement < entries.length)
+        int hoveredElement = ((int)mouseY - this.y - 1) / 12;
+        if (hoveredElement >= 0 && hoveredElement < entryTitles.length)
         {
             visible = false;
-            selectedEntry = entries[hoveredElement];
+            selectedEntry = entries.get(hoveredElement);
             selectedEntryTitle = entryTitles[hoveredElement];
             onSelectedEntryChanged.accept(selectedEntry, selectedEntryTitle);
         }
     }
 
-    public int size() { return entries.length; }
-    public T getEntry(int index) { return entries[index]; }
+    public int size() { return entryTitles.length; }
+    public T getEntry(int index) { return entries.get(index); }
     public T getSelectedEntry() { return selectedEntry; }
     public ITextComponent getSelectedEntryTitle() { return selectedEntryTitle; }
 
     public void setSelectedEntry(T entry, boolean raiseEvent) { setSelectedEntry(entry, raiseEvent, T::equals); }
     public void setSelectedEntry(T entry, boolean raiseEvent, BiFunction<T, T, Boolean> equalityFunction)
     {
-        for (int i = 0; i < entries.length; i++)
+        for (int i = 0; i < entryTitles.length; i++)
         {
-            if (equalityFunction.apply(entry, entries[i]))
+            if (equalityFunction.apply(entry, entries.get(i)))
             {
                 visible = false;
-                selectedEntry = entries[i];
+                selectedEntry = entries.get(i);
                 selectedEntryTitle = entryTitles[i];
                 if (raiseEvent) onSelectedEntryChanged.accept(selectedEntry, selectedEntryTitle);
             }

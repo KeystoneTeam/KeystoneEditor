@@ -5,9 +5,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.Widget;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
@@ -78,6 +81,23 @@ public class KeystoneOverlay extends Screen
 
         // Center
         fill(stack, minX + cornerSize, minY + cornerSize, maxX - cornerSize, maxY - cornerSize, 0x80000000);
+    }
+    public static void drawItem(Widget widget, Minecraft mc, ItemStack stack, int x, int y)
+    {
+        drawItem(widget, mc, stack, x, y, null);
+    }
+    public static void drawItem(Widget widget, Minecraft mc, ItemStack stack, int x, int y, String text)
+    {
+        widget.setBlitOffset(200);
+        mc.getItemRenderer().zLevel = 200.0F;
+
+        FontRenderer font = stack.getItem().getFontRenderer(stack);
+        if (font == null) font = mc.fontRenderer;
+        mc.getItemRenderer().renderItemAndEffectIntoGUI(stack, x, y);
+        mc.getItemRenderer().renderItemOverlayIntoGUI(font, stack, x, y, text);
+
+        widget.setBlitOffset(0);
+        mc.getItemRenderer().zLevel = 0.0F;
     }
     //endregion
     //region Widgets

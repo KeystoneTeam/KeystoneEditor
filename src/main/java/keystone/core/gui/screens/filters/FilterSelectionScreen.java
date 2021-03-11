@@ -175,17 +175,11 @@ public class FilterSelectionScreen extends KeystoneOverlay
     {
         if (filterInstance != null && filterInstance.isEditorDirtied()) init(minecraft, width, height);
 
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
-
         fill(stack, 0, panelMinY, panelMaxX, panelMaxY, 0x80000000);
 
         drawString(stack, font, new TranslationTextComponent("keystone.filter_panel.select"), 5, panelMinY + 11, 0x8080FF);
         super.render(stack, mouseX, mouseY, partialTicks);
         this.dropdown.render(stack, mouseX, mouseY, partialTicks);
-
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
     }
     //endregion
     //region Getters

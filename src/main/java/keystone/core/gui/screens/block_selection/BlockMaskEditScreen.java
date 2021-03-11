@@ -3,6 +3,7 @@ package keystone.core.gui.screens.block_selection;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.wrappers.Block;
 import keystone.api.wrappers.BlockMask;
+import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
@@ -30,7 +31,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
     }
     public static void editBlockMask(BlockMask mask, Consumer<BlockMask> callback)
     {
-        Minecraft.getInstance().displayGuiScreen(new BlockMaskEditScreen(mask.clone(), callback));
+        KeystoneOverlayHandler.addOverlay(new BlockMaskEditScreen(mask.clone(), callback));
     }
 
     @Override
@@ -40,9 +41,9 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         this.maskPanel = BlockGridWidget.createWithMargins(KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 80, false, new TranslationTextComponent("keystone.mask_panel"), state ->
         {
             this.mask.without(new Block(state));
-            this.maskPanel.removeBlock(state.getBlock());
-        });
-        this.mask.forEach(block -> maskPanel.addBlock(block.getMinecraftBlock().getBlock(), false));
+            this.maskPanel.removeBlock(state);
+        }, this::disableWidgets, this::restoreWidgets);
+        this.mask.forEach(block -> maskPanel.addBlock(block.getMinecraftBlock(), false));
         this.maskPanel.rebuildButtons();
         this.children.add(maskPanel);
 
@@ -101,6 +102,6 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
     public void onBlockSelected(BlockState block)
     {
         this.mask.with(new Block(block));
-        this.maskPanel.addBlock(block.getBlock());
+        this.maskPanel.addBlock(block);
     }
 }

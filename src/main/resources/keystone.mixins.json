@@ -3,12 +3,11 @@
   "package": "keystone.core.mixins",
   "compatibilityLevel": "JAVA_8",
   "refmap": "keystone.refmap.json",
-  "mixins": [
-    "MixinMinecraft",
-    "MixinSpectatorGui"
-  ],
   "client": [
+    "MixinMinecraft",
+    "MixinSpectatorGui",
     "MixinWorldRenderer",
+    "MixinGameRenderer",
     "MixinMouseHelper",
     "MixinKeyboardListener"
   ],

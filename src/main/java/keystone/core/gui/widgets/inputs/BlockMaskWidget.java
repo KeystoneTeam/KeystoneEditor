@@ -1,7 +1,9 @@
 package keystone.core.gui.widgets.inputs;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.wrappers.BlockMask;
+import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.block_selection.BlockMaskEditScreen;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.utils.BlockUtils;
@@ -95,21 +97,9 @@ public class BlockMaskWidget extends ButtonNoHotkey
         for (ItemStack stack : this.stacks)
         {
             if (stack.isEmpty()) continue;
-            drawItem(stack, x, this.y + 1);
+            KeystoneOverlay.drawItem(this, mc, stack, x, this.y + 1);
             x += 20;
         }
-    }
-    private void drawItem(ItemStack stack, int x, int y)
-    {
-        setBlitOffset(200);
-        this.mc.getItemRenderer().zLevel = 200.0F;
-        FontRenderer font = stack.getItem().getFontRenderer(stack);
-        if (font == null) font = this.font;
-
-        mc.getItemRenderer().renderItemAndEffectIntoGUI(stack, x, y);
-
-        setBlitOffset(0);
-        mc.getItemRenderer().zLevel = 0.0F;
     }
 
     public BlockMask getMask() { return mask; }

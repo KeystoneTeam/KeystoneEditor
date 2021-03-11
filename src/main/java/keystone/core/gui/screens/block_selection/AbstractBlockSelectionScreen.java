@@ -1,6 +1,7 @@
 package keystone.core.gui.screens.block_selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.widgets.BlockGridWidget;
@@ -30,14 +31,14 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
 
     public BlockGridWidget createMainPanel()
     {
-        return BlockGridWidget.createWithMargins(KeystoneHotbar.getX(), KeystoneHotbar.getX(), KeystoneHotbar.getHeight(), KeystoneHotbar.getHeight(), true, new TranslationTextComponent("keystone.block_selection"), this::onBlockSelected);
+        return BlockGridWidget.createWithMargins(KeystoneHotbar.getX(), KeystoneHotbar.getX(), KeystoneHotbar.getHeight(), KeystoneHotbar.getHeight(), false, new TranslationTextComponent("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets);
     }
     public abstract void onBlockSelected(BlockState block);
 
     @Override
     public void closeScreen()
     {
-        Minecraft.getInstance().displayGuiScreen(null);
+        KeystoneOverlayHandler.removeOverlay(this);
     }
     @Override
     public boolean shouldCloseOnEsc()
@@ -50,9 +51,9 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
         this.minecraft.keyboardListener.enableRepeatEvents(true);
 
         this.panel = createMainPanel();
-        blockRegistry.forEach(block -> this.panel.addBlock(block, false));
+        blockRegistry.forEach(block -> this.panel.addBlock(block.getDefaultState(), false));
         this.panel.rebuildButtons();
-        this.children.add(this.panel);
+        addButton(this.panel);
 
         this.searchBar = new TextFieldWidget(font, panel.x + 1, panel.y - 13, panel.getWidth() - 1, 12, new TranslationTextComponent("keystone.search"));
         this.searchBar.setMaxStringLength(256);
@@ -79,12 +80,10 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
-        super.render(stack, mouseX, mouseY, partialTicks);
-        panel.render(stack, mouseX, mouseY, partialTicks);
-
         if (panel.getBlockCount() > panel.getButtonsInPanel()) searchBar.setWidth(panel.getWidth() + 3);
         else searchBar.setWidth(panel.getWidth() - 1);
         fill(stack, panel.x, panel.y - 14, panel.x + searchBar.getWidth() + 1, panel.y - 2, 0x80000000);
-        searchBar.render(stack, mouseX, mouseY, partialTicks);
+
+        super.render(stack, mouseX, mouseY, partialTicks);
     }
 }

@@ -78,6 +78,10 @@ public class Block
     public void setTileEntity(CompoundNBT tileEntity) { this.tileEntity = tileEntity; }
     //endregion
 
+    public Block clone()
+    {
+        return new Block(getMinecraftBlock(), getTileEntityData() != null ? getTileEntityData().copy() : null);
+    }
     /**
      * Apply a given property set to this block
      * @param properties A property set. [e.g. "type=top", "type=top,waterlogged=true"]

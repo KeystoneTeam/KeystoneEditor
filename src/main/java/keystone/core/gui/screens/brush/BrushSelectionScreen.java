@@ -159,14 +159,8 @@ public class BrushSelectionScreen extends KeystoneOverlay
     {
         if (brushModule.getBrushOperation().isEditorDirtied()) init(minecraft, width, height);
 
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
-
         fill(matrixStack, 0, panelMinY, panelMaxX, panelMaxY, 0x80000000);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
-
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
     }
     //endregion
 }
