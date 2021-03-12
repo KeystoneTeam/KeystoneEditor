@@ -8,12 +8,20 @@ import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.block_selection.SingleBlockSelectionScreen;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.selection.SelectionModule;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.Widget;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.fml.client.gui.GuiUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class KeystoneHotbar extends KeystoneOverlay
 {
@@ -101,9 +109,12 @@ public class KeystoneHotbar extends KeystoneOverlay
 
         stack.pop();
     }
-    public void renderToolName(MatrixStack stack, ITextComponent toolName, int color)
+    public void renderToolName(MatrixStack stack, IFormattableTextComponent toolName, int mouseX, int mouseY)
     {
-        drawCenteredString(stack, font, toolName, offsetX + 71, offsetY - 10, color);
+        Minecraft mc = Minecraft.getInstance();
+        List<IFormattableTextComponent> text = new ArrayList<>();
+        text.add(toolName);
+        GuiUtils.drawHoveringText(ItemStack.EMPTY, stack, text, mouseX, mouseY, mc.getMainWindow().getScaledWidth(), mc.getMainWindow().getScaledHeight(), -1, mc.fontRenderer);
     }
 
     public static KeystoneHotbarSlot getSelectedSlot()

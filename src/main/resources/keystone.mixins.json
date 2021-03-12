@@ -9,7 +9,8 @@
     "MixinWorldRenderer",
     "MixinGameRenderer",
     "MixinMouseHelper",
-    "MixinKeyboardListener"
+    "MixinKeyboardListener",
+    "MixinAbstractGui"
   ],
   "minVersion": "0.8"
 }

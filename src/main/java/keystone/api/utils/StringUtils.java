@@ -14,6 +14,17 @@ public class StringUtils
     {
         return titleCase(text.toLowerCase().replace('_', ' '));
     }
+
+    /**
+     * Convert a snake case string to title case. [e.g. test_value -&gt; "Test Value"]
+     * Functionally identical to enumCaseToTitleCase
+     * @param text The snake case string to convert
+     * @return The title cased string
+     */
+    public static final String snakeCaseToTitleCase(String text)
+    {
+        return enumCaseToTitleCase(text);
+    }
     /**
      * Convert a string to title case. [e.g. "test string" -&gt; "Test String"]
      * @param text The text to convert

@@ -31,7 +31,7 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
 
     public BlockGridWidget createMainPanel()
     {
-        return BlockGridWidget.createWithMargins(KeystoneHotbar.getX(), KeystoneHotbar.getX(), KeystoneHotbar.getHeight(), KeystoneHotbar.getHeight(), false, new TranslationTextComponent("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets);
+        return BlockGridWidget.createWithMargins(KeystoneHotbar.getX(), KeystoneHotbar.getX(), KeystoneHotbar.getHeight(), KeystoneHotbar.getHeight(), false, new TranslationTextComponent("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_TOOLTIP);
     }
     public abstract void onBlockSelected(BlockState block);
 

@@ -14,6 +14,7 @@ import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -132,7 +133,7 @@ public class SelectionScreen extends KeystoneOverlay
 
         int y = startY + index * (BUTTON_HEIGHT + PADDING);
         int buttonWidth = 2 * PADDING + font.getStringWidth(label.getString());
-        return new SimpleButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, (button, stack, mouseX, mouseY) -> GuiUtils.drawHoveringText(stack, tooltip, mouseX, mouseY, width, height, (int)(tooltipWidth * width), font));
+        return new SimpleButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, (stack, mouseX, mouseY, partialTicks) -> GuiUtils.drawHoveringText(stack, tooltip, mouseX, mouseY, width, height, (int)(tooltipWidth * width), font));
     }
     //endregion
     //region Button Callbacks

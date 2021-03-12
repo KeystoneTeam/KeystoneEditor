@@ -1,6 +1,7 @@
 package keystone.core.gui.widgets.buttons;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import keystone.core.gui.IKeystoneTooltip;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.text.ITextComponent;
@@ -19,9 +20,9 @@ public class SimpleButton extends ButtonNoHotkey
         super(x, y, width, height, title, pressedAction);
         this.font = Minecraft.getInstance().fontRenderer;
     }
-    public SimpleButton(int x, int y, int width, int height, ITextComponent title, IPressable pressedAction, ITooltip onTooltip)
+    public SimpleButton(int x, int y, int width, int height, ITextComponent title, IPressable pressedAction, IKeystoneTooltip tooltip)
     {
-        super(x, y, width, height, title, pressedAction, onTooltip);
+        super(x, y, width, height, title, pressedAction, tooltip);
         this.font = Minecraft.getInstance().fontRenderer;
     }
 

@@ -3,9 +3,9 @@ package keystone.core.gui.screens;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.KeystoneGlobalState;
+import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -98,6 +98,10 @@ public class KeystoneOverlay extends Screen
 
         widget.setBlitOffset(0);
         mc.getItemRenderer().zLevel = 0.0F;
+    }
+    public static void drawTooltip(IKeystoneTooltip tooltip)
+    {
+        KeystoneOverlayHandler.addTooltip(tooltip);
     }
     //endregion
     //region Widgets

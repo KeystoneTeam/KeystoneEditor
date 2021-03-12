@@ -38,7 +38,7 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
     @Override
     public BlockGridWidget createMainPanel()
     {
-        return BlockGridWidget.createWithMargins(75, 75, 25, KeystoneHotbar.getHeight(), false, new TranslationTextComponent("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets);
+        return BlockGridWidget.createWithMargins(75, 75, 25, KeystoneHotbar.getHeight(), false, new TranslationTextComponent("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_TOOLTIP);
     }
     @Override
     public void onBlockSelected(BlockState block)

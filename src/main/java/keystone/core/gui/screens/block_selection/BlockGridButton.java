@@ -15,16 +15,16 @@ public class BlockGridButton extends AbstractBlockButton
     public static final int SIZE = 18;
     protected final BlockGridWidget parent;
 
-    protected BlockGridButton(BlockGridWidget parent, ItemStack itemStack, BlockState block, int x, int y)
+    protected BlockGridButton(BlockGridWidget parent, ItemStack itemStack, BlockState block, int x, int y, IBlockTooltipBuilder tooltipBuilder)
     {
-        super(itemStack, block, x, y, SIZE, SIZE);
+        super(itemStack, block, x, y, SIZE, SIZE, tooltipBuilder);
         this.parent = parent;
     }
-    public static BlockGridButton create(BlockGridWidget parent, BlockState block, int count, int x, int y)
+    public static BlockGridButton create(BlockGridWidget parent, BlockState block, int count, int x, int y, IBlockTooltipBuilder tooltipBuilder)
     {
         Item item = BlockUtils.getBlockItem(block.getBlock(), parent.getItemRegistry());
         if (item == null) return null;
-        else return new BlockGridButton(parent, new ItemStack(item, count), block, x, y);
+        else return new BlockGridButton(parent, new ItemStack(item, count), block, x, y, tooltipBuilder);
     }
 
     @Override
@@ -53,5 +53,16 @@ public class BlockGridButton extends AbstractBlockButton
                 parent.restoreWidgets();
             });
         }
+    }
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    {
+        if (active && visible && isHovered())
+        {
+            if (delta > 0) this.parent.addBlock(this.block, true);
+            else this.parent.removeBlock(this.block, true);
+            return true;
+        }
+        return false;
     }
 }

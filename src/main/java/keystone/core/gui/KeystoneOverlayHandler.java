@@ -17,14 +17,17 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class KeystoneOverlayHandler
 {
     private static boolean worldFinishedLoading = false;
+    private static Queue<IKeystoneTooltip> tooltips = new ArrayDeque<>();
     private static List<Screen> overlays = new ArrayList<>();
     private static List<Screen> addList = new ArrayList<>();
     private static List<Screen> removeList = new ArrayList<>();
@@ -43,6 +46,10 @@ public class KeystoneOverlayHandler
     {
         overlay.onClose();
         removeList.add(overlay);
+    }
+    public static void addTooltip(IKeystoneTooltip tooltip)
+    {
+        tooltips.add(tooltip);
     }
     public static boolean isRendering()
     {
@@ -146,10 +153,10 @@ public class KeystoneOverlayHandler
         if (Keystone.isActive())
         {
             rendering = true;
-
             addList.forEach(add -> overlays.add(add));
             addList.clear();
 
+            // Render overlays
             for (int i = 0; i < overlays.size(); i++)
             {
                 matrixStack.push();
@@ -162,9 +169,16 @@ public class KeystoneOverlayHandler
                 matrixStack.pop();
             }
 
+            // Render tooltips
+            IKeystoneTooltip tooltip = tooltips.poll();
+            while (tooltip != null)
+            {
+                tooltip.render(matrixStack, mouseX, mouseY, partialTicks);
+                tooltip = tooltips.poll();
+            }
+
             removeList.forEach(remove -> overlays.remove(remove));
             removeList.clear();
-
             rendering = false;
         }
     }

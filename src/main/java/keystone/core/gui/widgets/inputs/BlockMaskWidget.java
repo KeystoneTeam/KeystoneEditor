@@ -1,7 +1,6 @@
 package keystone.core.gui.widgets.inputs;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.wrappers.BlockMask;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.block_selection.BlockMaskEditScreen;

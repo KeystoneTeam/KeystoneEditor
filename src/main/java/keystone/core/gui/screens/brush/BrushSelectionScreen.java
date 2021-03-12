@@ -1,7 +1,6 @@
 package keystone.core.gui.screens.brush;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
 import keystone.core.KeystoneConfig;
 import keystone.core.events.KeystoneHotbarEvent;

@@ -1,18 +1,17 @@
 package keystone.core.gui.screens.filters;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.events.KeystoneHotbarEvent;
-import keystone.core.modules.filter.FilterCompiler;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.Dropdown;
-import keystone.core.gui.widgets.inputs.fields.*;
+import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
+import keystone.core.modules.filter.FilterCompiler;
 import keystone.core.modules.filter.FilterModule;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.Widget;

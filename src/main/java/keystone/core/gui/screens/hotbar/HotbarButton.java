@@ -29,11 +29,7 @@ public class HotbarButton extends ButtonNoHotkey
     }
     public HotbarButton(KeystoneHotbar parent, KeystoneHotbarSlot slot, int x, int y, Supplier<Boolean> enabledSupplier)
     {
-        super((int)(x * SCALE), (int)(y * SCALE), (int)(16 * SCALE), (int)(16 * SCALE), slot.getTitle(), (button) -> MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(slot)), (button, stack, mouseX, mouseY) ->
-        {
-            HotbarButton casted = (HotbarButton)button;
-            casted.parent.renderToolName(stack, slot.getTitle(), 0xFFFF00);
-        });
+        super((int)(x * SCALE), (int)(y * SCALE), (int)(16 * SCALE), (int)(16 * SCALE), slot.getTitle(), (button) -> MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(slot)), (stack, mouseX, mouseY, partialTicks) -> parent.renderToolName(stack, slot.getTitle(), mouseX, mouseY));
 
         this.unscaledX = x;
         this.unscaledY = y;

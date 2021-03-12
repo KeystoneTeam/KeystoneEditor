@@ -42,7 +42,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         {
             this.mask.without(new Block(state));
             this.maskPanel.removeBlock(state);
-        }, this::disableWidgets, this::restoreWidgets);
+        }, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
         this.mask.forEach(block -> maskPanel.addBlock(block.getMinecraftBlock(), false));
         this.maskPanel.rebuildButtons();
         this.children.add(maskPanel);
