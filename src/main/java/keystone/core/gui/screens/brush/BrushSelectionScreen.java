@@ -12,6 +12,8 @@ import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
 import keystone.core.modules.brush.BrushModule;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -28,11 +30,16 @@ public class BrushSelectionScreen extends KeystoneOverlay
     private int panelMaxX;
     private int panelMaxY;
 
+    private ITextComponent immediateMode;
+    private ITextComponent deferredMode;
+
     private FieldWidgetList brushVariablesList;
 
     protected BrushSelectionScreen()
     {
         super(new TranslationTextComponent("keystone.screen.brushPanel"));
+        immediateMode = new StringTextComponent("I");
+        deferredMode = new StringTextComponent("D");
     }
     public static void open()
     {
@@ -74,10 +81,15 @@ public class BrushSelectionScreen extends KeystoneOverlay
 
         int y = panelMinY + PADDING;
 
-        // Change Operation Button
-        addButton(new ButtonNoHotkey(PADDING, y, panelMaxX - 2 * PADDING, 20, brushModule.getBrushOperation().getName(), (button) ->
+        // Change Operation Button and Toggle Immediate Mode Button
+        addButton(new ButtonNoHotkey(PADDING, y, panelMaxX - 2 * PADDING - 20, 20, brushModule.getBrushOperation().getName(), (button) ->
         {
             brushModule.setBrushOperation(brushModule.getBrushOperation().getNextOperation());
+            init(minecraft, width, height);
+        }));
+        addButton(new ButtonNoHotkey(panelMaxX - 20 - PADDING, y, 20, 20, brushModule.isImmediateMode() ? immediateMode : deferredMode, (button) ->
+        {
+            brushModule.setImmediateMode(!brushModule.isImmediateMode());
             init(minecraft, width, height);
         }));
         y += 20 + PADDING;

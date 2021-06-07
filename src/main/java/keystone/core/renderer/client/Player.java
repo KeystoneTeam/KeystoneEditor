@@ -6,7 +6,6 @@ import keystone.core.renderer.client.interop.ClientInterop;
 import keystone.core.renderer.client.models.Point;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.DimensionId;
-import keystone.core.KeystoneConfig;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
@@ -14,6 +13,7 @@ import net.minecraft.util.math.vector.Vector3d;
 
 public class Player
 {
+    private static ClientPlayerEntity player;
     private static double x;
     private static double y;
     private static double z;
@@ -26,6 +26,8 @@ public class Player
 
     public static void setPosition(double partialTicks, ClientPlayerEntity player)
     {
+        Player.player = player;
+
         x = player.lastTickPosX + (player.getPosX() - player.lastTickPosX) * partialTicks;
         y = player.lastTickPosY + (player.getPosY() - player.lastTickPosY) * partialTicks;
         z = player.lastTickPosZ + (player.getPosZ() - player.lastTickPosZ) * partialTicks;
@@ -35,7 +37,7 @@ public class Player
         lookDirection = KeystoneGlobalState.CloseSelection ? player.getLook((float)partialTicks) : RayTracing.screenPointToRayDirection((float)partialTicks);
 
         dimensionId = DimensionId.from(player.getEntityWorld().getDimensionKey());
-        rayTrace = KeystoneGlobalState.CloseSelection ? null : RayTracing.rayTraceBlock(eyePosition, lookDirection, player, ClientInterop.getRenderDistanceChunks() * 16, true);
+        updateHighlightedBlock();
     }
 
     public static double getX() {
@@ -71,5 +73,9 @@ public class Player
             BlockRayTraceResult blockRay = (BlockRayTraceResult)rayTrace;
             return new Coords(blockRay.getPos());
         }
+    }
+    public static void updateHighlightedBlock()
+    {
+        rayTrace = KeystoneGlobalState.CloseSelection ? null : RayTracing.rayTraceBlock(eyePosition, lookDirection, player, ClientInterop.getRenderDistanceChunks() * 16, true);
     }
 }

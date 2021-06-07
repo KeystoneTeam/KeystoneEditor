@@ -8,8 +8,10 @@ import keystone.core.renderer.client.renderers.OffsetBox;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.modules.selection.SelectedFace;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
+import net.minecraft.util.Direction;
 
 import java.awt.*;
+import java.util.function.Function;
 
 public class SelectionBoxRenderer extends AbstractRenderer<SelectionBoundingBox>
 {
@@ -23,17 +25,26 @@ public class SelectionBoxRenderer extends AbstractRenderer<SelectionBoundingBox>
         SelectedFace selectedFace = Keystone.getModule(MouseModule.class).getSelectedFace();
 
         boolean selectedForNudge = box.equals(SelectionNudgeScreen.getSelectionToNudge());
-
-        renderCuboid(bb, direction ->
+        Function<Direction, Color> colorProvider = direction ->
         {
             if (selectedForNudge) return box.isFaceCorner1(direction) ? blue : yellow;
             else return Color.white;
-        }, direction ->
+        };
+        Function<Direction, Integer> alphaProvider = direction ->
         {
             if (selectedFace != null && selectedFace.getBox().equals(box) && selectedFace.getFaceDirection() == direction) return 128;
             else return 32;
-        }, true, false);
+        };
 
+        // Render Box Cuboid
+        renderGrid(bb.getMin(), bb.getSize(), 1.0, colorProvider, direction ->
+        {
+            if (selectedFace != null && selectedFace.getBox().equals(box) && selectedFace.getFaceDirection() == direction) return 255;
+            else return 64;
+        }, false, false);
+        renderCuboid(bb, colorProvider, alphaProvider, true, false);
+
+        // Render Corners If Selected
         if (box.getMinCoords() != box.getMaxCoords() && selectedForNudge)
         {
             OffsetBox min = new OffsetBox(box.getCorner1(), box.getCorner1()).nudge();

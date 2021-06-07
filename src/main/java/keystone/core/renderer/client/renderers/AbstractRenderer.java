@@ -2,12 +2,13 @@ package keystone.core.renderer.client.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.renderer.client.models.Point;
-import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.common.models.AbstractBoundingBox;
+import keystone.core.renderer.common.models.Coords;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.item.EnderCrystalEntity;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Vector2f;
 import net.minecraft.util.math.vector.Vector3d;
 
 import java.awt.*;
@@ -258,6 +259,97 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         renderer.render();
     }
 
+    protected void renderGrid(OffsetPoint min, Coords size, double scale, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean ignoreDepth, boolean drawEdges)
+    {
+        RenderQueue.deferRendering(() ->
+        {
+            int sizeX = size.getX();
+            int sizeY = size.getY();
+            int sizeZ = size.getZ();
+            Renderer renderer = Renderer.startLines();
+
+            //region -X Face
+            renderer = renderer.setColor(colorProvider.apply(Direction.WEST)).setAlpha(alphaProvider.apply(Direction.WEST));
+            for (int y = 1; y < sizeY; y++)
+            {
+                renderer.addPoint(min.offset(0, y * scale, 0));
+                renderer.addPoint(min.offset(0, y * scale, sizeZ * scale));
+            }
+            for (int z = 1; z < sizeZ; z++)
+            {
+                renderer.addPoint(min.offset(0, 0, z * scale));
+                renderer.addPoint(min.offset(0, sizeY * scale, z * scale));
+            }
+            //endregion
+            //region +X Face
+            renderer = renderer.setColor(colorProvider.apply(Direction.EAST)).setAlpha(alphaProvider.apply(Direction.EAST));
+            for (int y = 1; y < sizeY; y++)
+            {
+                renderer.addPoint(min.offset(sizeX * scale, y * scale, 0));
+                renderer.addPoint(min.offset(sizeX * scale, y * scale, sizeZ * scale));
+            }
+            for (int z = 1; z < sizeZ; z++)
+            {
+                renderer.addPoint(min.offset(sizeX * scale, 0, z * scale));
+                renderer.addPoint(min.offset(sizeX * scale, sizeY * scale, z * scale));
+            }
+            //endregion
+            //region -Y Face
+            renderer = renderer.setColor(colorProvider.apply(Direction.DOWN)).setAlpha(alphaProvider.apply(Direction.DOWN));
+            for (int x = 1; x < sizeX; x++)
+            {
+                renderer.addPoint(min.offset(x * scale, 0, 0));
+                renderer.addPoint(min.offset(x * scale, 0, sizeZ * scale));
+            }
+            for (int z = 1; z < sizeZ; z++)
+            {
+                renderer.addPoint(min.offset(0, 0, z * scale));
+                renderer.addPoint(min.offset(sizeX * scale, 0, z * scale));
+            }
+            //endregion
+            //region +Y Face
+            renderer = renderer.setColor(colorProvider.apply(Direction.UP)).setAlpha(alphaProvider.apply(Direction.UP));
+            for (int x = 1; x < sizeX; x++)
+            {
+                renderer.addPoint(min.offset(x * scale, sizeY * scale, 0));
+                renderer.addPoint(min.offset(x * scale, sizeY * scale, sizeZ * scale));
+            }
+            for (int z = 1; z < sizeZ; z++)
+            {
+                renderer.addPoint(min.offset(0, sizeY * scale, z * scale));
+                renderer.addPoint(min.offset(sizeX * scale, sizeY * scale, z * scale));
+            }
+            //endregion
+            //region -Z Face
+            renderer = renderer.setColor(colorProvider.apply(Direction.NORTH)).setAlpha(alphaProvider.apply(Direction.NORTH));
+            for (int y = 1; y < sizeY; y++)
+            {
+                renderer.addPoint(min.offset(0, y * scale, 0));
+                renderer.addPoint(min.offset(sizeX * scale, y * scale, 0));
+            }
+            for (int x = 1; x < sizeX; x++)
+            {
+                renderer.addPoint(min.offset(x * scale, 0, 0));
+                renderer.addPoint(min.offset(x * scale, sizeY * scale, 0));
+            }
+            //endregion
+            //region +Z Face
+            renderer = renderer.setColor(colorProvider.apply(Direction.SOUTH)).setAlpha(alphaProvider.apply(Direction.SOUTH));
+            for (int y = 1; y < sizeY; y++)
+            {
+                renderer.addPoint(min.offset(0, y * scale, sizeZ * scale));
+                renderer.addPoint(min.offset(sizeX * scale, y * scale, sizeZ * scale));
+            }
+            for (int x = 1; x < sizeX; x++)
+            {
+                renderer.addPoint(min.offset(x * scale, 0, sizeZ * scale));
+                renderer.addPoint(min.offset(x * scale, sizeY * scale, sizeZ * scale));
+            }
+            //endregion
+
+            renderer.render();
+        });
+    }
     private void renderCircle(OffsetPoint center, BiFunction<Double, Double, Vector3d> pointTransformer, Color color, int alpha)
     {
         Renderer renderer = Renderer.startLineLoop().setColor(color).setAlpha(alpha);

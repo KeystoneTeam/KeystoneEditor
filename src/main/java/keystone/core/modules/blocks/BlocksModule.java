@@ -11,10 +11,23 @@ import keystone.core.renderer.client.Player;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class BlocksModule implements IKeystoneModule
 {
+    public interface BlockListener
+    {
+        void onChanged(int x, int y, int z, Block block);
+    }
+
     private HistoryModule historyModule;
     private WorldCacheModule worldCacheModule;
+    private Set<BlockListener> listeners = new HashSet<>();
+
+    public void addListener(BlockListener listener) { listeners.add(listener); }
+    public void removeListener(BlockListener listener) { listeners.remove(listener); }
+    public void clearListeners() { listeners.clear(); }
 
     @Override
     public void postInit()
@@ -45,6 +58,7 @@ public class BlocksModule implements IKeystoneModule
     public void setBlock(int x, int y, int z, Block block)
     {
         historyModule.getOpenEntry().setBlock(x, y, z, block);
+        listeners.forEach(listener -> listener.onChanged(x, y, z, block));
     }
     public Block getBlock(int x, int y, int z, BlockRetrievalMode retrievalMode)
     {

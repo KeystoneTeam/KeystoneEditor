@@ -88,6 +88,15 @@ public class HistoryModule implements IKeystoneModule
         currentStackFrame = null;
         tryBeginHooksOpen = 0;
     }
+    public void applyBlocksWithoutEnding()
+    {
+        if (currentStackFrame == null)
+        {
+            Keystone.LOGGER.warn("Calling HistoryModule.applyBlocksWithoutEnding without first calling HistoryModule.beginHistoryEntry! This may cause issues");
+            return;
+        }
+        currentStackFrame.applyBlocks();
+    }
     public void abortHistoryEntry()
     {
         currentStackFrame.undo();
