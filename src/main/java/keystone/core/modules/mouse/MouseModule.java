@@ -1,5 +1,6 @@
 package keystone.core.modules.mouse;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.KeystoneInputEvent;
@@ -39,7 +40,7 @@ public class MouseModule implements IKeystoneModule
         return true;
     }
     @Override
-    public void prepareRender(float partialTicks, DimensionId dimensionId)
+    public void preRender(MatrixStack stack, float partialTicks, DimensionId dimensionId)
     {
         if (selectionModule == null) selectionModule = Keystone.getModule(SelectionModule.class);
 

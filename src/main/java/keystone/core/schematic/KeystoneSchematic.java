@@ -2,6 +2,7 @@ package keystone.core.schematic;
 
 import keystone.api.Keystone;
 import keystone.api.wrappers.Block;
+import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -121,6 +122,41 @@ public class KeystoneSchematic
                 for (int z = 0; z < size.getZ(); z++)
                 {
                     consumer.accept(new BlockPos(x, y, z), blocks[i]);
+                    i++;
+                }
+            }
+        }
+    }
+
+    public void place(BlockPos anchor, World world)
+    {
+        int i = 0;
+        for (int x = 0; x < size.getX(); x++)
+        {
+            for (int y = 0; y < size.getY(); y++)
+            {
+                for (int z = 0; z < size.getZ(); z++)
+                {
+                    BlockPos localPos = new BlockPos(x, y, z);
+                    BlockPos worldPos = localPos.add(anchor);
+                    world.setBlockState(worldPos, blocks[i].getMinecraftBlock());
+                    i++;
+                }
+            }
+        }
+    }
+    public void place(BlockPos anchor, BlocksModule blocksModule)
+    {
+        int i = 0;
+        for (int x = 0; x < size.getX(); x++)
+        {
+            for (int y = 0; y < size.getY(); y++)
+            {
+                for (int z = 0; z < size.getZ(); z++)
+                {
+                    BlockPos localPos = new BlockPos(x, y, z);
+                    BlockPos worldPos = localPos.add(anchor);
+                    blocksModule.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), blocks[i]);
                     i++;
                 }
             }

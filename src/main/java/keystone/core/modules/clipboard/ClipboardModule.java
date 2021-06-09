@@ -3,8 +3,9 @@ package keystone.core.modules.clipboard;
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
 import keystone.core.KeystoneGlobalState;
-import keystone.core.events.KeystoneSelectionChangedEvent;
+import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.entries.PasteBoxHistoryEntry;
+import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
@@ -23,7 +24,6 @@ import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.glfw.GLFW;
 
-import javax.swing.text.AsyncBoxView;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +44,7 @@ public class ClipboardModule implements IKeystoneModule
         List<PasteBoundingBox> old = new ArrayList<>();
         pasteBoxes.forEach(box -> old.add(box.clone()));
 
-        pasteBoxes.clear();
+        clearPasteBoxes();
         boxes.forEach(box -> pasteBoxes.add(box.clone()));
 
         if (pasteBoxes.size() > 0)
@@ -60,14 +60,14 @@ public class ClipboardModule implements IKeystoneModule
 
         return old;
     }
-    public void clearPasteBoxes()
+    public void resetModule()
     {
         HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
         historyModule.tryBeginHistoryEntry();
         historyModule.pushToEntry(new PasteBoxHistoryEntry(pasteBoxes));
         historyModule.tryEndHistoryEntry();
 
-        pasteBoxes.clear();
+        clearPasteBoxes();
         KeystoneGlobalState.HideSelectionBoxes = false;
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
@@ -97,7 +97,7 @@ public class ClipboardModule implements IKeystoneModule
                 else if (event.getKey() == GLFW.GLFW_KEY_C) copy();
                 else if (event.getKey() == GLFW.GLFW_KEY_V) paste();
             }
-            else if (event.getKey() == GLFW.GLFW_KEY_ESCAPE) clearPasteBoxes();
+            else if (event.getKey() == GLFW.GLFW_KEY_ESCAPE) resetModule();
         }
     }
 
@@ -128,8 +128,11 @@ public class ClipboardModule implements IKeystoneModule
         historyModule.pushToEntry(new PasteBoxHistoryEntry(this.pasteBoxes));
         historyModule.tryEndHistoryEntry();
 
-        pasteBoxes.clear();
-        for (SelectionBoundingBox selection : Keystone.getModule(SelectionModule.class).getSelectionBoundingBoxes()) pasteBoxes.add(PasteBoundingBox.create(selection.getMinCoords(), KeystoneSchematic.createFromSelection(selection, world)));
+        clearPasteBoxes();
+        for (SelectionBoundingBox selection : Keystone.getModule(SelectionModule.class).getSelectionBoundingBoxes())
+        {
+            pasteBoxes.add(PasteBoundingBox.create(selection.getMinCoords(), KeystoneSchematic.createFromSelection(selection, world), null));
+        }
         KeystoneGlobalState.HideSelectionBoxes = true;
     }
     public void paste()
@@ -144,9 +147,15 @@ public class ClipboardModule implements IKeystoneModule
         HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
         historyModule.tryBeginHistoryEntry();
         pasteBoxes.forEach(paste -> paste.paste(world));
-        clearPasteBoxes();
+        resetModule();
         historyModule.tryEndHistoryEntry();
 
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
+    }
+    public void clearPasteBoxes()
+    {
+        GhostBlocksModule ghostBlocksModule = Keystone.getModule(GhostBlocksModule.class);
+        pasteBoxes.forEach(pasteBox -> ghostBlocksModule.releaseWorld(pasteBox.getGhostBlocks()));
+        pasteBoxes.clear();
     }
 }

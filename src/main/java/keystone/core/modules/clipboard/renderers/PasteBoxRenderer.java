@@ -18,7 +18,6 @@ public class PasteBoxRenderer extends AbstractRenderer<PasteBoundingBox>
         OffsetBox bb = new OffsetBox(box.getMinCoords(), box.getMaxCoords());
         SelectedFace selectedFace = Keystone.getModule(MouseModule.class).getSelectedFace();
 
-        box.getGhostBlocks().render(stack, box.getMinCoords());
         renderCuboid(bb, direction -> Color.green, direction ->
         {
             if (selectedFace != null && selectedFace.getBox().equals(box)) return 64;

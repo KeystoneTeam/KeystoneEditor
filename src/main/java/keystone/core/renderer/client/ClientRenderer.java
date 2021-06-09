@@ -64,9 +64,10 @@ public class ClientRenderer
     {
         if (!active || !Keystone.isActive()) return;
 
-        Keystone.forEachModule((module) -> module.prepareRender(partialTicks, dimensionId));
-
+        Keystone.forEachModule((module) -> module.preRender(stack, partialTicks, dimensionId));
         RenderHelper.beforeRender();
+
+        RenderQueue.doRenderQueue();
         getBoundingBoxes(dimensionId).forEach(key ->
         {
             AbstractRenderer renderer = boundingBoxRendererMap.get(key.getClass());

@@ -1,5 +1,6 @@
 package keystone.core.modules.selection;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.BlockRegion;
 import keystone.api.Keystone;
 import keystone.core.KeystoneGlobalState;
@@ -66,7 +67,7 @@ public class SelectionModule implements IKeystoneModule
     public void onCancelPressed()
     {
         ClipboardModule paste = Keystone.getModule(ClipboardModule.class);
-        if (paste.getPasteBoxes().size() > 0) paste.clearPasteBoxes();
+        if (paste.getPasteBoxes().size() > 0) paste.resetModule();
         else deselect();
     }
     public void deselect()
@@ -123,7 +124,7 @@ public class SelectionModule implements IKeystoneModule
         return renderProviders;
     }
     @Override
-    public void prepareRender(float partialTicks, DimensionId dimensionId)
+    public void preRender(MatrixStack stack, float partialTicks, DimensionId dimensionId)
     {
         if (creatingSelection)
         {

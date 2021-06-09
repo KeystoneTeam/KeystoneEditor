@@ -2,6 +2,7 @@ package keystone.core.renderer.common.models;
 
 import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.common.TypeHelper;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
 
@@ -93,6 +94,15 @@ public class Coords
         int deltaY = y - other.y;
         int deltaZ = z - other.z;
         return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+    }
+
+    public BlockPos toBlockPos()
+    {
+        return new BlockPos(x, y, z);
+    }
+    public Vector3d toVector3d()
+    {
+        return new Vector3d(x, y, z);
     }
 
     @Override
