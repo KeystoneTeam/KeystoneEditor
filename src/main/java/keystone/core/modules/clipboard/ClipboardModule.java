@@ -3,6 +3,7 @@ package keystone.core.modules.clipboard;
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
 import keystone.core.KeystoneGlobalState;
+import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.entries.PasteBoxHistoryEntry;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
@@ -30,12 +31,21 @@ import java.util.List;
 public class ClipboardModule implements IKeystoneModule
 {
     private List<PasteBoundingBox> pasteBoxes;
+    private BlocksModule blocksModule;
+    private GhostBlocksModule ghostBlocksModule;
 
     public ClipboardModule()
     {
         pasteBoxes = new ArrayList<>();
 
         MinecraftForge.EVENT_BUS.addListener(this::onKeyPressed);
+    }
+
+    @Override
+    public void postInit()
+    {
+        this.blocksModule = Keystone.getModule(BlocksModule.class);
+        this.ghostBlocksModule = Keystone.getModule(GhostBlocksModule.class);
     }
 
     public List<PasteBoundingBox> getPasteBoxes() { return pasteBoxes; }
@@ -97,6 +107,14 @@ public class ClipboardModule implements IKeystoneModule
                 else if (event.getKey() == GLFW.GLFW_KEY_C) copy();
                 else if (event.getKey() == GLFW.GLFW_KEY_V) paste();
             }
+            else if (event.getKey() == GLFW.GLFW_KEY_R)
+            {
+                for (PasteBoundingBox pasteBox : pasteBoxes) pasteBox.cycleRotate();
+            }
+            else if (event.getKey() == GLFW.GLFW_KEY_M)
+            {
+                for (PasteBoundingBox pasteBox : pasteBoxes) pasteBox.cycleMirror();
+            }
             else if (event.getKey() == GLFW.GLFW_KEY_ESCAPE) resetModule();
         }
     }
@@ -114,47 +132,38 @@ public class ClipboardModule implements IKeystoneModule
     }
     public void copy()
     {
-        KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.CLONE);
-
-        World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimensionId());
-        if (world == null)
+        Keystone.runOnMainThread(() ->
         {
-            Keystone.LOGGER.error("Trying to paste when there is no loaded world for dimension '" + Player.getDimensionId().getDimensionType().getRegistryName() + "'!");
-            return;
-        }
+            KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.CLONE);
 
-        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
-        historyModule.tryBeginHistoryEntry();
-        historyModule.pushToEntry(new PasteBoxHistoryEntry(this.pasteBoxes));
-        historyModule.tryEndHistoryEntry();
+            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+            historyModule.tryBeginHistoryEntry();
+            historyModule.pushToEntry(new PasteBoxHistoryEntry(this.pasteBoxes));
+            historyModule.tryEndHistoryEntry();
 
-        clearPasteBoxes();
-        for (SelectionBoundingBox selection : Keystone.getModule(SelectionModule.class).getSelectionBoundingBoxes())
-        {
-            pasteBoxes.add(PasteBoundingBox.create(selection.getMinCoords(), KeystoneSchematic.createFromSelection(selection, world), null));
-        }
-        KeystoneGlobalState.HideSelectionBoxes = true;
+            clearPasteBoxes();
+            for (SelectionBoundingBox selection : Keystone.getModule(SelectionModule.class).getSelectionBoundingBoxes())
+            {
+                pasteBoxes.add(PasteBoundingBox.create(selection.getMinCoords(), KeystoneSchematic.createFromSelection(selection, blocksModule), null));
+            }
+            KeystoneGlobalState.HideSelectionBoxes = true;
+        });
     }
     public void paste()
     {
-        World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimensionId());
-        if (world == null)
+        Keystone.runOnMainThread(() ->
         {
-            Keystone.LOGGER.error("Trying to paste when there is no loaded world for dimension '" + Player.getDimensionId().getDimensionType().getRegistryName() + "'!");
-            return;
-        }
+            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+            historyModule.tryBeginHistoryEntry();
+            pasteBoxes.forEach(paste -> paste.paste());
+            resetModule();
+            historyModule.tryEndHistoryEntry();
 
-        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
-        historyModule.tryBeginHistoryEntry();
-        pasteBoxes.forEach(paste -> paste.paste(world));
-        resetModule();
-        historyModule.tryEndHistoryEntry();
-
-        KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
+            KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
+        });
     }
     public void clearPasteBoxes()
     {
-        GhostBlocksModule ghostBlocksModule = Keystone.getModule(GhostBlocksModule.class);
         pasteBoxes.forEach(pasteBox -> ghostBlocksModule.releaseWorld(pasteBox.getGhostBlocks()));
         pasteBoxes.clear();
     }
