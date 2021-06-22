@@ -24,7 +24,7 @@ public class Player
     private static DimensionId dimensionId;
     private static RayTraceResult rayTrace;
 
-    public static void setPosition(double partialTicks, ClientPlayerEntity player)
+    public static void update(double partialTicks, ClientPlayerEntity player)
     {
         Player.player = player;
 

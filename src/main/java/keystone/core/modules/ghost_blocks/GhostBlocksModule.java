@@ -10,6 +10,7 @@ import keystone.core.renderer.client.renderers.RenderQueue;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.event.InputEvent;
@@ -47,8 +48,7 @@ public class GhostBlocksModule implements IKeystoneModule
     {
         RenderQueue.render(() ->
         {
-            Vector3d cameraPos = Camera.getPos();
-
+            Vector3d cameraPos = Camera.getPosition();
             MatrixStack stack = event.getMatrixStack();
             stack.push();
             stack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);

@@ -23,6 +23,8 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
@@ -43,6 +45,8 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     protected List<Entity> entities;
     protected MutableBoundingBox bounds;
     protected GhostWorldRenderer renderer;
+    protected Rotation rotation;
+    protected Mirror mirror;
     public boolean renderMode;
 
     public GhostBlocksWorld(World original)
@@ -56,12 +60,23 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
 
         this.renderer = new GhostWorldRenderer();
         this.renderer.display(this);
+
+        this.rotation = Rotation.NONE;
+        this.mirror = Mirror.NONE;
     }
 
     public GhostWorldRenderer getRenderer () { return renderer; }
+    public Rotation getRotation() { return rotation; }
+    public Mirror getMirror() { return mirror; }
     public Set<BlockPos> getAllPositions()
     {
         return blocks.keySet();
+    }
+
+    public void setOrientation(Rotation rotation, Mirror mirror)
+    {
+        this.rotation = rotation;
+        this.mirror = mirror;
     }
 
     public void clearAllContents()

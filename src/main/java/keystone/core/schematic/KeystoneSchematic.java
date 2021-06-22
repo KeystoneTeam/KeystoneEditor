@@ -1,11 +1,17 @@
 package keystone.core.schematic;
 
 import keystone.api.Keystone;
+import keystone.api.enums.BlockRetrievalMode;
 import keystone.api.wrappers.Block;
+import keystone.core.math.BlockPosMath;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.World;
@@ -34,10 +40,10 @@ public class KeystoneSchematic
     /**
      * Create a schematic from a selection box
      * @param box The {@link keystone.core.modules.selection.boxes.SelectionBoundingBox} to create the schematic from
-     * @param world The world that the schematic contents is read from
+     * @param blocksModule The {@link keystone.core.modules.blocks.BlocksModule} that the schematic contents is read from
      * @return The generated {@link keystone.core.schematic.KeystoneSchematic}
      */
-    public static KeystoneSchematic createFromSelection(SelectionBoundingBox box, World world)
+    public static KeystoneSchematic createFromSelection(SelectionBoundingBox box, BlocksModule blocksModule)
     {
         // Get size
         Vector3i size = new Vector3i(box.getMaxCoords().getX() - box.getMinCoords().getX() + 1,
@@ -53,8 +59,7 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    BlockPos pos = new BlockPos(x + box.getMinCoords().getX(), y + box.getMinCoords().getY(), z + box.getMinCoords().getZ());
-                    blocks[i] = new Block(world.getBlockState(pos), world.getTileEntity(pos));
+                    blocks[i] = blocksModule.getBlock(x + box.getMinCoords().getX(), y + box.getMinCoords().getY(), z + box.getMinCoords().getZ(), BlockRetrievalMode.ORIGINAL);
                     i++;
                 }
             }
@@ -128,8 +133,27 @@ public class KeystoneSchematic
         }
     }
 
+    /**
+     * Place the schematic at a given {@link BlockPos} in a given {@link World}
+     * @param anchor The minimum {@link BlockPos} to place the schematic at
+     * @param world The {@link World} to place the schematic in
+     */
     public void place(BlockPos anchor, World world)
     {
+        place(anchor, world, Rotation.NONE, Mirror.NONE, 1);
+    }
+    /**
+     * Place the schematic at a given {@link BlockPos} in a given {@link World}
+     * @param anchor The minimum {@link BlockPos} to place the schematic at
+     * @param world The {@link World} to place the schematic in
+     * @param rotation The {@link Rotation} of the schematic
+     * @param mirror The {@link Mirror} of the schematic
+     * @param scale The scale of the schematic
+     */
+    public void place(BlockPos anchor, World world, Rotation rotation, Mirror mirror, int scale)
+    {
+        scale = scale < 1 ? 1 : scale;
+
         int i = 0;
         for (int x = 0; x < size.getX(); x++)
         {
@@ -137,16 +161,58 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    BlockPos localPos = new BlockPos(x, y, z);
-                    BlockPos worldPos = localPos.add(anchor);
-                    world.setBlockState(worldPos, blocks[i].getMinecraftBlock());
+                    for (int sx = 0; sx < scale; sx++)
+                    {
+                        for (int sy = 0; sy < scale; sy++)
+                        {
+                            for (int sz = 0; sz < scale; sz++)
+                            {
+                                BlockPos localPos = new BlockPos(x * scale + sx, y * scale + sy, z * scale + sz);
+                                BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, scale).add(anchor);
+
+                                Block block = blocks[i];
+                                BlockState state = block.getMinecraftBlock().rotate(world, worldPos, rotation).mirror(mirror);
+                                world.setBlockState(worldPos, state);
+                                if (block.getTileEntityData() != null)
+                                {
+                                    CompoundNBT tileEntityData = block.getTileEntityData().copy();
+                                    tileEntityData.putInt("x", x);
+                                    tileEntityData.putInt("y", y);
+                                    tileEntityData.putInt("z", z);
+
+                                    TileEntity tileEntity = world.getTileEntity(worldPos);
+                                    if (tileEntity != null) tileEntity.read(block.getMinecraftBlock(), tileEntityData);
+                                }
+                            }
+                        }
+                    }
                     i++;
                 }
             }
         }
     }
+
+    /**
+     * Place the schematic at a given {@link BlockPos} in a given {@link World}
+     * @param anchor The minimum {@link BlockPos} to place the schematic at
+     * @param blocksModule The {@link BlocksModule} to place the schematic with
+     */
     public void place(BlockPos anchor, BlocksModule blocksModule)
     {
+        place(anchor, blocksModule, Rotation.NONE, Mirror.NONE, 1);
+    }
+    /**
+     * Place the schematic at a given {@link BlockPos} in a given {@link World}
+     * @param anchor The minimum {@link BlockPos} to place the schematic at
+     * @param blocksModule The {@link BlocksModule} to place the schematic with
+     * @param rotation The {@link Rotation} of the schematic
+     * @param mirror The {@link Mirror} of the schematic
+     * @param scale The scale of the schematic
+     */
+    public void place(BlockPos anchor, BlocksModule blocksModule, Rotation rotation, Mirror mirror, int scale)
+    {
+        scale = scale < 1 ? 1 : scale;
+
         int i = 0;
         for (int x = 0; x < size.getX(); x++)
         {
@@ -154,9 +220,21 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    BlockPos localPos = new BlockPos(x, y, z);
-                    BlockPos worldPos = localPos.add(anchor);
-                    blocksModule.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), blocks[i]);
+                    for (int sx = 0; sx < scale; sx++)
+                    {
+                        for (int sy = 0; sy < scale; sy++)
+                        {
+                            for (int sz = 0; sz < scale; sz++)
+                            {
+                                BlockPos localPos = new BlockPos(x * scale + sx, y * scale + sy, z * scale + sz);
+                                BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, scale).add(anchor);
+
+                                Block block = blocks[i].clone();
+                                block.setMinecraftBlock(block.getMinecraftBlock().rotate(blocksModule.getWorld(), worldPos, rotation).mirror(mirror));
+                                blocksModule.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), block);
+                            }
+                        }
+                    }
                     i++;
                 }
             }

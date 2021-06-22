@@ -11,7 +11,7 @@ public class ClientInterop
 {
     public static void render(MatrixStack stack, float partialTicks, ClientPlayerEntity player)
     {
-        Player.setPosition(partialTicks, player);
+        Player.update(partialTicks, player);
         ClientRenderer.render(stack, partialTicks, DimensionId.from(player.getEntityWorld().getDimensionKey()));
     }
     public static void renderDeferred(float partialTicks)

@@ -1,27 +1,32 @@
 package keystone.core.renderer.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3d;
 
 public class Camera
 {
-    public static Vector3d getPos()
+    public static Vector3d getPosition()
     {
         return Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
+    }
+    public static Quaternion getRotation()
+    {
+        return Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getRotation();
     }
 
     public static double getX()
     {
-        return getPos().x;
+        return getPosition().x;
     }
 
     public static double getY()
     {
-        return getPos().y;
+        return getPosition().y;
     }
 
     public static double getZ()
     {
-        return getPos().z;
+        return getPosition().z;
     }
 }

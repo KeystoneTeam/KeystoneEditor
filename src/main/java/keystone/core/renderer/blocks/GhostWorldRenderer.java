@@ -1,33 +1,34 @@
 package keystone.core.renderer.blocks;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.renderer.blocks.buffer.SuperByteBuffer;
 import keystone.core.renderer.blocks.buffer.SuperRenderTypeBuffer;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.FlowingFluidBlock;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.util.math.vector.Vector3d;
-import org.lwjgl.opengl.GL11;
-import com.mojang.blaze3d.matrix.MatrixStack;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
+import net.minecraft.client.renderer.tileentity.ChestTileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.model.data.EmptyModelData;
+import org.lwjgl.opengl.GL11;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class GhostWorldRenderer
 {
@@ -43,6 +44,7 @@ public class GhostWorldRenderer
     public GhostWorldRenderer()
     {
         changed = false;
+        offset = Vector3d.ZERO;
     }
 
     public void display(GhostBlocksWorld world)
@@ -70,6 +72,36 @@ public class GhostWorldRenderer
         ms.push();
         ms.translate(offset.x, offset.y, offset.z);
 
+        // Apply Ghost World Orientation to MatrixStack
+        int xAxisSize = ghostBlocks.getRotation() == Rotation.NONE || ghostBlocks.getRotation() == Rotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getXSize() : ghostBlocks.getBounds().getZSize();
+        int zAxisSize = ghostBlocks.getRotation() == Rotation.NONE || ghostBlocks.getRotation() == Rotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getZSize() : ghostBlocks.getBounds().getXSize();
+        if (ghostBlocks.getRotation() == Rotation.CLOCKWISE_90)
+        {
+            ms.rotate(Vector3f.YP.rotationDegrees(-90));
+            ms.translate(0, 0, -xAxisSize);
+        }
+        else if (ghostBlocks.getRotation() == Rotation.CLOCKWISE_180)
+        {
+            ms.rotate(Vector3f.YP.rotationDegrees(180));
+            ms.translate(-xAxisSize, 0, -zAxisSize);
+        }
+        else if (ghostBlocks.getRotation() == Rotation.COUNTERCLOCKWISE_90)
+        {
+            ms.rotate(Vector3f.YP.rotationDegrees(90));
+            ms.translate(-zAxisSize, 0, 0);
+        }
+        if (ghostBlocks.getMirror() == Mirror.FRONT_BACK)
+        {
+            ms.scale(-1.0f, 1.0f, 1.0f);
+            ms.translate(-ghostBlocks.getBounds().getXSize(), 0, 0);
+        }
+        else if (ghostBlocks.getMirror() == Mirror.LEFT_RIGHT)
+        {
+            ms.scale(1.0f, 1.0f, -1.0f);
+            ms.translate(0, 0, -ghostBlocks.getBounds().getZSize());
+        }
+
+        // Dispatch Ghost World Rendering
         buffer.getBuffer(RenderType.getSolid());
         for (RenderType layer : RenderType.getBlockRenderTypes())
         {

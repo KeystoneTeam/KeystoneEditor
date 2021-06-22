@@ -75,17 +75,17 @@ public class Coords
     {
         return new Coords(this.x - x, this.y - y, this.z - z);
     }
-    public Coords sub(Vector3i add)
+    public Coords sub(Vector3i remove)
     {
-        return new Coords(x - add.getX(), y - add.getY(), z - add.getZ());
+        return new Coords(x - remove.getX(), y - remove.getY(), z - remove.getZ());
     }
-    public Coords sub(Vector3d add)
+    public Coords sub(Vector3d remove)
     {
-        return new Coords(x - add.x, y - add.y, z - add.z);
+        return new Coords(x - remove.x, y - remove.y, z - remove.z);
     }
-    public Coords sub(Coords add)
+    public Coords sub(Coords remove)
     {
-        return new Coords(x - add.x, y - add.y, z - add.z);
+        return new Coords(x - remove.x, y - remove.y, z - remove.z);
     }
 
     public float distanceSqr(Coords other)
