@@ -13,6 +13,9 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.state.Property;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Rotation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.util.Collections;
 import java.util.Map;
@@ -195,7 +198,15 @@ public class Block
      * @return Whether this block is an air block
      */
     public boolean isAir() { return this.state.isAir(); }
+
+    /**
+     * @return Whether this block is a liquid
+     */
     public boolean isLiquid() { return this.state.getBlock() instanceof FlowingFluidBlock; }
+
+    /**
+     * @return Whether this block is an air block or a liquid
+     */
     public boolean isAirOrLiquid() { return isAir() || isLiquid(); }
 
     @Override

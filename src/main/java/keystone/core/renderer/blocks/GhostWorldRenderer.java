@@ -10,6 +10,9 @@ import java.util.Set;
 import keystone.core.renderer.blocks.buffer.SuperByteBuffer;
 import keystone.core.renderer.blocks.buffer.SuperRenderTypeBuffer;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.FlowingFluidBlock;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.vector.Vector3d;
 import org.lwjgl.opengl.GL11;
 import com.mojang.blaze3d.matrix.MatrixStack;
@@ -89,43 +92,52 @@ public class GhostWorldRenderer
         final GhostBlocksWorld blockAccess = ghostBlocks;
         final BlockRendererDispatcher blockRendererDispatcher = minecraft.getBlockRendererDispatcher();
 
-        List<BlockState> blockstates = new LinkedList<>();
+        //List<BlockState> blockstates = new LinkedList<>();
         Map<RenderType, BufferBuilder> buffers = new HashMap<>();
         MatrixStack ms = new MatrixStack();
 
-        BlockPos.getAllInBox(blockAccess.getBounds())
-                .forEach(localPos ->
+        BlockPos.getAllInBox(blockAccess.getBounds()).forEach(localPos ->
+        {
+            ms.push();
+            ms.translate(localPos.getX(), localPos.getY(), localPos.getZ());
+
+            BlockState blockState = blockAccess.getBlockState(localPos);
+            FluidState fluidState = blockState.getFluidState();
+
+            for (RenderType renderType : RenderType.getBlockRenderTypes())
+            {
+                ForgeHooksClient.setRenderLayer(renderType);
+
+                // Fluid Rendering
+                if (!fluidState.isEmpty() && RenderTypeLookup.canRenderInLayer(fluidState, renderType))
                 {
-                    ms.push();
-                    ms.translate(localPos.getX(), localPos.getY(), localPos.getZ());
-                    BlockState state = blockAccess.getBlockState(localPos);
+                    if (!buffers.containsKey(renderType)) buffers.put(renderType, new BufferBuilder(DefaultVertexFormats.BLOCK.getIntegerSize()));
+                    BufferBuilder bufferBuilder = buffers.get(renderType);
+                    if (startedBufferBuilders.add(renderType)) bufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
-                    for (RenderType blockRenderLayer : RenderType.getBlockRenderTypes())
+                    if (blockRendererDispatcher.renderFluid(localPos, blockAccess, bufferBuilder, fluidState)) usedBlockRenderLayers.add(renderType);
+                }
+
+                // Block Rendering
+                if (blockState.getRenderType() != BlockRenderType.INVISIBLE && RenderTypeLookup.canRenderInLayer(blockState, renderType))
+                {
+                    if (!buffers.containsKey(renderType)) buffers.put(renderType, new BufferBuilder(DefaultVertexFormats.BLOCK.getIntegerSize()));
+                    BufferBuilder bufferBuilder = buffers.get(renderType);
+                    if (startedBufferBuilders.add(renderType)) bufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+
+                    TileEntity tileEntity = blockAccess.getTileEntity(localPos);
+
+                    if (blockRendererDispatcher.renderModel(blockState, localPos, blockAccess, ms, bufferBuilder, true, minecraft.world.rand,
+                            tileEntity != null ? tileEntity.getModelData() : EmptyModelData.INSTANCE))
                     {
-                        if (!RenderTypeLookup.canRenderInLayer(state, blockRenderLayer))
-                            continue;
-                        ForgeHooksClient.setRenderLayer(blockRenderLayer);
-                        if (!buffers.containsKey(blockRenderLayer))
-                            buffers.put(blockRenderLayer, new BufferBuilder(DefaultVertexFormats.BLOCK.getIntegerSize()));
-
-                        BufferBuilder bufferBuilder = buffers.get(blockRenderLayer);
-                        if (startedBufferBuilders.add(blockRenderLayer))
-                            bufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-
-                        TileEntity tileEntity = blockAccess.getTileEntity(localPos);
-
-                        if (blockRendererDispatcher.renderModel(state, localPos, blockAccess, ms, bufferBuilder, true,
-                                minecraft.world.rand,
-                                tileEntity != null ? tileEntity.getModelData() : EmptyModelData.INSTANCE))
-                        {
-                            usedBlockRenderLayers.add(blockRenderLayer);
-                        }
-                        blockstates.add(state);
+                        usedBlockRenderLayers.add(renderType);
                     }
+                }
+            }
 
-                    ForgeHooksClient.setRenderLayer(null);
-                    ms.pop();
-                });
+            ForgeHooksClient.setRenderLayer(null);
+            ms.pop();
+        });
 
         // finishDrawing
         for (RenderType layer : RenderType.getBlockRenderTypes())

@@ -7,6 +7,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.renderer.Atlases;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
@@ -80,25 +81,28 @@ public class SuperRenderTypeBuffer implements IRenderTypeBuffer
                 map.put(Atlases.getSolidBlockType(), blockBuilders.getBuilder(RenderType.getSolid()));
                 map.put(Atlases.getCutoutBlockType(), blockBuilders.getBuilder(RenderType.getCutout()));
                 map.put(Atlases.getBannerType(), blockBuilders.getBuilder(RenderType.getCutoutMipped()));
-                map.put(Atlases.getTranslucentCullBlockType(), blockBuilders.getBuilder(RenderType.getTranslucent())); // FIXME new equivalent of getEntityTranslucent() ?
-                assign(map, Atlases.getShieldType());
-                assign(map, Atlases.getBedType());
-                assign(map, Atlases.getShulkerBoxType());
-                assign(map, Atlases.getSignType());
-                assign(map, Atlases.getChestType());
-                assign(map, RenderType.getTranslucentNoCrumbling());
-                assign(map, RenderType.getGlint());
-                assign(map, RenderType.getEntityGlint());
-                assign(map, RenderType.getWaterMask());
-
-                ModelBakery.DESTROY_RENDER_TYPES.forEach((p_228488_1_) ->
-                {
-                    assign(map, p_228488_1_);
+                map.put(Atlases.getTranslucentCullBlockType(), blockBuilders.getBuilder(RenderType.getTranslucent()));
+                put(map, Atlases.getShieldType());
+                put(map, Atlases.getBedType());
+                put(map, Atlases.getShulkerBoxType());
+                put(map, Atlases.getSignType());
+                put(map, Atlases.getChestType());
+                put(map, RenderType.getTranslucentNoCrumbling());
+                put(map, RenderType.getArmorGlint());
+                put(map, RenderType.getArmorEntityGlint());
+                put(map, RenderType.getGlint());
+                put(map, RenderType.getGlintDirect());
+                put(map, RenderType.getGlintTranslucent());
+                put(map, RenderType.getEntityGlint());
+                put(map, RenderType.getEntityGlintDirect());
+                put(map, RenderType.getWaterMask());
+                ModelBakery.DESTROY_RENDER_TYPES.forEach((renderType) -> {
+                    put(map, renderType);
                 });
             });
         }
 
-        private static void assign(Object2ObjectLinkedOpenHashMap<RenderType, BufferBuilder> map, RenderType type)
+        private static void put(Object2ObjectLinkedOpenHashMap<RenderType, BufferBuilder> map, RenderType type)
         {
             map.put(type, new BufferBuilder(type.getBufferSize()));
         }
