@@ -31,7 +31,7 @@ public class PasteBoundingBox extends SelectableBoundingBox
     private Mirror mirror;
     private int scale;
 
-    private PasteBoundingBox(Coords corner1, Coords corner2, KeystoneSchematic schematic, GhostBlocksWorld ghostBlocks)
+    private PasteBoundingBox(Coords corner1, Coords corner2, KeystoneSchematic schematic)
     {
         super(corner1, corner2, BoundingBoxType.get("paste_box"));
         this.schematic = schematic;
@@ -39,19 +39,14 @@ public class PasteBoundingBox extends SelectableBoundingBox
         this.mirror = Mirror.NONE;
         this.scale = 1;
 
-        if (ghostBlocks == null) this.ghostBlocks = Keystone.getModule(GhostBlocksModule.class).createWorldFromSchematic(schematic);
-        else this.ghostBlocks = ghostBlocks;
+        this.ghostBlocks = Keystone.getModule(GhostBlocksModule.class).createWorldFromSchematic(schematic);
         this.ghostBlocks.getRenderer().offset = getMinCoords().toVector3d();
 
         refreshMinMax();
     }
-    public static PasteBoundingBox create(Coords minCoords, KeystoneSchematic contents, GhostBlocksWorld ghostBlocks)
+    public static PasteBoundingBox create(Coords minCoords, KeystoneSchematic contents)
     {
-        return new PasteBoundingBox(minCoords, minCoords.add(Vector3d.copy(contents.getSize()).add(-1, -1, -1)), contents, ghostBlocks);
-    }
-    public PasteBoundingBox clone()
-    {
-        return create(getMinCoords(), this.schematic.clone(), this.ghostBlocks);
+        return new PasteBoundingBox(minCoords, minCoords.add(Vector3d.copy(contents.getSize()).add(-1, -1, -1)), contents);
     }
 
     public KeystoneSchematic getSchematic() { return schematic; }
@@ -60,44 +55,48 @@ public class PasteBoundingBox extends SelectableBoundingBox
     public Mirror getMirror() { return mirror; }
     public int getScale() { return scale; }
 
-    @Override
-    public Coords getMaxCoords()
-    {
-        Coords min = super.getMinCoords();
-        Coords max = super.getMaxCoords();
-        Coords delta = max.sub(min);
-        if (rotation == Rotation.CLOCKWISE_90 || rotation == Rotation.COUNTERCLOCKWISE_90)
-        {
-            max = new Coords(min.getX() + delta.getZ(), min.getY() + delta.getY(), min.getZ() + delta.getX());
-        }
-        return max;
-    }
-
     public void cycleRotate()
     {
-        this.rotation = this.rotation.add(Rotation.CLOCKWISE_90);
-        this.ghostBlocks.setOrientation(rotation, mirror);
+        setRotation(this.rotation.add(Rotation.CLOCKWISE_90));
     }
     public void cycleMirror()
     {
         switch (this.mirror)
         {
             case NONE:
-                this.mirror = Mirror.LEFT_RIGHT;
-                break;
+                setMirror(Mirror.LEFT_RIGHT);
+                return;
             case LEFT_RIGHT:
-                this.mirror = Mirror.FRONT_BACK;
-                break;
+                setMirror(Mirror.FRONT_BACK);
+                return;
             case FRONT_BACK:
-                this.mirror = Mirror.NONE;
-                break;
+                setMirror(Mirror.NONE);
+                return;
         }
-
+    }
+    public void setRotation(Rotation rotation)
+    {
+        this.rotation = rotation;
         this.ghostBlocks.setOrientation(rotation, mirror);
+        updateBounds();
+    }
+    public void setMirror(Mirror mirror)
+    {
+        this.mirror = mirror;
+        this.ghostBlocks.setOrientation(rotation, mirror);
+        updateBounds();
+    }
+    public void setOrientation(Rotation rotation, Mirror mirror)
+    {
+        this.rotation = rotation;
+        this.mirror = mirror;
+        this.ghostBlocks.setOrientation(rotation, mirror);
+        updateBounds();
     }
     public void setScale(int scale)
     {
         this.scale = scale;
+        updateBounds();
     }
 
     @Override
@@ -129,5 +128,19 @@ public class PasteBoundingBox extends SelectableBoundingBox
     {
         BlocksModule blocksModule = Keystone.getModule(BlocksModule.class);
         schematic.place(getMinCoords().toBlockPos(), blocksModule, rotation, mirror, 1);
+    }
+
+    private void updateBounds()
+    {
+        Coords min = getMinCoords();
+        Vector3i size = schematic.getSize();
+        if (rotation == Rotation.CLOCKWISE_90 || rotation == Rotation.COUNTERCLOCKWISE_90)
+        {
+            setMaxCoords(new Coords(min.getX() + size.getZ() * scale - 1, min.getY() + size.getY() * scale - 1, min.getZ() + size.getX() * scale - 1));
+        }
+        else
+        {
+            setMaxCoords(new Coords(min.getX() + size.getX() * scale - 1, min.getY() + size.getY() * scale - 1, min.getZ() + size.getZ() * scale - 1));
+        }
     }
 }

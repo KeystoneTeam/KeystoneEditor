@@ -81,6 +81,30 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
         corner2 = coords;
         refreshMinMax();
     }
+    public void setMinCoords(Coords coords)
+    {
+        int corner1X = corner1.getX() == minCoords.getX() ? coords.getX() : corner1.getX();
+        int corner1Y = corner1.getY() == minCoords.getY() ? coords.getY() : corner1.getY();
+        int corner1Z = corner1.getZ() == minCoords.getZ() ? coords.getZ() : corner1.getZ();
+        int corner2X = corner2.getX() == minCoords.getX() ? coords.getX() : corner2.getX();
+        int corner2Y = corner2.getY() == minCoords.getY() ? coords.getY() : corner2.getY();
+        int corner2Z = corner2.getZ() == minCoords.getZ() ? coords.getZ() : corner2.getZ();
+        corner1 = new Coords(corner1X, corner1Y, corner1Z);
+        corner2 = new Coords(corner2X, corner2Y, corner2Z);
+        refreshMinMax();
+    }
+    public void setMaxCoords(Coords coords)
+    {
+        int corner1X = corner1.getX() == maxCoords.getX() ? coords.getX() : corner1.getX();
+        int corner1Y = corner1.getY() == maxCoords.getY() ? coords.getY() : corner1.getY();
+        int corner1Z = corner1.getZ() == maxCoords.getZ() ? coords.getZ() : corner1.getZ();
+        int corner2X = corner2.getX() == maxCoords.getX() ? coords.getX() : corner2.getX();
+        int corner2Y = corner2.getY() == maxCoords.getY() ? coords.getY() : corner2.getY();
+        int corner2Z = corner2.getZ() == maxCoords.getZ() ? coords.getZ() : corner2.getZ();
+        corner1 = new Coords(corner1X, corner1Y, corner1Z);
+        corner2 = new Coords(corner2X, corner2Y, corner2Z);
+        refreshMinMax();
+    }
     public boolean isFaceCorner1(Direction face)
     {
         switch (face)

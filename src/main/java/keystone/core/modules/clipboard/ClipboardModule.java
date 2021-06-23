@@ -3,24 +3,20 @@ package keystone.core.modules.clipboard;
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
 import keystone.core.KeystoneGlobalState;
-import keystone.core.modules.blocks.BlocksModule;
-import keystone.core.modules.ghost_blocks.GhostBlocksModule;
-import keystone.core.modules.history.entries.PasteBoxHistoryEntry;
-import keystone.core.renderer.blocks.world.GhostBlocksWorld;
-import keystone.core.schematic.KeystoneSchematic;
-import keystone.core.renderer.client.Player;
-import keystone.core.renderer.client.providers.IBoundingBoxProvider;
-import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
+import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.modules.IKeystoneModule;
-import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.clipboard.boxes.PasteBoundingBox;
 import keystone.core.modules.clipboard.providers.PasteBoxProvider;
+import keystone.core.modules.ghost_blocks.GhostBlocksModule;
+import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.history.entries.PasteBoxHistoryEntry;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
-import keystone.core.modules.world_cache.WorldCacheModule;
+import keystone.core.renderer.client.providers.IBoundingBoxProvider;
+import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.block.Blocks;
-import net.minecraft.world.World;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.glfw.GLFW;
@@ -52,10 +48,10 @@ public class ClipboardModule implements IKeystoneModule
     public List<PasteBoundingBox> restorePasteBoxes(List<PasteBoundingBox> boxes)
     {
         List<PasteBoundingBox> old = new ArrayList<>();
-        pasteBoxes.forEach(box -> old.add(box.clone()));
+        pasteBoxes.forEach(box -> old.add(box));
 
         clearPasteBoxes();
-        boxes.forEach(box -> pasteBoxes.add(box.clone()));
+        boxes.forEach(box -> pasteBoxes.add(box));
 
         if (pasteBoxes.size() > 0)
         {
@@ -144,7 +140,7 @@ public class ClipboardModule implements IKeystoneModule
             clearPasteBoxes();
             for (SelectionBoundingBox selection : Keystone.getModule(SelectionModule.class).getSelectionBoundingBoxes())
             {
-                pasteBoxes.add(PasteBoundingBox.create(selection.getMinCoords(), KeystoneSchematic.createFromSelection(selection, blocksModule), null));
+                pasteBoxes.add(PasteBoundingBox.create(selection.getMinCoords(), KeystoneSchematic.createFromSelection(selection, blocksModule)));
             }
             KeystoneGlobalState.HideSelectionBoxes = true;
         });

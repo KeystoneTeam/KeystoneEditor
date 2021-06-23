@@ -64,36 +64,11 @@ public class NudgeButton extends SimpleButton
         if (nudgeStep <= 0) return;
 
         boolean blockKeys = true;
-        double yaw = Player.getYaw();
-        if (yaw > 180) yaw -= 360;
-        // North
-        Direction forward = Direction.NORTH;
-        Direction back = Direction.SOUTH;
-        Direction left = Direction.WEST;
-        Direction right = Direction.EAST;
-        // South
-        if (yaw >= -45 && yaw <= 45)
-        {
-            forward = Direction.SOUTH;
-            back = Direction.NORTH;
-            left = Direction.EAST;
-            right = Direction.WEST;
-        }
-        // East
-        else if (yaw >= -135 && yaw <= -45)
-        {
-            forward = Direction.EAST;
-            back = Direction.WEST;
-            left = Direction.NORTH;
-            right = Direction.SOUTH;
-        }
-        else if (yaw >= 45 && yaw <= 135)
-        {
-            forward = Direction.WEST;
-            back = Direction.EAST;
-            left = Direction.SOUTH;
-            right = Direction.NORTH;
-        }
+        Direction forward = Direction.fromAngle(Player.getYaw());
+        int forwardIndex = forward.getHorizontalIndex();
+        Direction right = Direction.byHorizontalIndex(forwardIndex + 1);
+        Direction back = Direction.byHorizontalIndex(forwardIndex + 2);
+        Direction left = Direction.byHorizontalIndex(forwardIndex + 3);
 
         if (forwardPressed)
         {
