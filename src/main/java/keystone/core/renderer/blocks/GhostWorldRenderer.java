@@ -122,15 +122,11 @@ public class GhostWorldRenderer
         final GhostBlocksWorld blockAccess = ghostBlocks;
         final BlockRendererDispatcher blockRendererDispatcher = minecraft.getBlockRenderer();
 
-        //List<BlockState> blockstates = new LinkedList<>();
         Map<RenderType, BufferBuilder> buffers = new HashMap<>();
         MatrixStack ms = new MatrixStack();
 
         BlockPos.betweenClosedStream(blockAccess.getBounds()).forEach(localPos ->
         {
-            ms.pushPose();
-            ms.translate(localPos.getX(), localPos.getY(), localPos.getZ());
-
             BlockState blockState = blockAccess.getBlockState(localPos);
             FluidState fluidState = blockState.getFluidState();
 
@@ -157,16 +153,18 @@ public class GhostWorldRenderer
 
                     TileEntity tileEntity = blockAccess.getBlockEntity(localPos);
 
+                    ms.pushPose();
+                    ms.translate(localPos.getX(), localPos.getY(), localPos.getZ());
                     if (blockRendererDispatcher.renderModel(blockState, localPos, blockAccess, ms, bufferBuilder, true, minecraft.level.random,
                             tileEntity != null ? tileEntity.getModelData() : EmptyModelData.INSTANCE))
                     {
                         usedBlockRenderLayers.add(renderType);
                     }
+                    ms.popPose();
                 }
             }
 
             ForgeHooksClient.setRenderLayer(null);
-            ms.popPose();
         });
 
         // finishDrawing

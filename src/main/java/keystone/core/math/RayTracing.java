@@ -41,6 +41,11 @@ public class RayTracing
     {
         return rayPlaneIntersection(origin, direction, pointOnPlane, Vector3d.atLowerCornerOf(planeNormal.getNormal()));
     }
+    public static Vector3d rayPlaneIntersection(Vector3d origin, Vector3d direction, Coords min, Coords max, Direction face)
+    {
+        Vector3d[] plane = getFacePlane(min, max, face);
+        return rayPlaneIntersection(origin, direction, plane[0], plane[1]);
+    }
     public static Vector3d rayPlaneIntersection(Vector3d origin, Vector3d direction, Vector3d pointOnPlane, Vector3d planeNormal)
     {
         double d = -planeNormal.dot(pointOnPlane);

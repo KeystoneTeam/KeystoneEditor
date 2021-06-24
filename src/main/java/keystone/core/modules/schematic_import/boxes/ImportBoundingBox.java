@@ -28,7 +28,7 @@ public class ImportBoundingBox extends SelectableBoundingBox
     private Mirror mirror;
     private int scale;
 
-    private Vector3d dragOffset;
+    private Coords dragOffset;
 
     private ImportBoundingBox(Coords corner1, Coords corner2, KeystoneSchematic schematic)
     {
@@ -104,9 +104,7 @@ public class ImportBoundingBox extends SelectableBoundingBox
     @Override
     public void startDrag(SelectedFace face)
     {
-        Vector3d pointOnPlane = RayTracing.rayPlaneIntersection(Player.getEyePosition(), Player.getLookDirection(), face.getBox().getMinCoords().toVector3d(), face.getFaceDirection());
-        Vector3d relative = face.getRelativeSelectedBlock().toVector3d().add(getMinCoords().toVector3d());
-        dragOffset = pointOnPlane.subtract(relative);
+        dragOffset = face.getRelativeSelectedBlock();
 
         HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
         historyModule.beginHistoryEntry();
@@ -116,25 +114,37 @@ public class ImportBoundingBox extends SelectableBoundingBox
     @Override
     public void drag(SelectedFace face)
     {
-        Vector3d pointOnPlane = RayTracing.rayPlaneIntersection(Player.getEyePosition(), Player.getLookDirection(), face.getBox().getMinCoords().toVector3d(), face.getFaceDirection());
-        Vector3d relative = dragOffset;
-        Vector3d offset = Vector3d.ZERO;
+        Vector3d pointOnPlane = RayTracing.rayPlaneIntersection(Player.getEyePosition(), Player.getLookDirection(), face.getBox().getMinCoords(), face.getBox().getMaxCoords(), face.getFaceDirection());
+        if (pointOnPlane == null) return;
+
+        double x = pointOnPlane.x;
+        double y = pointOnPlane.y;
+        double z = pointOnPlane.z;
+        Vector3i size = face.getBox().getSize();
+
         switch (face.getFaceDirection())
         {
             case EAST:
+                x -= size.getX() - 1;
             case WEST:
-                offset = new Vector3d(0, relative.y, relative.z);
-                break;
-            case NORTH:
-            case SOUTH:
-                offset = new Vector3d(relative.x, relative.y, 0);
+                y -= dragOffset.getY();
+                z -= dragOffset.getZ();
                 break;
             case UP:
+                y -= size.getY() - 1;
             case DOWN:
-                offset = new Vector3d(relative.x, 0, relative.z);
+                x -= dragOffset.getX();
+                z -= dragOffset.getZ();
+                break;
+            case SOUTH:
+                z -= size.getZ() - 1;
+            case NORTH:
+                x -= dragOffset.getX();
+                y -= dragOffset.getY();
                 break;
         }
-        face.getBox().move(new Coords(pointOnPlane).sub(offset));
+
+        face.getBox().move(new Coords(x, y, z));
     }
     @Override
     public void move(Coords newMin)
