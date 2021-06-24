@@ -8,11 +8,11 @@ public class Camera
 {
     public static Vector3d getPosition()
     {
-        return Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
+        return Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
     }
     public static Quaternion getRotation()
     {
-        return Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getRotation();
+        return Minecraft.getInstance().gameRenderer.getMainCamera().rotation();
     }
 
     public static double getX()

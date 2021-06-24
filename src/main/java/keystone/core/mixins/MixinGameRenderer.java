@@ -14,11 +14,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer
 {
-    @Shadow @Final private Minecraft mc;
+    @Shadow @Final private Minecraft minecraft;
 
-    @Inject(method = "updateCameraAndRender", at = @At("TAIL"))
-    public void updateCameraAndRender(float partialTicks, long nanoTime, boolean renderWorld, CallbackInfo callback)
+    @Inject(method = "render", at = @At("TAIL"))
+    public void render(float partialTicks, long nanoTime, boolean renderWorld, CallbackInfo callback)
     {
-        if (!mc.skipRenderWorld) KeystoneOverlayHandler.render(new MatrixStack(), partialTicks);
+        if (!minecraft.noRender) KeystoneOverlayHandler.render(new MatrixStack(), partialTicks);
     }
 }

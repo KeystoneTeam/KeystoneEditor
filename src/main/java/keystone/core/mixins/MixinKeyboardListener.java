@@ -17,17 +17,17 @@ public class MixinKeyboardListener
 {
     @Shadow
     @Final
-    private Minecraft mc;
+    private Minecraft minecraft;
 
     @Shadow
-    private boolean repeatEventsEnabled;
+    private boolean sendRepeatsToGui;
 
-    @Inject(method = "onKeyEvent", at = @At("HEAD"))
-    public void onKeyEvent(long windowPointer, int key, int scanCode, int action, int modifiers, CallbackInfo info)
+    @Inject(method = "keyPress", at = @At("HEAD"))
+    public void keyPress(long windowPointer, int key, int scanCode, int action, int modifiers, CallbackInfo info)
     {
         if (Keystone.isActive())
         {
-            if (action != GLFW.GLFW_PRESS && (action != GLFW.GLFW_REPEAT || !repeatEventsEnabled))
+            if (action != GLFW.GLFW_PRESS && (action != GLFW.GLFW_REPEAT || !sendRepeatsToGui))
             {
                 if (action == GLFW.GLFW_RELEASE) KeystoneOverlayHandler.keyReleased(key, scanCode, modifiers);
             }
@@ -35,10 +35,10 @@ public class MixinKeyboardListener
         }
     }
 
-    @Inject(method = "onCharEvent", at = @At("HEAD"))
-    public void onCharEvent(long windowPointer, int codePoint, int modifiers, CallbackInfo callback)
+    @Inject(method = "charTyped", at = @At("HEAD"))
+    public void charTyped(long windowPointer, int codePoint, int modifiers, CallbackInfo callback)
     {
-        if (Keystone.isActive() && windowPointer == mc.getMainWindow().getHandle())
+        if (Keystone.isActive() && windowPointer == minecraft.getWindow().getWindow())
         {
             if (Character.charCount(codePoint) == 1) KeystoneOverlayHandler.charTyped((char)codePoint, modifiers);
             else for (char c : Character.toChars(codePoint)) KeystoneOverlayHandler.charTyped(c, modifiers);

@@ -132,7 +132,7 @@ public class KeystoneFilter extends EditableObject
     protected final void print(Object message)
     {
         if (message == null) message = "null";
-        Minecraft.getInstance().player.sendMessage(new StringTextComponent(message.toString()), Util.DUMMY_UUID);
+        Minecraft.getInstance().player.sendMessage(new StringTextComponent(message.toString()), Util.NIL_UUID);
     }
     /**
      * Abort filter execution
@@ -260,7 +260,7 @@ public class KeystoneFilter extends EditableObject
      */
     public static final Block block(String block)
     {
-        BlockState state = Blocks.RED_STAINED_GLASS.getDefaultState();
+        BlockState state = Blocks.RED_STAINED_GLASS.defaultBlockState();
         CompoundNBT tileEntity = null;
 
         try

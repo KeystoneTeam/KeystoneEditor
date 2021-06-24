@@ -20,7 +20,7 @@ public class DimensionId
 
     public static DimensionId from(RegistryKey<World> registryKey)
     {
-        ResourceLocation value = registryKey.getLocation();
+        ResourceLocation value = registryKey.location();
         typeMap.put(value, registryKey);
         return from(value);
     }
@@ -31,7 +31,7 @@ public class DimensionId
     }
 
     public static DimensionId OVERWORLD = DimensionId.from(World.OVERWORLD);
-    public static DimensionId NETHER = DimensionId.from(World.THE_NETHER);
+    public static DimensionId NETHER = DimensionId.from(World.NETHER);
 
     private final ResourceLocation value;
 

@@ -31,38 +31,38 @@ public class KeystoneKeybinds
         ClientRegistry.registerKeyBinding(TOGGLE_KEYSTONE);
         ClientRegistry.registerKeyBinding(DELETE_BLOCKS);
 
-        mc.gameSettings.keyBindForward.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindLeft.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindBack.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindRight.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindJump.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindSneak.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindSprint.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindAttack.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindChat.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindPlayerList.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindCommand.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindTogglePerspective.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindSmoothCamera.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyUp.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyLeft.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyDown.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyRight.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyJump.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyShift.setKeyConflictContext(notGuiBlocking);
+        mc.options.keySprint.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyAttack.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyChat.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyPlayerList.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyCommand.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyTogglePerspective.setKeyConflictContext(notGuiBlocking);
+        mc.options.keySmoothCamera.setKeyConflictContext(notGuiBlocking);
 
-        mc.gameSettings.keyBindAdvancements.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindDrop.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindInventory.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindLoadToolbar.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindPickBlock.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindSaveToolbar.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindSwapHands.setKeyConflictContext(notGuiBlocking);
-        mc.gameSettings.keyBindUseItem.setKeyConflictContext(notGuiBlocking);
-        for (KeyBinding keyBinding : mc.gameSettings.keyBindsHotbar) keyBinding.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyAdvancements.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyDrop.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyInventory.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyLoadHotbarActivator.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyPickItem.setKeyConflictContext(notGuiBlocking);
+        mc.options.keySaveHotbarActivator.setKeyConflictContext(notGuiBlocking);
+        mc.options.keySwapOffhand.setKeyConflictContext(notGuiBlocking);
+        mc.options.keyUse.setKeyConflictContext(notGuiBlocking);
+        for (KeyBinding keyBinding : mc.options.keyHotbarSlots) keyBinding.setKeyConflictContext(notGuiBlocking);
     }
 
     @SubscribeEvent
     public static final void onKeyInput(final InputEvent.KeyInputEvent event)
     {
-        if (TOGGLE_KEYSTONE.isPressed()) Keystone.toggleKeystone();
+        if (TOGGLE_KEYSTONE.isDown()) Keystone.toggleKeystone();
         else if (Keystone.isActive())
         {
-            if (DELETE_BLOCKS.isPressed()) Keystone.runTool(new FillTool(Blocks.AIR.getDefaultState()));
+            if (DELETE_BLOCKS.isDown()) Keystone.runTool(new FillTool(Blocks.AIR.defaultBlockState()));
         }
     }
 }

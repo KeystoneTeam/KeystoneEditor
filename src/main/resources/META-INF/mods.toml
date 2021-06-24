@@ -4,14 +4,14 @@ loaderVersion="[35,)"
 license="GPL v3.0"
 
 issueTrackerURL="https://github.com/KeystoneTeam/KeystoneEditor/issues"
-updateJSONURL="https://github.com/KeystoneTeam/KeystoneEditor/raw/master/update.json"
 displayURL="https://github.com/KeystoneTeam/KeystoneEditor/releases"
 logoFile="keystone.png"
 
 [[mods]]
 modId="keystone" #mandatory
-version="${file.jarVersion}"
+version="${version_keystone}"
 displayName="Keystone Editor"
+updateJSONURL="https://github.com/KeystoneTeam/KeystoneEditor/raw/master/update.json"
 
 credits="Based off of MCEdit Unified" #optional
 authors="CodeCracked" #optional
@@ -21,12 +21,12 @@ description='''
 [[dependencies.keystone]]
     modId="forge"
     mandatory=true
-    versionRange="[35,)"
+    versionRange="[${version_forge},)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.keystone]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.16.4,1.17)"
+    versionRange="[${min_version_minecraft},${max_version_minecraft})"
     ordering="NONE"
     side="BOTH"

@@ -51,7 +51,6 @@ public final class Keystone
 
     //region Active Toggle
     private static boolean enabled = KeystoneConfig.startActive;
-    private static GameType previousGamemode;
     private static boolean revertGamemode;
 
     /**
@@ -62,14 +61,14 @@ public final class Keystone
         if (enabled)
         {
             enabled = false;
-            Minecraft.getInstance().mouseHelper.grabMouse();
+            Minecraft.getInstance().mouseHandler.grabMouse();
             revertGamemode = true;
         }
         else
         {
             enabled = true;
             KeystoneGlobalState.AllowPlayerLook = false;
-            Minecraft.getInstance().mouseHelper.ungrabMouse();
+            Minecraft.getInstance().mouseHandler.releaseMouse();
         }
     }
 
@@ -78,7 +77,7 @@ public final class Keystone
      */
     public static boolean isActive()
     {
-        return enabled && Minecraft.getInstance().world != null;
+        return enabled && Minecraft.getInstance().level != null;
     }
     //endregion
     //region Module Registry
@@ -268,12 +267,11 @@ public final class Keystone
             if (event.player instanceof ServerPlayerEntity)
             {
                 ServerPlayerEntity serverPlayer = (ServerPlayerEntity)event.player;
-                if (serverPlayer.getUniqueID().equals(clientPlayer.getUniqueID()))
+                if (serverPlayer.getUUID().equals(clientPlayer.getUUID()))
                 {
-                    if (serverPlayer.interactionManager.getGameType() != GameType.SPECTATOR)
+                    if (serverPlayer.gameMode.getGameModeForPlayer() != GameType.SPECTATOR)
                     {
-                        previousGamemode = serverPlayer.interactionManager.getGameType();
-                        serverPlayer.setGameType(GameType.SPECTATOR);
+                        serverPlayer.setGameMode(GameType.SPECTATOR);
                     }
                 }
             }
@@ -283,9 +281,9 @@ public final class Keystone
             if (event.player instanceof ServerPlayerEntity)
             {
                 ServerPlayerEntity serverPlayer = (ServerPlayerEntity)event.player;
-                if (serverPlayer.getUniqueID().equals(clientPlayer.getUniqueID()))
+                if (serverPlayer.getUUID().equals(clientPlayer.getUUID()))
                 {
-                    if (previousGamemode != null) serverPlayer.setGameType(previousGamemode);
+                    if (serverPlayer.gameMode.getPreviousGameModeForPlayer() != GameType.NOT_SET) serverPlayer.setGameMode(serverPlayer.gameMode.getPreviousGameModeForPlayer());
                     revertGamemode = false;
                 }
             }

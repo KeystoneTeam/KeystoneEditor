@@ -236,15 +236,15 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
 
     protected void renderText(OffsetPoint offsetPoint, String... texts)
     {
-        FontRenderer fontRenderer = Minecraft.getInstance().fontRenderer;
+        FontRenderer fontRenderer = Minecraft.getInstance().font;
 
         RenderHelper.beforeRenderFont(offsetPoint);
-        float top = -(fontRenderer.FONT_HEIGHT * texts.length) / 2f;
+        float top = -(fontRenderer.lineHeight * texts.length) / 2f;
         for (String text : texts)
         {
-            float left = fontRenderer.getStringWidth(text) / 2f;
-            fontRenderer.drawString(new MatrixStack(), text, -left, top, -1);
-            top += fontRenderer.FONT_HEIGHT;
+            float left = fontRenderer.width(text) / 2f;
+            fontRenderer.draw(new MatrixStack(), text, -left, top, -1);
+            top += fontRenderer.lineHeight;
         }
         RenderHelper.afterRenderFont();
     }

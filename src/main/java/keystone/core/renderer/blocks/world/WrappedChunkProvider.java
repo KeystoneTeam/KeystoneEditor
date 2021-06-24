@@ -45,13 +45,13 @@ public class WrappedChunkProvider extends AbstractChunkProvider
 
     @Nullable
     @Override
-    public IBlockReader getChunkForLight(int x, int z)
+    public IBlockReader getChunkForLighting(int x, int z)
     {
         return getChunk(x, z);
     }
 
     @Override
-    public IBlockReader getWorld()
+    public IBlockReader getLevel()
     {
         return world;
     }
@@ -75,15 +75,15 @@ public class WrappedChunkProvider extends AbstractChunkProvider
     }
 
     @Override
-    public String makeString()
+    public String gatherStats()
     {
         return "WrappedChunkProvider";
     }
 
     @Override
-    public WorldLightManager getLightManager()
+    public WorldLightManager getLightEngine()
     {
-        return world.getLightManager();
+        return world.getLightEngine();
     }
 
     public interface ChunkFactory

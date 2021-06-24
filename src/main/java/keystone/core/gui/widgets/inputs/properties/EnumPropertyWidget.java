@@ -17,7 +17,7 @@ public class EnumPropertyWidget<T extends Enum<T> & IStringSerializable> extends
 
     public EnumPropertyWidget(Block block, EnumProperty<T> property, int x, int y, int width, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets, BiConsumer<Widget, Boolean> addDropdown)
     {
-        super(new StringTextComponent(property.getName()), x, y, width, block.getMinecraftBlock().get(property), disableWidgets, restoreWidgets, addDropdown);
+        super(new StringTextComponent(property.getName()), x, y, width, block.getMinecraftBlock().getValue(property), disableWidgets, restoreWidgets, addDropdown);
 
         this.block = block;
         this.property = property;
@@ -28,10 +28,10 @@ public class EnumPropertyWidget<T extends Enum<T> & IStringSerializable> extends
     @Override
     protected boolean autoBuild() { return false; }
     @Override
-    protected boolean isValueAllowed(T value) { return property.getAllowedValues().contains(value); }
+    protected boolean isValueAllowed(T value) { return property.getPossibleValues().contains(value); }
     @Override
     protected void onSetValue(T value)
     {
-        block.setMinecraftBlock(block.getMinecraftBlock().with(property, value));
+        block.setMinecraftBlock(block.getMinecraftBlock().setValue(property, value));
     }
 }

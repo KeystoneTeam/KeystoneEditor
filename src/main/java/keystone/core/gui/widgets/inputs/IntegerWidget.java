@@ -38,8 +38,8 @@ public class IntegerWidget extends ParsableTextWidget<Integer>
     {
         if (isHovered())
         {
-            if (delta > 0) setValue(getValue() + step);
-            else if (delta < 0) setValue(getValue() - step);
+            if (delta > 0) setTypedValue(getTypedValue() + step);
+            else if (delta < 0) setTypedValue(getTypedValue() - step);
             return true;
         }
         return false;

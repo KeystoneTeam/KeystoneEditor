@@ -81,12 +81,12 @@ public class MouseModule implements IKeystoneModule
     @SubscribeEvent
     public final void onMouseClick(final KeystoneInputEvent.MouseClickEvent event)
     {
-        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null && !event.gui && event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(!KeystoneGlobalState.AllowPlayerLook);
+        if (Keystone.isActive() && Minecraft.getInstance().screen == null && !event.gui && event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(!KeystoneGlobalState.AllowPlayerLook);
     }
     @SubscribeEvent
     public final void onMouseDragStart(final KeystoneInputEvent.MouseDragStartEvent event)
     {
-        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null && !event.gui)
+        if (Keystone.isActive() && Minecraft.getInstance().screen == null && !event.gui)
         {
             if (event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(true);
             else if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT && selectedFace != null) startDraggingBox();
@@ -95,7 +95,7 @@ public class MouseModule implements IKeystoneModule
     @SubscribeEvent
     public final void onMouseDragEnd(final KeystoneInputEvent.MouseDragEndEvent event)
     {
-        if (Keystone.isActive() && Minecraft.getInstance().currentScreen == null && !event.gui)
+        if (Keystone.isActive() && Minecraft.getInstance().screen == null && !event.gui)
         {
             if (event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(false);
             else if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT) endDraggingBox();
@@ -116,8 +116,8 @@ public class MouseModule implements IKeystoneModule
     {
         KeystoneGlobalState.AllowPlayerLook = allowLook;
         KeystoneGlobalState.CloseSelection = allowLook;
-        if (allowLook) Minecraft.getInstance().mouseHelper.grabMouse();
-        else Minecraft.getInstance().mouseHelper.ungrabMouse();
+        if (allowLook) Minecraft.getInstance().mouseHandler.grabMouse();
+        else Minecraft.getInstance().mouseHandler.releaseMouse();
     }
     private void startDraggingBox()
     {

@@ -34,7 +34,7 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
         super(x, y, width, height, itemStack.getDisplayName(), button -> {});
 
         this.mc = Minecraft.getInstance();
-        this.fontRenderer = mc.fontRenderer;
+        this.fontRenderer = mc.font;
         this.itemStack = itemStack;
         this.block = block;
 
@@ -52,7 +52,7 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
         {
             Minecraft mc = Minecraft.getInstance();
             fill(matrixStack, x, y, x + width, y + height, 0x80FFFFFF);
-            KeystoneOverlayHandler.addTooltip((stack, mX, mY, pT) -> GuiUtils.drawHoveringText(itemStack, matrixStack, tooltip, mX, mY, mc.getMainWindow().getScaledWidth(), mc.getMainWindow().getScaledHeight(), -1, mc.fontRenderer));
+            KeystoneOverlayHandler.addTooltip((stack, mX, mY, pT) -> GuiUtils.drawHoveringText(itemStack, matrixStack, tooltip, mX, mY, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight(), -1, mc.font));
         }
         KeystoneOverlay.drawItem(this, mc, itemStack, x + (width - 18) / 2 + 1, y + (height - 18) / 2 + 1);
     }
@@ -67,7 +67,7 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
                 boolean clicked = this.clicked(mouseX, mouseY);
                 if (clicked)
                 {
-                    this.playDownSound(Minecraft.getInstance().getSoundHandler());
+                    this.playDownSound(Minecraft.getInstance().getSoundManager());
                     this.onClick(mouseX, mouseY);
                     onClicked(button);
                     return true;

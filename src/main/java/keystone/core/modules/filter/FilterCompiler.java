@@ -34,7 +34,7 @@ public class FilterCompiler
         try
         {
             IResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
-            Collection<ResourceLocation> filterResources = resourceManager.getAllResourceLocations("stock_filters", path -> path.endsWith(".java") || path.endsWith(".filter"));
+            Collection<ResourceLocation> filterResources = resourceManager.listResources("stock_filters", path -> path.endsWith(".java") || path.endsWith(".filter"));
 
             for (ResourceLocation filterResourceLocation : filterResources)
             {
@@ -65,13 +65,13 @@ public class FilterCompiler
     }
     private static File getStockFilterCache()
     {
-        File stockFilterCache = Minecraft.getInstance().gameDir.toPath().resolve(KeystoneConfig.stockFilterCache).toFile();
+        File stockFilterCache = Minecraft.getInstance().gameDirectory.toPath().resolve(KeystoneConfig.stockFilterCache).toFile();
         if (!stockFilterCache.exists()) stockFilterCache.mkdirs();
         return stockFilterCache;
     }
     private static File getFilterDirectory()
     {
-        File filtersDirectory = Minecraft.getInstance().gameDir.toPath().resolve(KeystoneConfig.filtersDirectory).toFile();
+        File filtersDirectory = Minecraft.getInstance().gameDirectory.toPath().resolve(KeystoneConfig.filtersDirectory).toFile();
         if (!filtersDirectory.exists()) filtersDirectory.mkdirs();
         return filtersDirectory;
     }
@@ -131,14 +131,14 @@ public class FilterCompiler
                     {
                         String error = "Class '" + oldClassName + "' does not extend KeystoneFilter!";
                         Keystone.LOGGER.error(error);
-                        Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+                        Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
                         return new KeystoneFilter().setName(getFilterName(filterFile, false));
                     }
                     catch (IllegalAccessException e)
                     {
                         String error = "Cannot access filter constructor! Ensure the filter has a public zero-argument constructor.";
                         Keystone.LOGGER.error(error);
-                        Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+                        Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
                         return new KeystoneFilter().setName(getFilterName(filterFile, false));
                     }
                     catch (InstantiationException e)
@@ -146,7 +146,7 @@ public class FilterCompiler
                         String error = "Error instantiating filter '" + oldClassName + "'!";
                         Keystone.LOGGER.error(error);
                         e.printStackTrace();
-                        Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+                        Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
                         return new KeystoneFilter().setName(getFilterName(filterFile, false));
                     }
                 }
@@ -154,7 +154,7 @@ public class FilterCompiler
                 {
                     String error = "Unable to find class '" + oldClassName + "'! Make sure your filter class and file share the same name.";
                     Keystone.LOGGER.error(error);
-                    Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+                    Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
                     return new KeystoneFilter().setName(getFilterName(filterFile, false));
                 }
             }
@@ -171,7 +171,7 @@ public class FilterCompiler
                 }
 
                 Keystone.LOGGER.error(fixedError);
-                Minecraft.getInstance().player.sendMessage(new StringTextComponent(fixedError).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+                Minecraft.getInstance().player.sendMessage(new StringTextComponent(fixedError).withStyle(TextFormatting.RED), Util.NIL_UUID);
                 return new KeystoneFilter().setName(getFilterName(filterFile, false));
             }
         }
@@ -179,7 +179,7 @@ public class FilterCompiler
         {
             String error = "Filter file '" + filterPath + "' not found!";
             Keystone.LOGGER.error(error);
-            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
             return new KeystoneFilter().setName("File Not Found");
         }
         catch (IOException e)
@@ -187,7 +187,7 @@ public class FilterCompiler
             String error = "Could not read filter file '" + filterPath + "'!";
             Keystone.LOGGER.error(error);
             e.printStackTrace();
-            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
             return new KeystoneFilter().setName(getFilterName(filterFile, false));
         }
     }

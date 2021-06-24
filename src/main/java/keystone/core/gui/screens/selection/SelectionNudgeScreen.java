@@ -68,7 +68,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         if (event.isCanceled()) return;
 
         if (event.slot == KeystoneHotbarSlot.SELECTION && Keystone.getModule(SelectionModule.class).getSelectionBoxCount() > 0) open();
-        else if (open != null) open.closeScreen();
+        else if (open != null) open.onClose();
     }
     @SubscribeEvent
     public static final void onSelectionsChanged(final KeystoneSelectionChangedEvent event)
@@ -79,7 +79,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         }
         else
         {
-            if (event.selections.length == 0) open.closeScreen();
+            if (event.selections.length == 0) open.onClose();
             else if (event.createdSelection && open.selectionToNudge >= event.selections.length - 2) open.setSelectionToNudge(event.selections.length - 1);
             else if (open.selectionToNudge > event.selections.length - 1) open.setSelectionToNudge(event.selections.length - 1);
             else open.setSelectionToNudge(open.selectionToNudge);
@@ -88,7 +88,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     //endregion
     //region Screen Overrides
     @Override
-    public void onClose()
+    public void removed()
     {
         open = null;
     }
@@ -167,7 +167,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     {
         selectionToNudge = value;
         selectionBox = resolveSelectionIndex();
-        if (selectionBox == null) closeScreen();
+        if (selectionBox == null) onClose();
         else updateSize();
     }
     private SelectionBoundingBox resolveSelectionIndex()
@@ -180,8 +180,8 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     private void updateSize()
     {
         boxSize = String.format("%dW x %dL x %dH", selectionBox.getSize().getX(), selectionBox.getSize().getZ(), selectionBox.getSize().getY());
-        int strWidth = font.getStringWidth(boxSize);
-        int minWidth = 2 * MARGINS + 2 * (2 * PADDING + font.getStringWidth(new TranslationTextComponent("keystone.nudge").getString())) + PADDING;
+        int strWidth = font.width(boxSize);
+        int minWidth = 2 * MARGINS + 2 * (2 * PADDING + font.width(new TranslationTextComponent("keystone.nudge").getString())) + PADDING;
         panelWidth = Math.max(strWidth + MARGINS + MARGINS, minWidth);
         buttonWidth = panelWidth / 2 - MARGINS - PADDING / 2;
         panelHeight = 2 * MARGINS + 2 * BUTTON_HEIGHT + 2 * PADDING + 10;

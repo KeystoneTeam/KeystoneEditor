@@ -52,14 +52,14 @@ public class FieldWidgetList extends WidgetList
             {
                 String error = "Could not create editor for field '" + variableName + "'!";
                 Keystone.LOGGER.error(error);
-                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
                 e.printStackTrace();
             }
             catch (IllegalAccessException e)
             {
                 String error = "Could not access field '" + variableName + "'!";
                 Keystone.LOGGER.error(error);
-                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
                 e.printStackTrace();
             }
         }
@@ -79,49 +79,49 @@ public class FieldWidgetList extends WidgetList
         if (type == BlockPalette.class)
         {
             add(new BlockPaletteFieldWidget(instance, field, hook, name, 0, y, intendedWidth, disableWidgets, restoreWidgets));
-            return BlockPaletteFieldWidget.getHeight();
+            return BlockPaletteFieldWidget.getFinalHeight();
         }
         //endregion
         //region Block Mask
         if (type == BlockMask.class)
         {
             add(new BlockMaskFieldWidget(instance, field, hook, name, 0, y, intendedWidth, disableWidgets, restoreWidgets));
-            return BlockMaskFieldWidget.getHeight();
+            return BlockMaskFieldWidget.getFinalHeight();
         }
         //endregion
         //region Float
         else if (type == float.class)
         {
             add(new FloatFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
-            return ParsableTextFieldWidget.getHeight();
+            return ParsableTextFieldWidget.getFinalHeight();
         }
         //endregion
         //region Integer
         else if (type == int.class)
         {
             add(new IntegerFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
-            return ParsableTextFieldWidget.getHeight();
+            return ParsableTextFieldWidget.getFinalHeight();
         }
         //endregion
         //region String
         else if (type == String.class)
         {
             add(new StringFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
-            return ParsableTextFieldWidget.getHeight();
+            return ParsableTextFieldWidget.getFinalHeight();
         }
         //endregion
         //region Boolean
         else if (type == boolean.class)
         {
             add(new BooleanFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
-            return BooleanFieldWidget.getHeight();
+            return BooleanFieldWidget.getFinalHeight();
         }
         //endregion
         //region Enum
         else if (Enum.class.isAssignableFrom(type))
         {
             add(new EnumFieldWidget(instance, field, hook, name, 0, y, intendedWidth, disableWidgets, restoreWidgets, addDropdown));
-            return EnumFieldWidget.getHeight();
+            return EnumFieldWidget.getFinalHeight();
         }
         //endregion
 

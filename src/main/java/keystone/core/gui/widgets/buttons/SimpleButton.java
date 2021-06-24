@@ -18,12 +18,12 @@ public class SimpleButton extends ButtonNoHotkey
     public SimpleButton(int x, int y, int width, int height, ITextComponent title, IPressable pressedAction)
     {
         super(x, y, width, height, title, pressedAction);
-        this.font = Minecraft.getInstance().fontRenderer;
+        this.font = Minecraft.getInstance().font;
     }
     public SimpleButton(int x, int y, int width, int height, ITextComponent title, IPressable pressedAction, IKeystoneTooltip tooltip)
     {
         super(x, y, width, height, title, pressedAction, tooltip);
-        this.font = Minecraft.getInstance().fontRenderer;
+        this.font = Minecraft.getInstance().font;
     }
 
     public SimpleButton setColors(int buttonColor, int textColor, int textColorHovered, int textColorDisabled)

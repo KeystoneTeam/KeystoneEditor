@@ -39,8 +39,8 @@ public class IntegerFieldWidget extends ParsableTextFieldWidget<Integer>
         {
             int step = this.range != null ? this.range.scrollStep() : 1;
 
-            if (delta > 0) setValue(getValue() + step);
-            else if (delta < 0) setValue(getValue() - step);
+            if (delta > 0) setTypedValue(getTypedValue() + step);
+            else if (delta < 0) setTypedValue(getTypedValue() - step);
             return true;
         }
         return false;

@@ -12,14 +12,14 @@ public class IntegerPropertyWidget extends IntegerWidget
 
     public IntegerPropertyWidget(Block block, IntegerProperty property, int x, int y, int width)
     {
-        super(new StringTextComponent(property.getName()), x, y, width, block.getMinecraftBlock().get(property));
+        super(new StringTextComponent(property.getName()), x, y, width, block.getMinecraftBlock().getValue(property));
 
         this.block = block;
         this.property = property;
 
         min = Integer.MAX_VALUE;
         max = Integer.MIN_VALUE;
-        for (Integer value : property.getAllowedValues())
+        for (Integer value : property.getPossibleValues())
         {
             if (value < min) min = value;
             if (value > max) max = value;
@@ -29,7 +29,7 @@ public class IntegerPropertyWidget extends IntegerWidget
     @Override
     protected boolean onSetValue(Integer value)
     {
-        block.setMinecraftBlock(block.getMinecraftBlock().with(property, value));
+        block.setMinecraftBlock(block.getMinecraftBlock().setValue(property, value));
         return true;
     }
 }

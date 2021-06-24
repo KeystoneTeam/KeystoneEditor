@@ -86,7 +86,7 @@ public abstract class BrushShape
         for (int i = 0; i < mask.length; i++)
         {
             Vector3f center = blockCenters[i];
-            mask[i] = isLocalizedPositionInShape(center.getX(), center.getY(), center.getZ(), sizeX, sizeY, sizeZ) ? (byte)2 : (byte)0;
+            mask[i] = isLocalizedPositionInShape(center.x(), center.y(), center.z(), sizeX, sizeY, sizeZ) ? (byte)2 : (byte)0;
         }
         for (int z = 1; z < sizeZ - 1; z++)
         {

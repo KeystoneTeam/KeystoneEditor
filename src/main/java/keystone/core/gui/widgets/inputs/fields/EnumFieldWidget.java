@@ -43,7 +43,7 @@ public class EnumFieldWidget<T extends Enum<T>> extends EnumWidget<T>
         {
             String error = "Cannot set Enum field '" + getMessage().getString() + "'!";
             Keystone.LOGGER.error(error);
-            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
             e.printStackTrace();
         }
     }

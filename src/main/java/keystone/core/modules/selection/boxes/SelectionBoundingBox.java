@@ -58,20 +58,20 @@ public class SelectionBoundingBox extends SelectableBoundingBox
         if (face.getFaceDirection() == Direction.UP || face.getFaceDirection() == Direction.DOWN)
         {
             normal = new Vector3d(0, 0, 1);
-            if (Math.abs(Player.getLookDirection().dotProduct(new Vector3d(1, 0, 0))) > Math.abs(Player.getLookDirection().dotProduct(normal))) normal = new Vector3d(1, 0, 0);
-            if (Player.getLookDirection().dotProduct(normal) < 0) normal = normal.scale(-1);
+            if (Math.abs(Player.getLookDirection().dot(new Vector3d(1, 0, 0))) > Math.abs(Player.getLookDirection().dot(normal))) normal = new Vector3d(1, 0, 0);
+            if (Player.getLookDirection().dot(normal) < 0) normal = normal.scale(-1);
         }
         if (face.getFaceDirection() == Direction.NORTH || face.getFaceDirection() == Direction.SOUTH)
         {
             normal = new Vector3d(1, 0, 0);
-            if (Math.abs(Player.getLookDirection().dotProduct(new Vector3d(0, 1, 0))) > Math.abs(Player.getLookDirection().dotProduct(normal))) normal = new Vector3d(0, 1, 0);
-            if (Player.getLookDirection().dotProduct(normal) < 0) normal = normal.scale(-1);
+            if (Math.abs(Player.getLookDirection().dot(new Vector3d(0, 1, 0))) > Math.abs(Player.getLookDirection().dot(normal))) normal = new Vector3d(0, 1, 0);
+            if (Player.getLookDirection().dot(normal) < 0) normal = normal.scale(-1);
         }
         if (face.getFaceDirection() == Direction.WEST || face.getFaceDirection() == Direction.EAST)
         {
             normal = new Vector3d(0, 0, 1);
-            if (Math.abs(Player.getLookDirection().dotProduct(new Vector3d(0, 1, 0))) > Math.abs(Player.getLookDirection().dotProduct(normal))) normal = new Vector3d(0, 1, 0);
-            if (Player.getLookDirection().dotProduct(normal) < 0) normal = normal.scale(-1);
+            if (Math.abs(Player.getLookDirection().dot(new Vector3d(0, 1, 0))) > Math.abs(Player.getLookDirection().dot(normal))) normal = new Vector3d(0, 1, 0);
+            if (Player.getLookDirection().dot(normal) < 0) normal = normal.scale(-1);
         }
 
         // Cast ray onto plane
@@ -79,9 +79,9 @@ public class SelectionBoundingBox extends SelectableBoundingBox
         if (projectedPoint == null) return;
 
         // Do dragging
-        if (face.getFaceDirection() == Direction.UP || face.getFaceDirection() == Direction.DOWN) moveFace(face.getFaceDirection(), (int)projectedPoint.getY());
-        if (face.getFaceDirection() == Direction.NORTH || face.getFaceDirection() == Direction.SOUTH) moveFace(face.getFaceDirection(), (int)projectedPoint.getZ());
-        if (face.getFaceDirection() == Direction.WEST || face.getFaceDirection() == Direction.EAST) moveFace(face.getFaceDirection(), (int)projectedPoint.getX());
+        if (face.getFaceDirection() == Direction.UP || face.getFaceDirection() == Direction.DOWN) moveFace(face.getFaceDirection(), (int)projectedPoint.y);
+        if (face.getFaceDirection() == Direction.NORTH || face.getFaceDirection() == Direction.SOUTH) moveFace(face.getFaceDirection(), (int)projectedPoint.z);
+        if (face.getFaceDirection() == Direction.WEST || face.getFaceDirection() == Direction.EAST) moveFace(face.getFaceDirection(), (int)projectedPoint.x);
 
         // Post event
         MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionModule.getSelectionBoundingBoxes(), false));

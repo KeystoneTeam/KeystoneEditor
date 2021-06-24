@@ -54,20 +54,20 @@ public class SuperRenderTypeBuffer implements IRenderTypeBuffer
         return lateBuffer.getBuffer(type);
     }
 
-    public void finish()
+    public void endBatch()
     {
         RenderSystem.disableCull();
-        earlyBuffer.finish();
-        defaultBuffer.finish();
-        lateBuffer.finish();
+        earlyBuffer.endBatch();
+        defaultBuffer.endBatch();
+        lateBuffer.endBatch();
     }
 
-    public void finish(RenderType type)
+    public void endBatch(RenderType type)
     {
         RenderSystem.disableCull();
-        earlyBuffer.finish(type);
-        defaultBuffer.finish(type);
-        lateBuffer.finish(type);
+        earlyBuffer.endBatch(type);
+        defaultBuffer.endBatch(type);
+        lateBuffer.endBatch(type);
     }
 
     private static class SuperRenderTypeBufferPhase extends IRenderTypeBuffer.Impl
@@ -78,25 +78,25 @@ public class SuperRenderTypeBuffer implements IRenderTypeBuffer
         {
             return Util.make(new Object2ObjectLinkedOpenHashMap<>(), (map) ->
             {
-                map.put(Atlases.getSolidBlockType(), blockBuilders.getBuilder(RenderType.getSolid()));
-                map.put(Atlases.getCutoutBlockType(), blockBuilders.getBuilder(RenderType.getCutout()));
-                map.put(Atlases.getBannerType(), blockBuilders.getBuilder(RenderType.getCutoutMipped()));
-                map.put(Atlases.getTranslucentCullBlockType(), blockBuilders.getBuilder(RenderType.getTranslucent()));
-                put(map, Atlases.getShieldType());
-                put(map, Atlases.getBedType());
-                put(map, Atlases.getShulkerBoxType());
-                put(map, Atlases.getSignType());
-                put(map, Atlases.getChestType());
-                put(map, RenderType.getTranslucentNoCrumbling());
-                put(map, RenderType.getArmorGlint());
-                put(map, RenderType.getArmorEntityGlint());
-                put(map, RenderType.getGlint());
-                put(map, RenderType.getGlintDirect());
-                put(map, RenderType.getGlintTranslucent());
-                put(map, RenderType.getEntityGlint());
-                put(map, RenderType.getEntityGlintDirect());
-                put(map, RenderType.getWaterMask());
-                ModelBakery.DESTROY_RENDER_TYPES.forEach((renderType) -> {
+                map.put(Atlases.solidBlockSheet(), blockBuilders.builder(RenderType.solid()));
+                map.put(Atlases.cutoutBlockSheet(), blockBuilders.builder(RenderType.cutout()));
+                map.put(Atlases.bannerSheet(), blockBuilders.builder(RenderType.cutoutMipped()));
+                map.put(Atlases.translucentCullBlockSheet(), blockBuilders.builder(RenderType.translucent()));
+                put(map, Atlases.shieldSheet());
+                put(map, Atlases.bedSheet());
+                put(map, Atlases.shulkerBoxSheet());
+                put(map, Atlases.signSheet());
+                put(map, Atlases.chestSheet());
+                put(map, RenderType.translucentNoCrumbling());
+                put(map, RenderType.armorGlint());
+                put(map, RenderType.armorEntityGlint());
+                put(map, RenderType.glint());
+                put(map, RenderType.glintDirect());
+                put(map, RenderType.glintTranslucent());
+                put(map, RenderType.entityGlint());
+                put(map, RenderType.entityGlintDirect());
+                put(map, RenderType.waterMask());
+                ModelBakery.DESTROY_TYPES.forEach((renderType) -> {
                     put(map, renderType);
                 });
             });
@@ -104,7 +104,7 @@ public class SuperRenderTypeBuffer implements IRenderTypeBuffer
 
         private static void put(Object2ObjectLinkedOpenHashMap<RenderType, BufferBuilder> map, RenderType type)
         {
-            map.put(type, new BufferBuilder(type.getBufferSize()));
+            map.put(type, new BufferBuilder(type.bufferSize()));
         }
 
         protected SuperRenderTypeBufferPhase()

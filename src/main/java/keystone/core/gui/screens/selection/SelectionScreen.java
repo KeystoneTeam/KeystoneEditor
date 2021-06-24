@@ -60,23 +60,23 @@ public class SelectionScreen extends KeystoneOverlay
         if (event.isCanceled()) return;
 
         if (event.slot == KeystoneHotbarSlot.SELECTION && Keystone.getModule(SelectionModule.class).getSelectionBoxCount() > 0) open();
-        else if (open != null) open.closeScreen();
+        else if (open != null) open.onClose();
     }
     @SubscribeEvent(priority = EventPriority.LOW)
     public static final void onSelectionsChanged(final KeystoneSelectionChangedEvent event)
     {
         if (event.selections.length > 0) open();
-        else if (open != null) open.closeScreen();
+        else if (open != null) open.onClose();
     }
     //endregion
     //region Screen Overrides
     @Override
-    public void closeScreen()
+    public void onClose()
     {
         KeystoneOverlayHandler.removeOverlay(this);
     }
     @Override
-    public void onClose()
+    public void removed()
     {
         open = null;
     }
@@ -105,12 +105,12 @@ public class SelectionScreen extends KeystoneOverlay
 
         for (SimpleButton button : buttons)
         {
-            int width = font.getStringWidth(button.getMessage().getString());
+            int width = font.width(button.getMessage().getString());
             if (width > panelWidth) panelWidth = width;
         }
         for (SimpleButton button : buttons)
         {
-            button.x = (panelWidth - font.getStringWidth(button.getMessage().getString())) / 2;
+            button.x = (panelWidth - font.width(button.getMessage().getString())) / 2;
             addButton(button);
         }
         panelWidth += 2 * (PADDING + MARGINS);
@@ -132,7 +132,7 @@ public class SelectionScreen extends KeystoneOverlay
         tooltip.add(new TranslationTextComponent(translationKey + ".tooltip"));
 
         int y = startY + index * (BUTTON_HEIGHT + PADDING);
-        int buttonWidth = 2 * PADDING + font.getStringWidth(label.getString());
+        int buttonWidth = 2 * PADDING + font.width(label.getString());
         return new SimpleButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, (stack, mouseX, mouseY, partialTicks) -> GuiUtils.drawHoveringText(stack, tooltip, mouseX, mouseY, width, height, (int)(tooltipWidth * width), font));
     }
     //endregion
@@ -143,7 +143,7 @@ public class SelectionScreen extends KeystoneOverlay
     }
     private final void buttonDeleteBlocks(Button button)
     {
-        Keystone.runTool(new FillTool(Blocks.AIR.getDefaultState()));
+        Keystone.runTool(new FillTool(Blocks.AIR.defaultBlockState()));
     }
     private final void buttonDeleteEntities(Button button)
     {

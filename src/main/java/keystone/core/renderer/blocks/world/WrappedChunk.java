@@ -41,6 +41,7 @@ public class WrappedChunk implements IChunk
     public WrappedChunk(PlacementSimulationWorld world, int x, int z)
     {
         this.world = world;
+        // TODO: Check if this needs to be false
         this.needsLight = true;
         this.x = x;
         this.z = z;
@@ -55,7 +56,7 @@ public class WrappedChunk implements IChunk
     }
 
     @Override
-    public Stream<BlockPos> getLightSources()
+    public Stream<BlockPos> getLights()
     {
         return world.blocksAdded
                 .entrySet()
@@ -67,6 +68,18 @@ public class WrappedChunk implements IChunk
                     return chunkContains && it.getValue().getLightValue(world, blockPos) != 0;
                 })
                 .map(Map.Entry::getKey);
+    }
+
+    @Override
+    public ITickList<Block> getBlockTicks()
+    {
+        return null;
+    }
+
+    @Override
+    public ITickList<Fluid> getLiquidTicks()
+    {
+        return null;
     }
 
     @Override
@@ -87,6 +100,12 @@ public class WrappedChunk implements IChunk
         return ChunkStatus.LIGHT;
     }
 
+    @Override
+    public void removeBlockEntity(BlockPos p_177425_1_)
+    {
+
+    }
+
     @Nullable
     @Override
     public BlockState setBlockState(BlockPos p_177436_1_, BlockState p_177436_2_, boolean p_177436_3_)
@@ -95,7 +114,7 @@ public class WrappedChunk implements IChunk
     }
 
     @Override
-    public void addTileEntity(BlockPos p_177426_1_, TileEntity p_177426_2_)
+    public void setBlockEntity(BlockPos p_177426_1_, TileEntity p_177426_2_)
     {
 
     }
@@ -107,7 +126,7 @@ public class WrappedChunk implements IChunk
     }
 
     @Override
-    public Set<BlockPos> getTileEntitiesPos()
+    public Set<BlockPos> getBlockEntitiesPos()
     {
         return null;
     }
@@ -119,13 +138,13 @@ public class WrappedChunk implements IChunk
     }
 
     @Override
-    public Heightmap getHeightmap(Heightmap.Type p_217303_1_)
+    public Heightmap getOrCreateHeightmapUnprimed(Heightmap.Type p_217303_1_)
     {
         return null;
     }
 
     @Override
-    public int getTopBlockY(Heightmap.Type p_201576_1_, int p_201576_2_, int p_201576_3_)
+    public int getHeight(Heightmap.Type p_201576_1_, int p_201576_2_, int p_201576_3_)
     {
         return 0;
     }
@@ -143,51 +162,52 @@ public class WrappedChunk implements IChunk
     }
 
     @Override
-    public void setModified(boolean p_177427_1_)
+    public Map<Structure<?>, StructureStart<?>> getAllStarts()
+    {
+        return null;
+    }
+
+    @Override
+    public void setAllStarts(Map<Structure<?>, StructureStart<?>> p_201612_1_)
+    {
+
+    }
+
+    @Nullable
+    @Override
+    public BiomeContainer getBiomes()
+    {
+        return null;
+    }
+
+    @Override
+    public void setUnsaved(boolean p_177427_1_)
     {
 
     }
 
     @Override
-    public boolean isModified()
+    public boolean isUnsaved()
     {
         return false;
     }
 
     @Override
-    public void removeTileEntity(BlockPos p_177425_1_)
-    {
-
-    }
-
-    @Override
-    public ShortList[] getPackedPositions()
+    public ShortList[] getPostProcessing()
     {
         return new ShortList[0];
     }
 
     @Nullable
     @Override
-    public CompoundNBT getDeferredTileEntity(BlockPos p_201579_1_)
+    public CompoundNBT getBlockEntityNbt(BlockPos p_201579_1_)
     {
         return null;
     }
 
     @Nullable
     @Override
-    public CompoundNBT getTileEntityNBT(BlockPos pos)
-    {
-        return null;
-    }
-
-    @Override
-    public ITickList<Block> getBlocksToBeTicked()
-    {
-        return null;
-    }
-
-    @Override
-    public ITickList<Fluid> getFluidsToBeTicked()
+    public CompoundNBT getBlockEntityNbtForSaving(BlockPos p_223134_1_)
     {
         return null;
     }
@@ -211,20 +231,20 @@ public class WrappedChunk implements IChunk
     }
 
     @Override
-    public boolean hasLight()
+    public boolean isLightCorrect()
     {
         return needsLight;
     }
 
     @Override
-    public void setLight(boolean needsLight)
+    public void setLightCorrect(boolean needsLight)
     {
         this.needsLight = needsLight;
     }
 
     @Nullable
     @Override
-    public TileEntity getTileEntity(BlockPos pos)
+    public TileEntity getBlockEntity(BlockPos pos)
     {
         return null;
     }
@@ -243,57 +263,38 @@ public class WrappedChunk implements IChunk
 
     @Nullable
     @Override
-    public StructureStart<?> func_230342_a_(Structure<?> p_230342_1_)
+    public StructureStart<?> getStartForFeature(Structure<?> p_230342_1_)
     {
         return null;
     }
 
     @Override
-    public void func_230344_a_(Structure<?> p_230344_1_, StructureStart<?> p_230344_2_)
+    public void setStartForFeature(Structure<?> p_230344_1_, StructureStart<?> p_230344_2_)
     {
 
     }
 
     @Override
-    public LongSet func_230346_b_(Structure<?> p_230346_1_)
+    public LongSet getReferencesForFeature(Structure<?> p_230346_1_)
     {
         return null;
     }
 
     @Override
-    public void func_230343_a_(Structure<?> p_230343_1_, long p_230343_2_)
+    public void addReferenceForFeature(Structure<?> p_230343_1_, long p_230343_2_)
     {
 
     }
 
     @Override
-    public Map<Structure<?>, LongSet> getStructureReferences()
+    public Map<Structure<?>, LongSet> getAllReferences()
     {
         return null;
     }
 
     @Override
-    public void setStructureReferences(Map<Structure<?>, LongSet> arg0)
+    public void setAllReferences(Map<Structure<?>, LongSet> p_201606_1_)
     {
 
-    }
-
-    @Override
-    public void setStructureStarts(Map<Structure<?>, StructureStart<?>> p_201612_1_)
-    {
-
-    }
-
-    @Nullable
-    @Override
-    public BiomeContainer getBiomes()
-    {
-        return null;
-    }
-
-    @Override
-    public Map<Structure<?>, StructureStart<?>> getStructureStarts()
-    {
-        return null;
     }
 }

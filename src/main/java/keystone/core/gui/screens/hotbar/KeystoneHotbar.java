@@ -68,8 +68,8 @@ public class KeystoneHotbar extends KeystoneOverlay
     @Override
     public void init()
     {
-        offsetX = Math.round((minecraft.getMainWindow().getScaledWidth() / 2 / HotbarButton.SCALE) - 71);
-        offsetY = Math.round((minecraft.getMainWindow().getScaledHeight() / HotbarButton.SCALE) - 22);
+        offsetX = Math.round((minecraft.getWindow().getGuiScaledWidth() / 2 / HotbarButton.SCALE) - 71);
+        offsetY = Math.round((minecraft.getWindow().getGuiScaledHeight() / HotbarButton.SCALE) - 22);
 
         hotbarButtons = new HotbarButton[]
         {
@@ -92,11 +92,11 @@ public class KeystoneHotbar extends KeystoneOverlay
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
-        stack.push();
+        stack.pushPose();
         stack.scale(HotbarButton.SCALE, HotbarButton.SCALE, HotbarButton.SCALE);
 
         // Draw hotbar
-        this.minecraft.getTextureManager().bindTexture(hotbarTexture);
+        this.minecraft.getTextureManager().bind(hotbarTexture);
         blit(stack, offsetX, offsetY, 142, 22, 0, 0, 142, 22, 256, 256);
 
         // Render slots
@@ -107,14 +107,14 @@ public class KeystoneHotbar extends KeystoneOverlay
             if (button.isHovered()) drawCurrentToolName = false;
         }
 
-        stack.pop();
+        stack.popPose();
     }
     public void renderToolName(MatrixStack stack, IFormattableTextComponent toolName, int mouseX, int mouseY)
     {
         Minecraft mc = Minecraft.getInstance();
         List<IFormattableTextComponent> text = new ArrayList<>();
         text.add(toolName);
-        GuiUtils.drawHoveringText(ItemStack.EMPTY, stack, text, mouseX, mouseY, mc.getMainWindow().getScaledWidth(), mc.getMainWindow().getScaledHeight(), -1, mc.fontRenderer);
+        GuiUtils.drawHoveringText(ItemStack.EMPTY, stack, text, mouseX, mouseY, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight(), -1, mc.font);
     }
 
     public static KeystoneHotbarSlot getSelectedSlot()

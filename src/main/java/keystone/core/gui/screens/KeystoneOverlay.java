@@ -36,10 +36,11 @@ public class KeystoneOverlay extends Screen
         return false;
     }
     @Override
-    public void closeScreen()
+    public void onClose()
     {
         KeystoneOverlayHandler.removeOverlay(this);
     }
+
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
@@ -64,7 +65,7 @@ public class KeystoneOverlay extends Screen
     public static void fillRounded(MatrixStack stack, int minX, int minY, int maxX, int maxY)
     {
         int cornerSize = 8;
-        Minecraft.getInstance().textureManager.bindTexture(ROUNDED_BOX);
+        Minecraft.getInstance().textureManager.bind(ROUNDED_BOX);
         RenderSystem.enableBlend();
 
         // Corners
@@ -89,15 +90,15 @@ public class KeystoneOverlay extends Screen
     public static void drawItem(Widget widget, Minecraft mc, ItemStack stack, int x, int y, String text)
     {
         widget.setBlitOffset(200);
-        mc.getItemRenderer().zLevel = 200.0F;
+        mc.getItemRenderer().blitOffset = 200.0F;
 
         FontRenderer font = stack.getItem().getFontRenderer(stack);
-        if (font == null) font = mc.fontRenderer;
-        mc.getItemRenderer().renderItemAndEffectIntoGUI(stack, x, y);
-        mc.getItemRenderer().renderItemOverlayIntoGUI(font, stack, x, y, text);
+        if (font == null) font = mc.font;
+        mc.getItemRenderer().renderAndDecorateItem(stack, x, y);
+        mc.getItemRenderer().renderGuiItemDecorations(font, stack, x, y, text);
 
         widget.setBlitOffset(0);
-        mc.getItemRenderer().zLevel = 0.0F;
+        mc.getItemRenderer().blitOffset = 0.0F;
     }
     public static void drawTooltip(IKeystoneTooltip tooltip)
     {

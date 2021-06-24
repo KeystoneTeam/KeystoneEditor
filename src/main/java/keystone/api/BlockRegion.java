@@ -44,7 +44,7 @@ public class BlockRegion
         this.blocks = blocks;
         this.min = new BlockPos(min);
         this.max = new BlockPos(max);
-        this.size = new Vector3i(max.subtract(min).add(1, 1, 1));
+        this.size = new Vector3i(max.subtract(min).offset(1, 1, 1));
     }
 
     /**

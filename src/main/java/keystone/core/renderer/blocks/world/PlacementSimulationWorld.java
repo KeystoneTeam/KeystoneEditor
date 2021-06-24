@@ -39,15 +39,15 @@ public class PlacementSimulationWorld extends WrappedWorld
     }
 
     @Override
-    public WorldLightManager getLightManager()
+    public WorldLightManager getLightEngine()
     {
-        return super.getLightManager();
+        return super.getLightEngine();
     }
 
     public void setTileEntities(Collection<TileEntity> tileEntities)
     {
         tesAdded.clear();
-        tileEntities.forEach(te -> tesAdded.put(te.getPos(), te));
+        tileEntities.forEach(te -> tesAdded.put(te.getBlockPos(), te));
     }
 
     public void clear()
@@ -56,10 +56,9 @@ public class PlacementSimulationWorld extends WrappedWorld
     }
 
     @Override
-    public boolean setBlockState(BlockPos pos, BlockState newState, int flags)
+    public boolean setBlock(BlockPos pos, BlockState newState, int flags)
     {
-
-        SectionPos sectionPos = SectionPos.from(pos);
+        SectionPos sectionPos = SectionPos.of(pos);
 
         if (spannedChunks.add(sectionPos))
         {
@@ -73,25 +72,26 @@ public class PlacementSimulationWorld extends WrappedWorld
     }
 
     @Override
-    public boolean setBlockState(BlockPos pos, BlockState state)
+    public boolean setBlockAndUpdate(BlockPos pos, BlockState state)
     {
-        return setBlockState(pos, state, 0);
+        return setBlock(pos, state, 0);
     }
 
     @Override
-    public TileEntity getTileEntity(BlockPos pos)
+    public TileEntity getBlockEntity(BlockPos pos)
     {
         return tesAdded.get(pos);
     }
 
     @Override
-    public boolean hasBlockState(BlockPos pos, Predicate<BlockState> condition)
+    public boolean isStateAtPosition(BlockPos pos, Predicate<BlockState> condition)
     {
         return condition.test(getBlockState(pos));
     }
 
+    // TODO: Check if this needs inverting
     @Override
-    public boolean isBlockPresent(BlockPos pos)
+    public boolean isEmptyBlock(BlockPos pos)
     {
         return true;
     }
@@ -104,7 +104,7 @@ public class PlacementSimulationWorld extends WrappedWorld
 
     public BlockState getBlockState(int x, int y, int z)
     {
-        return getBlockState(scratch.setPos(x, y, z));
+        return getBlockState(scratch.set(x, y, z));
     }
 
     @Override
@@ -114,6 +114,6 @@ public class PlacementSimulationWorld extends WrappedWorld
         if (state != null)
             return state;
         else
-            return Blocks.AIR.getDefaultState();
+            return Blocks.AIR.defaultBlockState();
     }
 }

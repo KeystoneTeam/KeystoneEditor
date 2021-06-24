@@ -35,15 +35,15 @@ public class RayTracing
     }
     public static Vector3d[] getFacePlane(Coords min, Coords max, Direction face)
     {
-        return new Vector3d[] { getPointOnFace(min, max, face), Vector3d.copy(face.getDirectionVec()) };
+        return new Vector3d[] { getPointOnFace(min, max, face), Vector3d.atLowerCornerOf(face.getNormal()) };
     }
     public static Vector3d rayPlaneIntersection(Vector3d origin, Vector3d direction, Vector3d pointOnPlane, Vector3d planeNormal)
     {
-        double d = -planeNormal.dotProduct(pointOnPlane);
-        double denom = planeNormal.dotProduct(direction);
+        double d = -planeNormal.dot(pointOnPlane);
+        double denom = planeNormal.dot(direction);
         if (Math.abs(denom) <= 1e-4f) return null;
 
-        double t = -(planeNormal.dotProduct(origin) + d) / planeNormal.dotProduct(direction);
+        double t = -(planeNormal.dot(origin) + d) / planeNormal.dot(direction);
         if (t <= 0) return null;
 
         return origin.add(direction.scale(t));
@@ -56,20 +56,20 @@ public class RayTracing
 
         if (face == Direction.UP || face == Direction.DOWN)
         {
-            if (intersectionPoint.getX() >= min.getX() && intersectionPoint.getX() <= max.getX() &&
-                intersectionPoint.getZ() >= min.getZ() && intersectionPoint.getZ() <= max.getZ()) return intersectionPoint;
+            if (intersectionPoint.x >= min.getX() && intersectionPoint.x <= max.getX() &&
+                intersectionPoint.z >= min.getZ() && intersectionPoint.z <= max.getZ()) return intersectionPoint;
             else return null;
         }
         if (face == Direction.NORTH || face == Direction.SOUTH)
         {
-            if (intersectionPoint.getX() >= min.getX() && intersectionPoint.getX() <= max.getX() &&
-                    intersectionPoint.getY() >= min.getY() && intersectionPoint.getY() <= max.getY()) return intersectionPoint;
+            if (intersectionPoint.x >= min.getX() && intersectionPoint.x <= max.getX() &&
+                    intersectionPoint.y >= min.getY() && intersectionPoint.y <= max.getY()) return intersectionPoint;
             else return null;
         }
         if (face == Direction.EAST || face == Direction.WEST)
         {
-            if (intersectionPoint.getZ() >= min.getZ() && intersectionPoint.getZ() <= max.getZ() &&
-                    intersectionPoint.getY() >= min.getY() && intersectionPoint.getY() <= max.getY()) return intersectionPoint;
+            if (intersectionPoint.z >= min.getZ() && intersectionPoint.z <= max.getZ() &&
+                    intersectionPoint.y >= min.getY() && intersectionPoint.y <= max.getY()) return intersectionPoint;
             else return null;
         }
 
@@ -81,7 +81,7 @@ public class RayTracing
         Vector3d vector3d = origin;
         Vector3d vector3d1 = direction;
         Vector3d vector3d2 = vector3d.add(vector3d1.x * rayTraceDistance, vector3d1.y * rayTraceDistance, vector3d1.z * rayTraceDistance);
-        return entity.world.rayTraceBlocks(new RayTraceContext(vector3d, vector3d2, RayTraceContext.BlockMode.OUTLINE, rayTraceFluids ? RayTraceContext.FluidMode.ANY : RayTraceContext.FluidMode.NONE, entity));
+        return entity.level.clip(new RayTraceContext(vector3d, vector3d2, RayTraceContext.BlockMode.OUTLINE, rayTraceFluids ? RayTraceContext.FluidMode.ANY : RayTraceContext.FluidMode.NONE, entity));
     }
 
     public static Vector3d screenPointToRayDirection(float partialTicks)
@@ -89,20 +89,20 @@ public class RayTracing
         Minecraft mc = Minecraft.getInstance();
         GameRenderer gr = mc.gameRenderer;
 
-        double x = mc.mouseHelper.getMouseX();
-        double y = mc.getMainWindow().getHeight() - mc.mouseHelper.getMouseY();
+        double x = mc.mouseHandler.xpos();
+        double y = mc.getWindow().getHeight() - mc.mouseHandler.ypos();
 
-        float pitch = mc.getRenderViewEntity().getPitch(partialTicks);
-        float yaw = mc.getRenderViewEntity().getYaw(partialTicks) + 180.0f;
+        float pitch = mc.getCameraEntity().getViewXRot(partialTicks);
+        float yaw = mc.getCameraEntity().getViewYRot(partialTicks) + 180.0f;
 
         MatrixStack stack = new MatrixStack();
-        stack.getLast().getMatrix().mul(gr.getProjectionMatrix(gr.getActiveRenderInfo(), partialTicks, true));
-        stack.rotate(new Quaternion(Vector3f.XP, pitch, true));
-        stack.rotate(new Quaternion(Vector3f.YP, yaw, true));
-        Matrix4f matrix = stack.getLast().getMatrix();
+        stack.last().pose().multiply(gr.getProjectionMatrix(gr.getMainCamera(), partialTicks, true));
+        stack.mulPose(new Quaternion(Vector3f.XP, pitch, true));
+        stack.mulPose(new Quaternion(Vector3f.YP, yaw, true));
+        Matrix4f matrix = stack.last().pose();
         if (!matrix.invert()) return Vector3d.ZERO;
 
-        int[] viewport = new int[] { 0, 0, mc.getMainWindow().getFramebufferWidth(), mc.getMainWindow().getFramebufferHeight() };
+        int[] viewport = new int[] { 0, 0, mc.getWindow().getScreenWidth(), mc.getWindow().getScreenHeight() };
 
         // Unproject near and far
         Vector3d near = unproject(new Vector3d(x, y, -1), matrix, viewport);
@@ -110,7 +110,7 @@ public class RayTracing
 
         if (near == null || far == null) return Vector3d.ZERO;
 
-        return new Vector3d(far.getX() - near.getX(), far.getY() - near.getY(), far.getZ() - near.getZ()).normalize();
+        return new Vector3d(far.x - near.x, far.y - near.y, far.z - near.z).normalize();
     }
 
     private static Vector3d unproject(Vector3d point, Matrix4f projection, int[] viewport)
@@ -121,9 +121,9 @@ public class RayTracing
                 2.0f * (float)point.z - 1.0f, 1.0f);
         unprojected.transform(projection);
         
-        if(unprojected.getW() == 0.0f) return null;
-        float w = 1.0f / unprojected.getW();
+        if(unprojected.w() == 0.0f) return null;
+        float w = 1.0f / unprojected.w();
 
-        return new Vector3d(unprojected.getX() * w, unprojected.getY() * w, unprojected.getZ() * w);
+        return new Vector3d(unprojected.x() * w, unprojected.y() * w, unprojected.z() * w);
     }
 }

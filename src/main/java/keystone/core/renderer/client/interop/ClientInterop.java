@@ -12,7 +12,7 @@ public class ClientInterop
     public static void render(MatrixStack stack, float partialTicks, ClientPlayerEntity player)
     {
         Player.update(partialTicks, player);
-        ClientRenderer.render(stack, partialTicks, DimensionId.from(player.getEntityWorld().getDimensionKey()));
+        ClientRenderer.render(stack, partialTicks, DimensionId.from(player.level.dimension()));
     }
     public static void renderDeferred(float partialTicks)
     {
@@ -21,6 +21,6 @@ public class ClientInterop
 
     public static int getRenderDistanceChunks()
     {
-        return Minecraft.getInstance().gameSettings.renderDistanceChunks;
+        return Minecraft.getInstance().options.renderDistance;
     }
 }

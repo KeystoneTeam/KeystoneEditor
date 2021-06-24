@@ -43,7 +43,7 @@ public class BlockPaletteFieldWidget extends BlockPaletteWidget
         {
             String error = "Could not set BlockPalette field '" + getMessage().getString() + "'!";
             Keystone.LOGGER.error(error);
-            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
             e.printStackTrace();
         }
     }

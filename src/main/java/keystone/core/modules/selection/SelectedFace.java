@@ -37,7 +37,7 @@ public class SelectedFace
             selectionV = selectionPoint.z;
         }
 
-        relativeSelectedBlock = new Coords(selectionPoint.getX() - box.getMinCoords().getX(), selectionPoint.getY() - box.getMinCoords().getY(), selectionPoint.getZ() - box.getMinCoords().getZ());
+        relativeSelectedBlock = new Coords(selectionPoint.x - box.getMinCoords().getX(), selectionPoint.y - box.getMinCoords().getY(), selectionPoint.z - box.getMinCoords().getZ());
     }
 
     public Direction getFaceDirection() { return faceDirection; }

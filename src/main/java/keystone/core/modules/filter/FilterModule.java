@@ -48,7 +48,7 @@ public class FilterModule implements IKeystoneModule
         KeystoneFilter filter = FilterCompiler.compileFilter(filterPath);
         if (abortFilter != null)
         {
-            for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.DUMMY_UUID);
+            for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
             return;
         }
         else runFilter(filter);
@@ -84,7 +84,7 @@ public class FilterModule implements IKeystoneModule
                         filter.prepare();
                         if (abortFilter != null)
                         {
-                            for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.DUMMY_UUID);
+                            for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
                             historyModule.abortHistoryEntry();
                             return;
                         }
@@ -95,7 +95,7 @@ public class FilterModule implements IKeystoneModule
                             filter.processRegion(box);
                             if (abortFilter != null)
                             {
-                                for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.DUMMY_UUID);
+                                for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
                                 historyModule.abortHistoryEntry();
                                 return;
                             }
@@ -111,7 +111,7 @@ public class FilterModule implements IKeystoneModule
 
                                 if (abortFilter != null)
                                 {
-                                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.DUMMY_UUID);
+                                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
                                     historyModule.abortHistoryEntry();
                                     return;
                                 }
@@ -128,7 +128,7 @@ public class FilterModule implements IKeystoneModule
 
                 if (abortFilter != null)
                 {
-                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.DUMMY_UUID);
+                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
                     historyModule.abortHistoryEntry();
                     return;
                 }
@@ -136,7 +136,7 @@ public class FilterModule implements IKeystoneModule
                 filter.finished();
                 if (abortFilter != null)
                 {
-                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.DUMMY_UUID);
+                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
                     historyModule.abortHistoryEntry();
                     return;
                 }
@@ -153,7 +153,7 @@ public class FilterModule implements IKeystoneModule
     public void abortFilter(String... reason)
     {
         abortFilter = new ITextComponent[reason.length];
-        for (int i = 0; i < reason.length; i++) abortFilter[i] = new StringTextComponent(reason[i]).mergeStyle(TextFormatting.RED);
+        for (int i = 0; i < reason.length; i++) abortFilter[i] = new StringTextComponent(reason[i]).withStyle(TextFormatting.RED);
     }
     public void filterException(KeystoneFilter filter, Exception e)
     {

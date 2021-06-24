@@ -137,19 +137,19 @@ public class SelectionModule implements IKeystoneModule
     @SubscribeEvent
     public void onKeyInput(final InputEvent.KeyInputEvent event)
     {
-        if (!Keystone.isActive() || Minecraft.getInstance().currentScreen != null) return;
+        if (!Keystone.isActive() || Minecraft.getInstance().screen != null) return;
 
         if (event.getKey() == GLFW.GLFW_KEY_D && event.getModifiers() == GLFW.GLFW_MOD_CONTROL)
         {
-            GameSettings settings = Minecraft.getInstance().gameSettings;
-            for (KeyBinding keyBinding : settings.keyBindings) if (keyBinding.getKey().getKeyCode() != GLFW.GLFW_KEY_D && keyBinding.isKeyDown()) return;
+            GameSettings settings = Minecraft.getInstance().options;
+            for (KeyBinding keyBinding : settings.keyMappings) if (keyBinding.getKey().getValue() != GLFW.GLFW_KEY_D && keyBinding.isDown()) return;
             deselect();
         }
     }
     @SubscribeEvent
     public void onMouseClick(final KeystoneInputEvent.MouseClickEvent event)
     {
-        if (!Keystone.isActive() || Minecraft.getInstance().currentScreen != null || event.gui) return;
+        if (!Keystone.isActive() || Minecraft.getInstance().screen != null || event.gui) return;
 
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
@@ -163,7 +163,7 @@ public class SelectionModule implements IKeystoneModule
     @SubscribeEvent
     public void onMouseDragStart(final KeystoneInputEvent.MouseDragStartEvent event)
     {
-        if (!Keystone.isActive() || Minecraft.getInstance().currentScreen != null || event.gui) return;
+        if (!Keystone.isActive() || Minecraft.getInstance().screen != null || event.gui) return;
 
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
@@ -173,7 +173,7 @@ public class SelectionModule implements IKeystoneModule
     @SubscribeEvent
     public void onMouseDragEnd(final KeystoneInputEvent.MouseDragEndEvent event)
     {
-        if (!Keystone.isActive() || Minecraft.getInstance().currentScreen != null || event.gui) return;
+        if (!Keystone.isActive() || Minecraft.getInstance().screen != null || event.gui) return;
 
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {

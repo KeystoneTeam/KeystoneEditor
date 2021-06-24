@@ -66,7 +66,7 @@ public class BlocksModule implements IKeystoneModule
         if (!historyModule.isEntryOpen())
         {
             BlockPos pos = new BlockPos(x, y, z);
-            return new Block(world.getBlockState(pos), world.getTileEntity(pos));
+            return new Block(world.getBlockState(pos), world.getBlockEntity(pos));
         }
 
         BlockHistoryChunk chunk = historyModule.getOpenEntry().getChunk(x, y, z);
@@ -74,7 +74,7 @@ public class BlocksModule implements IKeystoneModule
         else
         {
             BlockPos pos = new BlockPos(x, y, z);
-            return new Block(world.getBlockState(pos), world.getTileEntity(pos));
+            return new Block(world.getBlockState(pos), world.getBlockEntity(pos));
         }
     }
 

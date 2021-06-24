@@ -10,7 +10,6 @@ import keystone.core.renderer.client.renderers.RenderQueue;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.event.InputEvent;
@@ -50,15 +49,15 @@ public class GhostBlocksModule implements IKeystoneModule
         {
             Vector3d cameraPos = Camera.getPosition();
             MatrixStack stack = event.getMatrixStack();
-            stack.push();
+            stack.pushPose();
             stack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
             SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();
 
             ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().render(stack, buffer, event.getPartialTicks()));
 
-            buffer.finish();
+            buffer.endBatch();
             RenderSystem.enableCull();
-            stack.pop();
+            stack.popPose();
         });
     }
     @SubscribeEvent
@@ -73,7 +72,7 @@ public class GhostBlocksModule implements IKeystoneModule
 
     public GhostBlocksWorld createWorld()
     {
-        GhostBlocksWorld world = new GhostBlocksWorld(Minecraft.getInstance().world);
+        GhostBlocksWorld world = new GhostBlocksWorld(Minecraft.getInstance().level);
         ghostWorlds.add(world);
         return world;
     }

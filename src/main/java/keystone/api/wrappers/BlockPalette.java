@@ -48,7 +48,7 @@ public class BlockPalette
         BlockPalette clone = new BlockPalette();
         for (PaletteEntry entry : palette)
         {
-            PaletteEntry entryClone = new PaletteEntry(entry.blockProvider.clone(), entry.itemWeight);
+            PaletteEntry entryClone = new PaletteEntry(entry.blockProvider.clone(), entry.weight);
             clone.palette.add(entryClone);
             clone.weights.put(entryClone.blockProvider, entryClone);
         }
@@ -96,8 +96,8 @@ public class BlockPalette
     {
         if (block.startsWith("#"))
         {
-            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getCollection();
-            ITag<net.minecraft.block.Block> tag = tags.get(new ResourceLocation(block.substring(1)));
+            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getAllTags();
+            ITag<net.minecraft.block.Block> tag = tags.getTag(new ResourceLocation(block.substring(1)));
             if (tag != null && tag instanceof ITag.INamedTag) with(new TagBlockProvider((ITag.INamedTag<net.minecraft.block.Block>)tag), weight);
             return this;
         }
@@ -137,8 +137,8 @@ public class BlockPalette
             PaletteEntry old = weights.get(block);
             palette.remove(old);
             weights.remove(old);
-            totalWeight -= old.itemWeight;
-            weight += old.itemWeight;
+            totalWeight -= old.weight;
+            weight += old.weight;
         }
 
         PaletteEntry entry = new PaletteEntry(block, weight);
@@ -189,8 +189,8 @@ public class BlockPalette
     {
         if (block.startsWith("#"))
         {
-            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getCollection();
-            ITag<net.minecraft.block.Block> tag = tags.get(new ResourceLocation(block.substring(1)));
+            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getAllTags();
+            ITag<net.minecraft.block.Block> tag = tags.getTag(new ResourceLocation(block.substring(1)));
             if (tag != null && tag instanceof ITag.INamedTag) without(new TagBlockProvider((ITag.INamedTag<net.minecraft.block.Block>)tag), weight);
             return this;
         }
@@ -233,11 +233,11 @@ public class BlockPalette
             PaletteEntry old = weights.get(block);
             palette.remove(old);
             weights.remove(block);
-            totalWeight -= old.itemWeight;
+            totalWeight -= old.weight;
 
-            if (old.itemWeight > weight)
+            if (old.weight > weight)
             {
-                int newWeight = old.itemWeight - weight;
+                int newWeight = old.weight - weight;
                 PaletteEntry newEntry = new PaletteEntry(block, newWeight);
                 palette.add(newEntry);
                 weights.put(block, newEntry);
@@ -276,7 +276,7 @@ public class BlockPalette
         if (palette.size() == 0)
         {
             Keystone.abortFilter("Cannot get block from empty BlockPalette!");
-            return new Block(Blocks.AIR.getDefaultState());
+            return new Block(Blocks.AIR.defaultBlockState());
         }
         return WeightedRandom.getRandomItem(Keystone.RANDOM, palette, totalWeight).blockProvider.get();
     }
@@ -304,7 +304,7 @@ public class BlockPalette
         if (palette.size() == 0)
         {
             Keystone.abortFilter("Cannot get block at index from empty BlockPalette!");
-            return new Block(Blocks.AIR.getDefaultState());
+            return new Block(Blocks.AIR.defaultBlockState());
         }
 
         while (index >= palette.size()) index -= palette.size();
@@ -314,5 +314,5 @@ public class BlockPalette
      * Run a function on every entry in the palette
      * @param consumer The function to run
      */
-    public void forEach(BiConsumer<IBlockProvider, Integer> consumer) { palette.forEach(entry -> consumer.accept(entry.blockProvider, entry.itemWeight)); }
+    public void forEach(BiConsumer<IBlockProvider, Integer> consumer) { palette.forEach(entry -> consumer.accept(entry.blockProvider, entry.weight)); }
 }

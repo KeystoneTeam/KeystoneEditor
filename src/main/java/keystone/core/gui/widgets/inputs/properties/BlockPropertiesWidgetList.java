@@ -47,17 +47,17 @@ public class BlockPropertiesWidgetList extends WidgetList
         if (property instanceof BooleanProperty)
         {
             add(new BooleanPropertyWidget(block, (BooleanProperty)property, 0, y, intendedWidth));
-            return BooleanPropertyWidget.getHeight();
+            return BooleanPropertyWidget.getFinalHeight();
         }
         if (property instanceof IntegerProperty)
         {
             add(new IntegerPropertyWidget(block, (IntegerProperty)property, 0, y, intendedWidth));
-            return IntegerPropertyWidget.getHeight();
+            return IntegerPropertyWidget.getFinalHeight();
         }
         if (property instanceof EnumProperty)
         {
             add(new EnumPropertyWidget(block, (EnumProperty)property, 0, y, intendedWidth, disableWidgets, restoreWidgets, addDropdown));
-            return EnumPropertyWidget.getHeight();
+            return EnumPropertyWidget.getFinalHeight();
         }
 
         return 0;

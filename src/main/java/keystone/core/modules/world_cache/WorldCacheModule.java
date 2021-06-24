@@ -42,9 +42,9 @@ public class WorldCacheModule implements IKeystoneModule
         if (event.getWorld() instanceof World)
         {
             World world = (World)event.getWorld();
-            if (!world.isRemote)
+            if (!world.isClientSide)
             {
-                DimensionId dimensionId = DimensionId.from(world.getDimensionKey());
+                DimensionId dimensionId = DimensionId.from(world.dimension());
                 if (loadedWorlds.containsKey(dimensionId)) loadedWorlds.clear();
                 loadedWorlds.put(dimensionId, world);
             }
@@ -55,9 +55,9 @@ public class WorldCacheModule implements IKeystoneModule
         if (event.getWorld() instanceof World)
         {
             World world = (World)event.getWorld();
-            if (!world.isRemote)
+            if (!world.isClientSide)
             {
-                DimensionId dimensionId = DimensionId.from(world.getDimensionKey());
+                DimensionId dimensionId = DimensionId.from(world.dimension());
                 if (loadedWorlds.containsKey(dimensionId)) loadedWorlds.clear();
             }
         }

@@ -16,12 +16,12 @@ public class TagBlockProvider implements IBlockProvider
     @Override
     public Block get()
     {
-        return new Block(this.blockTag.getRandomElement(Keystone.RANDOM).getDefaultState());
+        return new Block(this.blockTag.getRandomElement(Keystone.RANDOM).defaultBlockState());
     }
     @Override
     public Block getFirst()
     {
-        return new Block(this.blockTag.getAllElements().get(0).getDefaultState());
+        return new Block(this.blockTag.getValues().get(0).defaultBlockState());
     }
     @Override
     public IBlockProvider clone()

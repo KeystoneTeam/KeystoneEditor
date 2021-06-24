@@ -25,14 +25,14 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
     }
 
     @Override
-    public void onClose()
+    public void removed()
     {
         if (!ranCallback)
         {
             callback.accept(null);
             ranCallback = true;
         }
-        super.onClose();
+        super.removed();
     }
 
     @Override
@@ -45,6 +45,6 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
     {
         callback.accept(block);
         ranCallback = true;
-        closeScreen();
+        onClose();
     }
 }

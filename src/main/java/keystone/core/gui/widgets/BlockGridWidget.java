@@ -28,18 +28,18 @@ import java.util.function.Predicate;
 
 public class BlockGridWidget extends Widget
 {
-    public static final AbstractBlockButton.IBlockTooltipBuilder NAME_TOOLTIP = (block, count, tooltip) -> tooltip.add(block.getBlock().getTranslatedName());
+    public static final AbstractBlockButton.IBlockTooltipBuilder NAME_TOOLTIP = (block, count, tooltip) -> tooltip.add(block.getBlock().getName());
     public static final AbstractBlockButton.IBlockTooltipBuilder NAME_AND_PROPERTIES_TOOLTIP = (block, count, tooltip) ->
     {
-        tooltip.add(block.getBlock().getTranslatedName());
+        tooltip.add(block.getBlock().getName());
         block.getProperties().forEach(property ->
         {
             if (property instanceof BooleanProperty)
             {
                 BooleanProperty booleanProperty = (BooleanProperty)property;
-                if (block.get(booleanProperty)) tooltip.add(new StringTextComponent(StringUtils.snakeCaseToTitleCase(property.getName())).mergeStyle(TextFormatting.GRAY));
+                if (block.getValue(booleanProperty)) tooltip.add(new StringTextComponent(StringUtils.snakeCaseToTitleCase(property.getName())).withStyle(TextFormatting.GRAY));
             }
-            else tooltip.add(new StringTextComponent(StringUtils.snakeCaseToTitleCase(property.getName()) + ": " + StringUtils.snakeCaseToTitleCase(block.get(property).toString())).mergeStyle(TextFormatting.GRAY));
+            else tooltip.add(new StringTextComponent(StringUtils.snakeCaseToTitleCase(property.getName()) + ": " + StringUtils.snakeCaseToTitleCase(block.getValue(property).toString())).withStyle(TextFormatting.GRAY));
         });
     };
 
@@ -84,15 +84,15 @@ public class BlockGridWidget extends Widget
     }
     public static BlockGridWidget createWithMargins(int idealLeftMargin, int idealRightMargin, int idealTopMargin, int idealBottomMargin, boolean allowMultiples, ITextComponent title, Consumer<BlockState> callback, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
     {
-        MainWindow window = Minecraft.getInstance().getMainWindow();
+        MainWindow window = Minecraft.getInstance().getWindow();
 
-        int panelWidth = window.getScaledWidth() - idealLeftMargin - idealRightMargin;
+        int panelWidth = window.getGuiScaledWidth() - idealLeftMargin - idealRightMargin;
         panelWidth -= panelWidth % BlockGridButton.SIZE;
-        int panelHeight = window.getScaledHeight() - idealTopMargin - idealBottomMargin;
+        int panelHeight = window.getGuiScaledHeight() - idealTopMargin - idealBottomMargin;
         panelHeight -= panelHeight % BlockGridButton.SIZE;
 
-        int panelOffsetX = (int)Math.floor((window.getScaledWidth() - panelWidth) * (idealLeftMargin / (float)(idealLeftMargin + idealRightMargin)));
-        int panelOffsetY = (int)Math.floor((window.getScaledHeight() - panelHeight) * (idealTopMargin / (float)(idealTopMargin + idealBottomMargin)));
+        int panelOffsetX = (int)Math.floor((window.getGuiScaledWidth() - panelWidth) * (idealLeftMargin / (float)(idealLeftMargin + idealRightMargin)));
+        int panelOffsetY = (int)Math.floor((window.getGuiScaledHeight() - panelHeight) * (idealTopMargin / (float)(idealTopMargin + idealBottomMargin)));
 
         return new BlockGridWidget(panelOffsetX, panelOffsetY, panelWidth, panelHeight, allowMultiples, title, callback, disableWidgets, restoreWidgets, tooltipBuilder);
     }
@@ -199,7 +199,7 @@ public class BlockGridWidget extends Widget
             String filterString = searchString.toLowerCase().trim();
             filter(block ->
             {
-                String blockName = block.getBlock().getTranslatedName().getString().toLowerCase().trim();
+                String blockName = block.getBlock().getName().getString().toLowerCase().trim();
                 return blockName.contains(filterString);
             });
         }

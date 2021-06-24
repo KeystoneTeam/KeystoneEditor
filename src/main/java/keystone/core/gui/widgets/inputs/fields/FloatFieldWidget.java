@@ -39,7 +39,7 @@ public class FloatFieldWidget extends ParsableTextFieldWidget<Float>
         if (isHovered())
         {
             float step = this.range != null ? this.range.scrollStep() : 1;
-            setValue(getValue() + (float)delta * step);
+            setTypedValue(getTypedValue() + (float)delta * step);
             return true;
         }
         return false;

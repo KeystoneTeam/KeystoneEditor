@@ -11,14 +11,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(SpectatorGui.class)
 public class MixinSpectatorGui
 {
-    @Inject(method = "func_238528_a_", at = @At("HEAD"), cancellable = true)
-    public void func_238528_a_(MatrixStack stack, float partialTicks, CallbackInfo callback)
+    @Inject(method = "renderHotbar", at = @At("HEAD"), cancellable = true)
+    public void renderHotbar(MatrixStack stack, float partialTicks, CallbackInfo callback)
     {
         if (Keystone.isActive()) callback.cancel();
     }
 
-    @Inject(method = "func_238527_a_", at = @At("HEAD"), cancellable = true)
-    public void func_238527_a_(MatrixStack stack, CallbackInfo callback)
+    @Inject(method = "renderTooltip", at = @At("HEAD"), cancellable = true)
+    public void renderTooltip(MatrixStack stack, CallbackInfo callback)
     {
         if (Keystone.isActive()) callback.cancel();
     }

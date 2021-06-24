@@ -42,7 +42,7 @@ public class BlockMaskFieldWidget extends BlockMaskWidget
         {
             String error = "Cannot set BlockMask field '" + getMessage().getString() + "'!";
             Keystone.LOGGER.error(error);
-            mc.player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+            mc.player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
         }
     }
 }

@@ -79,7 +79,7 @@ public class ErodeBrushOperation extends BrushOperation
 
         for (Direction direction : Direction.values())
         {
-            BlockPos neighborPos = new BlockPos(x, y, z).offset(direction);
+            BlockPos neighborPos = new BlockPos(x, y, z).relative(direction);
             Block neighbor = blocks.getBlock(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), BlockRetrievalMode.LAST_SWAPPED);
             if (!neighbor.isAirOrLiquid()) continue;
 
@@ -111,7 +111,7 @@ public class ErodeBrushOperation extends BrushOperation
 
         for (Direction direction : Direction.values())
         {
-            BlockPos neighborPos = new BlockPos(x, y, z).offset(direction);
+            BlockPos neighborPos = new BlockPos(x, y, z).relative(direction);
             Block neighbor = blocks.getBlock(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), BlockRetrievalMode.LAST_SWAPPED);
             if (neighbor.isAirOrLiquid()) continue;
 

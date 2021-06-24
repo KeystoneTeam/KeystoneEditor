@@ -10,7 +10,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 public class GravityBrushOperation extends BrushOperation
 {
-    private final Block air = new Block(Blocks.AIR.getDefaultState());
+    private final Block air = new Block(Blocks.AIR.defaultBlockState());
 
     @Override
     public ITextComponent getName()

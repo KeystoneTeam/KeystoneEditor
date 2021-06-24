@@ -54,14 +54,14 @@ public class BlockPaletteWidget extends ButtonNoHotkey
         this.restoreWidgets = restoreWidgets;
 
         this.mc = Minecraft.getInstance();
-        this.font = mc.fontRenderer;
+        this.font = mc.font;
         this.palette = value;
 
         this.itemRegistry = GameRegistry.findRegistry(Item.class);
         this.stacks = new ArrayList<>();
         rebuildStacks();
     }
-    public static final int getHeight()
+    public static final int getFinalHeight()
     {
         return 31;
     }
@@ -75,9 +75,9 @@ public class BlockPaletteWidget extends ButtonNoHotkey
     }
 
     @Override
-    public int getHeightRealms()
+    public int getHeight()
     {
-        return getHeight();
+        return getFinalHeight();
     }
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)

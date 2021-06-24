@@ -1,12 +1,10 @@
 package keystone.core.renderer.blocks.buffer;
 
-import java.nio.Buffer;
+import com.mojang.datafixers.util.Pair;
+import net.minecraft.client.renderer.BufferBuilder;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-
-import com.mojang.datafixers.util.Pair;
-
-import net.minecraft.client.renderer.BufferBuilder;
 
 public class TemplateBuffer
 {
@@ -16,12 +14,13 @@ public class TemplateBuffer
 
     public TemplateBuffer(BufferBuilder buf)
     {
-        Pair<BufferBuilder.DrawState, ByteBuffer> state = buf.getNextBuffer();
+        Pair<BufferBuilder.DrawState, ByteBuffer> state = buf.popNextBuffer();
         ByteBuffer rendered = state.getSecond();
         rendered.order(ByteOrder.nativeOrder()); // Vanilla bug, endianness does not carry over into sliced buffers
 
-        formatSize = buf.getVertexFormat().getSize();
-        vertexCount = state.getFirst().getVertexCount();
+        // TODO: Check if this needs to be IntegerSize (CHECKED ONCE)
+        formatSize = buf.getVertexFormat().getVertexSize();
+        vertexCount = state.getFirst().vertexCount();
         int size = vertexCount * formatSize;
 
         template = ByteBuffer.allocate(size);

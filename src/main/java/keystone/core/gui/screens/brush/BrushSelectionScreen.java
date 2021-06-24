@@ -55,12 +55,12 @@ public class BrushSelectionScreen extends KeystoneOverlay
     public static final void onHotbarChanged(final KeystoneHotbarEvent event)
     {
         if (event.slot == KeystoneHotbarSlot.BRUSH) open();
-        else if (open != null) open.closeScreen();
+        else if (open != null) open.onClose();
     }
     //endregion
     //region Screen Overrides
     @Override
-    public void onClose()
+    public void removed()
     {
         open = null;
     }
@@ -75,7 +75,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
         brushVariablesList = new FieldWidgetList(brushModule::getBrushOperation, PADDING, panelMaxX - 2 * PADDING, this::disableWidgets, this::restoreWidgets);
         brushVariablesList.bake();
         int centerHeight = height / 2;
-        int halfPanelHeight = (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getHeight() + PADDING) + PADDING + brushVariablesList.getHeight()) / 2;
+        int halfPanelHeight = (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getFinalHeight() + PADDING) + PADDING + brushVariablesList.getHeight()) / 2;
         panelMinY = centerHeight - halfPanelHeight;
         panelMaxY = centerHeight + halfPanelHeight;
 
@@ -134,7 +134,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
                 return true;
             }
         });
-        y += IntegerWidget.getHeight() + PADDING;
+        y += IntegerWidget.getFinalHeight() + PADDING;
 
         // Spacing and Noise
         int spacingNoiseWidth = (panelMaxX - PADDING) / 2 - PADDING;
@@ -156,7 +156,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
                 return true;
             }
         });
-        y += IntegerWidget.getHeight() + PADDING;
+        y += IntegerWidget.getFinalHeight() + PADDING;
 
         // Brush variables
         brushVariablesList.offset(PADDING, y);

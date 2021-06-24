@@ -28,15 +28,15 @@ public class Player
     {
         Player.player = player;
 
-        x = player.lastTickPosX + (player.getPosX() - player.lastTickPosX) * partialTicks;
-        y = player.lastTickPosY + (player.getPosY() - player.lastTickPosY) * partialTicks;
-        z = player.lastTickPosZ + (player.getPosZ() - player.lastTickPosZ) * partialTicks;
-        pitch = player.getPitch((float)partialTicks);
-        yaw = player.getYaw((float)partialTicks) % 360;
+        x = player.xOld + (player.getX() - player.xOld) * partialTicks;
+        y = player.yOld + (player.getY() - player.yOld) * partialTicks;
+        z = player.zOld + (player.getZ() - player.zOld) * partialTicks;
+        pitch = player.getViewXRot((float)partialTicks);
+        yaw = player.getViewYRot((float)partialTicks) % 360;
         eyePosition = player.getEyePosition((float)partialTicks);
-        lookDirection = KeystoneGlobalState.CloseSelection ? player.getLook((float)partialTicks) : RayTracing.screenPointToRayDirection((float)partialTicks);
+        lookDirection = KeystoneGlobalState.CloseSelection ? player.getViewVector((float)partialTicks) : RayTracing.screenPointToRayDirection((float)partialTicks);
 
-        dimensionId = DimensionId.from(player.getEntityWorld().getDimensionKey());
+        dimensionId = DimensionId.from(player.level.dimension());
         updateHighlightedBlock();
     }
 
@@ -71,7 +71,7 @@ public class Player
         else
         {
             BlockRayTraceResult blockRay = (BlockRayTraceResult)rayTrace;
-            return new Coords(blockRay.getPos());
+            return new Coords(blockRay.getBlockPos());
         }
     }
     public static void updateHighlightedBlock()

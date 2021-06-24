@@ -19,26 +19,26 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
 
     public ParsableTextWidget(ITextComponent name, int x, int y, int width, T value)
     {
-        super(Minecraft.getInstance().fontRenderer, x, y + 11, width, getHeight() - 11, name);
+        super(Minecraft.getInstance().font, x, y + 11, width, getFinalHeight() - 11, name);
 
         this.mc = Minecraft.getInstance();
-        this.font = mc.fontRenderer;
+        this.font = mc.font;
         this.value = postProcess(value);
 
-        setMaxStringLength(256);
-        setEnableBackgroundDrawing(true);
-        setText(this.value.toString());
+        setMaxLength(256);
+        setBordered(true);
+        setValue(this.value.toString());
     }
-    public static int getHeight() { return 23; }
+    public static int getFinalHeight() { return 23; }
 
     protected abstract T parse(String str) throws Exception;
     protected T postProcess(T value) { return value; }
     protected boolean onSetValue(T value) { return true; }
 
     @Override
-    public int getHeightRealms()
+    public int getHeight()
     {
-        return getHeight();
+        return getFinalHeight();
     }
 
     @Override
@@ -55,30 +55,31 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
         else return false;
     }
 
+
     @Override
-    public void setFocused2(boolean isFocusedIn)
+    public void setFocus(boolean isFocusedIn)
     {
         if (!isFocusedIn && isFocused())
         {
             try
             {
-                T parsed = parse(getText());
-                setValue(parsed);
+                T parsed = parse(getValue());
+                setTypedValue(parsed);
             }
             catch (Exception e)
             {
-                String error = "Invalid value '" + getText() + "' for filter variable '" + getMessage().getString() + "'!";
+                String error = "Invalid value '" + getValue() + "' for filter variable '" + getMessage().getString() + "'!";
                 Keystone.LOGGER.error(error);
-                mc.player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+                mc.player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
             }
             finally
             {
-                setText(value.toString());
-                super.setFocused2(isFocusedIn);
+                setValue(value.toString());
+                super.setFocus(isFocusedIn);
                 return;
             }
         }
-        else super.setFocused2(isFocusedIn);
+        else super.setFocus(isFocusedIn);
     }
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
@@ -87,16 +88,16 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
 
         if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
         {
-            setFocused2(false);
+            setFocus(false);
             return true;
         }
         else return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    protected final T getValue() { return value; }
-    protected final void setValue(T newValue)
+    protected final T getTypedValue() { return value; }
+    protected final void setTypedValue(T newValue)
     {
         value = postProcess(newValue);
-        if (onSetValue(newValue)) setText(value.toString());
+        if (onSetValue(newValue)) setValue(value.toString());
     }
 }

@@ -42,7 +42,7 @@ public class NudgeButton extends SimpleButton
     public NudgeButton(int x, int y, int width, int height, BiConsumer<Direction, Integer> nudge)
     {
         super(x, y, width, height, NUDGE, null);
-        this.gameSettings = Minecraft.getInstance().gameSettings;
+        this.gameSettings = Minecraft.getInstance().options;
         this.nudge = nudge;
     }
 
@@ -64,11 +64,11 @@ public class NudgeButton extends SimpleButton
         if (nudgeStep <= 0) return;
 
         boolean blockKeys = true;
-        Direction forward = Direction.fromAngle(Player.getYaw());
-        int forwardIndex = forward.getHorizontalIndex();
-        Direction right = Direction.byHorizontalIndex(forwardIndex + 1);
-        Direction back = Direction.byHorizontalIndex(forwardIndex + 2);
-        Direction left = Direction.byHorizontalIndex(forwardIndex + 3);
+        Direction forward = Direction.fromYRot(Player.getYaw());
+        int forwardIndex = forward.get2DDataValue();
+        Direction right = Direction.from2DDataValue(forwardIndex + 1);
+        Direction back = Direction.from2DDataValue(forwardIndex + 2);
+        Direction left = Direction.from2DDataValue(forwardIndex + 3);
 
         if (forwardPressed)
         {
@@ -174,37 +174,37 @@ public class NudgeButton extends SimpleButton
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {
-        if (keyCode == gameSettings.keyBindForward.getKey().getKeyCode())
+        if (keyCode == gameSettings.keyUp.getKey().getValue())
         {
             forwardPressed = true;
             forwardTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyBindBack.getKey().getKeyCode())
+        if (keyCode == gameSettings.keyDown.getKey().getValue())
         {
             backPressed = true;
             backTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyBindLeft.getKey().getKeyCode())
+        if (keyCode == gameSettings.keyLeft.getKey().getValue())
         {
             leftPressed = true;
             leftTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyBindRight.getKey().getKeyCode())
+        if (keyCode == gameSettings.keyRight.getKey().getValue())
         {
             rightPressed = true;
             rightTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyBindJump.getKey().getKeyCode())
+        if (keyCode == gameSettings.keyJump.getKey().getValue())
         {
             upPressed = true;
             upTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyBindSneak.getKey().getKeyCode())
+        if (keyCode == gameSettings.keyShift.getKey().getValue())
         {
             downPressed = true;
             downTime = 0;
@@ -216,37 +216,37 @@ public class NudgeButton extends SimpleButton
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers)
     {
-        if (keyCode == gameSettings.keyBindForward.getKey().getKeyCode())
+        if (keyCode == gameSettings.keyUp.getKey().getValue())
         {
             forwardPressed = false;
             forwardTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyBindBack.getKey().getKeyCode())
+        if (keyCode == gameSettings.keyDown.getKey().getValue())
         {
             backPressed = false;
             backTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyBindLeft.getKey().getKeyCode())
+        if (keyCode == gameSettings.keyLeft.getKey().getValue())
         {
             leftPressed = false;
             leftTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyBindRight.getKey().getKeyCode())
+        if (keyCode == gameSettings.keyRight.getKey().getValue())
         {
             rightPressed = false;
             rightTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyBindJump.getKey().getKeyCode())
+        if (keyCode == gameSettings.keyJump.getKey().getValue())
         {
             upPressed = false;
             upTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyBindSneak.getKey().getKeyCode())
+        if (keyCode == gameSettings.keyShift.getKey().getValue())
         {
             downPressed = false;
             downTime = 0;

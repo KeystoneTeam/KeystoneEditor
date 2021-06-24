@@ -38,7 +38,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
     }
 
     @Override
-    public void onClose()
+    public void removed()
     {
         if (!ranCallback)
         {
@@ -51,12 +51,12 @@ public class BlockPropertiesScreen extends KeystoneOverlay
     protected void init()
     {
         // Calculate panel size
-        panelWidth = minecraft.getMainWindow().getScaledWidth() / 4;
-        panelX = (minecraft.getMainWindow().getScaledWidth() - panelWidth) / 2;
+        panelWidth = minecraft.getWindow().getGuiScaledWidth() / 4;
+        panelX = (minecraft.getWindow().getGuiScaledWidth() - panelWidth) / 2;
         propertiesList = new BlockPropertiesWidgetList(block, PADDING, panelWidth - PADDING - PADDING, this::disableWidgets, this::restoreWidgets);
         propertiesList.bake();
         panelHeight = PADDING + propertiesList.getHeight() + PADDING + 20 + PADDING;
-        panelY = (minecraft.getMainWindow().getScaledHeight() - panelHeight) / 2;
+        panelY = (minecraft.getWindow().getGuiScaledHeight() - panelHeight) / 2;
 
         // Done Button
         addButton(new ButtonNoHotkey(panelX + PADDING, panelY + PADDING + propertiesList.getHeight() + PADDING, panelWidth - 2 * PADDING, 20, new TranslationTextComponent("keystone.done"), button ->
@@ -66,7 +66,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
                 callback.accept(block);
                 ranCallback = true;
             }
-            closeScreen();
+            onClose();
         }));
 
         // Block Properties

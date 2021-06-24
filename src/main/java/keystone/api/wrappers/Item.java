@@ -35,7 +35,7 @@ public class Item
     public Item damage(int damage)
     {
         ItemStack newStack = new ItemStack(stack.getItem(), stack.getCount(), stack.getTag());
-        newStack.setDamage(damage);
+        newStack.setDamageValue(damage);
         return new Item(newStack);
     }
 

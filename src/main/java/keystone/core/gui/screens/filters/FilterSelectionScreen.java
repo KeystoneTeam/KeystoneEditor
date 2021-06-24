@@ -64,13 +64,13 @@ public class FilterSelectionScreen extends KeystoneOverlay
         if (event.isCanceled()) return;
 
         if (event.slot == KeystoneHotbarSlot.FILTER) open();
-        else if (open != null) open.closeScreen();
+        else if (open != null) open.onClose();
     }
     //endregion
 
     //region Screen Overrides
     @Override
-    public void onClose()
+    public void removed()
     {
         open = null;
         compiledFilters = null;
@@ -115,7 +115,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
         panelMaxY = centerHeight + halfPanelHeight;
 
         // Select Filter Button
-        int selectButtonX = 5 + this.font.getStringWidth(new TranslationTextComponent("keystone.filter_panel.select").getString());
+        int selectButtonX = 5 + this.font.width(new TranslationTextComponent("keystone.filter_panel.select").getString());
         this.selectFilterButton = new ButtonNoHotkey(selectButtonX, panelMinY + 5, panelMaxX - selectButtonX - 5, 20, new StringTextComponent("!ERROR!"), (button) ->
         {
             disableWidgets(this.dropdown);
@@ -127,7 +127,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
                 filter ->
                 {
                     if (filter.isCompiledSuccessfully()) return new StringTextComponent(filter.getName());
-                    else return new StringTextComponent(filter.getName()).mergeStyle(TextFormatting.RED);
+                    else return new StringTextComponent(filter.getName()).withStyle(TextFormatting.RED);
                 },
                 (filter, title) ->
                 {
@@ -152,7 +152,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
         }
 
         // Run Filter Button
-        int buttonWidth = font.getStringWidth(new TranslationTextComponent("keystone.filter_panel.runFilter").getString()) + 10;
+        int buttonWidth = font.width(new TranslationTextComponent("keystone.filter_panel.runFilter").getString()) + 10;
         int panelCenter = panelMaxX / 2;
         ButtonNoHotkey runFilterButton = new ButtonNoHotkey(panelCenter - buttonWidth / 2, panelMaxY - 25, buttonWidth, 20, new TranslationTextComponent("keystone.filter_panel.runFilter"), button -> runFilter());
 
@@ -200,14 +200,14 @@ public class FilterSelectionScreen extends KeystoneOverlay
     }
     private void runFilter()
     {
-        for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).setFocused2(false);
+        for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).setFocus(false);
 
         if (filterInstance != null) Keystone.getModule(FilterModule.class).runFilter(filterInstance);
         else
         {
             String error = "Could not create instance of filter '" + selectedFilter.getName() + "'!";
             Keystone.LOGGER.error(error);
-            minecraft.player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+            minecraft.player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
         }
     }
     //endregion

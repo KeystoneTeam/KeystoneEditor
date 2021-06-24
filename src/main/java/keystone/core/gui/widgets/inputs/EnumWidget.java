@@ -43,7 +43,7 @@ public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
         });
 
         this.mc = Minecraft.getInstance();
-        this.font = mc.fontRenderer;
+        this.font = mc.font;
         this.value = value;
         this.restoreWidgets = restoreWidgets;
         this.addDropdown = addDropdown;
@@ -51,7 +51,7 @@ public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
 
         if (autoBuild()) build();
     }
-    public static final int getHeight()
+    public static final int getFinalHeight()
     {
         return 31;
     }
@@ -87,9 +87,9 @@ public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
     protected void onSetValue(T value) {  }
 
     @Override
-    public int getHeightRealms()
+    public int getHeight()
     {
-        return getHeight();
+        return getFinalHeight();
     }
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)

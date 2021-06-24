@@ -15,9 +15,9 @@ public class WrappedChunkSection extends ChunkSection
     {
         super(yBase);
         this.owner = owner;
-        this.xStart = owner.pos.getXStart();
+        this.xStart = owner.pos.getMinBlockX();
         this.yStart = yBase;
-        this.zStart = owner.pos.getZStart();
+        this.zStart = owner.pos.getMinBlockZ();
     }
 
     @Override

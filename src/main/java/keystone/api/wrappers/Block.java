@@ -96,7 +96,7 @@ public class Block
         {
             Block copy = new Block(this.state, this.tileEntity != null ? this.tileEntity.copy() : null);
 
-            String blockStr = BlockStateParser.toString(copy.state);
+            String blockStr = BlockStateParser.serialize(copy.state);
             String[] tokens = properties.split(",");
 
             for (String token : tokens)
@@ -144,7 +144,7 @@ public class Block
         {
             Block copy = new Block(this.state, this.tileEntity != null ? this.tileEntity.copy() : null);
 
-            String blockStr = BlockStateParser.toString(copy.state);
+            String blockStr = BlockStateParser.serialize(copy.state);
             if (blockStr.contains(property)) blockStr = blockStr.replaceFirst("(" + property + ")=([^,\\]]*)", "$1=" + value);
             else if (blockStr.contains("["))
             {
@@ -182,8 +182,8 @@ public class Block
             Block copy = new Block(this.state, this.tileEntity != null ? this.tileEntity.copy() : new CompoundNBT());
 
             NBTPathArgument.NBTPath nbtPath = NBTPathArgument.nbtPath().parse(new StringReader(path));
-            INBT nbt = NBTTagArgument.func_218085_a().parse(new StringReader(data));
-            nbtPath.func_218076_b(copy.tileEntity, () -> nbt);
+            INBT nbt = NBTTagArgument.nbtTag().parse(new StringReader(data));
+            nbtPath.set(copy.tileEntity, () -> nbt);
 
             return copy;
         }

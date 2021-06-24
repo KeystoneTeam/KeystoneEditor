@@ -32,8 +32,8 @@ public class TileEntityRenderHelper
                                           Iterable<TileEntity> customRenderTEs, MatrixStack ms, MatrixStack localTransform, IRenderTypeBuffer buffer,
                                           float pt)
     {
-        Matrix4f matrix = localTransform.getLast()
-                .getMatrix();
+        Matrix4f matrix = localTransform.last()
+                .pose();
 
         for (Iterator<TileEntity> iterator = customRenderTEs.iterator(); iterator.hasNext(); )
         {
@@ -49,17 +49,17 @@ public class TileEntityRenderHelper
 
             try
             {
-                BlockPos pos = tileEntity.getPos();
-                ms.push();
+                BlockPos pos = tileEntity.getBlockPos();
+                ms.pushPose();
                 ms.translate(pos.getX(), pos.getY(), pos.getZ());
 
                 Vector4f vec = new Vector4f(pos.getX() + .5f, pos.getY() + .5f, pos.getZ() + .5f, 1);
                 vec.transform(matrix);
-                BlockPos lightPos = new BlockPos(vec.getX(), vec.getY(), vec.getZ());
+                BlockPos lightPos = new BlockPos(vec.x(), vec.y(), vec.z());
                 int worldLight = getLight(world, renderWorld, pos, lightPos);
 
                 renderer.render(tileEntity, pt, ms, buffer, worldLight, OverlayTexture.NO_OVERLAY);
-                ms.pop();
+                ms.popPose();
 
             } catch (Exception e)
             {
@@ -77,13 +77,13 @@ public class TileEntityRenderHelper
 
     private static int getLight(World world, PlacementSimulationWorld renderWorld, BlockPos pos, BlockPos lightPos)
     {
-        int worldLight = WorldRenderer.getCombinedLight(world, lightPos);
-        if (renderWorld != null) return getMaxBlockLight(worldLight, renderWorld.getLightFor(LightType.BLOCK, pos));
+        int worldLight = WorldRenderer.getLightColor(world, lightPos);
+        if (renderWorld != null) return getMaxBlockLight(worldLight, renderWorld.getBrightness(LightType.BLOCK, pos));
         return worldLight;
     }
     private static int getMaxBlockLight(int packedLight, int blockLightValue)
     {
-        int unpackedBlockLight = LightTexture.getLightBlock(packedLight);
+        int unpackedBlockLight = LightTexture.block(packedLight);
         if (blockLightValue > unpackedBlockLight) packedLight = (packedLight & 0xFFFF0000) | (blockLightValue << 4);
         return packedLight;
     }

@@ -52,16 +52,16 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
         this.children.add(palettePanel);
 
         // Done and Cancel Buttons
-        addButton(new ButtonNoHotkey(palettePanel.x, palettePanel.y + palettePanel.getHeightRealms() + 5, palettePanel.getWidth(), 20, new TranslationTextComponent("keystone.done"), button ->
+        addButton(new ButtonNoHotkey(palettePanel.x, palettePanel.y + palettePanel.getHeight() + 5, palettePanel.getWidth(), 20, new TranslationTextComponent("keystone.done"), button ->
         {
             if (!ranCallback)
             {
                 callback.accept(palette);
                 ranCallback = true;
             }
-            closeScreen();
+            onClose();
         }));
-        addButton(new ButtonNoHotkey(palettePanel.x, height - 20, palettePanel.getWidth(), 20, new TranslationTextComponent("keystone.cancel"), button -> closeScreen()));
+        addButton(new ButtonNoHotkey(palettePanel.x, height - 20, palettePanel.getWidth(), 20, new TranslationTextComponent("keystone.cancel"), button -> onClose()));
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
@@ -82,14 +82,14 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
     }
 
     @Override
-    public void onClose()
+    public void removed()
     {
         if (!ranCallback)
         {
             callback.accept(null);
             ranCallback = true;
         }
-        super.onClose();
+        super.removed();
     }
     @Override
     public void onBlockSelected(BlockState block)

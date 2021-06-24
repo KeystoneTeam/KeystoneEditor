@@ -67,11 +67,11 @@ public class Dropdown<T> extends Widget
     @Override
     public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
-        stack.push();
+        stack.pushPose();
         stack.translate(0, 0, 200);
 
         Minecraft minecraft = Minecraft.getInstance();
-        FontRenderer font = minecraft.fontRenderer;
+        FontRenderer font = minecraft.font;
 
         fill(stack, this.x, this.y, this.x + width, this.y + 12 * entryTitles.length + 2, 0xFFFFFFFF);
 
@@ -84,18 +84,18 @@ public class Dropdown<T> extends Widget
             if (hoveredElement == i)
             {
                 fill(stack, this.x + 1, this.y + i * 12 + 1, this.x + this.width - 1, this.y + (i + 1) * 12 + 1, 0xFFFFFFFF);
-                int color = (title.getStyle().getColor() != null) ? title.getStyle().getColor().getColor() : 0x404040;
-                font.drawString(stack, title.getString(), this.x + 2, this.y + i * 12 + 3, color);
+                int color = (title.getStyle().getColor() != null) ? title.getStyle().getColor().getValue() : 0x404040;
+                font.draw(stack, title.getString(), this.x + 2, this.y + i * 12 + 3, color);
             }
             else
             {
                 fill(stack, this.x + 1, this.y + i * 12 + 1, this.x + this.width - 1, this.y + (i + 1) * 12 + 1, 0xFF404040);
-                int color = (title.getStyle().getColor() != null) ? title.getStyle().getColor().getColor() : 0xFFFFFF;
-                font.drawString(stack, title.getString(), this.x + 2, this.y + i * 12 + 3, color);
+                int color = (title.getStyle().getColor() != null) ? title.getStyle().getColor().getValue() : 0xFFFFFF;
+                font.draw(stack, title.getString(), this.x + 2, this.y + i * 12 + 3, color);
             }
         }
 
-        stack.pop();
+        stack.popPose();
     }
     @Override
     public void onClick(double mouseX, double mouseY)

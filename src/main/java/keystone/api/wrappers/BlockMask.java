@@ -19,10 +19,10 @@ public class BlockMask
     private static final Map<Block, Block[]> forcedBlockAdditions = new HashMap<>();
     static
     {
-        forcedBlockAdditions.put(new Block(Blocks.AIR.getDefaultState()), new Block[]
+        forcedBlockAdditions.put(new Block(Blocks.AIR.defaultBlockState()), new Block[]
         {
-                new Block(Blocks.CAVE_AIR.getDefaultState()),
-                new Block(Blocks.VOID_AIR.getDefaultState())
+                new Block(Blocks.CAVE_AIR.defaultBlockState()),
+                new Block(Blocks.VOID_AIR.defaultBlockState())
         });
     }
 
@@ -50,12 +50,12 @@ public class BlockMask
     {
         if (block.startsWith("#"))
         {
-            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getCollection();
-            ITag<net.minecraft.block.Block> tag = tags.get(new ResourceLocation(block.substring(1)));
+            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getAllTags();
+            ITag<net.minecraft.block.Block> tag = tags.getTag(new ResourceLocation(block.substring(1)));
             if (tag != null)
             {
-                List<net.minecraft.block.Block> blocks = tag.getAllElements();
-                for (net.minecraft.block.Block add : blocks) with(new Block(add.getDefaultState()));
+                List<net.minecraft.block.Block> blocks = tag.getValues();
+                for (net.minecraft.block.Block add : blocks) with(new Block(add.defaultBlockState()));
             }
             return this;
         }
@@ -86,12 +86,12 @@ public class BlockMask
     {
         if (block.startsWith("#"))
         {
-            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getCollection();
-            ITag<net.minecraft.block.Block> tag = tags.get(new ResourceLocation(block.substring(1)));
+            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getAllTags();
+            ITag<net.minecraft.block.Block> tag = tags.getTag(new ResourceLocation(block.substring(1)));
             if (tag != null)
             {
-                List<net.minecraft.block.Block> blocks = tag.getAllElements();
-                for (net.minecraft.block.Block add : blocks) without(new Block(add.getDefaultState()));
+                List<net.minecraft.block.Block> blocks = tag.getValues();
+                for (net.minecraft.block.Block add : blocks) without(new Block(add.defaultBlockState()));
             }
             return this;
         }

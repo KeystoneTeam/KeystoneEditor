@@ -44,7 +44,7 @@ public class BlockHistoryChunk
                 for (int z = chunkZ * 16; z < (chunkZ + 1) * 16; z++)
                 {
                     BlockPos pos = new BlockPos(x, y, z);
-                    oldBlocks[i] = new Block(world.getBlockState(pos), world.getTileEntity(pos));
+                    oldBlocks[i] = new Block(world.getBlockState(pos), world.getBlockEntity(pos));
                     i++;
                 }
             }
@@ -84,7 +84,7 @@ public class BlockHistoryChunk
                     BlockPos pos = new BlockPos(x, y, z);
                     Block block = oldBlocks[i];
 
-                    world.setBlockState(pos, block.getMinecraftBlock());
+                    world.setBlockAndUpdate(pos, block.getMinecraftBlock());
                     if (block.getTileEntityData() != null)
                     {
                         CompoundNBT tileEntityData = block.getTileEntityData().copy();
@@ -92,8 +92,8 @@ public class BlockHistoryChunk
                         tileEntityData.putInt("y", y);
                         tileEntityData.putInt("z", z);
 
-                        TileEntity tileEntity = world.getTileEntity(pos);
-                        if (tileEntity != null) tileEntity.read(block.getMinecraftBlock(), tileEntityData);
+                        TileEntity tileEntity = world.getBlockEntity(pos);
+                        if (tileEntity != null) tileEntity.deserializeNBT(block.getMinecraftBlock(), tileEntityData);
                     }
                     i++;
                 }
@@ -114,7 +114,7 @@ public class BlockHistoryChunk
                     {
                         BlockPos pos = new BlockPos(x, y, z);
 
-                        world.setBlockState(pos, block.getMinecraftBlock());
+                        world.setBlockAndUpdate(pos, block.getMinecraftBlock());
                         if (block.getTileEntityData() != null)
                         {
                             CompoundNBT tileEntityData = block.getTileEntityData().copy();
@@ -122,8 +122,8 @@ public class BlockHistoryChunk
                             tileEntityData.putInt("y", y);
                             tileEntityData.putInt("z", z);
 
-                            TileEntity tileEntity = world.getTileEntity(pos);
-                            if (tileEntity != null) tileEntity.read(block.getMinecraftBlock(), tileEntityData);
+                            TileEntity tileEntity = world.getBlockEntity(pos);
+                            if (tileEntity != null) tileEntity.deserializeNBT(block.getMinecraftBlock(), tileEntityData);
                         }
                     }
                     i++;

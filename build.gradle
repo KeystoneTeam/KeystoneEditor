@@ -1,3 +1,6 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
 buildscript {
     repositories {
         maven { url = 'https://files.minecraftforge.net/maven' }
@@ -7,7 +10,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
         classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
     }
 }
@@ -29,8 +32,52 @@ archivesBaseName = 'Keystone'
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+
+def version_replaces = [
+        'version_keystone': project.version,
+        'version_forge': version_forge,
+        'min_version_minecraft': min_version_minecraft,
+        'max_version_minecraft': max_version_minecraft
+]
+
+def jsonPatterns = ["**/*.json", "**/*.mcmeta"]
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    exclude 'META-INF/mods.toml'
+    from(sourceSets.main.resources.srcDirs) {
+        include 'META-INF/mods.toml'
+
+        expand version_replaces
+    }
+    //Minify json resources
+    doLast {
+        fileTree(dir: getOutputs().getFiles().getAsPath(), includes: jsonPatterns).each {
+            File file -> file.setText(JsonOutput.toJson(new JsonSlurper().parse(file, 'UTF-8')))
+        }
+    }
+}
+
+task replaceInModsToml(type: Copy) {
+    outputs.upToDateWhen { false }
+    from(sourceSets.main.resources) {
+        include "META-INF/mods.toml"
+        expand version_replaces
+    }
+    into "$buildDir/resources/main/"
+}
+
+// When using "Run using IntelliJ" (the only option with well-working hotswapping) the used "resources" directory is
+// different from the one used by gradle/the processResources task
+task copyResourcesForIntelliJ(type: Copy) {
+    from processResources.destinationDir
+    into "$projectDir/out/production/resources"
+}
+
+processResources.finalizedBy replaceInModsToml, copyResourcesForIntelliJ
+
 minecraft {
-    mappings channel: 'snapshot', version: "${version_mappings}"
+    mappings channel: 'official', version: "${version_minecraft}"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
     // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -50,6 +97,7 @@ minecraft {
 
         server {
             workingDirectory project.file('run')
+            arg "-mixin.config=keystone.mixins.json"
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
 
@@ -62,6 +110,7 @@ minecraft {
 
         data {
             workingDirectory project.file('run')
+            arg "-mixin.config=keystone.mixins.json"
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
             args '--mod', 'keystone', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')

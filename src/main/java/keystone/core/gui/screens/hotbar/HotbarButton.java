@@ -54,7 +54,7 @@ public class HotbarButton extends ButtonNoHotkey
                 }
                 if (KeystoneHotbar.getSelectedSlot() == slot)
                 {
-                    mc.getTextureManager().bindTexture(selectionTexture);
+                    mc.getTextureManager().bind(selectionTexture);
                     blit(stack, unscaledX - 4, unscaledY - 4, 24, 24, 0, 22, 24, 24, 256, 256);
                 }
             }

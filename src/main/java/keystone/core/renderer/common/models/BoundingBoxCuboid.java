@@ -121,26 +121,26 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
 
     public void nudgeCorner1(Direction direction, int amount)
     {
-        corner1 = new Coords(corner1.getX() + direction.getDirectionVec().getX() * amount,
-                corner1.getY() + direction.getDirectionVec().getY() * amount,
-                corner1.getZ() + direction.getDirectionVec().getZ() * amount);
+        corner1 = new Coords(corner1.getX() + direction.getNormal().getX() * amount,
+                corner1.getY() + direction.getNormal().getY() * amount,
+                corner1.getZ() + direction.getNormal().getZ() * amount);
         refreshMinMax();
     }
     public void nudgeCorner2(Direction direction, int amount)
     {
-        corner2 = new Coords(corner2.getX() + direction.getDirectionVec().getX() * amount,
-                corner2.getY() + direction.getDirectionVec().getY() * amount,
-                corner2.getZ() + direction.getDirectionVec().getZ() * amount);
+        corner2 = new Coords(corner2.getX() + direction.getNormal().getX() * amount,
+                corner2.getY() + direction.getNormal().getY() * amount,
+                corner2.getZ() + direction.getNormal().getZ() * amount);
         refreshMinMax();
     }
     public void nudgeBox(Direction direction, int amount)
     {
-        corner1 = new Coords(corner1.getX() + direction.getDirectionVec().getX() * amount,
-                corner1.getY() + direction.getDirectionVec().getY() * amount,
-                corner1.getZ() + direction.getDirectionVec().getZ() * amount);
-        corner2 = new Coords(corner2.getX() + direction.getDirectionVec().getX() * amount,
-                corner2.getY() + direction.getDirectionVec().getY() * amount,
-                corner2.getZ() + direction.getDirectionVec().getZ() * amount);
+        corner1 = new Coords(corner1.getX() + direction.getNormal().getX() * amount,
+                corner1.getY() + direction.getNormal().getY() * amount,
+                corner1.getZ() + direction.getNormal().getZ() * amount);
+        corner2 = new Coords(corner2.getX() + direction.getNormal().getX() * amount,
+                corner2.getY() + direction.getNormal().getY() * amount,
+                corner2.getZ() + direction.getNormal().getZ() * amount);
         refreshMinMax();
     }
 

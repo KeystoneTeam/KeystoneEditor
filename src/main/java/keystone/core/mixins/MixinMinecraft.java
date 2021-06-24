@@ -15,17 +15,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public class MixinMinecraft
 {
-    @Shadow @Final private MainWindow mainWindow;
+    @Shadow @Final private MainWindow window;
 
-    @Inject(method = "displayInGameMenu", at = @At(value = "HEAD"), cancellable = true)
-    public void displayInGameMenu(boolean pauseOnly, CallbackInfo callback)
+    @Inject(method = "pauseGame", at = @At(value = "HEAD"), cancellable = true)
+    public void pauseGame(boolean pauseOnly, CallbackInfo callback)
     {
         if (Keystone.isActive() && KeystoneConfig.disableInGameMenu) callback.cancel();
     }
 
-    @Inject(method = "updateWindowSize", at = @At("RETURN"))
-    public void updateWindowSize(CallbackInfo callback)
+    @Inject(method = "resizeDisplay", at = @At("RETURN"))
+    public void resizeDisplay(CallbackInfo callback)
     {
-        KeystoneOverlayHandler.resize(Minecraft.getInstance(), this.mainWindow.getScaledWidth(), this.mainWindow.getScaledHeight());
+        KeystoneOverlayHandler.resize(Minecraft.getInstance(), this.window.getGuiScaledWidth(), this.window.getGuiScaledHeight());
     }
 }

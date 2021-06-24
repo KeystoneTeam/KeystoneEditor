@@ -46,7 +46,7 @@ public class PasteBoundingBox extends SelectableBoundingBox
     }
     public static PasteBoundingBox create(Coords minCoords, KeystoneSchematic contents)
     {
-        return new PasteBoundingBox(minCoords, minCoords.add(Vector3d.copy(contents.getSize()).add(-1, -1, -1)), contents);
+        return new PasteBoundingBox(minCoords, minCoords.add(Vector3d.atLowerCornerOf(contents.getSize()).add(-1, -1, -1)), contents);
     }
 
     public KeystoneSchematic getSchematic() { return schematic; }
@@ -57,7 +57,7 @@ public class PasteBoundingBox extends SelectableBoundingBox
 
     public void cycleRotate()
     {
-        setRotation(this.rotation.add(Rotation.CLOCKWISE_90));
+        setRotation(this.rotation.getRotated(Rotation.CLOCKWISE_90));
     }
     public void cycleMirror()
     {

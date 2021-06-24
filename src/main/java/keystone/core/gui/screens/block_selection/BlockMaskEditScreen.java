@@ -48,27 +48,27 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         this.children.add(maskPanel);
 
         // Done and Cancel Buttons
-        addButton(new CheckboxButton(maskPanel.x, maskPanel.y + maskPanel.getHeightRealms() + 5, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.blacklist"), this.mask.isBlacklist(), true)
+        addButton(new CheckboxButton(maskPanel.x, maskPanel.y + maskPanel.getHeight() + 5, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.blacklist"), this.mask.isBlacklist(), true)
         {
             @Override
             public void onPress()
             {
                 super.onPress();
-                if (isChecked()) mask.blacklist();
+                if (selected()) mask.blacklist();
                 else mask.whitelist();
             }
         });
-        int gapCenter = (height - maskPanel.y - maskPanel.getHeightRealms()) / 2;
-        addButton(new ButtonNoHotkey(maskPanel.x, maskPanel.y + maskPanel.getHeightRealms() + gapCenter - 10, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.done"), button ->
+        int gapCenter = (height - maskPanel.y - maskPanel.getHeight()) / 2;
+        addButton(new ButtonNoHotkey(maskPanel.x, maskPanel.y + maskPanel.getHeight() + gapCenter - 10, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.done"), button ->
         {
             if (!ranCallback)
             {
                 callback.accept(mask);
                 ranCallback = true;
             }
-            closeScreen();
+            onClose();
         }));
-        addButton(new ButtonNoHotkey(maskPanel.x, height - 25, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.cancel"), button -> closeScreen()));
+        addButton(new ButtonNoHotkey(maskPanel.x, height - 25, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.cancel"), button -> onClose()));
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
@@ -89,14 +89,14 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
     }
 
     @Override
-    public void onClose()
+    public void removed()
     {
         if (!ranCallback)
         {
             callback.accept(null);
             ranCallback = true;
         }
-        super.onClose();
+        super.removed();
     }
     @Override
     public void onBlockSelected(BlockState block)

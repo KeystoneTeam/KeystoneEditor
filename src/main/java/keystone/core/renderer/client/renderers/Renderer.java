@@ -40,7 +40,7 @@ public class Renderer
     }
 
     private static final Tessellator tessellator = new Tessellator(2097152);
-    private static final BufferBuilder bufferBuilder = tessellator.getBuffer();
+    private static final BufferBuilder bufferBuilder = tessellator.getBuilder();
 
     private int red;
     private int green;
@@ -109,19 +109,19 @@ public class Renderer
     {
         if (glMode == RenderHelper.QUADS)
         {
-            bufferBuilder.sortVertexData((float) Camera.getX(), (float) Camera.getY(), (float) Camera.getZ());
+            bufferBuilder.sortQuads((float) Camera.getX(), (float) Camera.getY(), (float) Camera.getZ());
         }
-        tessellator.draw();
+        tessellator.end();
     }
 
     private void pos(double x, double y, double z)
     {
-        bufferBuilder.pos(x, y, z);
+        bufferBuilder.vertex(x, y, z);
     }
 
     private void tex(double u, double v)
     {
-        bufferBuilder.tex((float) u, (float) v);
+        bufferBuilder.uv((float) u, (float) v);
     }
 
     private void color()

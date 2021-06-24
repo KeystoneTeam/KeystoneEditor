@@ -14,32 +14,32 @@ public class RenderHelper
     public static void beforeRender()
     {
         enableBlend();
-        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GlStateManager._blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         lineWidth2();
         disableTexture();
-        GlStateManager.disableCull();
+        GlStateManager._disableCull();
     }
 
     public static void afterRender()
     {
         polygonModeFill();
-        GlStateManager.enableCull();
+        GlStateManager._enableCull();
         enableTexture();
         enableDepthTest();
     }
 
     public static void beforeRenderFont(OffsetPoint offsetPoint)
     {
-        GlStateManager.pushMatrix();
+        GlStateManager._pushMatrix();
         polygonModeFill();
-        GlStateManager.translated(offsetPoint.getX(), offsetPoint.getY() + 0.002D, offsetPoint.getZ());
-        GlStateManager.normal3f(0.0F, 1.0F, 0.0F);
-        GlStateManager.rotatef(0.0F, 0.0F, 1.0F, 0.0F);
-        GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
-        GlStateManager.scalef(-0.0175F, -0.0175F, 0.0175F);
+        GlStateManager._translated(offsetPoint.getX(), offsetPoint.getY() + 0.002D, offsetPoint.getZ());
+        GlStateManager._normal3f(0.0F, 1.0F, 0.0F);
+        GlStateManager._rotatef(0.0F, 0.0F, 1.0F, 0.0F);
+        GlStateManager._rotatef(90.0F, 1.0F, 0.0F, 0.0F);
+        GlStateManager._scalef(-0.0175F, -0.0175F, 0.0175F);
         enableTexture();
         enableBlend();
-        GlStateManager.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
+        GlStateManager._blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
 
         depthMaskTrue();
     }
@@ -48,68 +48,68 @@ public class RenderHelper
     {
         disableTexture();
         disableBlend();
-        GlStateManager.popMatrix();
+        GlStateManager._popMatrix();
         enableDepthTest();
     }
 
     public static void disableLighting()
     {
-        GlStateManager.disableLighting();
+        GlStateManager._disableLighting();
     }
 
     public static void disableDepthTest()
     {
-        GlStateManager.disableDepthTest();
+        GlStateManager._disableDepthTest();
     }
 
     public static void enableDepthTest()
     {
-        GlStateManager.enableDepthTest();
+        GlStateManager._enableDepthTest();
     }
 
     public static void disableFog()
     {
-        GlStateManager.disableFog();
+        GlStateManager._disableFog();
     }
 
     public static void disableBlend()
     {
-        GlStateManager.disableBlend();
+        GlStateManager._disableBlend();
     }
 
     public static void enableBlend()
     {
-        GlStateManager.enableBlend();
+        GlStateManager._enableBlend();
     }
 
     public static void disableAlphaTest()
     {
-        GlStateManager.disableAlphaTest();
+        GlStateManager._disableAlphaTest();
     }
 
     public static void enableAlphaTest()
     {
-        GlStateManager.enableAlphaTest();
+        GlStateManager._enableAlphaTest();
     }
 
     public static void disableTexture()
     {
-        GlStateManager.disableTexture();
+        GlStateManager._disableTexture();
     }
 
     public static void enableTexture()
     {
-        GlStateManager.enableTexture();
+        GlStateManager._enableTexture();
     }
 
     public static void shadeModelSmooth()
     {
-        GlStateManager.shadeModel(GL11.GL_SMOOTH);
+        GlStateManager._shadeModel(GL11.GL_SMOOTH);
     }
 
     public static void shadeModelFlat()
     {
-        GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager._shadeModel(GL11.GL_FLAT);
     }
 
     public static void enablePointSmooth()
@@ -119,40 +119,40 @@ public class RenderHelper
 
     public static void lineWidth2()
     {
-        GlStateManager.lineWidth(2f);
+        GlStateManager._lineWidth(2f);
     }
 
     public static void polygonModeLine()
     {
-        GlStateManager.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+        GlStateManager._polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
     }
     public static void polygonModeFill()
     {
-        GlStateManager.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+        GlStateManager._polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
     }
 
     public static void enableCull()
     {
-        GlStateManager.enableCull();
+        GlStateManager._enableCull();
     }
     public static void disableCull()
     {
-        GlStateManager.disableCull();
+        GlStateManager._disableCull();
     }
 
     public static void polygonOffsetMinusOne()
     {
-        GlStateManager.polygonOffset(-1.f, -1.f);
+        GlStateManager._polygonOffset(-1.f, -1.f);
     }
 
     public static void enablePolygonOffsetLine()
     {
-        GlStateManager.enableLineOffset();
+        GlStateManager._enableLineOffset();
     }
 
     public static void depthMaskTrue()
     {
-        GlStateManager.depthMask(true);
+        GlStateManager._depthMask(true);
     }
 
     public static void pointSize5()
@@ -162,16 +162,16 @@ public class RenderHelper
 
     public static void blendFuncGui()
     {
-        GlStateManager.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ZERO, GL11.GL_ONE);
+        GlStateManager._blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ZERO, GL11.GL_ONE);
     }
 
     public static void depthFuncAlways()
     {
-        GlStateManager.depthFunc(GL11.GL_ALWAYS);
+        GlStateManager._depthFunc(GL11.GL_ALWAYS);
     }
 
     public static void depthFuncLessEqual()
     {
-        GlStateManager.depthFunc(GL11.GL_LEQUAL);
+        GlStateManager._depthFunc(GL11.GL_LEQUAL);
     }
 }

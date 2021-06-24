@@ -37,7 +37,8 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeRegistry;
 import net.minecraft.world.server.ServerWorld;
 
-public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
+// TODO: Check if this needs to implement IServerWorld
+public class GhostBlocksWorld extends WrappedWorld
 {
     protected Map<BlockPos, BlockState> blocks;
     protected Map<BlockPos, TileEntity> tileEntities;
@@ -90,15 +91,15 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     }
 
     @Override
-    public boolean addEntity(Entity entityIn)
+    public boolean addFreshEntity(Entity entityIn)
     {
         if (entityIn instanceof ItemFrameEntity)
-            ((ItemFrameEntity) entityIn).getDisplayedItem()
+            ((ItemFrameEntity) entityIn).getItem()
                     .setTag(null);
         if (entityIn instanceof ArmorStandEntity)
         {
             ArmorStandEntity armorStandEntity = (ArmorStandEntity) entityIn;
-            armorStandEntity.getEquipmentAndArmor()
+            armorStandEntity.getAllSlots()
                     .forEach(stack -> stack.setTag(null));
         }
 
@@ -112,7 +113,7 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     }
 
     @Override
-    public TileEntity getTileEntity(BlockPos pos)
+    public TileEntity getBlockEntity(BlockPos pos)
     {
         if (isOutsideBuildHeight(pos))
             return null;
@@ -144,17 +145,17 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
 
     protected void onTEadded(TileEntity tileEntity, BlockPos pos)
     {
-        tileEntity.setWorldAndPos(this, pos);
+        tileEntity.setLevelAndPosition(this, pos);
     }
 
     @Override
     public BlockState getBlockState(BlockPos globalPos)
     {
-        if (globalPos.getY() - bounds.minY == -1 && !renderMode)
-            return Blocks.GRASS_BLOCK.getDefaultState();
-        if (getBounds().isVecInside(globalPos) && blocks.containsKey(globalPos))
+//        if (globalPos.getY() - bounds.y0 == -1 && !renderMode)
+//            return Blocks.AIR.defaultBlockState();
+        if (getBounds().isInside(globalPos) && blocks.containsKey(globalPos))
             return processBlockStateForPrinting(blocks.get(globalPos));
-        return Blocks.AIR.getDefaultState();
+        return Blocks.AIR.defaultBlockState();
     }
 
     public Map<BlockPos, BlockState> getBlockMap()
@@ -175,38 +176,37 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     }
 
     @Override
-    public int getLightFor(LightType p_226658_1_, BlockPos p_226658_2_)
+    public int getBrightness(LightType p_226658_1_, BlockPos p_226658_2_)
     {
         return 10;
     }
 
     @Override
-    public List<Entity> getEntitiesInAABBexcluding(Entity arg0, AxisAlignedBB arg1, Predicate<? super Entity> arg2)
+    public List<Entity> getEntities(Entity arg0, AxisAlignedBB arg1, Predicate<? super Entity> arg2)
+    {
+        return Collections.emptyList();
+    }
+
+    public <T extends Entity> List<T> getEntities(Class<? extends T> arg0, AxisAlignedBB arg1,
+                                                  Predicate<? super T> arg2)
     {
         return Collections.emptyList();
     }
 
     @Override
-    public <T extends Entity> List<T> getEntitiesWithinAABB(Class<? extends T> arg0, AxisAlignedBB arg1,
-                                                            Predicate<? super T> arg2)
+    public List<? extends PlayerEntity> players()
     {
         return Collections.emptyList();
     }
 
     @Override
-    public List<? extends PlayerEntity> getPlayers()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public int getSkylightSubtracted()
+    public int getSkyDarken()
     {
         return 0;
     }
 
     @Override
-    public boolean hasBlockState(BlockPos pos, Predicate<BlockState> predicate)
+    public boolean isStateAtPosition(BlockPos pos, Predicate<BlockState> predicate)
     {
         return predicate.test(getBlockState(pos));
     }
@@ -214,33 +214,33 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     @Override
     public boolean destroyBlock(BlockPos arg0, boolean arg1)
     {
-        return setBlockState(arg0, Blocks.AIR.getDefaultState(), 3);
+        return setBlock(arg0, Blocks.AIR.defaultBlockState(), 3);
     }
 
     @Override
     public boolean removeBlock(BlockPos arg0, boolean arg1)
     {
-        return setBlockState(arg0, Blocks.AIR.getDefaultState(), 3);
+        return setBlock(arg0, Blocks.AIR.defaultBlockState(), 3);
     }
 
     @Override
-    public boolean setBlockState(BlockPos pos, BlockState arg1, int arg2)
+    public boolean setBlock(BlockPos pos, BlockState arg1, int arg2)
     {
-        pos = pos.toImmutable();
-        bounds.expandTo(new MutableBoundingBox(pos, pos));
+        pos = pos.immutable();
+        bounds.expand(new MutableBoundingBox(pos, pos));
         blocks.put(pos, arg1);
         if (tileEntities.containsKey(pos))
         {
             TileEntity tileEntity = tileEntities.get(pos);
             if (!tileEntity.getType()
-                    .isValidBlock(arg1.getBlock()))
+                    .isValid(arg1.getBlock()))
             {
                 tileEntities.remove(pos);
                 renderedTileEntities.remove(tileEntity);
             }
         }
 
-        TileEntity tileEntity = getTileEntity(pos);
+        TileEntity tileEntity = getBlockEntity(pos);
         if (tileEntity != null)
             tileEntities.put(pos, tileEntity);
 
@@ -249,15 +249,15 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     }
 
     @Override
-    public ITickList<Block> getPendingBlockTicks()
+    public ITickList<Block> getBlockTicks()
     {
-        return EmptyTickList.get();
+        return EmptyTickList.empty();
     }
 
     @Override
-    public ITickList<Fluid> getPendingFluidTicks()
+    public ITickList<Fluid> getLiquidTicks()
     {
-        return EmptyTickList.get();
+        return EmptyTickList.empty();
     }
 
     public MutableBoundingBox getBounds()
@@ -273,7 +273,7 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     protected BlockState processBlockStateForPrinting(BlockState state)
     {
         if (state.getBlock() instanceof AbstractFurnaceBlock && state.hasProperty(BlockStateProperties.LIT))
-            state = state.with(BlockStateProperties.LIT, false);
+            state = state.setValue(BlockStateProperties.LIT, false);
         return state;
     }
 

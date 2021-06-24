@@ -21,7 +21,7 @@ public class BooleanFieldWidget extends CheckboxButton
 
     public BooleanFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(x, y, width, getHeight(), new StringTextComponent(name), (boolean)field.get(instance.get()), true);
+        super(x, y, width, getFinalHeight(), new StringTextComponent(name), (boolean)field.get(instance.get()), true);
 
         this.instance = instance;
         this.field = field;
@@ -29,12 +29,12 @@ public class BooleanFieldWidget extends CheckboxButton
         this.name = name;
         AnnotationUtils.runHook(instance.get(), hook);
     }
-    public static int getHeight() { return 20; }
+    public static int getFinalHeight() { return 20; }
 
     @Override
-    public int getHeightRealms()
+    public int getHeight()
     {
-        return getHeight();
+        return getFinalHeight();
     }
     @Override
     public void onPress()
@@ -42,14 +42,14 @@ public class BooleanFieldWidget extends CheckboxButton
         super.onPress();
         try
         {
-            field.set(instance.get(), this.isChecked());
+            field.set(instance.get(), this.selected());
             AnnotationUtils.runHook(instance.get(), hook);
         }
         catch (IllegalArgumentException | IllegalAccessException e)
         {
             String error = "Cannot set Boolean field '" + name + "'!";
             Keystone.LOGGER.error(error);
-            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
         }
     }
 }

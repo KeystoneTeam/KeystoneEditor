@@ -32,9 +32,9 @@ public class SphereMesh
 
     private void generateFace(Direction direction, int resolution)
     {
-        Vector3d localUp = Vector3d.copy(direction.getDirectionVec());
+        Vector3d localUp = Vector3d.atLowerCornerOf(direction.getNormal());
         Vector3d axisA = new Vector3d(localUp.y, localUp.z, localUp.x);
-        Vector3d axisB = localUp.crossProduct(axisA);
+        Vector3d axisB = localUp.cross(axisA);
 
         Point[] points = new Point[resolution * resolution];
         int[] tris = new int[(resolution - 1) * (resolution - 1) * 6];

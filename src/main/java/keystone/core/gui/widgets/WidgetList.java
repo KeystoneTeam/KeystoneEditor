@@ -49,14 +49,14 @@ public class WidgetList
             x = Math.min(x, widget.x);
             y = Math.min(y, widget.y);
             maxX = Math.max(maxX, widget.x + widget.getWidth());
-            maxY = Math.max(maxY, widget.y + widget.getHeightRealms());
+            maxY = Math.max(maxY, widget.y + widget.getHeight());
         }
         for (Widget widget : queuedWidgets)
         {
             x = Math.min(x, widget.x);
             y = Math.min(y, widget.y);
             maxX = Math.max(maxX, widget.x + widget.getWidth());
-            maxY = Math.max(maxY, widget.y + widget.getHeightRealms());
+            maxY = Math.max(maxY, widget.y + widget.getHeight());
         }
 
         width = maxX - x;

@@ -36,11 +36,6 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
     public abstract void onBlockSelected(BlockState block);
 
     @Override
-    public void closeScreen()
-    {
-        KeystoneOverlayHandler.removeOverlay(this);
-    }
-    @Override
     public boolean shouldCloseOnEsc()
     {
         return true;
@@ -48,33 +43,33 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
     @Override
     protected void init()
     {
-        this.minecraft.keyboardListener.enableRepeatEvents(true);
+        this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
 
         this.panel = createMainPanel();
-        blockRegistry.forEach(block -> this.panel.addBlock(block.getDefaultState(), false));
+        blockRegistry.forEach(block -> this.panel.addBlock(block.defaultBlockState(), false));
         this.panel.rebuildButtons();
         addButton(this.panel);
 
         this.searchBar = new TextFieldWidget(font, panel.x + 1, panel.y - 13, panel.getWidth() - 1, 12, new TranslationTextComponent("keystone.search"));
-        this.searchBar.setMaxStringLength(256);
-        this.searchBar.setEnableBackgroundDrawing(false);
-        this.searchBar.setText("");
+        this.searchBar.setMaxLength(256);
+        this.searchBar.setBordered(false);
+        this.searchBar.setValue("");
         this.searchBar.setResponder((str) -> this.panel.filter(str));
         addButton(this.searchBar);
-        this.setFocusedDefault(this.searchBar);
+        this.setInitialFocus(this.searchBar);
     }
     @Override
-    public void onClose()
+    public void removed()
     {
-        this.minecraft.keyboardListener.enableRepeatEvents(false);
+        this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
     }
 
     @Override
     public void resize(Minecraft minecraft, int width, int height)
     {
-        String s = this.searchBar.getText();
+        String s = this.searchBar.getValue();
         super.resize(minecraft, width, height);
-        this.searchBar.setText(s);
+        this.searchBar.setValue(s);
     }
 
     @Override

@@ -11,14 +11,12 @@ import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
-import net.minecraft.client.renderer.tileentity.ChestTileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -60,7 +58,7 @@ public class GhostWorldRenderer
     public void tick()
     {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.world == null || mc.player == null || !changed)
+        if (mc.level == null || mc.player == null || !changed)
             return;
 
         redraw(mc);
@@ -69,41 +67,41 @@ public class GhostWorldRenderer
 
     public void render(MatrixStack ms, SuperRenderTypeBuffer buffer, float partialTicks)
     {
-        ms.push();
+        ms.pushPose();
         ms.translate(offset.x, offset.y, offset.z);
 
         // Apply Ghost World Orientation to MatrixStack
-        int xAxisSize = ghostBlocks.getRotation() == Rotation.NONE || ghostBlocks.getRotation() == Rotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getXSize() : ghostBlocks.getBounds().getZSize();
-        int zAxisSize = ghostBlocks.getRotation() == Rotation.NONE || ghostBlocks.getRotation() == Rotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getZSize() : ghostBlocks.getBounds().getXSize();
+        int xAxisSize = ghostBlocks.getRotation() == Rotation.NONE || ghostBlocks.getRotation() == Rotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getXSpan() : ghostBlocks.getBounds().getZSpan();
+        int zAxisSize = ghostBlocks.getRotation() == Rotation.NONE || ghostBlocks.getRotation() == Rotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getZSpan() : ghostBlocks.getBounds().getXSpan();
         if (ghostBlocks.getRotation() == Rotation.CLOCKWISE_90)
         {
-            ms.rotate(Vector3f.YP.rotationDegrees(-90));
+            ms.mulPose(Vector3f.YP.rotationDegrees(-90));
             ms.translate(0, 0, -xAxisSize);
         }
         else if (ghostBlocks.getRotation() == Rotation.CLOCKWISE_180)
         {
-            ms.rotate(Vector3f.YP.rotationDegrees(180));
+            ms.mulPose(Vector3f.YP.rotationDegrees(180));
             ms.translate(-xAxisSize, 0, -zAxisSize);
         }
         else if (ghostBlocks.getRotation() == Rotation.COUNTERCLOCKWISE_90)
         {
-            ms.rotate(Vector3f.YP.rotationDegrees(90));
+            ms.mulPose(Vector3f.YP.rotationDegrees(90));
             ms.translate(-zAxisSize, 0, 0);
         }
         if (ghostBlocks.getMirror() == Mirror.FRONT_BACK)
         {
             ms.scale(-1.0f, 1.0f, 1.0f);
-            ms.translate(-ghostBlocks.getBounds().getXSize(), 0, 0);
+            ms.translate(-ghostBlocks.getBounds().getXSpan(), 0, 0);
         }
         else if (ghostBlocks.getMirror() == Mirror.LEFT_RIGHT)
         {
             ms.scale(1.0f, 1.0f, -1.0f);
-            ms.translate(0, 0, -ghostBlocks.getBounds().getZSize());
+            ms.translate(0, 0, -ghostBlocks.getBounds().getZSpan());
         }
 
         // Dispatch Ghost World Rendering
-        buffer.getBuffer(RenderType.getSolid());
-        for (RenderType layer : RenderType.getBlockRenderTypes())
+        buffer.getBuffer(RenderType.solid());
+        for (RenderType layer : RenderType.chunkBufferLayers())
         {
             if (!usedBlockRenderLayers.contains(layer))
                 continue;
@@ -113,7 +111,7 @@ public class GhostWorldRenderer
         TileEntityRenderHelper.renderTileEntities(ghostBlocks, ghostBlocks.getRenderedTileEntities(), ms, new MatrixStack(),
                 buffer, partialTicks);
 
-        ms.pop();
+        ms.popPose();
     }
 
     protected void redraw(Minecraft minecraft)
@@ -122,21 +120,21 @@ public class GhostWorldRenderer
         startedBufferBuilders.clear();
 
         final GhostBlocksWorld blockAccess = ghostBlocks;
-        final BlockRendererDispatcher blockRendererDispatcher = minecraft.getBlockRendererDispatcher();
+        final BlockRendererDispatcher blockRendererDispatcher = minecraft.getBlockRenderer();
 
         //List<BlockState> blockstates = new LinkedList<>();
         Map<RenderType, BufferBuilder> buffers = new HashMap<>();
         MatrixStack ms = new MatrixStack();
 
-        BlockPos.getAllInBox(blockAccess.getBounds()).forEach(localPos ->
+        BlockPos.betweenClosedStream(blockAccess.getBounds()).forEach(localPos ->
         {
-            ms.push();
+            ms.pushPose();
             ms.translate(localPos.getX(), localPos.getY(), localPos.getZ());
 
             BlockState blockState = blockAccess.getBlockState(localPos);
             FluidState fluidState = blockState.getFluidState();
 
-            for (RenderType renderType : RenderType.getBlockRenderTypes())
+            for (RenderType renderType : RenderType.chunkBufferLayers())
             {
                 ForgeHooksClient.setRenderLayer(renderType);
 
@@ -147,19 +145,19 @@ public class GhostWorldRenderer
                     BufferBuilder bufferBuilder = buffers.get(renderType);
                     if (startedBufferBuilders.add(renderType)) bufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
-                    if (blockRendererDispatcher.renderFluid(localPos, blockAccess, bufferBuilder, fluidState)) usedBlockRenderLayers.add(renderType);
+                    if (blockRendererDispatcher.renderLiquid(localPos, blockAccess, bufferBuilder, fluidState)) usedBlockRenderLayers.add(renderType);
                 }
 
                 // Block Rendering
-                if (blockState.getRenderType() != BlockRenderType.INVISIBLE && RenderTypeLookup.canRenderInLayer(blockState, renderType))
+                if (blockState.getRenderShape() != BlockRenderType.INVISIBLE && RenderTypeLookup.canRenderInLayer(blockState, renderType))
                 {
                     if (!buffers.containsKey(renderType)) buffers.put(renderType, new BufferBuilder(DefaultVertexFormats.BLOCK.getIntegerSize()));
                     BufferBuilder bufferBuilder = buffers.get(renderType);
                     if (startedBufferBuilders.add(renderType)) bufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
-                    TileEntity tileEntity = blockAccess.getTileEntity(localPos);
+                    TileEntity tileEntity = blockAccess.getBlockEntity(localPos);
 
-                    if (blockRendererDispatcher.renderModel(blockState, localPos, blockAccess, ms, bufferBuilder, true, minecraft.world.rand,
+                    if (blockRendererDispatcher.renderModel(blockState, localPos, blockAccess, ms, bufferBuilder, true, minecraft.level.random,
                             tileEntity != null ? tileEntity.getModelData() : EmptyModelData.INSTANCE))
                     {
                         usedBlockRenderLayers.add(renderType);
@@ -168,23 +166,23 @@ public class GhostWorldRenderer
             }
 
             ForgeHooksClient.setRenderLayer(null);
-            ms.pop();
+            ms.popPose();
         });
 
         // finishDrawing
-        for (RenderType layer : RenderType.getBlockRenderTypes())
+        for (RenderType layer : RenderType.chunkBufferLayers())
         {
             if (!startedBufferBuilders.contains(layer))
                 continue;
             BufferBuilder buf = buffers.get(layer);
-            buf.finishDrawing();
+            buf.end();
             bufferCache.put(layer, new SuperByteBuffer(buf));
         }
     }
 
     private static int getLayerCount()
     {
-        return RenderType.getBlockRenderTypes()
+        return RenderType.chunkBufferLayers()
                 .size();
     }
 }

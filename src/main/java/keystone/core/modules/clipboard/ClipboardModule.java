@@ -122,7 +122,7 @@ public class ClipboardModule implements IKeystoneModule
             HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
             historyModule.tryBeginHistoryEntry();
             copy();
-            Keystone.runTool(new FillTool(Blocks.AIR.getDefaultState()));
+            Keystone.runTool(new FillTool(Blocks.AIR.defaultBlockState()));
             historyModule.tryEndHistoryEntry();
         });
     }

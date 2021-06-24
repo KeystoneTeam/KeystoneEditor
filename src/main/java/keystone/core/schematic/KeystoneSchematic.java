@@ -110,7 +110,7 @@ public class KeystoneSchematic
     public Block getBlock(BlockPos relativePos)
     {
         int index = getIndex(relativePos);
-        if (index < 0) return new Block(Blocks.AIR.getDefaultState());
+        if (index < 0) return new Block(Blocks.AIR.defaultBlockState());
         else return blocks[getIndex(relativePos)];
     }
     /**
@@ -168,11 +168,11 @@ public class KeystoneSchematic
                             for (int sz = 0; sz < scale; sz++)
                             {
                                 BlockPos localPos = new BlockPos(x * scale + sx, y * scale + sy, z * scale + sz);
-                                BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, scale).add(anchor);
+                                BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, scale).offset(anchor);
 
                                 Block block = blocks[i];
                                 BlockState state = block.getMinecraftBlock().rotate(world, worldPos, rotation).mirror(mirror);
-                                world.setBlockState(worldPos, state);
+                                world.setBlockAndUpdate(worldPos, state);
                                 if (block.getTileEntityData() != null)
                                 {
                                     CompoundNBT tileEntityData = block.getTileEntityData().copy();
@@ -180,8 +180,8 @@ public class KeystoneSchematic
                                     tileEntityData.putInt("y", y);
                                     tileEntityData.putInt("z", z);
 
-                                    TileEntity tileEntity = world.getTileEntity(worldPos);
-                                    if (tileEntity != null) tileEntity.read(block.getMinecraftBlock(), tileEntityData);
+                                    TileEntity tileEntity = world.getBlockEntity(worldPos);
+                                    if (tileEntity != null) tileEntity.deserializeNBT(block.getMinecraftBlock(), tileEntityData);
                                 }
                             }
                         }
@@ -227,7 +227,7 @@ public class KeystoneSchematic
                             for (int sz = 0; sz < scale; sz++)
                             {
                                 BlockPos localPos = new BlockPos(x * scale + sx, y * scale + sy, z * scale + sz);
-                                BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, scale).add(anchor);
+                                BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, scale).offset(anchor);
 
                                 Block block = blocks[i].clone();
                                 block.setMinecraftBlock(block.getMinecraftBlock().rotate(blocksModule.getWorld(), worldPos, rotation).mirror(mirror));

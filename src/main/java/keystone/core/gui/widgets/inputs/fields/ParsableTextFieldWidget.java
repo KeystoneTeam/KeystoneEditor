@@ -40,7 +40,7 @@ public abstract class ParsableTextFieldWidget<T> extends ParsableTextWidget<T>
         {
             String error = "Cannot set " + value.getClass().getName() + " field '" + getMessage().getString() + "'!";
             Keystone.LOGGER.error(error);
-            mc.player.sendMessage(new StringTextComponent(error).mergeStyle(TextFormatting.RED), Util.DUMMY_UUID);
+            mc.player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
             return false;
         }
     }
