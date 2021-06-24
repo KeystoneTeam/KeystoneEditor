@@ -1,19 +1,19 @@
-package keystone.core.modules.clipboard.renderers;
+package keystone.core.modules.schematic_import.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
+import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
 import keystone.core.renderer.client.renderers.OffsetBox;
 import keystone.core.modules.mouse.MouseModule;
-import keystone.core.modules.clipboard.boxes.PasteBoundingBox;
 import keystone.core.modules.selection.SelectedFace;
 
 import java.awt.*;
 
-public class PasteBoxRenderer extends AbstractRenderer<PasteBoundingBox>
+public class ImportBoxRenderer extends AbstractRenderer<ImportBoundingBox>
 {
     @Override
-    public void render(MatrixStack stack, PasteBoundingBox box)
+    public void render(MatrixStack stack, ImportBoundingBox box)
     {
         OffsetBox bb = new OffsetBox(box.getMinCoords(), box.getMaxCoords());
         SelectedFace selectedFace = Keystone.getModule(MouseModule.class).getSelectedFace();

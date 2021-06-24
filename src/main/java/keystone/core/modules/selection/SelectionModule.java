@@ -14,6 +14,7 @@ import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.mouse.MouseModule;
+import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.selection.providers.HighlightBoxProvider;
 import keystone.core.modules.selection.providers.SelectionBoxProvider;
@@ -66,8 +67,8 @@ public class SelectionModule implements IKeystoneModule
     }
     public void onCancelPressed()
     {
-        ClipboardModule paste = Keystone.getModule(ClipboardModule.class);
-        if (paste.getPasteBoxes().size() > 0) paste.resetModule();
+        ImportModule importModule = Keystone.getModule(ImportModule.class);
+        if (importModule.getImportBoxes().size() > 0) importModule.resetModule();
         else deselect();
     }
     public void deselect()

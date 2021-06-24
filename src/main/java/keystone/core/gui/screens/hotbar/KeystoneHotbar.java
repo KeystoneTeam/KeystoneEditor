@@ -81,9 +81,8 @@ public class KeystoneHotbar extends KeystoneOverlay
                 new HotbarButton(this, KeystoneHotbarSlot.IMPORT,    getSlotX(5), offsetY + 3),
                 new HotbarButton(this, KeystoneHotbarSlot.SPAWN,     getSlotX(6), offsetY + 3)
         };
-        hotbarButtons[2].active = false;
-        hotbarButtons[5].active = false;
-        hotbarButtons[6].active = false;
+        hotbarButtons[2].active = false; // Clone
+        hotbarButtons[6].active = false; // Spawn
         for (HotbarButton button : hotbarButtons) addButton(button);
 
         if (selectedSlot == null) MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(KeystoneHotbarSlot.SELECTION));
@@ -124,7 +123,7 @@ public class KeystoneHotbar extends KeystoneOverlay
     }
     public static void setSelectedSlot(KeystoneHotbarSlot slot)
     {
-        MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(KeystoneHotbarSlot.SELECTION));
+        MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(slot));
     }
     public static int getX() { return (int)(offsetX * HotbarButton.SCALE); }
     public static int getY() { return (int)(offsetY * HotbarButton.SCALE); }

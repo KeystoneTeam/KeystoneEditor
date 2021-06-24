@@ -12,8 +12,9 @@ import keystone.core.modules.brush.boxes.BrushPreviewBox;
 import keystone.core.modules.brush.renderers.BrushPositionBoxRenderer;
 import keystone.core.modules.brush.renderers.BrushPreviewBoxRenderer;
 import keystone.core.modules.clipboard.ClipboardModule;
-import keystone.core.modules.clipboard.boxes.PasteBoundingBox;
-import keystone.core.modules.clipboard.renderers.PasteBoxRenderer;
+import keystone.core.modules.schematic_import.ImportModule;
+import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
+import keystone.core.modules.schematic_import.renderers.ImportBoxRenderer;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
@@ -39,12 +40,12 @@ public class KeystoneMod
     public KeystoneMod()
     {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-        MinecraftForge.EVENT_BUS.addListener(this::setup);
+        MinecraftForge.EVENT_BUS.addListener(this::gameLoaded);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultBoxes);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultModules);
     }
 
-    private void setup(final GuiOpenEvent event)
+    private void gameLoaded(final GuiOpenEvent event)
     {
         if (initialized) return;
         else initialized = true;
@@ -68,7 +69,7 @@ public class KeystoneMod
 
         event.register(SelectionBoundingBox.class, new SelectionBoxRenderer(), "selection_box");
         event.register(HighlightBoundingBox.class, new HighlightBoxRenderer(), "highlight_box");
-        event.register(PasteBoundingBox.class, new PasteBoxRenderer(), "paste_box");
+        event.register(ImportBoundingBox.class, new ImportBoxRenderer(), "import_box");
         event.register(BrushPositionBox.class, new BrushPositionBoxRenderer(), "brush_position");
         event.register(BrushPreviewBox.class, new BrushPreviewBoxRenderer(), "brush_preview");
     }
@@ -81,10 +82,11 @@ public class KeystoneMod
         event.register(new BlocksModule());
         event.register(new GhostBlocksModule());
         event.register(new HistoryModule());
+        event.register(new ClipboardModule());
 
         event.register(new SelectionModule());
         event.register(new BrushModule());
-        event.register(new ClipboardModule());
+        event.register(new ImportModule());
         event.register(new FilterModule());
     }
 }

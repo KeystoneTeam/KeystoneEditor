@@ -1,12 +1,12 @@
-package keystone.core.modules.clipboard.boxes;
+package keystone.core.modules.schematic_import.boxes;
 
 import keystone.api.Keystone;
-import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.history.entries.PasteBoxHistoryEntry;
+import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
+import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectedFace;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import keystone.core.renderer.client.Player;
@@ -16,13 +16,10 @@ import keystone.core.renderer.common.models.SelectableBoundingBox;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 
-public class PasteBoundingBox extends SelectableBoundingBox
+public class ImportBoundingBox extends SelectableBoundingBox
 {
     private KeystoneSchematic schematic;
     private GhostBlocksWorld ghostBlocks;
@@ -31,7 +28,7 @@ public class PasteBoundingBox extends SelectableBoundingBox
     private Mirror mirror;
     private int scale;
 
-    private PasteBoundingBox(Coords corner1, Coords corner2, KeystoneSchematic schematic)
+    private ImportBoundingBox(Coords corner1, Coords corner2, KeystoneSchematic schematic)
     {
         super(corner1, corner2, BoundingBoxType.get("paste_box"));
         this.schematic = schematic;
@@ -44,9 +41,9 @@ public class PasteBoundingBox extends SelectableBoundingBox
 
         refreshMinMax();
     }
-    public static PasteBoundingBox create(Coords minCoords, KeystoneSchematic contents)
+    public static ImportBoundingBox create(Coords minCoords, KeystoneSchematic contents)
     {
-        return new PasteBoundingBox(minCoords, minCoords.add(Vector3d.atLowerCornerOf(contents.getSize()).add(-1, -1, -1)), contents);
+        return new ImportBoundingBox(minCoords, minCoords.add(Vector3d.atLowerCornerOf(contents.getSize()).add(-1, -1, -1)), contents);
     }
 
     public KeystoneSchematic getSchematic() { return schematic; }
@@ -107,7 +104,7 @@ public class PasteBoundingBox extends SelectableBoundingBox
     {
         HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
         historyModule.beginHistoryEntry();
-        historyModule.pushToEntry(new PasteBoxHistoryEntry(Keystone.getModule(ClipboardModule.class).getPasteBoxes()));
+        historyModule.pushToEntry(new ImportBoxesHistoryEntry(Keystone.getModule(ImportModule.class).getImportBoxes()));
         historyModule.endHistoryEntry();
     }
 
@@ -124,7 +121,7 @@ public class PasteBoundingBox extends SelectableBoundingBox
         super.move(newMin);
     }
 
-    public void paste()
+    public void place()
     {
         BlocksModule blocksModule = Keystone.getModule(BlocksModule.class);
         schematic.place(getMinCoords().toBlockPos(), blocksModule, rotation, mirror, 1);
