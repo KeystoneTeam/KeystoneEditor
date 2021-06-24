@@ -19,6 +19,7 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
     private Coords corner1;
     private Coords corner2;
     private Vector3i size;
+    private Vector3d center;
 
     protected BoundingBoxCuboid(Coords corner1, Coords corner2, BoundingBoxType type)
     {
@@ -63,12 +64,14 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
         return corner2;
     }
     public Vector3i getSize() { return size; }
+    public Vector3d getCenter() { return center; }
 
     public final void refreshMinMax()
     {
         minCoords = new Coords(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
         maxCoords = new Coords(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()), Math.max(corner1.getZ(), corner2.getZ()));
         size = new Vector3i(maxCoords.getX() - minCoords.getX() + 1, maxCoords.getY() - minCoords.getY() + 1, maxCoords.getZ() - minCoords.getZ() + 1);
+        center = minCoords.toVector3d().add(size.getX() * 0.5, size.getY() * 0.5, size.getZ() * 0.5);
     }
 
     public void setCorner1(Coords coords)

@@ -10,6 +10,7 @@ import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.item.EnderCrystalEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 
 import java.awt.*;
 import java.util.function.BiFunction;
@@ -259,6 +260,35 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
         renderer.render();
     }
 
+    protected void renderPlane(OffsetPoint center, Direction planeNormal, double gridScale, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean ignoreDepth)
+    {
+        int halfSize = 250;
+        int fullSize = 500;
+
+        OffsetPoint min = center;
+        Coords size = new Coords(0, 0, 0);
+        switch (planeNormal)
+        {
+            case NORTH:
+            case SOUTH:
+                min = center.offset(-halfSize, -halfSize, 0);
+                size = new Coords(fullSize, fullSize, 0);
+                break;
+            case EAST:
+            case WEST:
+                min = center.offset(0, -halfSize, -halfSize);
+                size = new Coords(0, fullSize, fullSize);
+                break;
+            case UP:
+            case DOWN:
+                min = center.offset(-halfSize, 0, -halfSize);
+                size = new Coords(fullSize, 0, fullSize);
+                break;
+        }
+
+        renderGrid(min, size, gridScale, colorProvider, alphaProvider, ignoreDepth, false);
+        renderCuboid(new OffsetBox(min, min.offset(size.getX(), size.getY(), size.getZ())).nudge(), colorProvider, alphaProvider, ignoreDepth, ignoreDepth);
+    }
     protected void renderGrid(OffsetPoint min, Coords size, double scale, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean ignoreDepth, boolean drawEdges)
     {
         RenderQueue.deferRendering(() ->

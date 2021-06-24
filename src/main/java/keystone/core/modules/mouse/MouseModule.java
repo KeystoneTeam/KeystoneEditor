@@ -127,6 +127,7 @@ public class MouseModule implements IKeystoneModule
             {
                 draggingBox = true;
                 selectedFace.getBox().startDrag(selectedFace);
+                selectedFace.startDrag();
             }
         }
     }
@@ -136,6 +137,7 @@ public class MouseModule implements IKeystoneModule
         {
             draggingBox = false;
             selectedFace.getBox().endDrag(selectedFace);
+            selectedFace.endDrag();
         }
     }
     //endregion

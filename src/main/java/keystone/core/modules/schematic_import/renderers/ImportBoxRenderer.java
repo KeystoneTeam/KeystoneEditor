@@ -18,6 +18,11 @@ public class ImportBoxRenderer extends AbstractRenderer<ImportBoundingBox>
         OffsetBox bb = new OffsetBox(box.getMinCoords(), box.getMaxCoords());
         SelectedFace selectedFace = Keystone.getModule(MouseModule.class).getSelectedFace();
 
+        if (selectedFace != null && selectedFace.isDraggingFace())
+        {
+            renderPlane(bb.getCenter(), selectedFace.getFaceDirection(), 1.0, direction -> Color.white, direction -> 64, false);
+        }
+
         renderCuboid(bb, direction -> Color.green, direction ->
         {
             if (selectedFace != null && selectedFace.getBox().equals(box)) return 64;

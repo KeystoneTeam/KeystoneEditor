@@ -14,6 +14,7 @@ public class SelectedFace
 
     private double selectionU;
     private double selectionV;
+    private boolean isDraggingFace;
 
     public SelectedFace(SelectableBoundingBox box, Direction faceDirection, Vector3d selectionPoint, double distance)
     {
@@ -37,8 +38,12 @@ public class SelectedFace
             selectionV = selectionPoint.z;
         }
 
+        isDraggingFace = false;
         relativeSelectedBlock = new Coords(selectionPoint.x - box.getMinCoords().getX(), selectionPoint.y - box.getMinCoords().getY(), selectionPoint.z - box.getMinCoords().getZ());
     }
+
+    public void startDrag() { this.isDraggingFace = true; }
+    public void endDrag() { this.isDraggingFace = false; }
 
     public Direction getFaceDirection() { return faceDirection; }
     public SelectableBoundingBox getBox() { return box; }
@@ -55,4 +60,5 @@ public class SelectedFace
 
         return null;
     }
+    public boolean isDraggingFace() { return isDraggingFace; }
 }
