@@ -142,7 +142,15 @@ public class SelectionModule implements IKeystoneModule
         if (event.getKey() == GLFW.GLFW_KEY_D && event.getModifiers() == GLFW.GLFW_MOD_CONTROL)
         {
             GameSettings settings = Minecraft.getInstance().options;
-            for (KeyBinding keyBinding : settings.keyMappings) if (keyBinding.getKey().getValue() != GLFW.GLFW_KEY_D && keyBinding.isDown()) return;
+            for (KeyBinding keyBinding : settings.keyMappings)
+            {
+                if (keyBinding.isDown())
+                {
+                    if (keyBinding.getKey().getValue() != GLFW.GLFW_KEY_D &&
+                            keyBinding.getKey().getValue() != GLFW.GLFW_KEY_LEFT_CONTROL &&
+                            keyBinding.getKey().getValue() != GLFW.GLFW_KEY_RIGHT_CONTROL) return;
+                }
+            }
             deselect();
         }
     }

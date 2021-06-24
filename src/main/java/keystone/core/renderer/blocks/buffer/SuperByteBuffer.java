@@ -166,9 +166,9 @@ public class SuperByteBuffer extends TemplateBuffer
                         light = getMaxBlockLight(light, otherBlockLight);
                     }
                 }
-                builder.overlayCoords(light);
+                builder.uv2(light);
             } else
-                builder.overlayCoords(getLight(buffer, i));
+                builder.uv2(getLight(buffer, i));
 
             builder.normal(nx, ny, nz)
                     .endVertex();
