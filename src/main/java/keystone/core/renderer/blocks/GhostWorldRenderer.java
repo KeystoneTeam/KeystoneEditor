@@ -17,6 +17,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -33,6 +34,9 @@ public class GhostWorldRenderer
     private final Map<RenderType, SuperByteBuffer> bufferCache = new HashMap<>(getLayerCount());
     private final Set<RenderType> usedBlockRenderLayers = new HashSet<>(getLayerCount());
     private final Set<RenderType> startedBufferBuilders = new HashSet<>(getLayerCount());
+    private final Map<RenderType, Map<ChunkPos, SuperByteBuffer>> fluidBufferCache = new HashMap<>(getLayerCount());
+    private final Set<RenderType> usedFluidRenderLayers = new HashSet<>(getLayerCount());
+    private final Map<RenderType, Set<ChunkPos>> startedFluidBufferBuilders = new HashMap<>(getLayerCount());
     private boolean changed;
 
     protected GhostBlocksWorld ghostBlocks;
@@ -99,12 +103,26 @@ public class GhostWorldRenderer
             ms.translate(0, 0, -ghostBlocks.getBounds().getZSpan());
         }
 
-        // Dispatch Ghost World Rendering
         buffer.getBuffer(RenderType.solid());
+
+        // Dispatch Ghost World Fluid Rendering
         for (RenderType layer : RenderType.chunkBufferLayers())
         {
-            if (!usedBlockRenderLayers.contains(layer))
-                continue;
+            if (!usedFluidRenderLayers.contains(layer)) continue;
+            Map<ChunkPos, SuperByteBuffer> fluidChunks = fluidBufferCache.get(layer);
+            for (Map.Entry<ChunkPos, SuperByteBuffer> entry : fluidChunks.entrySet())
+            {
+                ms.pushPose();
+                ms.translate(entry.getKey().getMinBlockX(), 0, entry.getKey().getMinBlockZ());
+                entry.getValue().renderInto(ms, buffer.getBuffer(layer));
+                ms.popPose();
+            }
+        }
+
+        // Dispatch Ghost World Block Rendering
+        for (RenderType layer : RenderType.chunkBufferLayers())
+        {
+            if (!usedBlockRenderLayers.contains(layer)) continue;
             SuperByteBuffer superByteBuffer = bufferCache.get(layer);
             superByteBuffer.renderInto(ms, buffer.getBuffer(layer));
         }
@@ -118,15 +136,22 @@ public class GhostWorldRenderer
     {
         usedBlockRenderLayers.clear();
         startedBufferBuilders.clear();
+        usedFluidRenderLayers.clear();
+        startedBufferBuilders.clear();
 
         final GhostBlocksWorld blockAccess = ghostBlocks;
         final BlockRendererDispatcher blockRendererDispatcher = minecraft.getBlockRenderer();
 
-        Map<RenderType, BufferBuilder> buffers = new HashMap<>();
+        Map<RenderType, BufferBuilder> blockBuffers = new HashMap<>();
+        Map<RenderType, Map<ChunkPos, BufferBuilder>> fluidBuffers = new HashMap<>();
         MatrixStack ms = new MatrixStack();
 
         BlockPos.betweenClosedStream(blockAccess.getBounds()).forEach(localPos ->
         {
+            ms.pushPose();
+            ms.translate(localPos.getX(), localPos.getY(), localPos.getZ());
+
+            ChunkPos chunkPos = new ChunkPos(localPos);
             BlockState blockState = blockAccess.getBlockState(localPos);
             FluidState fluidState = blockState.getFluidState();
 
@@ -135,44 +160,57 @@ public class GhostWorldRenderer
                 ForgeHooksClient.setRenderLayer(renderType);
 
                 // Fluid Rendering
+                // TODO: Fluids aren't rendering past a certain distance
                 if (!fluidState.isEmpty() && RenderTypeLookup.canRenderInLayer(fluidState, renderType))
                 {
-                    if (!buffers.containsKey(renderType)) buffers.put(renderType, new BufferBuilder(DefaultVertexFormats.BLOCK.getIntegerSize()));
-                    BufferBuilder bufferBuilder = buffers.get(renderType);
-                    if (startedBufferBuilders.add(renderType)) bufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+                    if (!fluidBuffers.containsKey(renderType)) fluidBuffers.put(renderType, new HashMap<>());
+                    if (!fluidBuffers.get(renderType).containsKey(chunkPos)) fluidBuffers.get(renderType).put(chunkPos, new BufferBuilder(DefaultVertexFormats.BLOCK.getIntegerSize()));
+                    BufferBuilder bufferBuilder = fluidBuffers.get(renderType).get(chunkPos);
 
-                    if (blockRendererDispatcher.renderLiquid(localPos, blockAccess, bufferBuilder, fluidState)) usedBlockRenderLayers.add(renderType);
+                    if (!startedFluidBufferBuilders.containsKey(renderType)) startedFluidBufferBuilders.put(renderType, new HashSet<>());
+                    if (startedFluidBufferBuilders.get(renderType).add(chunkPos)) bufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+
+                    if (blockRendererDispatcher.renderLiquid(localPos, blockAccess, bufferBuilder, fluidState)) usedFluidRenderLayers.add(renderType);
                 }
 
                 // Block Rendering
                 if (blockState.getRenderShape() != BlockRenderType.INVISIBLE && RenderTypeLookup.canRenderInLayer(blockState, renderType))
                 {
-                    if (!buffers.containsKey(renderType)) buffers.put(renderType, new BufferBuilder(DefaultVertexFormats.BLOCK.getIntegerSize()));
-                    BufferBuilder bufferBuilder = buffers.get(renderType);
+                    if (!blockBuffers.containsKey(renderType)) blockBuffers.put(renderType, new BufferBuilder(DefaultVertexFormats.BLOCK.getIntegerSize()));
+                    BufferBuilder bufferBuilder = blockBuffers.get(renderType);
                     if (startedBufferBuilders.add(renderType)) bufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
                     TileEntity tileEntity = blockAccess.getBlockEntity(localPos);
 
-                    ms.pushPose();
-                    ms.translate(localPos.getX(), localPos.getY(), localPos.getZ());
                     if (blockRendererDispatcher.renderModel(blockState, localPos, blockAccess, ms, bufferBuilder, true, minecraft.level.random,
                             tileEntity != null ? tileEntity.getModelData() : EmptyModelData.INSTANCE))
                     {
                         usedBlockRenderLayers.add(renderType);
                     }
-                    ms.popPose();
                 }
             }
 
             ForgeHooksClient.setRenderLayer(null);
+            ms.popPose();
         });
 
-        // finishDrawing
+        // Finish Drawing Fluids
         for (RenderType layer : RenderType.chunkBufferLayers())
         {
-            if (!startedBufferBuilders.contains(layer))
-                continue;
-            BufferBuilder buf = buffers.get(layer);
+            if (!startedFluidBufferBuilders.containsKey(layer)) continue;
+            Map<ChunkPos, BufferBuilder> chunkBuffers = fluidBuffers.get(layer);
+            for (BufferBuilder buf : chunkBuffers.values()) buf.end();
+
+            Map<ChunkPos, SuperByteBuffer> byteBuffers = new HashMap<>();
+            for (Map.Entry<ChunkPos, BufferBuilder> entry : chunkBuffers.entrySet()) byteBuffers.put(entry.getKey(), new SuperByteBuffer(entry.getValue()));
+            fluidBufferCache.put(layer, byteBuffers);
+        }
+
+        // Finish Drawing Blocks
+        for (RenderType layer : RenderType.chunkBufferLayers())
+        {
+            if (!startedBufferBuilders.contains(layer)) continue;
+            BufferBuilder buf = blockBuffers.get(layer);
             buf.end();
             bufferCache.put(layer, new SuperByteBuffer(buf));
         }

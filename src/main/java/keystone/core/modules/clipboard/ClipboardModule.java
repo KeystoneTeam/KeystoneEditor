@@ -2,7 +2,6 @@ package keystone.core.modules.clipboard;
 
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
-import keystone.core.KeystoneGlobalState;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.history.HistoryModule;
