@@ -6,12 +6,10 @@ import keystone.core.modules.brush.operations.ErodeBrushOperation;
 import keystone.core.modules.brush.operations.FillBrushOperation;
 import keystone.core.modules.brush.operations.GravityBrushOperation;
 import keystone.core.modules.brush.operations.StackFillBrushOperation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 public abstract class BrushOperation extends EditableObject
 {

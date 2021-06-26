@@ -1,7 +1,7 @@
 package keystone.core.modules.world_cache;
 
-import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.modules.IKeystoneModule;
+import keystone.core.renderer.common.models.DimensionId;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;

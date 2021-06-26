@@ -1,10 +1,10 @@
 package keystone.core.modules.selection.providers;
 
 import keystone.core.KeystoneGlobalState;
-import keystone.core.renderer.client.providers.IBoundingBoxProvider;
-import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
+import keystone.core.renderer.client.providers.IBoundingBoxProvider;
+import keystone.core.renderer.common.models.DimensionId;
 
 public class SelectionBoxProvider implements IBoundingBoxProvider<SelectionBoundingBox>
 {

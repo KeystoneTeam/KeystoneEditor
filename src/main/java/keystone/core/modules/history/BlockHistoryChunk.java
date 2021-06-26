@@ -2,12 +2,7 @@ package keystone.core.modules.history;
 
 import keystone.api.enums.BlockRetrievalMode;
 import keystone.api.wrappers.Block;
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.DispenserTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;

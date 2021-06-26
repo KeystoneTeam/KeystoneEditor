@@ -1,11 +1,11 @@
 package keystone.core.modules.selection.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import keystone.core.modules.selection.boxes.HighlightBoundingBox;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
 import keystone.core.renderer.client.renderers.OffsetBox;
 import keystone.core.renderer.client.renderers.RenderHelper;
-import keystone.core.modules.selection.boxes.HighlightBoundingBox;
 
 import java.awt.*;
 

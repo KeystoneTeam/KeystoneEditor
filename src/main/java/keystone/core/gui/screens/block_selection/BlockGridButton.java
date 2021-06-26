@@ -1,11 +1,9 @@
 package keystone.core.gui.screens.block_selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import keystone.core.utils.BlockUtils;
 import keystone.core.gui.widgets.BlockGridWidget;
-import net.minecraft.block.Block;
+import keystone.core.utils.BlockUtils;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.glfw.GLFW;

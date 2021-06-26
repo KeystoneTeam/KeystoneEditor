@@ -10,7 +10,6 @@ import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.modules.IKeystoneModule;
-import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.mouse.MouseModule;

@@ -7,7 +7,10 @@ import keystone.core.renderer.client.Player;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.World;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class HistoryStackFrame
 {

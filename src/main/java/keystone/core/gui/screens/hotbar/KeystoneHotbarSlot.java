@@ -1,7 +1,6 @@
 package keystone.core.gui.screens.hotbar;
 
 import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
 public enum KeystoneHotbarSlot

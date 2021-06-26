@@ -1,14 +1,5 @@
 package keystone.core.renderer.blocks.world;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
 import keystone.api.Keystone;
 import keystone.core.renderer.blocks.GhostWorldRenderer;
 import net.minecraft.block.AbstractFurnaceBlock;
@@ -29,13 +20,16 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.world.EmptyTickList;
-import net.minecraft.world.IServerWorld;
 import net.minecraft.world.ITickList;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeRegistry;
 import net.minecraft.world.server.ServerWorld;
+
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 // TODO: Check if this needs to implement IServerWorld
 public class GhostBlocksWorld extends WrappedWorld

@@ -5,7 +5,6 @@ import keystone.api.utils.StringUtils;
 import keystone.core.KeystoneMod;
 import keystone.core.gui.screens.block_selection.AbstractBlockButton;
 import keystone.core.gui.screens.block_selection.BlockGridButton;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;

@@ -1,22 +1,14 @@
 package keystone.core.math;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.platform.GlStateManager;
-import keystone.api.Keystone;
-import keystone.core.renderer.client.Camera;
 import keystone.core.renderer.common.models.Coords;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.*;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GLUtil;
-
-import java.nio.FloatBuffer;
 
 public class RayTracing
 {

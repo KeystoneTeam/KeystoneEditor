@@ -5,7 +5,6 @@ import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.wrappers.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
 
 /**
  * An {@link keystone.api.tools.interfaces.IBlockTool} which sets every block to a given block state

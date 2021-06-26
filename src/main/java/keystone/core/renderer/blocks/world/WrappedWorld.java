@@ -1,12 +1,5 @@
 package keystone.core.renderer.blocks.world;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -29,6 +22,12 @@ import net.minecraft.world.chunk.AbstractChunkProvider;
 import net.minecraft.world.lighting.WorldLightManager;
 import net.minecraft.world.storage.ISpawnWorldInfo;
 import net.minecraft.world.storage.MapData;
+
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Predicate;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault

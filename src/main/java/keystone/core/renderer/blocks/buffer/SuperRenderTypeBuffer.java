@@ -1,20 +1,14 @@
 package keystone.core.renderer.blocks.buffer;
 
 
-import java.util.SortedMap;
-
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.renderer.Atlases;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.RegionRenderCacheBuilder;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.model.ModelBakery;
 import net.minecraft.util.Util;
+
+import java.util.SortedMap;
 
 public class SuperRenderTypeBuffer implements IRenderTypeBuffer
 {

@@ -11,8 +11,6 @@ import keystone.core.modules.brush.boxes.BrushPositionBox;
 import keystone.core.modules.brush.providers.BrushPositionBoxProvider;
 import keystone.core.modules.brush.providers.BrushPreviewBoxProvider;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.mouse.MouseModule;
-import keystone.core.modules.selection.SelectionModule;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;

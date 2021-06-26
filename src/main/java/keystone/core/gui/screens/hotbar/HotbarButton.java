@@ -4,7 +4,6 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 

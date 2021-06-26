@@ -1,12 +1,8 @@
 package keystone.core.renderer.blocks;
 
-import java.util.Iterator;
-
 import com.mojang.blaze3d.matrix.MatrixStack;
-
 import keystone.api.Keystone;
 import keystone.core.renderer.blocks.world.PlacementSimulationWorld;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.WorldRenderer;
@@ -19,6 +15,8 @@ import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector4f;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
+
+import java.util.Iterator;
 
 public class TileEntityRenderHelper
 {

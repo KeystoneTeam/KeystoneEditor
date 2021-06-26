@@ -8,18 +8,9 @@ import net.minecraft.block.FlowingFluidBlock;
 import net.minecraft.command.arguments.BlockStateParser;
 import net.minecraft.command.arguments.NBTPathArgument;
 import net.minecraft.command.arguments.NBTTagArgument;
-import net.minecraft.command.impl.data.DataCommand;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
-import net.minecraft.state.Property;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * A wrapper for a Minecraft block. Contains information about the block's state and NBT data

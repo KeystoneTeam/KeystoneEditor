@@ -13,8 +13,6 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.text.TranslationTextComponent;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.function.BiConsumer;
-
 public class NudgeButton extends SimpleButton
 {
     public interface NudgeConsumer { void nudge(Direction direction, int amount); }

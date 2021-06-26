@@ -9,7 +9,6 @@ import keystone.core.renderer.client.Camera;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
 import keystone.core.renderer.client.renderers.OffsetBox;
 import keystone.core.renderer.client.renderers.OffsetPoint;
-import net.minecraft.util.math.vector.Vector3d;
 
 import java.awt.*;
 

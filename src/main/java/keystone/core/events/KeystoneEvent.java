@@ -1,12 +1,12 @@
 package keystone.core.events;
 
 import keystone.api.Keystone;
+import keystone.core.modules.IKeystoneModule;
 import keystone.core.renderer.client.ClientRenderer;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
 import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.models.AbstractBoundingBox;
-import keystone.core.modules.IKeystoneModule;
 import keystone.core.schematic.SchematicLoader;
 import keystone.core.schematic.formats.ISchematicFormat;
 import net.minecraftforge.eventbus.api.Event;

@@ -1,11 +1,11 @@
 package keystone.core.modules.selection.providers;
 
 import keystone.api.Keystone;
-import keystone.core.renderer.client.providers.IBoundingBoxProvider;
-import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.selection.boxes.HighlightBoundingBox;
+import keystone.core.renderer.client.providers.IBoundingBoxProvider;
+import keystone.core.renderer.common.models.DimensionId;
 
 import java.util.HashSet;
 import java.util.Set;

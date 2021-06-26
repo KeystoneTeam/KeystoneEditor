@@ -1,10 +1,9 @@
 package keystone.core.modules.schematic_import.providers;
 
 import keystone.core.modules.schematic_import.ImportModule;
+import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.DimensionId;
-import keystone.core.modules.clipboard.ClipboardModule;
-import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
 
 public class ImportBoxProvider implements IBoundingBoxProvider<ImportBoundingBox>
 {

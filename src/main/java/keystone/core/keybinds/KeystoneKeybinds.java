@@ -3,7 +3,6 @@ package keystone.core.keybinds;
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
 import keystone.core.KeystoneMod;
-import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;

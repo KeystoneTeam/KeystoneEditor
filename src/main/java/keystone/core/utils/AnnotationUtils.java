@@ -1,9 +1,9 @@
 package keystone.core.utils;
 
+import keystone.api.utils.StringUtils;
 import keystone.api.variables.Hook;
 import keystone.api.variables.Name;
 import keystone.api.variables.Variable;
-import keystone.api.utils.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;

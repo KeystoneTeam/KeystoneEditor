@@ -1,24 +1,18 @@
 package keystone.core.gui.widgets.inputs;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import keystone.api.Keystone;
-import keystone.api.wrappers.BlockMask;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.Util;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
 {

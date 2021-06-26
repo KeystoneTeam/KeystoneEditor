@@ -1,10 +1,5 @@
 package keystone.core.renderer.blocks.world;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.function.Predicate;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.tileentity.TileEntity;
@@ -12,6 +7,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.SectionPos;
 import net.minecraft.world.World;
 import net.minecraft.world.lighting.WorldLightManager;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.function.Predicate;
 
 public class PlacementSimulationWorld extends WrappedWorld
 {

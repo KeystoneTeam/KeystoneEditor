@@ -1,9 +1,9 @@
 package keystone.core.renderer.common.models;
 
 import keystone.core.math.RayTracing;
+import keystone.core.modules.selection.SelectedFace;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.BoundingBoxType;
-import keystone.core.modules.selection.SelectedFace;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector3d;
 

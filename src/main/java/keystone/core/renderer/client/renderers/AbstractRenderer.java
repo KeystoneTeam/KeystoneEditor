@@ -6,12 +6,8 @@ import keystone.core.renderer.common.models.AbstractBoundingBox;
 import keystone.core.renderer.common.models.Coords;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.item.EnderCrystalEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.border.WorldBorder;
 
 import java.awt.*;
 import java.util.function.BiFunction;
