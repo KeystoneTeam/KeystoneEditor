@@ -13,6 +13,7 @@ import keystone.core.modules.schematic_import.providers.ImportBoxProvider;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.schematic.KeystoneSchematic;
+import net.minecraft.util.Direction;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.glfw.GLFW;
@@ -55,27 +56,21 @@ public class ImportModule implements IKeystoneModule
     {
         if (event.getAction() == GLFW.GLFW_PRESS)
         {
-            if (event.getKey() == GLFW.GLFW_KEY_ENTER || event.getKey() == GLFW.GLFW_KEY_KP_ENTER)
+            if (event.getKey() == GLFW.GLFW_KEY_ESCAPE) resetModule();
+            else if (importBoxes.size() > 0)
             {
-                if (importBoxes.size() > 0) placeAll();
+                if (event.getKey() == GLFW.GLFW_KEY_ENTER || event.getKey() == GLFW.GLFW_KEY_KP_ENTER) placeAll();
+                else if (event.getKey() == GLFW.GLFW_KEY_R) rotateAll();
+                else if (event.getKey() == GLFW.GLFW_KEY_M) mirrorAll();
             }
-            else if (event.getKey() == GLFW.GLFW_KEY_R)
-            {
-                for (ImportBoundingBox importBox : importBoxes) importBox.cycleRotate();
-            }
-            else if (event.getKey() == GLFW.GLFW_KEY_M)
-            {
-                for (ImportBoundingBox importBox : importBoxes) importBox.cycleMirror();
-            }
-            else if (event.getKey() == GLFW.GLFW_KEY_ESCAPE) resetModule();
         }
     }
     //endregion
 
     public void importSchematic(KeystoneSchematic schematic, Coords minPosition)
     {
-        KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.IMPORT);
         this.importBoxes.add(ImportBoundingBox.create(minPosition, schematic));
+        KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.IMPORT);
     }
 
     public List<ImportBoundingBox> getImportBoxes() { return importBoxes; }
@@ -103,6 +98,37 @@ public class ImportModule implements IKeystoneModule
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
 
+    public void rotateAll()
+    {
+        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        historyModule.tryBeginHistoryEntry();
+        historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
+        historyModule.tryEndHistoryEntry();
+
+        for (ImportBoundingBox importBox : importBoxes) importBox.cycleRotate();
+    }
+    public void mirrorAll()
+    {
+        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        historyModule.tryBeginHistoryEntry();
+        historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
+        historyModule.tryEndHistoryEntry();
+
+        for (ImportBoundingBox importBox : importBoxes) importBox.cycleMirror();
+    }
+    public void nudgeAll(Direction direction, int amount)
+    {
+        for (ImportBoundingBox importBox : importBoxes) importBox.nudgeBox(direction, amount);
+    }
+    public void setScaleAll(int scale)
+    {
+        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        historyModule.tryBeginHistoryEntry();
+        historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
+        historyModule.tryEndHistoryEntry();
+
+        for (ImportBoundingBox importBox : importBoxes) importBox.setScale(scale);
+    }
     public void placeAll()
     {
         Keystone.runOnMainThread(() ->

@@ -3,6 +3,8 @@
   "package": "keystone.core.mixins",
   "compatibilityLevel": "JAVA_8",
   "refmap": "keystone.refmap.json",
+  "mixins": [
+  ],
   "client": [
     "MixinMinecraft",
     "MixinSpectatorGui",

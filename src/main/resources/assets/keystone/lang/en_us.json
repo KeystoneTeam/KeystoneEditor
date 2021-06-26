@@ -6,12 +6,15 @@
   "keystone.screen.editPalette": "Edit the block palette",
   "keystone.screen.filterPanel": "Filter panel",
   "keystone.screen.brushPanel": "Brush panel",
+  "keystone.screen.import": "Import schematic panel",
   "keystone.screen.hotbar": "Keystone hotbar",
 
   "keystone.done": "Done",
   "keystone.cancel": "Cancel",
   "keystone.nudge": "Nudge",
   "keystone.blacklist": "Blacklist",
+
+  "keystone.nudge.tooltip": "Click and hold. Use movement keys to nudge. Right click to move a larger distance.",
 
   "keystone.width": "Width",
   "keystone.length": "Length",
@@ -60,5 +63,14 @@
   "keystone.shape.square": "Square",
 
   "keystone.operation.fill": "Fill",
-  "keystone.operation.erode": "Erode"
+  "keystone.operation.erode": "Erode",
+
+  "keystone.schematic_import.rotate": "Rotate",
+  "keystone.schematic_import.mirror": "Mirror",
+  "keystone.schematic_import.scale": "Scale",
+  "keystone.schematic_import.import": "Import",
+  "keystone.schematic_import.rotate.tooltip": "Rotate all import boxes. Shortcut: R",
+  "keystone.schematic_import.mirror.tooltip": "Mirror all import boxes. Shortcut: M",
+  "keystone.schematic_import.scale.tooltip": "Scale all import boxes",
+  "keystone.schematic_import.import.tooltip": "Place all imported schematics. Shortcut: Enter"
 }

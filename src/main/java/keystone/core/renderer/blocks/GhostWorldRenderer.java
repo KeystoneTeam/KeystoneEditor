@@ -92,6 +92,7 @@ public class GhostWorldRenderer
             ms.mulPose(Vector3f.YP.rotationDegrees(90));
             ms.translate(-zAxisSize, 0, 0);
         }
+
         if (ghostBlocks.getMirror() == Mirror.FRONT_BACK)
         {
             ms.scale(-1.0f, 1.0f, 1.0f);
@@ -102,6 +103,8 @@ public class GhostWorldRenderer
             ms.scale(1.0f, 1.0f, -1.0f);
             ms.translate(0, 0, -ghostBlocks.getBounds().getZSpan());
         }
+
+        ms.scale(ghostBlocks.getScale(), ghostBlocks.getScale(), ghostBlocks.getScale());
 
         buffer.getBuffer(RenderType.solid());
 

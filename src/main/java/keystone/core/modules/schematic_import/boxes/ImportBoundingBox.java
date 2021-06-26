@@ -14,6 +14,7 @@ import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.renderer.common.models.SelectableBoundingBox;
 import keystone.core.schematic.KeystoneSchematic;
+import net.minecraft.util.Direction;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.vector.Vector3d;
@@ -95,6 +96,7 @@ public class ImportBoundingBox extends SelectableBoundingBox
     public void setScale(int scale)
     {
         this.scale = scale;
+        this.ghostBlocks.setScale(scale);
         updateBounds();
     }
 
@@ -145,6 +147,15 @@ public class ImportBoundingBox extends SelectableBoundingBox
         }
 
         face.getBox().move(new Coords(x, y, z));
+    }
+
+    @Override
+    public void nudgeBox(Direction direction, int amount)
+    {
+        if (amount < 0) amount = getAxisSize(direction.getAxis());
+
+        super.nudgeBox(direction, amount);
+        ghostBlocks.getRenderer().offset = getMinCoords().toVector3d();
     }
     @Override
     public void move(Coords newMin)

@@ -48,6 +48,7 @@ public class GhostBlocksWorld extends WrappedWorld
     protected GhostWorldRenderer renderer;
     protected Rotation rotation;
     protected Mirror mirror;
+    protected int scale;
     public boolean renderMode;
 
     public GhostBlocksWorld(World original)
@@ -64,11 +65,13 @@ public class GhostBlocksWorld extends WrappedWorld
 
         this.rotation = Rotation.NONE;
         this.mirror = Mirror.NONE;
+        this.scale = 1;
     }
 
     public GhostWorldRenderer getRenderer () { return renderer; }
     public Rotation getRotation() { return rotation; }
     public Mirror getMirror() { return mirror; }
+    public int getScale() { return scale; }
     public Set<BlockPos> getAllPositions()
     {
         return blocks.keySet();
@@ -79,6 +82,10 @@ public class GhostBlocksWorld extends WrappedWorld
         this.rotation = rotation;
         this.mirror = mirror;
     }
+    public void setScale(int scale)
+    {
+        this.scale = scale;
+    }
 
     public void clearAllContents()
     {
@@ -87,6 +94,10 @@ public class GhostBlocksWorld extends WrappedWorld
         this.bounds = new MutableBoundingBox();
         this.entities.clear();
         this.renderedTileEntities.clear();
+        this.rotation = Rotation.NONE;
+        this.mirror = Mirror.NONE;
+        this.scale = 1;
+
         this.renderer.markDirty();
     }
 

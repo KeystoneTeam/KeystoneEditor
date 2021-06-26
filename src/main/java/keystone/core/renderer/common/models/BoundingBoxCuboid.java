@@ -1,16 +1,11 @@
 package keystone.core.renderer.common.models;
 
-import keystone.api.Keystone;
-import keystone.core.events.KeystoneSelectionChangedEvent;
-import keystone.core.modules.selection.SelectionModule;
 import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.common.TypeHelper;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
-import net.minecraftforge.common.MinecraftForge;
-import org.lwjgl.system.CallbackI;
 
 public class BoundingBoxCuboid extends AbstractBoundingBox
 {
@@ -64,6 +59,16 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
         return corner2;
     }
     public Vector3i getSize() { return size; }
+    public int getAxisSize(Direction.Axis axis)
+    {
+        switch (axis)
+        {
+            case X: return size.getX();
+            case Y: return size.getY();
+            case Z: return size.getZ();
+            default: return -1;
+        }
+    }
     public Vector3d getCenter() { return center; }
 
     public final void refreshMinMax()

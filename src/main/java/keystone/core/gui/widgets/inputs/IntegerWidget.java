@@ -36,7 +36,7 @@ public class IntegerWidget extends ParsableTextWidget<Integer>
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta)
     {
-        if (isHovered())
+        if (isHovered() && active)
         {
             if (delta > 0) setTypedValue(getTypedValue() + step);
             else if (delta < 0) setTypedValue(getTypedValue() - step);

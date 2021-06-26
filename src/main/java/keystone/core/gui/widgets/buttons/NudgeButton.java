@@ -17,13 +17,16 @@ import java.util.function.BiConsumer;
 
 public class NudgeButton extends SimpleButton
 {
+    public interface NudgeConsumer { void nudge(Direction direction, int amount); }
+
+    public static final TranslationTextComponent NUDGE = new TranslationTextComponent("keystone.nudge");
     private static final int HOLD_DELAY = 10;
     private static final int HOLD_TICKS_BETWEEN = 5;
-    private static final TranslationTextComponent NUDGE = new TranslationTextComponent("keystone.nudge");
 
     private final GameSettings gameSettings;
-    private final BiConsumer<Direction, Integer> nudge;
-    private int nudgeStep;
+    private final NudgeConsumer nudge;
+    private int nudgeButton;
+    private boolean nudgeButtonDown;
 
     private boolean forwardPressed;
     private boolean backPressed;
@@ -39,14 +42,14 @@ public class NudgeButton extends SimpleButton
     private int upTime;
     private int downTime;
 
-    public NudgeButton(int x, int y, int width, int height, BiConsumer<Direction, Integer> nudge)
+    public NudgeButton(int x, int y, int width, int height, NudgeConsumer nudge)
     {
         super(x, y, width, height, NUDGE, null);
         this.gameSettings = Minecraft.getInstance().options;
         this.nudge = nudge;
     }
 
-    protected int getNudgeStep(int button)
+    protected int getNudgeStep(Direction direction, int button)
     {
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) return 1;
         else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) return 16;
@@ -61,7 +64,7 @@ public class NudgeButton extends SimpleButton
 
     public void tick()
     {
-        if (nudgeStep <= 0) return;
+        if (!nudgeButtonDown) return;
 
         boolean blockKeys = true;
         Direction forward = Direction.fromYRot(Player.getYaw());
@@ -73,8 +76,8 @@ public class NudgeButton extends SimpleButton
         if (forwardPressed)
         {
             forwardTime++;
-            if (forwardTime == 1) nudge.accept(forward, nudgeStep);
-            else if (forwardTime >= HOLD_DELAY && forwardTime % HOLD_TICKS_BETWEEN == 0) nudge.accept(forward, nudgeStep);
+            if (forwardTime == 1) nudge.nudge(forward, getNudgeStep(forward, nudgeButton));
+            else if (forwardTime >= HOLD_DELAY && forwardTime % HOLD_TICKS_BETWEEN == 0) nudge.nudge(forward, getNudgeStep(forward, nudgeButton));
         }
         else
         {
@@ -82,8 +85,8 @@ public class NudgeButton extends SimpleButton
             if (backPressed)
             {
                 backTime++;
-                if (backTime == 1) nudge.accept(back, nudgeStep);
-                else if (backTime >= HOLD_DELAY && backTime % HOLD_TICKS_BETWEEN == 0) nudge.accept(back, nudgeStep);
+                if (backTime == 1) nudge.nudge(back, getNudgeStep(back, nudgeButton));
+                else if (backTime >= HOLD_DELAY && backTime % HOLD_TICKS_BETWEEN == 0) nudge.nudge(back, getNudgeStep(back, nudgeButton));
             }
             else
             {
@@ -91,8 +94,8 @@ public class NudgeButton extends SimpleButton
                 if (leftPressed)
                 {
                     leftTime++;
-                    if (leftTime == 1) nudge.accept(left, nudgeStep);
-                    else if (leftTime >= HOLD_DELAY && leftTime % HOLD_TICKS_BETWEEN == 0) nudge.accept(left, nudgeStep);
+                    if (leftTime == 1) nudge.nudge(left, getNudgeStep(left, nudgeButton));
+                    else if (leftTime >= HOLD_DELAY && leftTime % HOLD_TICKS_BETWEEN == 0) nudge.nudge(left, getNudgeStep(left, nudgeButton));
                 }
                 else
                 {
@@ -100,8 +103,8 @@ public class NudgeButton extends SimpleButton
                     if (rightPressed)
                     {
                         rightTime++;
-                        if (rightTime == 1) nudge.accept(right, nudgeStep);
-                        else if (rightTime >= HOLD_DELAY && rightTime % HOLD_TICKS_BETWEEN == 0) nudge.accept(right, nudgeStep);
+                        if (rightTime == 1) nudge.nudge(right, getNudgeStep(right, nudgeButton));
+                        else if (rightTime >= HOLD_DELAY && rightTime % HOLD_TICKS_BETWEEN == 0) nudge.nudge(right, getNudgeStep(right, nudgeButton));
                     }
                     else
                     {
@@ -109,8 +112,8 @@ public class NudgeButton extends SimpleButton
                         if (upPressed)
                         {
                             upTime++;
-                            if (upTime == 1) nudge.accept(Direction.UP, nudgeStep);
-                            else if (upTime >= HOLD_DELAY && upTime % HOLD_TICKS_BETWEEN == 0) nudge.accept(Direction.UP, nudgeStep);
+                            if (upTime == 1) nudge.nudge(Direction.UP, getNudgeStep(Direction.UP, nudgeButton));
+                            else if (upTime >= HOLD_DELAY && upTime % HOLD_TICKS_BETWEEN == 0) nudge.nudge(Direction.UP, getNudgeStep(Direction.UP, nudgeButton));
                         }
                         else
                         {
@@ -118,8 +121,8 @@ public class NudgeButton extends SimpleButton
                             if (downPressed)
                             {
                                 downTime++;
-                                if (downTime == 1) nudge.accept(Direction.DOWN, nudgeStep);
-                                else if (downTime >= HOLD_DELAY && downTime % HOLD_TICKS_BETWEEN == 0) nudge.accept(Direction.DOWN, nudgeStep);
+                                if (downTime == 1) nudge.nudge(Direction.DOWN, getNudgeStep(Direction.DOWN, nudgeButton));
+                                else if (downTime >= HOLD_DELAY && downTime % HOLD_TICKS_BETWEEN == 0) nudge.nudge(Direction.DOWN, getNudgeStep(Direction.DOWN, nudgeButton));
                             }
                             else
                             {
@@ -144,14 +147,16 @@ public class NudgeButton extends SimpleButton
             boolean flag = this.clicked(mouseX, mouseY);
             if (flag)
             {
-                nudgeStep = getNudgeStep(button);
-                if (nudgeStep > 0)
+                nudgeButtonDown = button == GLFW.GLFW_MOUSE_BUTTON_LEFT || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+                if (nudgeButtonDown)
                 {
                     SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
                     HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
                     historyModule.beginHistoryEntry();
                     historyModule.pushToEntry(new SelectionHistoryEntry(selectionModule.getSelectionBoundingBoxes(), true));
                     historyModule.endHistoryEntry();
+
+                    nudgeButton = button;
                     return true;
                 }
                 else return false;
@@ -163,9 +168,10 @@ public class NudgeButton extends SimpleButton
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button)
     {
-        if (nudgeStep > 0)
+        if (nudgeButtonDown)
         {
-            nudgeStep = 0;
+            nudgeButton = -1;
+            nudgeButtonDown = false;
             return true;
         }
         return false;

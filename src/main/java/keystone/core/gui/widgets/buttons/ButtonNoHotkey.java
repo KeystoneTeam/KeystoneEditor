@@ -20,6 +20,11 @@ public class ButtonNoHotkey extends Button
         this.tooltip = tooltip;
     }
 
+    public void setTooltip(IKeystoneTooltip tooltip)
+    {
+        this.tooltip = tooltip;
+    }
+
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {

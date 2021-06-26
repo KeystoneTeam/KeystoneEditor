@@ -60,15 +60,6 @@ public class GhostBlocksModule implements IKeystoneModule
             stack.popPose();
         });
     }
-    @SubscribeEvent
-    public void onKeyPressed(final InputEvent.KeyInputEvent event)
-    {
-        if (event.getAction() == GLFW.GLFW_PRESS && event.getKey() == GLFW.GLFW_KEY_U)
-        {
-            ghostWorlds.forEach(world -> world.getRenderer().markDirty());
-            Minecraft.getInstance().player.sendMessage(new StringTextComponent("Refreshing ghost blocks"), null);
-        }
-    }
 
     public GhostBlocksWorld createWorld()
     {
