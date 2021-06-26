@@ -31,7 +31,7 @@ public class KeystoneSchematic
      * @param size The size of the schematic
      * @param blocks The {@link keystone.api.wrappers.Block} contents of the schematic
      */
-    private KeystoneSchematic(Vector3i size, Block[] blocks)
+    public KeystoneSchematic(Vector3i size, Block[] blocks)
     {
         this.size = size;
         this.blocks = blocks;

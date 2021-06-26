@@ -11,6 +11,7 @@ import net.minecraft.entity.item.EnderCrystalEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.world.border.WorldBorder;
 
 import java.awt.*;
 import java.util.function.BiFunction;
@@ -262,8 +263,8 @@ public abstract class AbstractRenderer<T extends AbstractBoundingBox>
 
     protected void renderPlane(OffsetPoint center, Direction planeNormal, double gridScale, Function<Direction, Color> colorProvider, Function<Direction, Integer> alphaProvider, boolean ignoreDepth)
     {
-        int halfSize = 250;
-        int fullSize = 500;
+        int halfSize = Minecraft.getInstance().options.renderDistance << 4;
+        int fullSize = halfSize * 2;
 
         OffsetPoint min = center;
         Coords size = new Coords(0, 0, 0);

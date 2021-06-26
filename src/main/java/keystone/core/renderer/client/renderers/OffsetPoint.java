@@ -3,11 +3,16 @@ package keystone.core.renderer.client.renderers;
 import keystone.core.renderer.client.Camera;
 import keystone.core.renderer.client.models.Point;
 import keystone.core.renderer.common.models.Coords;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class OffsetPoint
 {
     private final Point point;
 
+    public OffsetPoint(Vector3d vector)
+    {
+        this(new Point(vector.x, vector.y, vector.z));
+    }
     public OffsetPoint(double x, double y, double z)
     {
         this(new Point(x, y, z));

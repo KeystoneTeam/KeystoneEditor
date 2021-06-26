@@ -13,6 +13,7 @@ import keystone.core.modules.schematic_import.providers.ImportBoxProvider;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.schematic.KeystoneSchematic;
+import keystone.core.schematic.SchematicLoader;
 import net.minecraft.util.Direction;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -67,8 +68,18 @@ public class ImportModule implements IKeystoneModule
     }
     //endregion
 
+    public void importSchematic(String path, Coords minPosition)
+    {
+        KeystoneSchematic schematic = SchematicLoader.loadSchematic(path);
+        importSchematic(schematic, minPosition);
+    }
     public void importSchematic(KeystoneSchematic schematic, Coords minPosition)
     {
+        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        historyModule.tryBeginHistoryEntry();
+        historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
+        historyModule.tryEndHistoryEntry();
+
         this.importBoxes.add(ImportBoundingBox.create(minPosition, schematic));
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.IMPORT);
     }

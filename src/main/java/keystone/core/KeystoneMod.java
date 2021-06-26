@@ -12,19 +12,20 @@ import keystone.core.modules.brush.boxes.BrushPreviewBox;
 import keystone.core.modules.brush.renderers.BrushPositionBoxRenderer;
 import keystone.core.modules.brush.renderers.BrushPreviewBoxRenderer;
 import keystone.core.modules.clipboard.ClipboardModule;
-import keystone.core.modules.schematic_import.ImportModule;
-import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
-import keystone.core.modules.schematic_import.renderers.ImportBoxRenderer;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.mouse.MouseModule;
+import keystone.core.modules.schematic_import.ImportModule;
+import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
+import keystone.core.modules.schematic_import.renderers.ImportBoxRenderer;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.selection.boxes.HighlightBoundingBox;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.selection.renderers.HighlightBoxRenderer;
 import keystone.core.modules.selection.renderers.SelectionBoxRenderer;
 import keystone.core.modules.world_cache.WorldCacheModule;
+import keystone.core.schematic.formats.KeystoneSchematicFormat;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -43,6 +44,7 @@ public class KeystoneMod
         MinecraftForge.EVENT_BUS.addListener(this::gameLoaded);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultBoxes);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultModules);
+        MinecraftForge.EVENT_BUS.addListener(this::registerDefaultSchematicFormats);
     }
 
     private void gameLoaded(final GuiOpenEvent event)
@@ -55,6 +57,7 @@ public class KeystoneMod
         Keystone.init();
         MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterBoundingBoxTypes());
         MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterModules());
+        MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterSchematicFormats());
         Keystone.postInit();
     }
     private void clientSetup(final FMLClientSetupEvent event)
@@ -88,5 +91,9 @@ public class KeystoneMod
         event.register(new BrushModule());
         event.register(new ImportModule());
         event.register(new FilterModule());
+    }
+    private void registerDefaultSchematicFormats(final KeystoneEvent.RegisterSchematicFormats event)
+    {
+        event.register(new KeystoneSchematicFormat());
     }
 }
