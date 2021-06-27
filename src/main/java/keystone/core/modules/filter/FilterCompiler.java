@@ -1,9 +1,9 @@
 package keystone.core.modules.filter;
 
 import keystone.api.Keystone;
+import keystone.api.KeystoneDirectories;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.utils.StringUtils;
-import keystone.core.KeystoneConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.IResource;
 import net.minecraft.resources.IResourceManager;
@@ -30,7 +30,7 @@ public class FilterCompiler
     private static void loadStockFilters()
     {
         stockFilters = new ArrayList<>();
-        File stockFilterCache = getStockFilterCache();
+        File stockFilterCache = KeystoneDirectories.getStockFilterCache();
 
         try
         {
@@ -64,25 +64,13 @@ public class FilterCompiler
             e.printStackTrace();
         }
     }
-    private static File getStockFilterCache()
-    {
-        File stockFilterCache = Minecraft.getInstance().gameDirectory.toPath().resolve(KeystoneConfig.stockFilterCache).toFile();
-        if (!stockFilterCache.exists()) stockFilterCache.mkdirs();
-        return stockFilterCache;
-    }
-    private static File getFilterDirectory()
-    {
-        File filtersDirectory = Minecraft.getInstance().gameDirectory.toPath().resolve(KeystoneConfig.filtersDirectory).toFile();
-        if (!filtersDirectory.exists()) filtersDirectory.mkdirs();
-        return filtersDirectory;
-    }
 
     public static File[] getInstalledFilters()
     {
         if (stockFilters == null || stockFilters.size() == 0) loadStockFilters();
 
         List<File> filters = new ArrayList<>();
-        File[] customFilters = getFilterDirectory().listFiles((dir, name) -> name.endsWith(".java") || name.endsWith(".filter"));
+        File[] customFilters = KeystoneDirectories.getFilterDirectory().listFiles((dir, name) -> name.endsWith(".java") || name.endsWith(".filter"));
         for (File customFilter : customFilters) filters.add(customFilter);
         filters.addAll(stockFilters);
         Collections.sort(filters, Comparator.comparing(a -> getFilterName(a, true)));

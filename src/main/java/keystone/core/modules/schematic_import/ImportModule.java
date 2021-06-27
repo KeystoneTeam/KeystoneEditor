@@ -1,8 +1,12 @@
 package keystone.core.modules.schematic_import;
 
 import keystone.api.Keystone;
+import keystone.api.KeystoneDirectories;
+import keystone.core.events.KeystoneHotbarEvent;
+import keystone.core.gui.screens.file_browser.FileBrowserScreen;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
+import keystone.core.gui.screens.schematic_import.ImportScreen;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
@@ -10,15 +14,18 @@ import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
 import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
 import keystone.core.modules.schematic_import.providers.ImportBoxProvider;
+import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
 import net.minecraft.util.Direction;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.glfw.GLFW;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +38,7 @@ public class ImportModule implements IKeystoneModule
     public ImportModule()
     {
         importBoxes = new ArrayList<>();
+        MinecraftForge.EVENT_BUS.addListener(this::onSlotChanged);
         MinecraftForge.EVENT_BUS.addListener(this::onKeyPressed);
     }
 
@@ -53,6 +61,10 @@ public class ImportModule implements IKeystoneModule
     }
     //endregion
     //region Event Handlers
+    private void onSlotChanged(final KeystoneHotbarEvent event)
+    {
+        if (event.previousSlot == KeystoneHotbarSlot.IMPORT && event.slot != KeystoneHotbarSlot.IMPORT) clearImportBoxes(true);
+    }
     private void onKeyPressed(final InputEvent.KeyInputEvent event)
     {
         if (event.getAction() == GLFW.GLFW_PRESS)
@@ -67,10 +79,23 @@ public class ImportModule implements IKeystoneModule
         }
     }
     //endregion
-
+    //region Import Calls
+    public void promptImportSchematic(Coords minPosition)
+    {
+        FileBrowserScreen.openFiles(new StringTextComponent("Import Schematics"), SchematicLoader.getExtensions(),
+                KeystoneDirectories.getSchematicDirectory(), true, (files) ->
+        {
+            for (File schematic : files) importSchematic(schematic, Player.getHighlightedBlock());
+        });
+    }
     public void importSchematic(String path, Coords minPosition)
     {
         KeystoneSchematic schematic = SchematicLoader.loadSchematic(path);
+        importSchematic(schematic, minPosition);
+    }
+    public void importSchematic(File file, Coords minPosition)
+    {
+        KeystoneSchematic schematic = SchematicLoader.loadSchematic(file);
         importSchematic(schematic, minPosition);
     }
     public void importSchematic(KeystoneSchematic schematic, Coords minPosition)
@@ -82,15 +107,17 @@ public class ImportModule implements IKeystoneModule
 
         this.importBoxes.add(ImportBoundingBox.create(minPosition, schematic));
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.IMPORT);
+        ImportScreen.open();
     }
-
+    //endregion
+    //region Import Box Functions
     public List<ImportBoundingBox> getImportBoxes() { return importBoxes; }
     public List<ImportBoundingBox> restoreImportBoxes(List<ImportBoundingBox> boxes)
     {
         List<ImportBoundingBox> old = new ArrayList<>();
         importBoxes.forEach(box -> old.add(box));
 
-        clearImportBoxes();
+        clearImportBoxes(false);
         boxes.forEach(box -> importBoxes.add(box));
 
         if (importBoxes.size() > 0) KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.IMPORT);
@@ -100,12 +127,7 @@ public class ImportModule implements IKeystoneModule
     }
     public void resetModule()
     {
-        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
-        historyModule.tryBeginHistoryEntry();
-        historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
-        historyModule.tryEndHistoryEntry();
-
-        clearImportBoxes();
+        clearImportBoxes(true);
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
 
@@ -153,9 +175,18 @@ public class ImportModule implements IKeystoneModule
             KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
         });
     }
-    public void clearImportBoxes()
+    public void clearImportBoxes(boolean createHistoryEntry)
     {
+        if (createHistoryEntry)
+        {
+            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+            historyModule.tryBeginHistoryEntry();
+            historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
+            historyModule.tryEndHistoryEntry();
+        }
+
         importBoxes.forEach(importBox -> ghostBlocksModule.releaseWorld(importBox.getGhostBlocks()));
         importBoxes.clear();
     }
+    //endregion
 }

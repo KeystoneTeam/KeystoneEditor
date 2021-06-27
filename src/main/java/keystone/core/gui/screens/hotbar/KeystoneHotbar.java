@@ -7,7 +7,9 @@ import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.block_selection.SingleBlockSelectionScreen;
 import keystone.core.modules.clipboard.ClipboardModule;
+import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionModule;
+import keystone.core.renderer.client.Player;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.item.ItemStack;
@@ -66,7 +68,7 @@ public class KeystoneHotbar extends KeystoneOverlay
     @Override
     public void init()
     {
-        offsetX = Math.round((minecraft.getWindow().getGuiScaledWidth() / 2 / HotbarButton.SCALE) - 71);
+        offsetX = Math.round((minecraft.getWindow().getGuiScaledWidth() / 2.0f / HotbarButton.SCALE) - 71);
         offsetY = Math.round((minecraft.getWindow().getGuiScaledHeight() / HotbarButton.SCALE) - 22);
 
         hotbarButtons = new HotbarButton[]
@@ -76,7 +78,15 @@ public class KeystoneHotbar extends KeystoneOverlay
                 new HotbarButton(this, KeystoneHotbarSlot.CLONE,     getSlotX(2), offsetY + 3, this::selectionBoxesPresent),
                 new HotbarButton(this, KeystoneHotbarSlot.FILL,      getSlotX(3), offsetY + 3, this::selectionBoxesPresent),
                 new HotbarButton(this, KeystoneHotbarSlot.FILTER,    getSlotX(4), offsetY + 3, this::selectionBoxesPresent),
-                new HotbarButton(this, KeystoneHotbarSlot.IMPORT,    getSlotX(5), offsetY + 3),
+                new HotbarButton(this, KeystoneHotbarSlot.IMPORT,    getSlotX(5), offsetY + 3)
+                {
+                    @Override
+                    public void onSlotClicked()
+                    {
+                        super.onSlotClicked();
+                        Keystone.getModule(ImportModule.class).promptImportSchematic(Player.getHighlightedBlock());
+                    }
+                },
                 new HotbarButton(this, KeystoneHotbarSlot.SPAWN,     getSlotX(6), offsetY + 3)
         };
         hotbarButtons[2].active = false; // Clone

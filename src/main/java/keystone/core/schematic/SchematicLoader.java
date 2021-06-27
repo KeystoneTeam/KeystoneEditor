@@ -7,13 +7,11 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SchematicLoader
 {
+    private static Set<String> extensions = new HashSet<>();
     private static final Map<String, List<ISchematicFormat>> formats = new HashMap<>();
 
     public static void registerFormat(ISchematicFormat format)
@@ -22,8 +20,15 @@ public class SchematicLoader
         {
             if (!formats.containsKey(extension.toLowerCase())) formats.put(extension.toLowerCase(), new ArrayList<>());
             formats.get(extension.toLowerCase()).add(format);
+            extensions.add(extension);
         }
     }
+    public static void finalizeFormats()
+    {
+        extensions = Collections.unmodifiableSet(extensions);
+    }
+
+    public static Set<String> getExtensions() { return extensions; }
 
     public static KeystoneSchematic loadSchematic(String path)
     {

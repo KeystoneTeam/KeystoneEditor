@@ -83,7 +83,7 @@ public class SelectionScreen extends KeystoneOverlay
     @Override
     protected void init()
     {
-        int buttonHeight = (7 * (BUTTON_HEIGHT + PADDING)) - PADDING;
+        int buttonHeight = (8 * (BUTTON_HEIGHT + PADDING)) - PADDING;
         int y = (height - buttonHeight) / 2;
         panelMinY = y - MARGINS;
         panelMaxY = panelMinY + buttonHeight + MARGINS + MARGINS;
@@ -97,10 +97,12 @@ public class SelectionScreen extends KeystoneOverlay
                 createButton(panelMinY + MARGINS, 3, "keystone.selection_panel.analyze", this::buttonAnalyze),
                 createButton(panelMinY + MARGINS, 4, "keystone.selection_panel.cut", this::buttonCut),
                 createButton(panelMinY + MARGINS, 5, "keystone.selection_panel.copy", this::buttonCopy),
-                createButton(panelMinY + MARGINS, 6, "keystone.selection_panel.paste", this::buttonPaste)
+                createButton(panelMinY + MARGINS, 6, "keystone.selection_panel.paste", this::buttonPaste),
+                createButton(panelMinY + MARGINS, 7, "keystone.selection_panel.export", this::buttonExport)
         };
         buttons[2].active = false;
         buttons[3].active = false;
+        buttons[7].active = false;
 
         for (SimpleButton button : buttons)
         {
@@ -163,6 +165,10 @@ public class SelectionScreen extends KeystoneOverlay
     private final void buttonPaste(Button button)
     {
         Keystone.getModule(ClipboardModule.class).paste();
+    }
+    private final void buttonExport(Button button)
+    {
+        Keystone.getModule(ClipboardModule.class).export();
     }
     //endregion
 }

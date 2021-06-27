@@ -11,6 +11,7 @@
 
   "keystone.done": "Done",
   "keystone.cancel": "Cancel",
+  "keystone.open": "Open",
   "keystone.nudge": "Nudge",
   "keystone.blacklist": "Blacklist",
 
@@ -30,7 +31,7 @@
   "keystone.hotbar.clone": "Clone (WIP)",
   "keystone.hotbar.fill": "Fill",
   "keystone.hotbar.filter": "Filter",
-  "keystone.hotbar.import": "Import (WIP)",
+  "keystone.hotbar.import": "Import",
   "keystone.hotbar.spawn": "Spawn (WIP)",
 
   "keystone.selection_panel.deselect": "Deselect",
@@ -40,6 +41,7 @@
   "keystone.selection_panel.cut": "Cut",
   "keystone.selection_panel.copy": "Copy",
   "keystone.selection_panel.paste": "Paste",
+  "keystone.selection_panel.export": "Export",
   "keystone.selection_panel.deselect.tooltip": "Remove all selection boxes. Shortcut: Ctrl-D",
   "keystone.selection_panel.deleteBlocks.tooltip": "Fill the selection with air. Shortcut: Del",
   "keystone.selection_panel.deleteEntities.tooltip": "Remove all entities within the selection",
@@ -47,6 +49,7 @@
   "keystone.selection_panel.cut.tooltip": "Copy all blocks in the selection, then fill with air. Shortcut: Ctrl-X",
   "keystone.selection_panel.copy.tooltip": "Copy all blocks in the selection. Shortcut: Ctrl+C",
   "keystone.selection_panel.paste.tooltip": "Import the last item taken by Cut or Copy. Shortcut: Ctrl+P",
+  "keystone.selection_panel.paste.export": "Save all selections as schematics",
 
   "keystone.filter_panel.select": "Filter: ",
   "keystone.filter_panel.runFilter": "Filter",
@@ -67,7 +70,7 @@
 
   "keystone.schematic_import.rotate": "Rotate",
   "keystone.schematic_import.mirror": "Mirror",
-  "keystone.schematic_import.scale": "Scale",
+  "keystone.schematic_import.scale": "Scale (WIP)",
   "keystone.schematic_import.import": "Import",
   "keystone.schematic_import.rotate.tooltip": "Rotate all import boxes. Shortcut: R",
   "keystone.schematic_import.mirror.tooltip": "Mirror all import boxes. Shortcut: M",

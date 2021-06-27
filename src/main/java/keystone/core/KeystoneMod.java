@@ -1,6 +1,7 @@
 package keystone.core;
 
 import keystone.api.Keystone;
+import keystone.api.KeystoneDirectories;
 import keystone.core.events.KeystoneEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
@@ -30,6 +31,7 @@ import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod(KeystoneMod.MODID)
@@ -40,11 +42,22 @@ public class KeystoneMod
 
     public KeystoneMod()
     {
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
         MinecraftForge.EVENT_BUS.addListener(this::gameLoaded);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultBoxes);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultModules);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultSchematicFormats);
+    }
+
+    private void setup(final FMLCommonSetupEvent event)
+    {
+        KeystoneDirectories.init();
+    }
+    private void clientSetup(final FMLClientSetupEvent event)
+    {
+        KeystoneOverlayHandler.addOverlay(new KeystoneHotbar());
+        KeystoneKeybinds.register();
     }
 
     private void gameLoaded(final GuiOpenEvent event)
@@ -60,12 +73,6 @@ public class KeystoneMod
         MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterSchematicFormats());
         Keystone.postInit();
     }
-    private void clientSetup(final FMLClientSetupEvent event)
-    {
-        KeystoneOverlayHandler.addOverlay(new KeystoneHotbar());
-        KeystoneKeybinds.register();
-    }
-
     private void registerDefaultBoxes(final KeystoneEvent.RegisterBoundingBoxTypes event)
     {
         Keystone.LOGGER.info("Registering default Keystone bounding box types");

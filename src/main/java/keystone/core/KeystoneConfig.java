@@ -6,6 +6,7 @@ public class KeystoneConfig
 {
     public static String filtersDirectory = "keystone" + File.separator + "filters";
     public static String stockFilterCache = "keystone" + File.separator + "stock_filters";
+    public static String schematicsDirectory = "keystone" + File.separator + "schematics";
 
     public static boolean startActive = true;
     public static boolean disableInGameMenu = true;
