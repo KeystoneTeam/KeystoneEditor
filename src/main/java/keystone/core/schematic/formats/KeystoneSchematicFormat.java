@@ -1,15 +1,21 @@
 package keystone.core.schematic.formats;
 
-import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.Block;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.utils.NBTSerializer;
+import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.IntNBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.NBTUtil;
+import net.minecraft.util.SharedConstants;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraftforge.common.util.Constants;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class KeystoneSchematicFormat implements ISchematicFormat
 {
@@ -21,6 +27,73 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         return EXTENSIONS;
     }
 
+    //region Saving
+    public static CompoundNBT saveSchematic(KeystoneSchematic schematic)
+    {
+        CompoundNBT nbt = new CompoundNBT();
+
+        // Size
+        ListNBT sizeNBT = new ListNBT();
+        sizeNBT.add(0, IntNBT.valueOf(schematic.getSize().getX()));
+        sizeNBT.add(1, IntNBT.valueOf(schematic.getSize().getY()));
+        sizeNBT.add(2, IntNBT.valueOf(schematic.getSize().getZ()));
+        nbt.put("size", sizeNBT);
+
+        // Palette
+        List<BlockState> palette = generatePalette(schematic);
+        ListNBT paletteNBT = new ListNBT();
+        for (int i = 0; i < palette.size(); i++)
+        {
+            BlockState entry = palette.get(i);
+            CompoundNBT entryNBT = NBTUtil.writeBlockState(entry);
+            paletteNBT.add(i, entryNBT);
+        }
+        nbt.put("palette", paletteNBT);
+
+        // Blocks
+        ListNBT blocksNBT = new ListNBT();
+        int i = 0;
+        schematic.forEachBlock((pos, block) ->
+        {
+            CompoundNBT blockNBT = new CompoundNBT();
+
+            ListNBT positionNBT = new ListNBT();
+            positionNBT.add(0, IntNBT.valueOf(pos.getX()));
+            positionNBT.add(1, IntNBT.valueOf(pos.getY()));
+            positionNBT.add(2, IntNBT.valueOf(pos.getZ()));
+
+            blockNBT.put("pos", positionNBT);
+            blockNBT.putInt("state", palette.indexOf(block.getMinecraftBlock()));
+
+            CompoundNBT tileEntityNBT = block.getTileEntityData();
+            if (tileEntityNBT != null && !tileEntityNBT.isEmpty())
+            {
+                tileEntityNBT.remove("x");
+                tileEntityNBT.remove("y");
+                tileEntityNBT.remove("z");
+                blockNBT.put("nbt", tileEntityNBT);
+            }
+
+            blocksNBT.add(index(schematic.getSize(), new int[] { pos.getX(), pos.getY(), pos.getZ() }), blockNBT);
+        });
+        nbt.put("blocks", blocksNBT);
+
+        nbt.putInt("DataVersion", SharedConstants.getCurrentVersion().getWorldVersion());
+        return nbt;
+    }
+    private static List<BlockState> generatePalette(KeystoneSchematic schematic)
+    {
+        List<BlockState> palette = new ArrayList<>();
+        schematic.forEachBlock((pos, block) ->
+        {
+            BlockState paletteEntry = block.getMinecraftBlock();
+            if (!palette.contains(paletteEntry)) palette.add(paletteEntry);
+        });
+        palette.sort(Comparator.comparing(BlockState::toString));
+        return palette;
+    }
+    //endregion
+    //region Loading
     @Override
     public KeystoneSchematic loadFile(File file)
     {
@@ -45,21 +118,8 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         for (int i = 0; i < palette.length; i++)
         {
             CompoundNBT entry = paletteNBT.getCompound(i);
-            String blockString = entry.getString("Name");
-            if (entry.contains("Properties"))
-            {
-                CompoundNBT properties = entry.getCompound("Properties");
-                blockString += "[";
-                int j = properties.getAllKeys().size();
-                for (String key : properties.getAllKeys())
-                {
-                    blockString += key + "=" + properties.getString(key);
-                    j--;
-                    if (j > 0) blockString += ",";
-                }
-                blockString += "]";
-            }
-            palette[i] = KeystoneFilter.block(blockString);
+            BlockState blockState = NBTUtil.readBlockState(entry);
+            palette[i] = new Block(blockState);
         }
         return palette;
     }
@@ -76,8 +136,9 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         }
     }
 
-    private int index(Vector3i size, int[] pos)
+    private static int index(Vector3i size, int[] pos)
     {
         return pos[2] + pos[1] * size.getZ() + pos[0] * size.getZ() * size.getY();
     }
+    //endregion
 }

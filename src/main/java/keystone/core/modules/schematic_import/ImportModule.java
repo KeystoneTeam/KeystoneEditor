@@ -3,7 +3,7 @@ package keystone.core.modules.schematic_import;
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.core.events.KeystoneHotbarEvent;
-import keystone.core.gui.screens.file_browser.FileBrowserScreen;
+import keystone.core.gui.screens.file_browser.OpenFilesScreen;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.screens.schematic_import.ImportScreen;
@@ -82,7 +82,7 @@ public class ImportModule implements IKeystoneModule
     //region Import Calls
     public void promptImportSchematic(Coords minPosition)
     {
-        FileBrowserScreen.openFiles(new StringTextComponent("Import Schematics"), SchematicLoader.getExtensions(),
+        OpenFilesScreen.openFiles(new StringTextComponent("Import Schematics"), SchematicLoader.getExtensions(),
                 KeystoneDirectories.getSchematicDirectory(), true, (files) ->
         {
             for (File schematic : files) importSchematic(schematic, Player.getHighlightedBlock());

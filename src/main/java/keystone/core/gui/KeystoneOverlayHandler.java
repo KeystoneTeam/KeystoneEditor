@@ -126,6 +126,8 @@ public class KeystoneOverlayHandler
     private static void tick()
     {
         KeystoneGlobalState.BlockingKeys = Minecraft.getInstance().screen != null;
+        if (Minecraft.getInstance().screen != null) return;
+
         overlays.forEach(screen ->
         {
             screen.tick();
@@ -140,6 +142,7 @@ public class KeystoneOverlayHandler
     }
     public static void resize(Minecraft minecraft, int width, int height)
     {
+        if (Minecraft.getInstance().screen != null) return;
         overlays.forEach(screen -> screen.resize(minecraft, width, height));
     }
     public static void render(MatrixStack matrixStack, float partialTicks)
@@ -158,6 +161,8 @@ public class KeystoneOverlayHandler
             // Render overlays
             for (int i = 0; i < overlays.size(); i++)
             {
+                if (Minecraft.getInstance().screen != null && i > 0) continue;
+
                 matrixStack.pushPose();
                 matrixStack.translate(0, 0, i * 200);
 
@@ -184,6 +189,8 @@ public class KeystoneOverlayHandler
 
     public static boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {
+        if (Minecraft.getInstance().screen != null) return false;
+
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
             Screen screen = overlays.get(i);
@@ -193,6 +200,8 @@ public class KeystoneOverlayHandler
     }
     public static boolean keyReleased(int keyCode, int scanCode, int modifiers)
     {
+        if (Minecraft.getInstance().screen != null) return false;
+
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
             Screen screen = overlays.get(i);
@@ -202,6 +211,8 @@ public class KeystoneOverlayHandler
     }
     private static boolean mouseClicked(double mouseX, double mouseY, int button)
     {
+        if (Minecraft.getInstance().screen != null) return false;
+
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
             Screen screen = overlays.get(i);
@@ -211,6 +222,8 @@ public class KeystoneOverlayHandler
     }
     private static boolean mouseReleased(double mouseX, double mouseY, int button)
     {
+        if (Minecraft.getInstance().screen != null) return false;
+
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
             Screen screen = overlays.get(i);
@@ -220,6 +233,8 @@ public class KeystoneOverlayHandler
     }
     private static boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY)
     {
+        if (Minecraft.getInstance().screen != null) return false;
+
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
             Screen screen = overlays.get(i);
@@ -229,6 +244,8 @@ public class KeystoneOverlayHandler
     }
     private static boolean mouseScrolled(double mouseX, double mouseY, double delta)
     {
+        if (Minecraft.getInstance().screen != null) return false;
+
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
             Screen screen = overlays.get(i);
@@ -238,6 +255,8 @@ public class KeystoneOverlayHandler
     }
     public static boolean charTyped(char codePoint, int modifiers)
     {
+        if (Minecraft.getInstance().screen != null) return false;
+
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
             Screen screen = overlays.get(i);
@@ -247,6 +266,8 @@ public class KeystoneOverlayHandler
     }
     private static void mouseMoved(double xPos, double mouseY)
     {
+        if (Minecraft.getInstance().screen != null) return;
+
         overlays.forEach(screen -> screen.mouseMoved(xPos, mouseY));
     }
     //endregion

@@ -2,17 +2,24 @@ package keystone.core.gui.screens.selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
+import keystone.api.KeystoneDirectories;
 import keystone.api.tools.FillTool;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
+import keystone.core.gui.screens.file_browser.SaveFileScreen;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.SimpleButton;
+import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.selection.SelectionModule;
+import keystone.core.schematic.KeystoneSchematic;
+import keystone.core.schematic.formats.KeystoneSchematicFormat;
+import keystone.core.utils.NBTSerializer;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -102,7 +109,6 @@ public class SelectionScreen extends KeystoneOverlay
         };
         buttons[2].active = false;
         buttons[3].active = false;
-        buttons[7].active = false;
 
         for (SimpleButton button : buttons)
         {
@@ -168,7 +174,14 @@ public class SelectionScreen extends KeystoneOverlay
     }
     private final void buttonExport(Button button)
     {
-        Keystone.getModule(ClipboardModule.class).export();
+        SaveFileScreen.saveFile("kschem", KeystoneDirectories.getSchematicDirectory(), true, file ->
+                Keystone.runOnMainThread(() ->
+                {
+                    BlocksModule blocks = Keystone.getModule(BlocksModule.class);
+                    KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(SelectionNudgeScreen.getSelectionToNudge(), blocks);
+                    CompoundNBT schematicNBT = KeystoneSchematicFormat.saveSchematic(schematic);
+                    NBTSerializer.serialize(file, schematicNBT);
+                }));
     }
     //endregion
 }

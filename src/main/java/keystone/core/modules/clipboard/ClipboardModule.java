@@ -119,11 +119,4 @@ public class ClipboardModule implements IKeystoneModule
             }
         }
     }
-    public void export()
-    {
-        Keystone.runOnMainThread(() ->
-        {
-            // TODO: Implement Exporting
-        });
-    }
 }

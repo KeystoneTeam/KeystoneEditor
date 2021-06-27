@@ -11,7 +11,6 @@
 
   "keystone.done": "Done",
   "keystone.cancel": "Cancel",
-  "keystone.open": "Open",
   "keystone.nudge": "Nudge",
   "keystone.blacklist": "Blacklist",
 
@@ -49,7 +48,7 @@
   "keystone.selection_panel.cut.tooltip": "Copy all blocks in the selection, then fill with air. Shortcut: Ctrl-X",
   "keystone.selection_panel.copy.tooltip": "Copy all blocks in the selection. Shortcut: Ctrl+C",
   "keystone.selection_panel.paste.tooltip": "Import the last item taken by Cut or Copy. Shortcut: Ctrl+P",
-  "keystone.selection_panel.paste.export": "Save all selections as schematics",
+  "keystone.selection_panel.export.tooltip": "Save highlighted selection as a schematic",
 
   "keystone.filter_panel.select": "Filter: ",
   "keystone.filter_panel.runFilter": "Filter",
@@ -75,5 +74,10 @@
   "keystone.schematic_import.rotate.tooltip": "Rotate all import boxes. Shortcut: R",
   "keystone.schematic_import.mirror.tooltip": "Mirror all import boxes. Shortcut: M",
   "keystone.schematic_import.scale.tooltip": "Scale all import boxes",
-  "keystone.schematic_import.import.tooltip": "Place all imported schematics. Shortcut: Enter"
+  "keystone.schematic_import.import.tooltip": "Place all imported schematics. Shortcut: Enter",
+
+  "keystone.file_browser.fileName": "File Name",
+  "keystone.file_browser.saveFile": "Save File",
+  "keystone.file_browser.open": "Open",
+  "keystone.file_browser.save": "Save"
 }
