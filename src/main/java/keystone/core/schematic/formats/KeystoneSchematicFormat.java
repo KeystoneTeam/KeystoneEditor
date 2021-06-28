@@ -4,11 +4,13 @@ import keystone.api.wrappers.Block;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.utils.NBTSerializer;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.IntNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.SharedConstants;
+import net.minecraft.util.datafix.DefaultTypeReferences;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraftforge.common.util.Constants;
 
@@ -99,6 +101,7 @@ public class KeystoneSchematicFormat implements ISchematicFormat
     {
         CompoundNBT nbt = NBTSerializer.deserialize(file);
         if (nbt.isEmpty()) return null;
+        nbt = NBTUtil.update(Minecraft.getInstance().getFixerUpper(), DefaultTypeReferences.STRUCTURE, nbt, nbt.getInt("DataVersion"));
 
         ListNBT sizeNBT = nbt.getList("size", Constants.NBT.TAG_INT);
         Vector3i size = new Vector3i(sizeNBT.getInt(0), sizeNBT.getInt(1), sizeNBT.getInt(2));

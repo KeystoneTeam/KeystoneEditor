@@ -1,6 +1,7 @@
 package keystone.core.mixins;
 
 import keystone.api.Keystone;
+import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.KeystoneInputHandler;
 import net.minecraft.client.Minecraft;
@@ -62,5 +63,11 @@ public abstract class MixinMouseHelper
                 }
             }
         }
+    }
+
+    @Inject(method = "onScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerAbilities;setFlyingSpeed(F)V"), cancellable = true)
+    public void onScroll(long handle, double scrollX, double scrollY, CallbackInfo callback)
+    {
+        if (Keystone.isActive()) callback.cancel();
     }
 }

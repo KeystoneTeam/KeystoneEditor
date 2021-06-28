@@ -19,10 +19,7 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.world.EmptyTickList;
-import net.minecraft.world.ITickList;
-import net.minecraft.world.LightType;
-import net.minecraft.world.World;
+import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeRegistry;
 import net.minecraft.world.server.ServerWorld;
@@ -31,8 +28,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-// TODO: Check if this needs to implement IServerWorld
-public class GhostBlocksWorld extends WrappedWorld
+public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
 {
     protected Map<BlockPos, BlockState> blocks;
     protected Map<BlockPos, TileEntity> tileEntities;
@@ -289,6 +285,13 @@ public class GhostBlocksWorld extends WrappedWorld
         {
             return (ServerWorld) this.world;
         }
+        throw new IllegalStateException("Cannot use IServerWorld#getWorld in a client environment");
+    }
+
+    @Override
+    public ServerWorld getLevel()
+    {
+        if (this.world instanceof ServerWorld) return (ServerWorld) this.world;
         throw new IllegalStateException("Cannot use IServerWorld#getWorld in a client environment");
     }
 }

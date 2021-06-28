@@ -2,13 +2,15 @@ package keystone.core.modules.ghost_blocks;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import keystone.api.Keystone;
 import keystone.core.modules.IKeystoneModule;
+import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.blocks.buffer.SuperRenderTypeBuffer;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import keystone.core.renderer.client.Camera;
+import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.renderers.RenderQueue;
 import keystone.core.schematic.KeystoneSchematic;
-import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -21,6 +23,7 @@ import java.util.Set;
 
 public class GhostBlocksModule implements IKeystoneModule
 {
+    private WorldCacheModule worldCache;
     private Set<GhostBlocksWorld> ghostWorlds = new HashSet<>();
 
     public GhostBlocksModule()
@@ -32,6 +35,11 @@ public class GhostBlocksModule implements IKeystoneModule
     public boolean isEnabled()
     {
         return true;
+    }
+    @Override
+    public void postInit()
+    {
+        this.worldCache = Keystone.getModule(WorldCacheModule.class);
     }
 
     @SubscribeEvent
@@ -60,7 +68,7 @@ public class GhostBlocksModule implements IKeystoneModule
 
     public GhostBlocksWorld createWorld()
     {
-        GhostBlocksWorld world = new GhostBlocksWorld(Minecraft.getInstance().level);
+        GhostBlocksWorld world = new GhostBlocksWorld(worldCache.getDimensionWorld(Player.getDimensionId()));
         ghostWorlds.add(world);
         return world;
     }

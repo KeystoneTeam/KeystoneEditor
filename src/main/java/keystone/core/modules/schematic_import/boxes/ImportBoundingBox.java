@@ -30,6 +30,9 @@ public class ImportBoundingBox extends SelectableBoundingBox
     private int scale;
 
     private Coords dragOffset;
+    private int dragLockX;
+    private int dragLockY;
+    private int dragLockZ;
 
     private ImportBoundingBox(Coords corner1, Coords corner2, KeystoneSchematic schematic)
     {
@@ -107,6 +110,16 @@ public class ImportBoundingBox extends SelectableBoundingBox
     public void startDrag(SelectedFace face)
     {
         dragOffset = face.getRelativeSelectedBlock();
+        dragLockX = Integer.MAX_VALUE;
+        dragLockY = Integer.MAX_VALUE;
+        dragLockZ = Integer.MAX_VALUE;
+
+        switch (face.getFaceDirection().getAxis())
+        {
+            case X: dragLockX = face.getBox().getMinCoords().getX(); break;
+            case Y: dragLockX = face.getBox().getMinCoords().getY(); break;
+            case Z: dragLockX = face.getBox().getMinCoords().getZ(); break;
+        }
 
         HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
         historyModule.beginHistoryEntry();
@@ -146,6 +159,9 @@ public class ImportBoundingBox extends SelectableBoundingBox
                 break;
         }
 
+        if (dragLockX != Integer.MAX_VALUE) x = dragLockX;
+        if (dragLockY != Integer.MAX_VALUE) y = dragLockY;
+        if (dragLockZ != Integer.MAX_VALUE) z = dragLockZ;
         face.getBox().move(new Coords(x, y, z));
     }
 

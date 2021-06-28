@@ -17,6 +17,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.LogicalSide;
 import org.apache.logging.log4j.LogManager;
@@ -48,18 +49,26 @@ public final class Keystone
      */
     public static void toggleKeystone()
     {
-        if (enabled)
-        {
-            enabled = false;
-            Minecraft.getInstance().mouseHandler.grabMouse();
-            revertGamemode = true;
-        }
-        else
-        {
-            enabled = true;
-            KeystoneGlobalState.AllowPlayerLook = false;
-            Minecraft.getInstance().mouseHandler.releaseMouse();
-        }
+        if (enabled) onDeactivated();
+        else onActivated();
+    }
+
+    private static void onActivated()
+    {
+        Minecraft minecraft = Minecraft.getInstance();
+
+        enabled = true;
+        KeystoneGlobalState.AllowPlayerLook = false;
+        minecraft.mouseHandler.releaseMouse();
+        minecraft.player.abilities.setFlyingSpeed(KeystoneConfig.flySpeed);
+    }
+    private static void onDeactivated()
+    {
+        Minecraft minecraft = Minecraft.getInstance();
+
+        enabled = false;
+        minecraft.mouseHandler.grabMouse();
+        revertGamemode = true;
     }
 
     /**
@@ -212,6 +221,7 @@ public final class Keystone
         MinecraftForge.EVENT_BUS.addListener(Keystone::onWorldTick);
         MinecraftForge.EVENT_BUS.addListener(Keystone::onPlayerTick);
         MinecraftForge.EVENT_BUS.addListener(Keystone::onRightClickBlock);
+        MinecraftForge.EVENT_BUS.addListener(Keystone::onGamemodeChanged);
     }
 
     /**
@@ -287,6 +297,16 @@ public final class Keystone
     private static final void onRightClickBlock(final PlayerInteractEvent.RightClickBlock event)
     {
         if (Keystone.isActive()) event.setCanceled(true);
+    }
+
+    /**
+     * Ran when the player's gamemode is changed. Used to prevent players changing gamemode while
+     * Keystone is active
+     * @param event The {@link net.minecraftforge.event.entity.player.PlayerEvent.PlayerChangeGameModeEvent} that was posted
+     */
+    private static final void onGamemodeChanged(final PlayerEvent.PlayerChangeGameModeEvent event)
+    {
+        if (Keystone.isActive() && event.getNewGameMode() != GameType.SPECTATOR) event.setCanceled(true);
     }
     //endregion
 }

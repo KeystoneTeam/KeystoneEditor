@@ -1,9 +1,7 @@
 package keystone.core.gui.screens.file_browser;
 
 import keystone.core.gui.widgets.inputs.ParsableTextWidget;
-import keystone.core.gui.widgets.inputs.fields.ParsableTextFieldWidget;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
