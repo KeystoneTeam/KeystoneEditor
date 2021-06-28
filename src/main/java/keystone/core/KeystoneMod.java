@@ -27,18 +27,27 @@ import keystone.core.modules.selection.renderers.HighlightBoxRenderer;
 import keystone.core.modules.selection.renderers.SelectionBoxRenderer;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Util;
+import net.minecraft.util.text.*;
+import net.minecraft.util.text.event.ClickEvent;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.VersionChecker;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.forgespi.language.IModInfo;
 
 @Mod(KeystoneMod.MODID)
 public class KeystoneMod
 {
     public static final String MODID = "keystone";
     private static boolean initialized = false;
+    private static boolean ranVersionCheck = false;
 
     public KeystoneMod()
     {
@@ -48,6 +57,7 @@ public class KeystoneMod
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultBoxes);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultModules);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultSchematicFormats);
+        MinecraftForge.EVENT_BUS.addListener(this::onWorldLoaded);
     }
 
     private void setup(final FMLCommonSetupEvent event)
@@ -102,5 +112,42 @@ public class KeystoneMod
     private void registerDefaultSchematicFormats(final KeystoneEvent.RegisterSchematicFormats event)
     {
         event.register(new KeystoneSchematicFormat());
+    }
+    private void onWorldLoaded(final EntityJoinWorldEvent event)
+    {
+        if (event.getEntity() instanceof PlayerEntity && event.getWorld().isClientSide)
+        {
+            if (!ranVersionCheck)
+            {
+                ranVersionCheck = true;
+
+                IModInfo modInfo = ModList.get().getModContainerByObject(this).get().getModInfo();
+                VersionChecker.CheckResult result = VersionChecker.getResult(modInfo);
+
+                if (result.status == VersionChecker.Status.OUTDATED)
+                {
+                    IFormattableTextComponent[] lines = new IFormattableTextComponent[]
+                            {
+                                    new TranslationTextComponent("keystone.version_check.outdated").withStyle(TextFormatting.GOLD),
+                                    new TranslationTextComponent("keystone.version_check.currentVersion",
+                                            new StringTextComponent(modInfo.getVersion().toString()).withStyle(TextFormatting.AQUA),
+                                            new StringTextComponent(result.target.toString()).withStyle(TextFormatting.AQUA)).withStyle(TextFormatting.GOLD),
+                                    new TranslationTextComponent("keystone.version_check.releasesLink").withStyle(TextFormatting.GOLD)
+                            };
+
+                    IFormattableTextComponent hyperlink = new TranslationTextComponent("keystone.version_check.releasesLink.hyperlink").withStyle
+                    (
+                        Style.EMPTY
+                            .withColor(TextFormatting.AQUA)
+                            .withUnderlined(true)
+                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, result.url))
+                    );
+                    lines[2] = lines[2].append(new StringTextComponent(" ")).append(hyperlink);
+
+                    for (IFormattableTextComponent line : lines) event.getEntity().sendMessage(line, Util.NIL_UUID);
+                    Keystone.disableKeystone();
+                }
+            }
+        }
     }
 }

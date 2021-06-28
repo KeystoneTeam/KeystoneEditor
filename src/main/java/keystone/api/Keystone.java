@@ -49,12 +49,15 @@ public final class Keystone
      */
     public static void toggleKeystone()
     {
-        if (enabled) onDeactivated();
-        else onActivated();
+        if (enabled) disableKeystone();
+        else enableKeystone();
     }
-
-    private static void onActivated()
+    /**
+     * Enable Keystone if it isn't already
+     */
+    public static void enableKeystone()
     {
+        if (enabled) return;
         Minecraft minecraft = Minecraft.getInstance();
 
         enabled = true;
@@ -62,15 +65,18 @@ public final class Keystone
         minecraft.mouseHandler.releaseMouse();
         minecraft.player.abilities.setFlyingSpeed(KeystoneConfig.flySpeed);
     }
-    private static void onDeactivated()
+    /**
+     * Disable Keystone if it isn't already
+     */
+    public static void disableKeystone()
     {
+        if (!enabled) return;
         Minecraft minecraft = Minecraft.getInstance();
 
         enabled = false;
         minecraft.mouseHandler.grabMouse();
         revertGamemode = true;
     }
-
     /**
      * @return If Keystone is active and a world is loaded
      */
