@@ -24,7 +24,7 @@ public class StackFillBrushOperation extends BrushOperation
     public boolean process(int x, int y, int z, BlocksModule blocks, int iteration)
     {
         int newY = y;
-        Block current = blocks.getBlock(x, newY, z, BlockRetrievalMode.LAST_SWAPPED);
+        Block current = blocks.getBlock(x, newY, z, BlockRetrievalMode.CURRENT);
         if (current.isAir())
         {
             if (gravity)
@@ -32,11 +32,11 @@ public class StackFillBrushOperation extends BrushOperation
                 while (current.isAir())
                 {
                     newY--;
-                    current = blocks.getBlock(x, newY, z, BlockRetrievalMode.LAST_SWAPPED);
+                    current = blocks.getBlock(x, newY, z, BlockRetrievalMode.CURRENT);
                 }
                 newY++;
             }
-            else if (blocks.getBlock(x, newY - 1, z, BlockRetrievalMode.LAST_SWAPPED).isAir()) return true;
+            else if (blocks.getBlock(x, newY - 1, z, BlockRetrievalMode.CURRENT).isAir()) return true;
         }
         else
         {
@@ -45,7 +45,7 @@ public class StackFillBrushOperation extends BrushOperation
                 while (!current.isAir())
                 {
                     newY++;
-                    current = blocks.getBlock(x, newY, z, BlockRetrievalMode.LAST_SWAPPED);
+                    current = blocks.getBlock(x, newY, z, BlockRetrievalMode.CURRENT);
                 }
             }
             else return true;

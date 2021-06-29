@@ -20,18 +20,18 @@ public class GravityBrushOperation extends BrushOperation
     @Override
     public boolean process(int x, int y, int z, BlocksModule blocks, int iteration)
     {
-        Block existing = blocks.getBlock(x, y, z, BlockRetrievalMode.LAST_SWAPPED);
+        Block existing = blocks.getBlock(x, y, z, BlockRetrievalMode.CURRENT);
         if (!existing.isAir())
         {
             int newY = y - 1;
-            Block current = blocks.getBlock(x, newY, z, BlockRetrievalMode.LAST_SWAPPED);
+            Block current = blocks.getBlock(x, newY, z, BlockRetrievalMode.CURRENT);
             if (!current.isAir()) return true;
             else
             {
                 while (current.isAir())
                 {
                     newY --;
-                    current = blocks.getBlock(x, newY, z, BlockRetrievalMode.LAST_SWAPPED);
+                    current = blocks.getBlock(x, newY, z, BlockRetrievalMode.CURRENT);
                 }
                 newY++;
             }

@@ -117,8 +117,8 @@ public class ImportBoundingBox extends SelectableBoundingBox
         switch (face.getFaceDirection().getAxis())
         {
             case X: dragLockX = face.getBox().getMinCoords().getX(); break;
-            case Y: dragLockX = face.getBox().getMinCoords().getY(); break;
-            case Z: dragLockX = face.getBox().getMinCoords().getZ(); break;
+            case Y: dragLockY = face.getBox().getMinCoords().getY(); break;
+            case Z: dragLockZ = face.getBox().getMinCoords().getZ(); break;
         }
 
         HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
