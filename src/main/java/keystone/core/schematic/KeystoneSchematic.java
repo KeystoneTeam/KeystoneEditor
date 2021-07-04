@@ -2,7 +2,7 @@ package keystone.core.schematic;
 
 import keystone.api.Keystone;
 import keystone.api.enums.BlockRetrievalMode;
-import keystone.api.wrappers.Block;
+import keystone.api.wrappers.blocks.Block;
 import keystone.core.math.BlockPosMath;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
@@ -29,7 +29,7 @@ public class KeystoneSchematic
 
     /**
      * @param size The size of the schematic
-     * @param blocks The {@link keystone.api.wrappers.Block} contents of the schematic
+     * @param blocks The {@link Block} contents of the schematic
      */
     public KeystoneSchematic(Vector3i size, Block[] blocks)
     {
@@ -103,9 +103,9 @@ public class KeystoneSchematic
         return size;
     }
     /**
-     * Get the {@link keystone.api.wrappers.Block} at a relative block position in the schematic
+     * Get the {@link Block} at a relative block position in the schematic
      * @param relativePos The relative block position
-     * @return The {@link keystone.api.wrappers.Block} at the position, or air if it is outside the schematic
+     * @return The {@link Block} at the position, or air if it is outside the schematic
      */
     public Block getBlock(BlockPos relativePos)
     {

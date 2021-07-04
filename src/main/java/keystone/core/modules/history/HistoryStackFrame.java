@@ -1,7 +1,7 @@
 package keystone.core.modules.history;
 
 import keystone.api.Keystone;
-import keystone.api.wrappers.Block;
+import keystone.api.wrappers.blocks.Block;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.client.Player;
 import net.minecraft.util.math.vector.Vector3i;

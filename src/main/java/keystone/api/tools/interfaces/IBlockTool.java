@@ -1,6 +1,6 @@
 package keystone.api.tools.interfaces;
 
-import keystone.api.BlockRegion;
+import keystone.api.WorldRegion;
 
 /**
  * A tool which performs a function on every block within the current selection
@@ -14,9 +14,9 @@ public interface IBlockTool extends IKeystoneTool
      * @param x The x-coordinate of the block
      * @param y The y-coordinate of the block
      * @param z The z-coordinate of the block
-     * @param region The {@link BlockRegion} the block is in
+     * @param region The {@link WorldRegion} the block is in
      */
-    void process(int x, int y, int z, BlockRegion region);
+    void process(int x, int y, int z, WorldRegion region);
     /**
      * @return If true, blocks that are in multiple selection boxes will only be processed once
      */

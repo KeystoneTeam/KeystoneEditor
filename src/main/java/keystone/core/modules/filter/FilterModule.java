@@ -1,6 +1,6 @@
 package keystone.core.modules.filter;
 
-import keystone.api.BlockRegion;
+import keystone.api.WorldRegion;
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.modules.IKeystoneModule;
@@ -72,8 +72,8 @@ public class FilterModule implements IKeystoneModule
             if (filter.isCompiledSuccessfully())
             {
                 historyModule.beginHistoryEntry();
-                BlockRegion[] boxes = selectionModule.buildRegions(filter.allowBlocksOutsideRegion());
-                filter.setBlockRegions(boxes);
+                WorldRegion[] regions = selectionModule.buildRegions(filter.allowBlocksOutsideRegion());
+                filter.setBlockRegions(regions);
 
                 try
                 {
@@ -90,7 +90,7 @@ public class FilterModule implements IKeystoneModule
                         }
 
                         Set<BlockPos> processedBlocks = new HashSet<>();
-                        for (BlockRegion box : boxes)
+                        for (WorldRegion box : regions)
                         {
                             filter.processRegion(box);
                             if (abortFilter != null)
@@ -141,6 +141,7 @@ public class FilterModule implements IKeystoneModule
                     return;
                 }
 
+                for (WorldRegion region : regions) region.updateEntities();
                 historyModule.endHistoryEntry();
             }
         });

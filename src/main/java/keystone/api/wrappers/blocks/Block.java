@@ -1,4 +1,4 @@
-package keystone.api.wrappers;
+package keystone.api.wrappers.blocks;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.api.tools.FillTool;
+import keystone.api.tools.interfaces.IEntityTool;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
@@ -107,7 +108,6 @@ public class SelectionScreen extends KeystoneOverlay
                 createButton(panelMinY + MARGINS, 6, "keystone.selection_panel.paste", this::buttonPaste),
                 createButton(panelMinY + MARGINS, 7, "keystone.selection_panel.export", this::buttonExport)
         };
-        buttons[2].active = false;
         buttons[3].active = false;
 
         for (SimpleButton button : buttons)
@@ -154,7 +154,7 @@ public class SelectionScreen extends KeystoneOverlay
     }
     private final void buttonDeleteEntities(Button button)
     {
-        // TODO: Implement Delete Entities Button
+        Keystone.runTool((IEntityTool) (entity, region) -> entity.kill());
     }
     private final void buttonAnalyze(Button button)
     {

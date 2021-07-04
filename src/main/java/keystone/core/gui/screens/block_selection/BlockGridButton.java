@@ -1,6 +1,7 @@
 package keystone.core.gui.screens.block_selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import keystone.api.wrappers.blocks.Block;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.utils.BlockUtils;
 import net.minecraft.block.BlockState;
@@ -45,7 +46,7 @@ public class BlockGridButton extends AbstractBlockButton
         else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT)
         {
             parent.disableWidgets();
-            BlockPropertiesScreen.editBlockProperties(new keystone.api.wrappers.Block(getBlockState()), block ->
+            BlockPropertiesScreen.editBlockProperties(new Block(getBlockState()), block ->
             {
                 if (block != null) parent.onBlockClicked(block.getMinecraftBlock());
                 parent.restoreWidgets();

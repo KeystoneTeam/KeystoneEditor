@@ -2,9 +2,9 @@ package keystone.core.modules.brush.operations;
 
 import keystone.api.enums.BlockRetrievalMode;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.Block;
-import keystone.api.wrappers.BlockMask;
-import keystone.api.wrappers.BlockPalette;
+import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockMask;
+import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.brush.BrushOperation;
 import net.minecraft.util.text.ITextComponent;

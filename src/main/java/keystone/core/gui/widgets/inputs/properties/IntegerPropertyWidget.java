@@ -1,6 +1,6 @@
 package keystone.core.gui.widgets.inputs.properties;
 
-import keystone.api.wrappers.Block;
+import keystone.api.wrappers.blocks.Block;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.util.text.StringTextComponent;

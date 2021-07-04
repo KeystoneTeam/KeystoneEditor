@@ -1,7 +1,7 @@
 package keystone.core.modules.filter.providers;
 
 import keystone.api.Keystone;
-import keystone.api.wrappers.Block;
+import keystone.api.wrappers.blocks.Block;
 import net.minecraft.tags.ITag;
 
 public class TagBlockProvider implements IBlockProvider

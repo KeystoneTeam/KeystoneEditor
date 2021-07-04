@@ -1,7 +1,7 @@
 package keystone.core.modules.history;
 
 import keystone.api.enums.BlockRetrievalMode;
-import keystone.api.wrappers.Block;
+import keystone.api.wrappers.blocks.Block;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;

@@ -2,8 +2,10 @@ package keystone.api;
 
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.tools.interfaces.IBlockTool;
+import keystone.api.tools.interfaces.IEntityTool;
 import keystone.api.tools.interfaces.IKeystoneTool;
 import keystone.api.tools.interfaces.ISelectionBoxTool;
+import keystone.api.wrappers.entities.Entity;
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.modules.IKeystoneModule;
@@ -189,10 +191,12 @@ public final class Keystone
         runOnMainThread(() ->
         {
             historyModule.tryBeginHistoryEntry();
-            BlockRegion[] regions = getModule(SelectionModule.class).buildRegions(false);
+            WorldRegion[] regions = getModule(SelectionModule.class).buildRegions(false);
 
             Set<BlockPos> processedBlocks = new HashSet<>();
-            for (BlockRegion region : regions)
+            Set<UUID> processedEntities = new HashSet<>();
+
+            for (WorldRegion region : regions)
             {
                 if (tool instanceof ISelectionBoxTool) ((ISelectionBoxTool)tool).process(region);
                 if (tool instanceof IBlockTool)
@@ -208,6 +212,21 @@ public final class Keystone
                         }
                     }));
                 }
+                if (tool instanceof IEntityTool)
+                {
+                    IEntityTool entityTool = (IEntityTool)tool;
+                    region.forEachEntity(entity ->
+                    {
+                        if (entity.uuid() == null) entityTool.process(entity, region);
+                        else if (!entityTool.ignoreRepeatBlocks() || !processedEntities.contains(entity.uuid()))
+                        {
+                            entityTool.process(entity, region);
+                            processedEntities.add(entity.uuid());
+                        }
+                    });
+                }
+
+                region.updateEntities();
             }
             historyModule.tryEndHistoryEntry();
         });

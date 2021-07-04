@@ -1,7 +1,7 @@
 package keystone.core.modules.selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import keystone.api.BlockRegion;
+import keystone.api.WorldRegion;
 import keystone.api.Keystone;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.KeystoneHotbarEvent;
@@ -95,12 +95,12 @@ public class SelectionModule implements IKeystoneModule
         return old;
     }
 
-    public BlockRegion[] buildRegions(boolean allowBlocksOutside)
+    public WorldRegion[] buildRegions(boolean allowBlocksOutside)
     {
-        BlockRegion[] regions = new BlockRegion[selectionBoxes.size()];
+        WorldRegion[] regions = new WorldRegion[selectionBoxes.size()];
         for (int i = 0; i < regions.length; i++)
         {
-            regions[i] = new BlockRegion(selectionBoxes.get(i).getMinCoords(), selectionBoxes.get(i).getMaxCoords());
+            regions[i] = new WorldRegion(selectionBoxes.get(i).getMinCoords(), selectionBoxes.get(i).getMaxCoords());
             regions[i].allowBlocksOutside = allowBlocksOutside;
         }
         return regions;

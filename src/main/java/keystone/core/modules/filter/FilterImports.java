@@ -31,6 +31,9 @@ public class FilterImports
         imports.add("keystone.api.utils");
         imports.add("keystone.api.variables");
         imports.add("keystone.api.wrappers");
+        imports.add("keystone.api.blocks");
+        imports.add("keystone.api.coordinates");
+        imports.add("keystone.api.entities");
 
         imports.add("java.util");
         imports.add("java.lang");

@@ -2,12 +2,13 @@ package keystone.api.filters;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import keystone.api.BlockRegion;
+import keystone.api.WorldRegion;
 import keystone.api.Keystone;
-import keystone.api.wrappers.Block;
-import keystone.api.wrappers.BlockMask;
-import keystone.api.wrappers.BlockPalette;
+import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockMask;
+import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.Item;
+import keystone.api.wrappers.entities.Entity;
 import keystone.core.gui.widgets.inputs.fields.EditableObject;
 import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.block.BlockState;
@@ -22,14 +23,14 @@ import net.minecraft.util.text.StringTextComponent;
 
 /**
  * A filter compilable by Keystone. All filters must contain a class which extends {@link keystone.api.filters.KeystoneFilter}.
- * Contains information relating to which {@link BlockRegion FilterBoxes} the filter is modifying, as well
+ * Contains information relating to which {@link WorldRegion FilterBoxes} the filter is modifying, as well
  * as several API functions
  */
 public class KeystoneFilter extends EditableObject
 {
     private String name;
     private boolean compiledSuccessfully;
-    private BlockRegion[] regions;
+    private WorldRegion[] regions;
     private int iteration;
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
@@ -49,11 +50,11 @@ public class KeystoneFilter extends EditableObject
 
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
-     * Set the {@link BlockRegion FilterBoxes} this filter is being run on
+     * Set the {@link WorldRegion FilterBoxes} this filter is being run on
      * @param regions The regions that the filter is modifying
      * @return The modified filter instance
      */
-    public final KeystoneFilter setBlockRegions(BlockRegion[] regions)
+    public final KeystoneFilter setBlockRegions(WorldRegion[] regions)
     {
         this.regions = regions;
         return this;
@@ -66,12 +67,12 @@ public class KeystoneFilter extends EditableObject
     //endregion
     //region Filter Steps
     /**
-     * @return Whether to ignore blocks that have already been processed in another {@link BlockRegion}
+     * @return Whether to ignore blocks that have already been processed in another {@link WorldRegion}
      */
     public boolean ignoreRepeatBlocks() { return true; }
 
     /**
-     * @return Whether to allow placing blocks outside the current {@link BlockRegion} the filter is
+     * @return Whether to allow placing blocks outside the current {@link WorldRegion} the filter is
      * modifying. You should only enable this if the filter is meant for population, such as foresting
      */
     public boolean allowBlocksOutsideRegion() { return false; }
@@ -82,28 +83,28 @@ public class KeystoneFilter extends EditableObject
     public int iterations() { return 1; }
 
     /**
-     * Ran before {@link keystone.api.filters.KeystoneFilter#processRegion(BlockRegion)}. Use this to do any initialization that cannot
+     * Ran before {@link keystone.api.filters.KeystoneFilter#processRegion(WorldRegion)}. Use this to do any initialization that cannot
      * be done in the constructor
      */
     public void prepare() {}
 
     /**
-     * Ran for every {@link BlockRegion} the filter is modifying. Use this for any modifications that
+     * Ran for every {@link WorldRegion} the filter is modifying. Use this for any modifications that
      * cannot be done on a per-block basis
-     * @param region The {@link BlockRegion} that is being modified
+     * @param region The {@link WorldRegion} that is being modified
      */
-    public void processRegion(BlockRegion region) {}
+    public void processRegion(WorldRegion region) {}
 
     /**
-     * Ran for every block the filter is modifying after {@link keystone.api.filters.KeystoneFilter#processRegion(BlockRegion)}. Use this
+     * Ran for every block the filter is modifying after {@link keystone.api.filters.KeystoneFilter#processRegion(WorldRegion)}. Use this
      * for modifications that can be done on a per-block basis. Be sure that this code is self-contained, as this will be ran on
      * multiple threads for improved performance, and as such is subject to race conditions
      * @param x The x coordinate
      * @param y The y coordinate
      * @param z The z coordinate
-     * @param region The {@link BlockRegion} that the block is in
+     * @param region The {@link WorldRegion} that the block is in
      */
-    public void processBlock(int x, int y, int z, BlockRegion region)  {}
+    public void processBlock(int x, int y, int z, WorldRegion region)  {}
 
     /**
      * Ran after the filter has finished execution. Use this for any modifications that need to be done at the very end
@@ -149,16 +150,16 @@ public class KeystoneFilter extends EditableObject
      */
     protected final void throwException(Exception exception) { Keystone.filterException(this, exception); }
     /**
-     * @return The number of {@link BlockRegion FilterBoxes} that the filter is modifying
+     * @return The number of {@link WorldRegion FilterBoxes} that the filter is modifying
      */
     protected final int regionCount() { return Keystone.getModule(SelectionModule.class).getSelectionBoxCount(); }
 
     /**
-     * Create a {@link keystone.api.wrappers.BlockPalette} from multiple block IDs. Any ID that is a valid ID
+     * Create a {@link BlockPalette} from multiple block IDs. Any ID that is a valid ID
      * for the /setblock command will work. Add a number after the ID to specify the block's weight in the
      * palette, with a higher weight being more likely to be chosen. [e.g. "minecraft:stone_slab[type=top] 10"]
      * @param contents A list of block IDs and optionally weights
-     * @return The {@link keystone.api.wrappers.BlockPalette} that is generated
+     * @return The {@link BlockPalette} that is generated
      */
     protected final BlockPalette palette(String... contents)
     {
@@ -188,9 +189,9 @@ public class KeystoneFilter extends EditableObject
     }
 
     /**
-     * Create a {@link keystone.api.wrappers.BlockPalette} from multiple {@link keystone.api.wrappers.Block Blocks}
-     * @param blocks A list of {@link keystone.api.wrappers.Block Blocks}
-     * @return The {@link keystone.api.wrappers.BlockPalette} that is generated
+     * Create a {@link BlockPalette} from multiple {@link Block Blocks}
+     * @param blocks A list of {@link Block Blocks}
+     * @return The {@link BlockPalette} that is generated
      */
     protected final BlockPalette palette(Block... blocks)
     {
@@ -200,23 +201,23 @@ public class KeystoneFilter extends EditableObject
     }
 
     /**
-     * Create a blacklist {@link keystone.api.wrappers.BlockMask} from multiple block IDs. Any ID that
+     * Create a blacklist {@link BlockMask} from multiple block IDs. Any ID that
      * is a valid ID for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param contents A list of block IDs
-     * @return The blacklist {@link keystone.api.wrappers.BlockMask}
+     * @return The blacklist {@link BlockMask}
      */
     protected final BlockMask blacklist(String... contents) { return whitelist(contents).blacklist(); }
     /**
-     * Create a blacklist {@link keystone.api.wrappers.BlockMask} from multiple {@link keystone.api.wrappers.Block Blocks}
-     * @param blocks A list of {@link keystone.api.wrappers.Block Blocks}
-     * @return The blacklist {@link keystone.api.wrappers.BlockMask}
+     * Create a blacklist {@link BlockMask} from multiple {@link Block Blocks}
+     * @param blocks A list of {@link Block Blocks}
+     * @return The blacklist {@link BlockMask}
      */
     protected final BlockMask blacklist(Block... blocks) { return whitelist(blocks).blacklist(); }
     /**
-     * Create a whitelist {@link keystone.api.wrappers.BlockMask} from multiple block IDs. Any ID that
+     * Create a whitelist {@link BlockMask} from multiple block IDs. Any ID that
      * is a valid ID for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param contents A list of block IDs
-     * @return The whitelist {@link keystone.api.wrappers.BlockMask}
+     * @return The whitelist {@link BlockMask}
      */
     protected final BlockMask whitelist(String... contents)
     {
@@ -225,9 +226,9 @@ public class KeystoneFilter extends EditableObject
         return mask;
     }
     /**
-     * Create a whitelist {@link keystone.api.wrappers.BlockMask} from multiple {@link keystone.api.wrappers.Block Blocks}
-     * @param blocks A list of {@link keystone.api.wrappers.Block Blocks}
-     * @return The whitelist {@link keystone.api.wrappers.BlockMask} that is generated
+     * Create a whitelist {@link BlockMask} from multiple {@link Block Blocks}
+     * @param blocks A list of {@link Block Blocks}
+     * @return The whitelist {@link BlockMask} that is generated
      */
     protected final BlockMask whitelist(Block... blocks)
     {
@@ -237,10 +238,10 @@ public class KeystoneFilter extends EditableObject
     }
 
     /**
-     * Calculate the entry of multiple {@link keystone.api.wrappers.BlockPalette BlockPalettes} at the same
+     * Calculate the entry of multiple {@link BlockPalette BlockPalettes} at the same
      * random index. Use this matching related blocks, such as randomly selecting a log and leaf combo
-     * @param palettes A list of {@link keystone.api.wrappers.BlockPalette BlockPalettes}
-     * @return An array containing the resolved {@link keystone.api.wrappers.Block Blocks}, in the same order as the provided {@link keystone.api.wrappers.BlockPalette BlockPalettes}
+     * @param palettes A list of {@link BlockPalette BlockPalettes}
+     * @return An array containing the resolved {@link Block Blocks}, in the same order as the provided {@link BlockPalette BlockPalettes}
      */
     protected final Block[] resolvePalettes(BlockPalette... palettes)
     {
@@ -253,10 +254,10 @@ public class KeystoneFilter extends EditableObject
     }
 
     /**
-     * Create a {@link keystone.api.wrappers.Block} from a block ID. Any ID that is a valid ID for the
+     * Create a {@link Block} from a block ID. Any ID that is a valid ID for the
      * /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param block The block ID
-     * @return The generated {@link keystone.api.wrappers.Block}
+     * @return The generated {@link Block}
      */
     public static final Block block(String block)
     {
@@ -297,6 +298,16 @@ public class KeystoneFilter extends EditableObject
         }
 
         return new Item(stack);
+    }
+    /**
+     * Create an {@link Entity} from an entity ID. Any ID that is a valid ID for the
+     * /summon command will work. [e.g. "minecraft:creeper"]
+     * @param id The entity ID
+     * @return The generated {@link Entity}
+     */
+    public static Entity entity(String id)
+    {
+        return new Entity(id);
     }
     //endregion
 }

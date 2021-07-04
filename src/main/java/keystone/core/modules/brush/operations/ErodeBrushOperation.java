@@ -4,7 +4,7 @@ import keystone.api.enums.BlockRetrievalMode;
 import keystone.api.variables.Hook;
 import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.Block;
+import keystone.api.wrappers.blocks.Block;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.brush.BrushOperation;
 import net.minecraft.util.Direction;

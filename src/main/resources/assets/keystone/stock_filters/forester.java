@@ -1,10 +1,10 @@
-import keystone.api.BlockRegion;
+import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.Variable;
 import keystone.api.variables.IntRange;
-import keystone.api.wrappers.Block;
-import keystone.api.wrappers.BlockMask;
-import keystone.api.wrappers.BlockPalette;
+import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockMask;
+import keystone.api.wrappers.blocks.BlockPalette;
 
 import java.util.Random;
 
@@ -39,7 +39,7 @@ public class Forester extends KeystoneFilter
         if (seed == 0) random = new Random();
         else random = new Random(seed);
     }
-    public void processRegion(BlockRegion region)
+    public void processRegion(WorldRegion region)
     {
         for (int x = region.min.x; x <= region.max.x; x++)
         {
@@ -60,7 +60,7 @@ public class Forester extends KeystoneFilter
         }
     }
     //endregion
-    private void generateTree(int x, int y, int z, Block log, Block leaves, BlockRegion box)
+    private void generateTree(int x, int y, int z, Block log, Block leaves, WorldRegion box)
     {
         int height;
 
@@ -80,13 +80,13 @@ public class Forester extends KeystoneFilter
     }
 
     //region Trunks
-    private void generateStraightTrunk(int x, int y, int z, int height, Block log, BlockRegion box)
+    private void generateStraightTrunk(int x, int y, int z, int height, Block log, WorldRegion box)
     {
         for (int i = 0; i < height; i++) box.setBlock(x, y + i, z, log);
     }
     //endregion
     //region Leaves
-    private void generateBlobLeaves(int x, int y, int z, Block leaves, BlockRegion box)
+    private void generateBlobLeaves(int x, int y, int z, Block leaves, WorldRegion box)
     {
         box.setBlock(x, y, z, leaves);
         box.setBlock(x + 1, y, z, leaves);
@@ -115,7 +115,7 @@ public class Forester extends KeystoneFilter
             if (random.nextBoolean()) box.setBlock(x - 2, y, z - 2, leaves);
         }
     }
-    private void generateSmallSpruceLeaves(int x, int y, int z, int height, Block leaves, BlockRegion box)
+    private void generateSmallSpruceLeaves(int x, int y, int z, int height, Block leaves, WorldRegion box)
     {
         int radius = 1;
         for (int i = height, j = 0; i > 0; i--, j++)

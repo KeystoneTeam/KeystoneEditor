@@ -13,6 +13,7 @@ import keystone.core.modules.brush.boxes.BrushPreviewBox;
 import keystone.core.modules.brush.renderers.BrushPositionBoxRenderer;
 import keystone.core.modules.brush.renderers.BrushPreviewBoxRenderer;
 import keystone.core.modules.clipboard.ClipboardModule;
+import keystone.core.modules.entities.EntitiesModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
@@ -100,6 +101,7 @@ public class KeystoneMod
         event.register(new MouseModule());
         event.register(new WorldCacheModule());
         event.register(new BlocksModule());
+        event.register(new EntitiesModule());
         event.register(new GhostBlocksModule());
         event.register(new HistoryModule());
         event.register(new ClipboardModule());

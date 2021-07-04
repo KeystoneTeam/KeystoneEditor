@@ -1,6 +1,6 @@
 package keystone.core.schematic.formats;
 
-import keystone.api.wrappers.Block;
+import keystone.api.wrappers.blocks.Block;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.utils.NBTSerializer;
 import net.minecraft.block.BlockState;

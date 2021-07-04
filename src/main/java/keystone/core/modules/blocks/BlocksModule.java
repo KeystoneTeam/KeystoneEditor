@@ -2,7 +2,7 @@ package keystone.core.modules.blocks;
 
 import keystone.api.Keystone;
 import keystone.api.enums.BlockRetrievalMode;
-import keystone.api.wrappers.Block;
+import keystone.api.wrappers.blocks.Block;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.BlockHistoryChunk;
 import keystone.core.modules.history.HistoryModule;
@@ -47,13 +47,13 @@ public class BlocksModule implements IKeystoneModule
     }
 
     /**
-     * Set a {@link keystone.api.wrappers.Block} in the current world. This will automatically hook into the history system, allowing
+     * Set a {@link Block} in the current world. This will automatically hook into the history system, allowing
      * for undo and redo support. Be sure that the {@link keystone.core.modules.history.HistoryModule}
      * has an entry open first
      * @param x The x-coordinate
      * @param y The y-coordinate
      * @param z The z-coordinate
-     * @param block The {@link keystone.api.wrappers.Block} to set
+     * @param block The {@link Block} to set
      */
     public void setBlock(int x, int y, int z, Block block)
     {
