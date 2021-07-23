@@ -1,10 +1,7 @@
 package keystone.core.keybinds;
 
 import keystone.api.Keystone;
-import keystone.api.WorldRegion;
 import keystone.api.tools.FillTool;
-import keystone.api.tools.interfaces.IEntityTool;
-import keystone.api.wrappers.entities.Entity;
 import keystone.core.KeystoneMod;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;

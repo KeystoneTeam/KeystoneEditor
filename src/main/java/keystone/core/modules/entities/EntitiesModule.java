@@ -10,7 +10,6 @@ import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.client.Player;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
-import net.minecraftforge.event.world.ChunkEvent;
 
 import java.util.ArrayList;
 import java.util.HashSet;

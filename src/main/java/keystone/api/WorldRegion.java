@@ -12,8 +12,6 @@ import keystone.core.modules.entities.EntitiesModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.Coords;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IServerWorld;
 
 import java.util.ArrayList;

@@ -9,9 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.*;
 import net.minecraft.util.SharedConstants;
 import net.minecraft.util.datafix.DefaultTypeReferences;
-import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.gen.feature.template.Template;
 import net.minecraftforge.common.util.Constants;
 
 import java.io.File;

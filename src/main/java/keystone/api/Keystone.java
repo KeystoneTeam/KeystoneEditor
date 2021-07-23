@@ -5,7 +5,6 @@ import keystone.api.tools.interfaces.IBlockTool;
 import keystone.api.tools.interfaces.IEntityTool;
 import keystone.api.tools.interfaces.IKeystoneTool;
 import keystone.api.tools.interfaces.ISelectionBoxTool;
-import keystone.api.wrappers.entities.Entity;
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.modules.IKeystoneModule;

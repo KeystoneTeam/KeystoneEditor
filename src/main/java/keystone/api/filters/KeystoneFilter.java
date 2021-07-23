@@ -2,12 +2,12 @@ package keystone.api.filters;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import keystone.api.WorldRegion;
 import keystone.api.Keystone;
+import keystone.api.WorldRegion;
+import keystone.api.wrappers.Item;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
-import keystone.api.wrappers.Item;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.gui.widgets.inputs.fields.EditableObject;
 import keystone.core.modules.selection.SelectionModule;

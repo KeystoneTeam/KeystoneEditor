@@ -1,7 +1,7 @@
 package keystone.core.modules.filter;
 
-import keystone.api.WorldRegion;
 import keystone.api.Keystone;
+import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;

@@ -1,8 +1,8 @@
 package keystone.core.modules.selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import keystone.api.WorldRegion;
 import keystone.api.Keystone;
+import keystone.api.WorldRegion;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.events.KeystoneInputEvent;

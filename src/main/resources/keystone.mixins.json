@@ -6,13 +6,13 @@
   "mixins": [
   ],
   "client": [
-    "MixinMinecraft",
-    "MixinSpectatorGui",
-    "MixinWorldRenderer",
+    "MixinAbstractGui",
     "MixinGameRenderer",
-    "MixinMouseHelper",
     "MixinKeyboardListener",
-    "MixinAbstractGui"
+    "MixinMinecraft",
+    "MixinMouseHelper",
+    "MixinSpectatorGui",
+    "MixinWorldRenderer"
   ],
   "minVersion": "0.8"
 }
