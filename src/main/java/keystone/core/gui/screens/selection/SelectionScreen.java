@@ -14,6 +14,7 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.clipboard.ClipboardModule;
+import keystone.core.modules.entities.EntitiesModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
@@ -178,7 +179,8 @@ public class SelectionScreen extends KeystoneOverlay
                 Keystone.runOnMainThread(() ->
                 {
                     BlocksModule blocks = Keystone.getModule(BlocksModule.class);
-                    KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(SelectionNudgeScreen.getSelectionToNudge(), blocks);
+                    EntitiesModule entities = Keystone.getModule(EntitiesModule.class);
+                    KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(SelectionNudgeScreen.getSelectionToNudge(), blocks, entities);
                     CompoundNBT schematicNBT = KeystoneSchematicFormat.saveSchematic(schematic);
                     NBTSerializer.serialize(file, schematicNBT);
                 }));

@@ -4,6 +4,7 @@ import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.common.TypeHelper;
 import net.minecraft.util.Direction;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
 
@@ -70,6 +71,7 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
         }
     }
     public Vector3d getCenter() { return center; }
+    public AxisAlignedBB getAxisAlignedBB() { return new AxisAlignedBB(minCoords.toBlockPos(), maxCoords.toBlockPos().offset(1, 1, 1)); }
 
     public final void refreshMinMax()
     {

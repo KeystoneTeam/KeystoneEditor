@@ -4,6 +4,7 @@ import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.blocks.BlocksModule;
+import keystone.core.modules.entities.EntitiesModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionModule;
@@ -23,6 +24,7 @@ import java.util.List;
 public class ClipboardModule implements IKeystoneModule
 {
     private BlocksModule blocksModule;
+    private EntitiesModule entitiesModule;
     private ImportModule importModule;
 
     private List<KeystoneSchematic> clipboard;
@@ -38,6 +40,7 @@ public class ClipboardModule implements IKeystoneModule
     public void postInit()
     {
         this.blocksModule = Keystone.getModule(BlocksModule.class);
+        this.entitiesModule = Keystone.getModule(EntitiesModule.class);
         this.importModule = Keystone.getModule(ImportModule.class);
     }
     @Override
@@ -104,7 +107,7 @@ public class ClipboardModule implements IKeystoneModule
             clearClipboard();
             for (SelectionBoundingBox selection : Keystone.getModule(SelectionModule.class).getSelectionBoundingBoxes())
             {
-                clipboard.add(KeystoneSchematic.createFromSelection(selection, blocksModule));
+                clipboard.add(KeystoneSchematic.createFromSelection(selection, blocksModule, entitiesModule));
             }
         });
     }

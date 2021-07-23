@@ -3,6 +3,7 @@ package keystone.api.wrappers.entities;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
+import keystone.core.math.BlockPosMath;
 import net.minecraft.command.arguments.NBTPathArgument;
 import net.minecraft.command.arguments.NBTTagArgument;
 import net.minecraft.entity.EntityType;
@@ -10,8 +11,8 @@ import net.minecraft.nbt.*;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.IServerWorld;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.Optional;
@@ -30,7 +31,6 @@ public class Entity
     private boolean killed;
 
     //region INTERNAL USE
-
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Create an entity wrapper for a given entity type ID
@@ -53,8 +53,23 @@ public class Entity
      */
     public Entity(net.minecraft.entity.Entity minecraftEntity)
     {
-        this.entityData = minecraftEntity.serializeNBT();
-        if (this.entityData.hasUUID("UUID")) this.uuid = this.entityData.getUUID("UUID");
+        this(minecraftEntity.serializeNBT(), true);
+    }
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Create an entity wrapper for an NBT compound
+     * @param nbt The Minecraft entity data
+     * @param copyUUID If true, the UUID stored in the NBT will be copied to the wrapper
+     */
+    public Entity(CompoundNBT nbt, boolean copyUUID)
+    {
+        this.entityData = nbt.copy();
+        if (copyUUID)
+        {
+            if (this.entityData.hasUUID("UUID")) this.uuid = this.entityData.getUUID("UUID");
+        }
+        else this.entityData.remove("UUID");
+
         if (this.entityData.contains("Pos"))
         {
             ListNBT posNBT = this.entityData.getList("Pos", Constants.NBT.TAG_DOUBLE);
@@ -71,70 +86,60 @@ public class Entity
 
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * @return The Minecraft CompoundNBT that represents this entity
+     */
+    public CompoundNBT getMinecraftEntityData() { return this.entityData; }
+
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Clears the wrapper's UUID, breaking its connection with the Minecraft entity
+     */
+    public void clearUUID()
+    {
+        this.uuid = null;
+        this.entityData.remove("UUID");
+    }
+
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Spawn a new instance of this entity into a server world
      * @param world The IServerWorld to spawn the entity in
-     * @param position The position of the spawned entity, or null to use this wrapper's position
-     * @param rotation The Rotation to place the entity with. Used by schematics
-     * @param mirror The Mirror to place the entity with. Used by schematics
      * @return The Minecraft entity that was spawned into the server world
      */
-    public net.minecraft.entity.Entity spawnInWorld(IServerWorld world, Vector3d position, Rotation rotation, Mirror mirror)
+    public net.minecraft.entity.Entity spawnInWorld(IServerWorld world)
     {
-        return spawnInWorld(world, position, Float.NaN, Float.NaN, rotation, mirror);
+        return spawnInWorld(world, null, Rotation.NONE, Mirror.NONE, Vector3i.ZERO, 1);
     }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Spawn a new instance of this entity into a server world
      * @param world The IServerWorld to spawn the entity in
-     * @param position The position of the spawned entity, or null to use this wrapper's position
-     * @param yaw The yaw of the spawned entity, or NaN to use this wrapper's yaw
-     * @param pitch The pitch of the spawned entity, or NaN to use this wrapper's pitch
+     * @param anchor The anchor of the spawned entity. Used to determine the pivot for rotations and mirrors
      * @param rotation The Rotation to place the entity with. Used by schematics
      * @param mirror The Mirror to place the entity with. Used by schematics
+     * @param size The size of the area to perform the orientation logic with
+     * @param scale The scale of the area to perform the orientation logic with
      * @return The Minecraft entity that was spawned into the server world
      */
-    public net.minecraft.entity.Entity spawnInWorld(IServerWorld world, Vector3d position, float yaw, float pitch, Rotation rotation, Mirror mirror)
+    public net.minecraft.entity.Entity spawnInWorld(IServerWorld world, Vector3d anchor, Rotation rotation, Mirror mirror, Vector3i size, int scale)
     {
+        if (anchor == null) anchor = Vector3d.ZERO;
         CompoundNBT entityNBT = this.entityData.copy();
 
-        // Position
-        if (position != null)
-        {
-            ListNBT posNBT = new ListNBT();
-            posNBT.add(DoubleNBT.valueOf(position.x));
-            posNBT.add(DoubleNBT.valueOf(position.y));
-            posNBT.add(DoubleNBT.valueOf(position.z));
-            entityNBT.put("Pos", posNBT);
-        }
-        else position = this.position;
-
-        // Rotation
-        if (this.entityData.contains("Rotation"))
-        {
-            ListNBT rotationNBT = this.entityData.getList("Rotation", Constants.NBT.TAG_FLOAT);
-            if (!Float.isNaN(yaw)) rotationNBT.set(0, FloatNBT.valueOf(yaw));
-            if (!Float.isNaN(pitch)) rotationNBT.set(1, FloatNBT.valueOf(pitch));
-            entityNBT.put("Rotation", rotationNBT);
-        }
-        else
-        {
-            ListNBT rotationNBT = new ListNBT();
-            rotationNBT.add(FloatNBT.valueOf(0));
-            rotationNBT.add(FloatNBT.valueOf(0));
-            if (!Float.isNaN(yaw)) rotationNBT.set(0, FloatNBT.valueOf(yaw));
-            if (!Float.isNaN(pitch)) rotationNBT.set(1, FloatNBT.valueOf(pitch));
-            entityNBT.put("Rotation", rotationNBT);
-        }
+        Vector3d oriented = BlockPosMath.getOrientedVector3d(this.position, size, rotation, mirror, scale);
+        double x = anchor.x + oriented.x;
+        double y = anchor.y + oriented.y;
+        double z = anchor.z + oriented.z;
 
         // Spawning
-        Optional<net.minecraft.entity.Entity> entityOptional = EntityType.create(this.entityData, world.getLevel());
+        Optional<net.minecraft.entity.Entity> entityOptional = EntityType.create(entityNBT, world.getLevel());
         if (entityOptional.isPresent())
         {
             net.minecraft.entity.Entity minecraftEntity = entityOptional.get();
 
-            float f = minecraftEntity.mirror(mirror);
-            f = f + (minecraftEntity.yRot - minecraftEntity.rotate(rotation));
-            minecraftEntity.moveTo(position.x, position.y, position.z, f, minecraftEntity.xRot);
+            float rotatedYaw = minecraftEntity.mirror(mirror);
+            rotatedYaw = rotatedYaw + (minecraftEntity.yRot - minecraftEntity.rotate(rotation));
+            minecraftEntity.moveTo(x, y, z, rotatedYaw, minecraftEntity.xRot);
 
             world.addFreshEntityWithPassengers(minecraftEntity);
             return minecraftEntity;
@@ -156,10 +161,24 @@ public class Entity
             if (!this.killed) mcEntity.deserializeNBT(this.entityData);
             else mcEntity.remove();
         }
-        else spawnInWorld(world, null, 0, 0, Rotation.NONE, Mirror.NONE);
+        else spawnInWorld(world);
     }
     //endregion
     //region API
+    /**
+     * Create an identical copy of this entity, except for the UUID
+     * @return The cloned entity
+     */
+    public Entity clone()
+    {
+        Entity clone = new Entity(this.entityData.copy(), false);
+        clone.uuid = null;
+        clone.position = position;
+        clone.pitch = pitch;
+        clone.yaw = yaw;
+        clone.killed = killed;
+        return clone;
+    }
     /**
      * @return The x-coordinate of the entity
      */
@@ -208,6 +227,30 @@ public class Entity
         this.position = new Vector3d(x, y, z);
 
         return this;
+    }
+
+    /**
+     * Move the entity's position by a given offset
+     * @param x The x-offset
+     * @param y The y-offset
+     * @param z The z-offset
+     * @return The modified entity instance
+     */
+    public Entity move(double x, double y, double z)
+    {
+        if (this.position == null) return position(x, y, z);
+        else
+        {
+            this.position = new Vector3d(this.position.x + x, this.position.y + y, this.position.z + z);
+
+            ListNBT posNBT = new ListNBT();
+            posNBT.add(DoubleNBT.valueOf(this.position.x));
+            posNBT.add(DoubleNBT.valueOf(this.position.y));
+            posNBT.add(DoubleNBT.valueOf(this.position.z));
+            this.entityData.put("Pos", posNBT);
+
+            return this;
+        }
     }
     /**
      * Set the entity's yaw

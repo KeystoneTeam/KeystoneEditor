@@ -50,14 +50,17 @@ public class EntitiesModule implements IKeystoneModule
     }
     public List<Entity> getEntities(BlockPos min, BlockPos max)
     {
+        AxisAlignedBB bb = new AxisAlignedBB(min.getMinecraftBlockPos(), max.getMinecraftBlockPos().offset(1, 1, 1));
+        return getEntities(bb);
+    }
+    public List<Entity> getEntities(AxisAlignedBB boundingBox)
+    {
         if (!isEnabled())
         {
             Keystone.LOGGER.info("Trying to call EntitiesModule.getEntities when the EntitiesModule is not enabled!");
             return null;
         }
-
-        AxisAlignedBB bb = new AxisAlignedBB(min.getMinecraftBlockPos(), max.getMinecraftBlockPos());
-        List<net.minecraft.entity.Entity> mcEntities = getWorld().getEntitiesOfClass(net.minecraft.entity.Entity.class, bb);
+        List<net.minecraft.entity.Entity> mcEntities = getWorld().getEntitiesOfClass(net.minecraft.entity.Entity.class, boundingBox);
         List<Entity> entities = new ArrayList<>(mcEntities.size());
         for (net.minecraft.entity.Entity mcEntity : mcEntities) entities.add(new Entity(mcEntity));
         return entities;

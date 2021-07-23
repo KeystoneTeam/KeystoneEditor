@@ -3,47 +3,61 @@ package keystone.core.schematic;
 import keystone.api.Keystone;
 import keystone.api.enums.BlockRetrievalMode;
 import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.entities.Entity;
 import keystone.core.math.BlockPosMath;
 import keystone.core.modules.blocks.BlocksModule;
+import keystone.core.modules.entities.EntitiesModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
+import keystone.core.modules.world_cache.WorldCacheModule;
+import keystone.core.renderer.blocks.world.GhostBlocksWorld;
+import keystone.core.renderer.client.Player;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
- * A schematic containing block state data. Used for cloning and import/export operations
+ * A schematic containing block and entity data. Used for cloning and import/export operations
  */
 public class KeystoneSchematic
 {
     private Vector3i size;
     private Block[] blocks;
+    private Entity[] entities;
 
     /**
      * @param size The size of the schematic
      * @param blocks The {@link Block} contents of the schematic
      */
-    public KeystoneSchematic(Vector3i size, Block[] blocks)
+    public KeystoneSchematic(Vector3i size, Block[] blocks, Entity[] entities)
     {
         this.size = size;
         this.blocks = blocks;
+        this.entities = entities == null ? new Entity[0] : entities;
+        for (Entity entity : this.entities) entity.clearUUID();
     }
 
     /**
      * Create a schematic from a selection box
      * @param box The {@link keystone.core.modules.selection.boxes.SelectionBoundingBox} to create the schematic from
      * @param blocksModule The {@link keystone.core.modules.blocks.BlocksModule} that the schematic contents is read from
+     * @param entitiesModule The {@link EntitiesModule} that the schematic contents is read from
      * @return The generated {@link keystone.core.schematic.KeystoneSchematic}
      */
-    public static KeystoneSchematic createFromSelection(SelectionBoundingBox box, BlocksModule blocksModule)
+    public static KeystoneSchematic createFromSelection(SelectionBoundingBox box, BlocksModule blocksModule, EntitiesModule entitiesModule)
     {
         // Get size
         Vector3i size = new Vector3i(box.getMaxCoords().getX() - box.getMinCoords().getX() + 1,
@@ -65,8 +79,18 @@ public class KeystoneSchematic
             }
         }
 
+        // Get entities
+        List<Entity> entityList = entitiesModule.getEntities(box.getAxisAlignedBB());
+        Entity[] entities = new Entity[entityList.size()];
+        entities = entityList.toArray(entities);
+        for (Entity entity : entities)
+        {
+            entity.move(-box.getMinCoords().getX(), -box.getMinCoords().getY(), -box.getMinCoords().getZ());
+            entity.clearUUID();
+        }
+
         // Create schematic from data
-        return new KeystoneSchematic(size, blocks);
+        return new KeystoneSchematic(size, blocks, entities);
     }
 
     /**
@@ -75,7 +99,7 @@ public class KeystoneSchematic
      */
     public KeystoneSchematic clone()
     {
-        return new KeystoneSchematic(new Vector3i(size.getX(), size.getY(), size.getZ()), Arrays.copyOf(blocks, blocks.length));
+        return new KeystoneSchematic(new Vector3i(size.getX(), size.getY(), size.getZ()), Arrays.copyOf(blocks, blocks.length), Arrays.copyOf(entities, entities.length));
     }
 
     /**
@@ -102,6 +126,10 @@ public class KeystoneSchematic
     {
         return size;
     }
+    /**
+     * @return The number of {@link Entity Entities} in the schematic
+     */
+    public int getEntityCount() { return entities.length; }
     /**
      * Get the {@link Block} at a relative block position in the schematic
      * @param relativePos The relative block position
@@ -132,27 +160,40 @@ public class KeystoneSchematic
             }
         }
     }
+    /**
+     * Run a function for every entity in the schematic
+     * @param consumer The function to run
+     */
+    public void forEachEntity(Consumer<Entity> consumer)
+    {
+        for (Entity entity : entities) consumer.accept(entity);
+    }
 
     /**
      * Place the schematic at a given {@link BlockPos} in a given {@link World}
      * @param anchor The minimum {@link BlockPos} to place the schematic at
-     * @param world The {@link World} to place the schematic in
+     * @param ghostWorld The {@link GhostBlocksWorld} to place the schematic in
      */
-    public void place(BlockPos anchor, World world)
+    public void place(BlockPos anchor, GhostBlocksWorld ghostWorld)
     {
-        place(anchor, world, Rotation.NONE, Mirror.NONE, 1);
+        place(anchor, ghostWorld, Rotation.NONE, Mirror.NONE, 1);
     }
     /**
      * Place the schematic at a given {@link BlockPos} in a given {@link World}
      * @param anchor The minimum {@link BlockPos} to place the schematic at
-     * @param world The {@link World} to place the schematic in
+     * @param ghostWorld The {@link GhostBlocksWorld} to place the schematic in
      * @param rotation The {@link Rotation} of the schematic
      * @param mirror The {@link Mirror} of the schematic
      * @param scale The scale of the schematic
      */
-    public void place(BlockPos anchor, World world, Rotation rotation, Mirror mirror, int scale)
+    public void place(BlockPos anchor, GhostBlocksWorld ghostWorld, Rotation rotation, Mirror mirror, int scale)
     {
         scale = scale < 1 ? 1 : scale;
+
+        for (Entity entityTemplate : entities)
+        {
+            entityTemplate.spawnInWorld(ghostWorld, Vector3d.atLowerCornerOf(anchor), rotation, mirror, size, scale);
+        }
 
         int i = 0;
         for (int x = 0; x < size.getX(); x++)
@@ -171,8 +212,8 @@ public class KeystoneSchematic
                                 BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, scale).offset(anchor);
 
                                 Block block = blocks[i];
-                                BlockState state = block.getMinecraftBlock().rotate(world, worldPos, rotation).mirror(mirror);
-                                world.setBlockAndUpdate(worldPos, state);
+                                BlockState state = block.getMinecraftBlock().rotate(ghostWorld, worldPos, rotation).mirror(mirror);
+                                ghostWorld.setBlockAndUpdate(worldPos, state);
                                 if (block.getTileEntityData() != null)
                                 {
                                     CompoundNBT tileEntityData = block.getTileEntityData().copy();
@@ -180,7 +221,7 @@ public class KeystoneSchematic
                                     tileEntityData.putInt("y", y);
                                     tileEntityData.putInt("z", z);
 
-                                    TileEntity tileEntity = world.getBlockEntity(worldPos);
+                                    TileEntity tileEntity = ghostWorld.getBlockEntity(worldPos);
                                     if (tileEntity != null) tileEntity.deserializeNBT(block.getMinecraftBlock(), tileEntityData);
                                 }
                             }
@@ -196,22 +237,31 @@ public class KeystoneSchematic
      * Place the schematic at a given {@link BlockPos} in a given {@link World}
      * @param anchor The minimum {@link BlockPos} to place the schematic at
      * @param blocksModule The {@link BlocksModule} to place the schematic with
+     * @param entitiesModule The {@link EntitiesModule} to place the schematic with
      */
-    public void place(BlockPos anchor, BlocksModule blocksModule)
+    public void place(BlockPos anchor, BlocksModule blocksModule, EntitiesModule entitiesModule)
     {
-        place(anchor, blocksModule, Rotation.NONE, Mirror.NONE, 1);
+        place(anchor, blocksModule, entitiesModule, Rotation.NONE, Mirror.NONE, 1);
     }
     /**
      * Place the schematic at a given {@link BlockPos} in a given {@link World}
      * @param anchor The minimum {@link BlockPos} to place the schematic at
      * @param blocksModule The {@link BlocksModule} to place the schematic with
+     * @param entitiesModule The {@link EntitiesModule} to place the schematic with
      * @param rotation The {@link Rotation} of the schematic
      * @param mirror The {@link Mirror} of the schematic
      * @param scale The scale of the schematic
      */
-    public void place(BlockPos anchor, BlocksModule blocksModule, Rotation rotation, Mirror mirror, int scale)
+    public void place(BlockPos anchor, BlocksModule blocksModule, EntitiesModule entitiesModule, Rotation rotation, Mirror mirror, int scale)
     {
         scale = scale < 1 ? 1 : scale;
+
+        // TODO: Place entities
+        IServerWorld serverWorld = Keystone.getModule(WorldCacheModule.class).getDimensionServerWorld(Player.getDimensionId());
+        for (Entity entityTemplate : entities)
+        {
+            entityTemplate.spawnInWorld(serverWorld, Vector3d.atLowerCornerOf(anchor), rotation, mirror, size, scale);
+        }
 
         int i = 0;
         for (int x = 0; x < size.getX(); x++)

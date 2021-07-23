@@ -7,17 +7,17 @@ import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.RenderTypeLookup;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.entity.Entity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -31,6 +31,7 @@ import java.util.Set;
 
 public class GhostWorldRenderer
 {
+    private final Minecraft minecraft;
     private final Map<RenderType, SuperByteBuffer> bufferCache = new HashMap<>(getLayerCount());
     private final Set<RenderType> usedBlockRenderLayers = new HashSet<>(getLayerCount());
     private final Set<RenderType> startedBufferBuilders = new HashSet<>(getLayerCount());
@@ -45,6 +46,7 @@ public class GhostWorldRenderer
 
     public GhostWorldRenderer()
     {
+        minecraft = Minecraft.getInstance();
         changed = false;
         offset = Vector3d.ZERO;
     }
@@ -107,6 +109,14 @@ public class GhostWorldRenderer
         ms.scale(ghostBlocks.getScale(), ghostBlocks.getScale(), ghostBlocks.getScale());
 
         buffer.getBuffer(RenderType.solid());
+
+        // Dispatch Ghost World Entity Rendering
+        EntityRendererManager entityRenderer = minecraft.getEntityRenderDispatcher();
+        ghostBlocks.getEntities().forEach(entity ->
+        {
+            int light = LightTexture.pack(15, 15);
+            entityRenderer.render(entity, entity.getX(), entity.getY(), entity.getZ(), entity.yRot, entity.xRot, ms, buffer, light);
+        });
 
         // Dispatch Ghost World Fluid Rendering
         for (RenderType layer : RenderType.chunkBufferLayers())
