@@ -3,6 +3,7 @@ package keystone.core.keybinds;
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
 import keystone.core.KeystoneMod;
+import keystone.core.modules.history.HistoryModule;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
@@ -62,6 +63,7 @@ public class KeystoneKeybinds
         else if (Keystone.isActive())
         {
             if (DELETE_BLOCKS.isDown()) Keystone.runTool(new FillTool(Blocks.AIR.defaultBlockState()));
+            if (event.getKey() == GLFW.GLFW_KEY_P) Keystone.getModule(HistoryModule.class).logHistoryStack();
         }
     }
 }

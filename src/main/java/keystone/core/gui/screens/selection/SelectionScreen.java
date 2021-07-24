@@ -10,6 +10,7 @@ import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.file_browser.SaveFileScreen;
+import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.modules.blocks.BlocksModule;
@@ -73,7 +74,7 @@ public class SelectionScreen extends KeystoneOverlay
     @SubscribeEvent(priority = EventPriority.LOW)
     public static final void onSelectionsChanged(final KeystoneSelectionChangedEvent event)
     {
-        if (event.selections.length > 0) open();
+        if (event.selections.length > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
         else if (open != null) open.onClose();
     }
     //endregion

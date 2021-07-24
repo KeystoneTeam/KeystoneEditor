@@ -105,17 +105,17 @@ public class SelectionNudgeScreen extends KeystoneOverlay
 
         int panelCenter = x + panelWidth / 2;
         int bottomButtonsY = y + panelHeight - MARGINS - BUTTON_HEIGHT;
-        this.nudgeBox = new NudgeButton(panelCenter - buttonWidth / 2, y + MARGINS, buttonWidth, BUTTON_HEIGHT, (direction, amount) ->selectionBox.nudgeBox(direction, amount));
+        this.nudgeBox = new NudgeButton(panelCenter - buttonWidth / 2, y + MARGINS, buttonWidth, BUTTON_HEIGHT, (direction, amount) ->selectionBox.nudgeBox(direction, amount), NudgeButton.SELECTION_HISTORY_SUPPLIER);
         this.nudgeCorner1 = new NudgeButton(panelCenter - PADDING - buttonWidth, bottomButtonsY, buttonWidth, BUTTON_HEIGHT, (direction, amount) ->
         {
             selectionBox.nudgeCorner1(direction, amount);
             updateSize();
-        });
+        }, NudgeButton.SELECTION_HISTORY_SUPPLIER);
         this.nudgeCorner2 = new NudgeButton(panelCenter + PADDING, bottomButtonsY, buttonWidth, BUTTON_HEIGHT, (direction, amount) ->
         {
             selectionBox.nudgeCorner2(direction, amount);
             updateSize();
-        });
+        }, NudgeButton.SELECTION_HISTORY_SUPPLIER);
 
         this.nudgeBox.setColors(0x80C0C0C0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
         this.nudgeCorner1.setColors(0x800000FF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);

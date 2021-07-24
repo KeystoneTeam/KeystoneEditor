@@ -1,7 +1,7 @@
 package keystone.core.schematic;
 
 import keystone.api.Keystone;
-import keystone.api.enums.BlockRetrievalMode;
+import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.math.BlockPosMath;
@@ -46,7 +46,7 @@ public class KeystoneSchematic
         this.size = size;
         this.blocks = blocks;
         this.entities = entities == null ? new Entity[0] : entities;
-        for (Entity entity : this.entities) entity.clearUUID();
+        for (Entity entity : this.entities) entity.breakMinecraftEntityConnection();
     }
 
     /**
@@ -72,20 +72,20 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    blocks[i] = blocksModule.getBlock(x + box.getMinCoords().getX(), y + box.getMinCoords().getY(), z + box.getMinCoords().getZ(), BlockRetrievalMode.ORIGINAL);
+                    blocks[i] = blocksModule.getBlock(x + box.getMinCoords().getX(), y + box.getMinCoords().getY(), z + box.getMinCoords().getZ(), RetrievalMode.ORIGINAL);
                     i++;
                 }
             }
         }
 
         // Get entities
-        List<Entity> entityList = entitiesModule.getEntities(box.getAxisAlignedBB());
+        List<Entity> entityList = entitiesModule.getEntities(box.getBoundingBox(), RetrievalMode.ORIGINAL);
         Entity[] entities = new Entity[entityList.size()];
         entities = entityList.toArray(entities);
         for (Entity entity : entities)
         {
             entity.move(-box.getMinCoords().getX(), -box.getMinCoords().getY(), -box.getMinCoords().getZ());
-            entity.clearUUID();
+            entity.breakMinecraftEntityConnection();
         }
 
         // Create schematic from data
@@ -169,29 +169,14 @@ public class KeystoneSchematic
     }
 
     /**
-     * Place the schematic at a given {@link BlockPos} in a given {@link World}
-     * @param anchor The minimum {@link BlockPos} to place the schematic at
+     * Place the schematic at a given {@link BlockPos} in a given {@link GhostBlocksWorld}
      * @param ghostWorld The {@link GhostBlocksWorld} to place the schematic in
      */
-    public void place(BlockPos anchor, GhostBlocksWorld ghostWorld)
+    public void place(GhostBlocksWorld ghostWorld)
     {
-        place(anchor, ghostWorld, Rotation.NONE, Mirror.NONE, 1);
-    }
-    /**
-     * Place the schematic at a given {@link BlockPos} in a given {@link World}
-     * @param anchor The minimum {@link BlockPos} to place the schematic at
-     * @param ghostWorld The {@link GhostBlocksWorld} to place the schematic in
-     * @param rotation The {@link Rotation} of the schematic
-     * @param mirror The {@link Mirror} of the schematic
-     * @param scale The scale of the schematic
-     */
-    public void place(BlockPos anchor, GhostBlocksWorld ghostWorld, Rotation rotation, Mirror mirror, int scale)
-    {
-        scale = scale < 1 ? 1 : scale;
-
         for (Entity entityTemplate : entities)
         {
-            entityTemplate.spawnInWorld(ghostWorld, Vector3d.atLowerCornerOf(anchor), rotation, mirror, size, scale);
+            entityTemplate.spawnInWorld(ghostWorld);
         }
 
         int i = 0;
@@ -201,30 +186,20 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    for (int sx = 0; sx < scale; sx++)
+                    BlockPos localPos = new BlockPos(x, y, z);
+
+                    Block block = blocks[i];
+                    BlockState state = block.getMinecraftBlock();
+                    ghostWorld.setBlockAndUpdate(localPos, state);
+                    if (block.getTileEntityData() != null)
                     {
-                        for (int sy = 0; sy < scale; sy++)
-                        {
-                            for (int sz = 0; sz < scale; sz++)
-                            {
-                                BlockPos localPos = new BlockPos(x * scale + sx, y * scale + sy, z * scale + sz);
-                                BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, scale).offset(anchor);
+                        CompoundNBT tileEntityData = block.getTileEntityData().copy();
+                        tileEntityData.putInt("x", x);
+                        tileEntityData.putInt("y", y);
+                        tileEntityData.putInt("z", z);
 
-                                Block block = blocks[i];
-                                BlockState state = block.getMinecraftBlock().rotate(ghostWorld, worldPos, rotation).mirror(mirror);
-                                ghostWorld.setBlockAndUpdate(worldPos, state);
-                                if (block.getTileEntityData() != null)
-                                {
-                                    CompoundNBT tileEntityData = block.getTileEntityData().copy();
-                                    tileEntityData.putInt("x", x);
-                                    tileEntityData.putInt("y", y);
-                                    tileEntityData.putInt("z", z);
-
-                                    TileEntity tileEntity = ghostWorld.getBlockEntity(worldPos);
-                                    if (tileEntity != null) tileEntity.deserializeNBT(block.getMinecraftBlock(), tileEntityData);
-                                }
-                            }
-                        }
+                        TileEntity tileEntity = ghostWorld.getBlockEntity(localPos);
+                        if (tileEntity != null) tileEntity.deserializeNBT(block.getMinecraftBlock(), tileEntityData);
                     }
                     i++;
                 }
@@ -255,11 +230,11 @@ public class KeystoneSchematic
     {
         scale = scale < 1 ? 1 : scale;
 
-        // TODO: Place entities
         IServerWorld serverWorld = Keystone.getModule(WorldCacheModule.class).getDimensionServerWorld(Player.getDimensionId());
         for (Entity entityTemplate : entities)
         {
-            entityTemplate.spawnInWorld(serverWorld, Vector3d.atLowerCornerOf(anchor), rotation, mirror, size, scale);
+            Entity oriented = entityTemplate.getOrientedEntity(Vector3d.atLowerCornerOf(anchor), rotation, mirror, size, scale);
+            entitiesModule.setEntity(oriented);
         }
 
         int i = 0;

@@ -79,7 +79,7 @@ public class GhostBlocksModule implements IKeystoneModule
     public GhostBlocksWorld createWorldFromSchematic(KeystoneSchematic schematic)
     {
         GhostBlocksWorld world = createWorld();
-        schematic.place(BlockPos.ZERO, world);
+        schematic.place(world);
         return world;
     }
     public void releaseWorld(GhostBlocksWorld world)

@@ -1,6 +1,6 @@
 package keystone.core.modules.brush.operations;
 
-import keystone.api.enums.BlockRetrievalMode;
+import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
@@ -24,7 +24,7 @@ public class FillBrushOperation extends BrushOperation
     @Override
     public boolean process(int x, int y, int z, BlocksModule blocks, int iteration)
     {
-        Block existing = blocks.getBlock(x, y, z, BlockRetrievalMode.LAST_SWAPPED);
+        Block existing = blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED);
         if (!useMask || mask.valid(existing))
         {
             blocks.setBlock(x, y, z, palette.randomBlock());

@@ -1,6 +1,7 @@
 package keystone.core.modules.selection.boxes;
 
 import keystone.api.Keystone;
+import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.math.RayTracing;
 import keystone.core.modules.history.HistoryModule;
@@ -27,6 +28,12 @@ public class SelectionBoundingBox extends SelectableBoundingBox
     public static SelectionBoundingBox startNew(Coords coords)
     {
         return new SelectionBoundingBox(coords, coords);
+    }
+    public static SelectionBoundingBox createFromBoundingBox(BoundingBox boundingBox)
+    {
+        Coords corner1 = new Coords(boundingBox.minX, boundingBox.minY, boundingBox.minZ);
+        Coords corner2 = new Coords(boundingBox.maxX - 1, boundingBox.maxY - 1, boundingBox.maxZ - 1);
+        return new SelectionBoundingBox(corner1, corner2);
     }
 
     public SelectionBoundingBox clone()

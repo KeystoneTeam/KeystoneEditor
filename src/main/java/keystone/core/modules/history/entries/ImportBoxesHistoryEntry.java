@@ -43,10 +43,10 @@ public class ImportBoxesHistoryEntry implements IHistoryEntry
     private List<ImportBoxDescription> buffer;
     private List<ImportBoxDescription> restore;
 
-    public ImportBoxesHistoryEntry(List<ImportBoundingBox> pasteBoxes)
+    public ImportBoxesHistoryEntry(List<ImportBoundingBox> importBoxes)
     {
-        buffer = new ArrayList<>(pasteBoxes.size());
-        for (int i = 0; i < pasteBoxes.size(); i++) buffer.add(new ImportBoxDescription(pasteBoxes.get(i)));
+        buffer = new ArrayList<>(importBoxes.size());
+        for (int i = 0; i < importBoxes.size(); i++) buffer.add(new ImportBoxDescription(importBoxes.get(i)));
     }
 
     @Override

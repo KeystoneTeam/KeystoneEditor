@@ -118,7 +118,11 @@ public class FilterModule implements IKeystoneModule
                             });
                         }
 
-                        if (iteration < iterations - 1) historyModule.swapBlockBuffers(true);
+                        if (iteration < iterations - 1)
+                        {
+                            historyModule.swapBlockBuffers(true);
+                            historyModule.swapEntityBuffers(true);
+                        }
                     }
                 }
                 catch (Exception e)
@@ -141,7 +145,6 @@ public class FilterModule implements IKeystoneModule
                     return;
                 }
 
-                for (WorldRegion region : regions) region.updateEntities();
                 historyModule.endHistoryEntry();
             }
         });

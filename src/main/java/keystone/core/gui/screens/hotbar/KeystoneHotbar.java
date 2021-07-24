@@ -43,7 +43,6 @@ public class KeystoneHotbar extends KeystoneOverlay
     {
         if (event.isCanceled()) return;
 
-        selectedSlot = event.slot;
         switch (event.slot)
         {
             case CLONE:
@@ -53,7 +52,7 @@ public class KeystoneHotbar extends KeystoneOverlay
                 SingleBlockSelectionScreen.promptBlockStateChoice(block ->
                 {
                     Keystone.runTool(new FillTool(block));
-                    MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(KeystoneHotbarSlot.SELECTION));
+                    setSelectedSlot(KeystoneHotbarSlot.SELECTION);
                 });
                 break;
         }
@@ -93,7 +92,7 @@ public class KeystoneHotbar extends KeystoneOverlay
         hotbarButtons[6].active = false; // Spawn
         for (HotbarButton button : hotbarButtons) addButton(button);
 
-        if (selectedSlot == null) MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(KeystoneHotbarSlot.SELECTION));
+        if (selectedSlot == null) setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
 
     @Override
@@ -131,7 +130,8 @@ public class KeystoneHotbar extends KeystoneOverlay
     }
     public static void setSelectedSlot(KeystoneHotbarSlot slot)
     {
-        MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(slot));
+        if (selectedSlot != slot) MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(slot));
+        selectedSlot = slot;
     }
     public static int getX() { return (int)(offsetX * HotbarButton.SCALE); }
     public static int getY() { return (int)(offsetY * HotbarButton.SCALE); }

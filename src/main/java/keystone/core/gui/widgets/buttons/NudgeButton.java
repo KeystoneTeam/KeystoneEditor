@@ -4,7 +4,10 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.history.IHistoryEntry;
+import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
+import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.renderer.client.Player;
 import net.minecraft.client.GameSettings;
@@ -16,13 +19,26 @@ import org.lwjgl.glfw.GLFW;
 public class NudgeButton extends SimpleButton
 {
     public interface NudgeConsumer { void nudge(Direction direction, int amount); }
+    public interface NudgeHistorySupplier { IHistoryEntry get(); }
 
     public static final TranslationTextComponent NUDGE = new TranslationTextComponent("keystone.nudge");
+    public static final NudgeHistorySupplier SELECTION_HISTORY_SUPPLIER = () ->
+    {
+        SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
+        return new SelectionHistoryEntry(selectionModule.getSelectionBoundingBoxes(), true);
+    };
+    public static final NudgeHistorySupplier IMPORT_HISTORY_SUPPLIER = () ->
+    {
+        ImportModule importModule = Keystone.getModule(ImportModule.class);
+        return new ImportBoxesHistoryEntry(importModule.getImportBoxes());
+    };
+
     private static final int HOLD_DELAY = 10;
     private static final int HOLD_TICKS_BETWEEN = 5;
 
     private final GameSettings gameSettings;
     private final NudgeConsumer nudge;
+    private final NudgeHistorySupplier historySupplier;
     private int nudgeButton;
     private boolean nudgeButtonDown;
 
@@ -40,11 +56,12 @@ public class NudgeButton extends SimpleButton
     private int upTime;
     private int downTime;
 
-    public NudgeButton(int x, int y, int width, int height, NudgeConsumer nudge)
+    public NudgeButton(int x, int y, int width, int height, NudgeConsumer nudge, NudgeHistorySupplier historySupplier)
     {
         super(x, y, width, height, NUDGE, null);
         this.gameSettings = Minecraft.getInstance().options;
         this.nudge = nudge;
+        this.historySupplier = historySupplier;
     }
 
     protected int getNudgeStep(Direction direction, int button)
@@ -148,10 +165,9 @@ public class NudgeButton extends SimpleButton
                 nudgeButtonDown = button == GLFW.GLFW_MOUSE_BUTTON_LEFT || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
                 if (nudgeButtonDown)
                 {
-                    SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
                     HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
                     historyModule.beginHistoryEntry();
-                    historyModule.pushToEntry(new SelectionHistoryEntry(selectionModule.getSelectionBoundingBoxes(), true));
+                    historyModule.pushToEntry(historySupplier.get());
                     historyModule.endHistoryEntry();
 
                     nudgeButton = button;

@@ -84,7 +84,7 @@ public class HistoryModule implements IKeystoneModule
         if (currentStackFrame.addToUnsavedChanges()) unsavedChanges++;
         if (KeystoneConfig.debugHistoryLog) logHistoryStack();
 
-        currentStackFrame.applyBlocks();
+        currentStackFrame.applyChanges();
         currentStackFrame = null;
         tryBeginHooksOpen = 0;
     }
@@ -95,7 +95,7 @@ public class HistoryModule implements IKeystoneModule
             Keystone.LOGGER.warn("Calling HistoryModule.applyBlocksWithoutEnding without first calling HistoryModule.beginHistoryEntry! This may cause issues");
             return;
         }
-        currentStackFrame.applyBlocks();
+        currentStackFrame.applyChanges();
     }
     public void abortHistoryEntry()
     {
@@ -138,6 +138,16 @@ public class HistoryModule implements IKeystoneModule
         }
 
         currentStackFrame.swapBlockBuffers(copy);
+    }
+    public void swapEntityBuffers(boolean copy)
+    {
+        if (currentStackFrame == null)
+        {
+            Keystone.LOGGER.error("Cannot call HistoryModule.swapEntityBuffers without an open history entry!");
+            return;
+        }
+
+        currentStackFrame.swapEntityBuffers(copy);
     }
 
     public void undo()

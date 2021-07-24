@@ -1,6 +1,6 @@
 package keystone.core.modules.brush.operations;
 
-import keystone.api.enums.BlockRetrievalMode;
+import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockPalette;
@@ -24,7 +24,7 @@ public class StackFillBrushOperation extends BrushOperation
     public boolean process(int x, int y, int z, BlocksModule blocks, int iteration)
     {
         int newY = y;
-        Block current = blocks.getBlock(x, newY, z, BlockRetrievalMode.CURRENT);
+        Block current = blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
         if (current.isAir())
         {
             if (gravity)
@@ -32,11 +32,11 @@ public class StackFillBrushOperation extends BrushOperation
                 while (current.isAir())
                 {
                     newY--;
-                    current = blocks.getBlock(x, newY, z, BlockRetrievalMode.CURRENT);
+                    current = blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
                 }
                 newY++;
             }
-            else if (blocks.getBlock(x, newY - 1, z, BlockRetrievalMode.CURRENT).isAir()) return true;
+            else if (blocks.getBlock(x, newY - 1, z, RetrievalMode.CURRENT).isAir()) return true;
         }
         else
         {
@@ -45,7 +45,7 @@ public class StackFillBrushOperation extends BrushOperation
                 while (!current.isAir())
                 {
                     newY++;
-                    current = blocks.getBlock(x, newY, z, BlockRetrievalMode.CURRENT);
+                    current = blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
                 }
             }
             else return true;

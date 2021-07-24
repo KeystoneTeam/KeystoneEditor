@@ -41,7 +41,7 @@ public class HotbarButton extends ButtonNoHotkey
 
     public void onSlotClicked()
     {
-        MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(slot));
+        KeystoneHotbar.setSelectedSlot(slot);
     }
 
     @Override

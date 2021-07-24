@@ -1,21 +1,17 @@
 package keystone.api;
 
-import keystone.api.enums.BlockRetrievalMode;
+import keystone.api.enums.RetrievalMode;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.coordinates.BlockPos;
+import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.entities.EntitiesModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
-import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.Coords;
-import net.minecraft.world.IServerWorld;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class WorldRegion
 {
@@ -32,26 +28,25 @@ public class WorldRegion
 
     private final WorldCacheModule worldCache;
     private final BlocksModule blocks;
-    private final List<Entity> entities;
+    private final EntitiesModule entities;
 
     public boolean allowBlocksOutside = false;
 
     public final BlockPos min;
     public final BlockPos max;
     public final Vector3i size;
+    public final BoundingBox bounds;
 
     public WorldRegion(Coords min, Coords max)
     {
         this.worldCache = Keystone.getModule(WorldCacheModule.class);
         this.blocks = Keystone.getModule(BlocksModule.class);
-        EntitiesModule entitiesModule = Keystone.getModule(EntitiesModule.class);
+        this.entities = Keystone.getModule(EntitiesModule.class);
 
         this.min = new BlockPos(min.getX(), min.getY(), min.getZ());
         this.max = new BlockPos(max.getX(), max.getY(), max.getZ());
         this.size = new Vector3i(max.getX() - min.getX() + 1, max.getY() - min.getY() + 1, max.getZ() - min.getZ() + 1);
-
-        this.entities = new ArrayList<>();
-        this.entities.addAll(entitiesModule.getEntities(this.min, this.max));
+        this.bounds = new BoundingBox(this.min, this.max);
     }
 
     /**
@@ -105,17 +100,17 @@ public class WorldRegion
      * @param z The z coordinate
      * @return The block at the given coordinates
      */
-    public Block getBlock(int x, int y, int z) { return blocks.getBlock(x, y, z, BlockRetrievalMode.LAST_SWAPPED); }
+    public Block getBlock(int x, int y, int z) { return blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED); }
 
     /**
      * Get the block at a position in the filter box
      * @param x The x coordinate
      * @param y The y coordinate
      * @param z The z coordinate
-     * @param retrievalMode The {@link BlockRetrievalMode} to use when getting the block
+     * @param retrievalMode The {@link RetrievalMode} to use when getting the block
      * @return The block at the given coordinates
      */
-    public Block getBlock(int x, int y, int z, BlockRetrievalMode retrievalMode)
+    public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
     {
         return blocks.getBlock(x, y, z, retrievalMode);
     }
@@ -165,12 +160,12 @@ public class WorldRegion
     }
 
     /**
-     * Add an {@link Entity} to the region
-     * @param entity The {@link Entity} to add
+     * Add or modify an {@link Entity} in the region
+     * @param entity The {@link Entity} to add or modify
      */
-    public void addEntity(Entity entity)
+    public void setEntity(Entity entity)
     {
-        this.entities.add(entity);
+        this.entities.setEntity(entity);
     }
 
     /**
@@ -179,14 +174,14 @@ public class WorldRegion
      */
     public void forEachBlock(BlockConsumer consumer)
     {
-        forEachBlock(consumer, BlockRetrievalMode.LAST_SWAPPED);
+        forEachBlock(consumer, RetrievalMode.LAST_SWAPPED);
     }
     /**
      * Run a {@link WorldRegion.BlockConsumer} on every block in the filter box
      * @param consumer The {@link WorldRegion.BlockConsumer} to run
-     * @param retrievalMode The {@link BlockRetrievalMode} to use when getting block states
+     * @param retrievalMode The {@link RetrievalMode} to use when getting block states
      */
-    public void forEachBlock(BlockConsumer consumer, BlockRetrievalMode retrievalMode)
+    public void forEachBlock(BlockConsumer consumer, RetrievalMode retrievalMode)
     {
         for (int x = min.x; x <= max.x; x++)
         {
@@ -206,16 +201,15 @@ public class WorldRegion
      */
     public void forEachEntity(EntityConsumer consumer)
     {
-        for (Entity entity : this.entities) consumer.accept(entity);
+        forEachEntity(consumer, RetrievalMode.LAST_SWAPPED);
     }
-
     /**
-     * Call {@link Entity#updateMinecraftEntity(IServerWorld)} for all entities in
-     * this region
+     * Run an {@link EntityConsumer} on every entity in the filter box
+     * @param consumer The {@link EntityConsumer} to run
+     * @param retrievalMode The {@link RetrievalMode} to use when getting entities
      */
-    public void updateEntities()
+    public void forEachEntity(EntityConsumer consumer, RetrievalMode retrievalMode)
     {
-        IServerWorld world = worldCache.getDimensionServerWorld(Player.getDimensionId());
-        for (Entity entity : this.entities) entity.updateMinecraftEntity(world);
+        this.entities.getEntities(this.bounds, retrievalMode).forEach(entity -> consumer.accept(entity));
     }
 }

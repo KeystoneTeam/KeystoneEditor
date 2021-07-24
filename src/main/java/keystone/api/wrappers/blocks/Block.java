@@ -20,7 +20,7 @@ public class Block
     private BlockState state;
     private CompoundNBT tileEntity;
 
-    //region INTERNAL USE ONLY
+    //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
      * @param state The Minecraft block state

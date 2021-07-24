@@ -216,16 +216,14 @@ public final class Keystone
                     IEntityTool entityTool = (IEntityTool)tool;
                     region.forEachEntity(entity ->
                     {
-                        if (entity.uuid() == null) entityTool.process(entity, region);
-                        else if (!entityTool.ignoreRepeatBlocks() || !processedEntities.contains(entity.uuid()))
+                        if (entity.minecraftUUID() == null) entityTool.process(entity, region);
+                        else if (!entityTool.ignoreRepeatBlocks() || !processedEntities.contains(entity.minecraftUUID()))
                         {
                             entityTool.process(entity, region);
-                            processedEntities.add(entity.uuid());
+                            processedEntities.add(entity.minecraftUUID());
                         }
                     });
                 }
-
-                region.updateEntities();
             }
             historyModule.tryEndHistoryEntry();
         });
