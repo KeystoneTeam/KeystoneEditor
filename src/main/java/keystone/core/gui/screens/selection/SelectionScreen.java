@@ -3,8 +3,9 @@ package keystone.core.gui.screens.selection;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
+import keystone.api.tools.AnalyzeTool;
+import keystone.api.tools.DeleteEntitiesTool;
 import keystone.api.tools.FillTool;
-import keystone.api.tools.interfaces.IEntityTool;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
@@ -110,7 +111,6 @@ public class SelectionScreen extends KeystoneOverlay
                 createButton(panelMinY + MARGINS, 6, "keystone.selection_panel.paste", this::buttonPaste),
                 createButton(panelMinY + MARGINS, 7, "keystone.selection_panel.export", this::buttonExport)
         };
-        buttons[3].active = false;
 
         for (SimpleButton button : buttons)
         {
@@ -152,15 +152,15 @@ public class SelectionScreen extends KeystoneOverlay
     }
     private final void buttonDeleteBlocks(Button button)
     {
-        Keystone.runTool(new FillTool(Blocks.AIR.defaultBlockState()));
+        Keystone.runInternalFilter(new FillTool(Blocks.AIR.defaultBlockState()));
     }
     private final void buttonDeleteEntities(Button button)
     {
-        Keystone.runTool((IEntityTool) (entity, region) -> entity.kill());
+        Keystone.runInternalFilter(new DeleteEntitiesTool());
     }
     private final void buttonAnalyze(Button button)
     {
-        // TODO: Implement Analyze Button
+        Keystone.runInternalFilter(new AnalyzeTool());
     }
     private final void buttonCut(Button button)
     {
@@ -176,7 +176,7 @@ public class SelectionScreen extends KeystoneOverlay
     }
     private final void buttonExport(Button button)
     {
-        SaveFileScreen.saveFile("kschem", KeystoneDirectories.getSchematicDirectory(), true, file ->
+        SaveFileScreen.saveFile("kschem", KeystoneDirectories.getSchematicsDirectory(), true, file ->
                 Keystone.runOnMainThread(() ->
                 {
                     BlocksModule blocks = Keystone.getModule(BlocksModule.class);

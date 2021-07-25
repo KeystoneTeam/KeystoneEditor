@@ -177,9 +177,9 @@ public class FilterModule implements IKeystoneModule
         abortFilter = new ITextComponent[reason.length];
         for (int i = 0; i < reason.length; i++) abortFilter[i] = new StringTextComponent(reason[i]).withStyle(TextFormatting.RED);
     }
-    public void filterException(KeystoneFilter filter, Exception e)
+    public void filterException(KeystoneFilter filter, Throwable throwable)
     {
-        e.printStackTrace();
+        throwable.printStackTrace();
 
         StringBuilder reasonBuilder = new StringBuilder();
         reasonBuilder.append("An exception was thrown executing filter '");
@@ -191,7 +191,7 @@ public class FilterModule implements IKeystoneModule
         String utf8 = StandardCharsets.UTF_8.name();
         try (PrintStream printStream = new PrintStream(byteStream, true, utf8))
         {
-            e.printStackTrace(printStream);
+            throwable.printStackTrace(printStream);
             reasonBuilder.append(byteStream.toString(utf8));
         }
         catch (UnsupportedEncodingException uee)

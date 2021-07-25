@@ -62,7 +62,7 @@ public class KeystoneKeybinds
         if (TOGGLE_KEYSTONE.isDown()) Keystone.toggleKeystone();
         else if (Keystone.isActive())
         {
-            if (DELETE_BLOCKS.isDown()) Keystone.runTool(new FillTool(Blocks.AIR.defaultBlockState()));
+            if (DELETE_BLOCKS.isDown()) Keystone.runInternalFilter(new FillTool(Blocks.AIR.defaultBlockState()));
             if (event.getKey() == GLFW.GLFW_KEY_P) Keystone.getModule(HistoryModule.class).logHistoryStack();
         }
     }

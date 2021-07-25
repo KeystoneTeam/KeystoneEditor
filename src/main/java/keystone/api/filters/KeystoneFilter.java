@@ -158,10 +158,10 @@ public class KeystoneFilter extends EditableObject
     }
 
     /**
-     * Throw an exception and abort further execution
-     * @param exception The exception to be thrown
+     * Throw an throwable and abort further execution
+     * @param throwable The throwable to be thrown
      */
-    protected final void throwException(Exception exception) { Keystone.filterException(this, exception); }
+    protected final void throwException(Throwable throwable) { Keystone.filterException(this, throwable); }
     /**
      * @return The number of {@link WorldRegion FilterBoxes} that the filter is modifying
      */

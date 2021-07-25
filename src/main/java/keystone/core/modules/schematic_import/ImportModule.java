@@ -87,7 +87,7 @@ public class ImportModule implements IKeystoneModule
     public void promptImportSchematic(Coords minPosition)
     {
         OpenFilesScreen.openFiles(new StringTextComponent("Import Schematics"), SchematicLoader.getExtensions(),
-                KeystoneDirectories.getSchematicDirectory(), true, (files) ->
+                KeystoneDirectories.getSchematicsDirectory(), true, (files) ->
         {
             for (File schematic : files) importSchematic(schematic, Player.getHighlightedBlock());
         });

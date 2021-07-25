@@ -122,6 +122,14 @@ public class Block
                 .map(PROPERTY_ENTRY_TO_STRING_FUNCTION)
                 .collect(Collectors.joining(","));
     }
+
+    /**
+     * @return This block's property set, including default values. [e.g. "type=top,waterlogged=false"]
+     */
+    public String allProperties()
+    {
+        return this.state.getValues().entrySet().stream().map(PROPERTY_ENTRY_TO_STRING_FUNCTION).collect(Collectors.joining(","));
+    }
     /**
      * @return An {@link NBTCompound} representing this block's tile entity. Note that modifying
      * this NBT Compound will not modify the tile entity unless you call {@link Block#data(NBTCompound)}
