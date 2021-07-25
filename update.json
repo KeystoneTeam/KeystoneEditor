@@ -9,7 +9,7 @@
 	},
 	"1.16.5":
 	{
-		"0.6.0": "Added entity support to existing tools",
+		"0.6.0": "Added Analyze tool and Entity support for existing features",
 		"0.5.0": "Added Import tool and improved Ghost Block rendering"
 	},
 	"1.16.4":
