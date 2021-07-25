@@ -3,6 +3,8 @@ package keystone.api.wrappers.blocks;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
+import keystone.api.filters.KeystoneFilter;
+import keystone.api.wrappers.nbt.NBTCompound;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FlowingFluidBlock;
 import net.minecraft.command.arguments.BlockStateParser;
@@ -10,13 +12,41 @@ import net.minecraft.command.arguments.NBTPathArgument;
 import net.minecraft.command.arguments.NBTTagArgument;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
+import net.minecraft.state.Property;
 import net.minecraft.tileentity.TileEntity;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * A wrapper for a Minecraft block. Contains information about the block's state and NBT data
  */
 public class Block
 {
+    protected static final Function<Map.Entry<Property<?>, Comparable<?>>, String> PROPERTY_ENTRY_TO_STRING_FUNCTION = new Function<Map.Entry<Property<?>, Comparable<?>>, String>()
+    {
+        public String apply(@Nullable Map.Entry<Property<?>, Comparable<?>> entry)
+        {
+            if (entry == null) return "<NULL>";
+            else
+            {
+                Property<?> property = entry.getKey();
+                return property.getName() + "=" + this.getName(property, entry.getValue());
+            }
+        }
+
+        private <T extends Comparable<T>> String getName(Property<T> property, Comparable<?> comparable) { return property.getName((T)comparable); }
+    };
+    protected static final BiPredicate<BlockState, Map.Entry<Property<?>, Comparable<?>>> PROPERTY_VALUE_DIFFERENT_PREDICATE = (defaultState, entry) ->
+    {
+        Comparable<?> defaultValue = defaultState.getValue(entry.getKey());
+        return entry.getValue().equals(defaultValue);
+    };
+
     private BlockState state;
     private CompoundNBT tileEntity;
 
@@ -71,11 +101,79 @@ public class Block
      */
     public void setTileEntity(CompoundNBT tileEntity) { this.tileEntity = tileEntity; }
     //endregion
-
+    //region API
     public Block clone()
     {
-        return new Block(getMinecraftBlock(), getTileEntityData() != null ? getTileEntityData().copy() : null);
+        return new Block(state, tileEntity != null ? tileEntity.copy() : null);
     }
+
+    /**
+     * @return The ID of the base block. [e.g. "minecraft:stone_slab"]
+     */
+    public String block() { return state.getBlock().getRegistryName().toString(); }
+    /**
+     * @return This block's property set. [e.g. "type=top,waterlogged=true"]
+     */
+    public String properties()
+    {
+        BlockState defaultState = this.state.getBlock().defaultBlockState();
+        return this.state.getValues().entrySet().stream()
+                .filter(entry -> PROPERTY_VALUE_DIFFERENT_PREDICATE.test(defaultState, entry))
+                .map(PROPERTY_ENTRY_TO_STRING_FUNCTION)
+                .collect(Collectors.joining(","));
+    }
+    /**
+     * @return An {@link NBTCompound} representing this block's tile entity. Note that modifying
+     * this NBT Compound will not modify the tile entity unless you call {@link Block#data(NBTCompound)}
+     * once finished
+     */
+    public NBTCompound data()
+    {
+        if (this.tileEntity == null) return new NBTCompound();
+        else return new NBTCompound(this.tileEntity.copy());
+    }
+
+    /**
+     * Check whether this block's type is the same as another {@link Block}, regardless of their
+     * property sets or tile entities
+     * @param test The {@link Block} to test against
+     * @return True if the both block's types are equal.
+     */
+    public boolean isBlock(Block test)
+    {
+        return test != null && block().equals(test.block());
+    }
+    /**
+     * Check whether this block's type is the same as another block, regardless of their
+     * property sets or tile entities
+     * @param test The block ID to test against
+     * @return True if the both block's types are equal.
+     */
+    public boolean isBlock(String test)
+    {
+        return isBlock(KeystoneFilter.block(test));
+    }
+    /**
+     * Check whether this block's type and property set is the same as another {@link Block},
+     * regardless of their tile entities
+     * @param test The {@link Block} to test against
+     * @return True if the both block's types and property sets are equal.
+     */
+    public boolean isBlockAndProperties(Block test)
+    {
+        return test != null && block().equals(test.block()) && properties().equals(test.properties());
+    }
+    /**
+     * Check whether this block's type and property set is the same as another block,
+     * regardless of their tile entities
+     * @param test The block ID to test against
+     * @return True if the both block's types and property sets are equal.
+     */
+    public boolean isBlockAndProperties(String test)
+    {
+        return isBlockAndProperties(KeystoneFilter.block(test));
+    }
+
     /**
      * Apply a given property set to this block
      * @param properties A property set. [e.g. "type=top", "type=top,waterlogged=true"]
@@ -133,7 +231,7 @@ public class Block
     {
         try
         {
-            Block copy = new Block(this.state, this.tileEntity != null ? this.tileEntity.copy() : null);
+            Block copy = clone();
 
             String blockStr = BlockStateParser.serialize(copy.state);
             if (blockStr.contains(property)) blockStr = blockStr.replaceFirst("(" + property + ")=([^,\\]]*)", "$1=" + value);
@@ -170,7 +268,7 @@ public class Block
     {
         try
         {
-            Block copy = new Block(this.state, this.tileEntity != null ? this.tileEntity.copy() : new CompoundNBT());
+            Block copy = clone();
 
             NBTPathArgument.NBTPath nbtPath = NBTPathArgument.nbtPath().parse(new StringReader(path));
             INBT nbt = NBTTagArgument.nbtTag().parse(new StringReader(data));
@@ -183,6 +281,17 @@ public class Block
             Keystone.abortFilter(e.getLocalizedMessage());
             return this;
         }
+    }
+    /**
+     * Set this block's tile entity NBT data
+     * @param nbt The {@link NBTCompound} that contains the new tile entity data
+     * @return The modified block instance
+     */
+    public Block data(NBTCompound nbt)
+    {
+        Block copy = clone();
+        copy.tileEntity = nbt.getMinecraftNBT();
+        return copy;
     }
 
     /**
@@ -199,7 +308,8 @@ public class Block
      * @return Whether this block is an air block or a liquid
      */
     public boolean isAirOrLiquid() { return isAir() || isLiquid(); }
-
+    //endregion
+    //region Object Overrides
     @Override
     public boolean equals(Object o)
     {
@@ -213,10 +323,19 @@ public class Block
     {
         return toString().hashCode();
     }
+
     @Override
     public String toString()
     {
-        if (this.tileEntity == null) return this.state.toString();
-        else return this.state.toString() + this.tileEntity.toString();
+        StringBuilder stringbuilder = new StringBuilder(this.state.getBlock().getRegistryName().toString());
+        if (!this.state.getValues().isEmpty())
+        {
+            stringbuilder.append('[');
+            stringbuilder.append(this.state.getValues().entrySet().stream().map(PROPERTY_ENTRY_TO_STRING_FUNCTION).collect(Collectors.joining(",")));
+            stringbuilder.append(']');
+        }
+        if (this.tileEntity != null) stringbuilder.append(this.tileEntity);
+        return stringbuilder.toString();
     }
+    //endregion
 }

@@ -70,6 +70,10 @@ public class KeystoneFilter extends EditableObject
      * @return Whether to ignore blocks that have already been processed in another {@link WorldRegion}
      */
     public boolean ignoreRepeatBlocks() { return true; }
+    /**
+     * @return Whether to ignore entities that have already been processed in another {@link WorldRegion}
+     */
+    public boolean ignoreRepeatEntities() { return false; }
 
     /**
      * @return Whether to allow placing blocks outside the current {@link WorldRegion} the filter is
@@ -105,6 +109,15 @@ public class KeystoneFilter extends EditableObject
      * @param region The {@link WorldRegion} that the block is in
      */
     public void processBlock(int x, int y, int z, WorldRegion region)  {}
+
+    /**
+     * Ran for every entity the filter is modifying after {@link KeystoneFilter#processRegion(WorldRegion)}. Use this for modifications
+     * that can be done on a per-entity basis. Be sure that this code is self-contained, as this will be ran on multiple threads
+     * for improved performance, and as such is subject to race conditions
+     * @param entity The {@link Entity} that is being modified
+     * @param region The {@link WorldRegion} that the entity is in
+     */
+    public void processEntity(Entity entity, WorldRegion region) {}
 
     /**
      * Ran after the filter has finished execution. Use this for any modifications that need to be done at the very end

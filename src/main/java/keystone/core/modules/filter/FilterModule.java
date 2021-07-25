@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.UUID;
 
 public class FilterModule implements IKeystoneModule
 {
@@ -90,6 +91,7 @@ public class FilterModule implements IKeystoneModule
                         }
 
                         Set<BlockPos> processedBlocks = new HashSet<>();
+                        Set<UUID> processedEntities = new HashSet<>();
                         for (WorldRegion box : regions)
                         {
                             filter.processRegion(box);
@@ -107,6 +109,22 @@ public class FilterModule implements IKeystoneModule
                                 {
                                     filter.processBlock(x, y, z, box);
                                     processedBlocks.add(pos);
+                                }
+
+                                if (abortFilter != null)
+                                {
+                                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
+                                    historyModule.abortHistoryEntry();
+                                    return;
+                                }
+                            });
+
+                            box.forEachEntity(entity ->
+                            {
+                                if (!filter.ignoreRepeatEntities() || !processedEntities.contains(entity.keystoneUUID()))
+                                {
+                                    filter.processEntity(entity, box);
+                                    processedEntities.add(entity.keystoneUUID());
                                 }
 
                                 if (abortFilter != null)

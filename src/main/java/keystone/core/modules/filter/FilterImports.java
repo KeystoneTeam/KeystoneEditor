@@ -34,6 +34,7 @@ public class FilterImports
         imports.add("keystone.api.wrappers.blocks");
         imports.add("keystone.api.wrappers.coordinates");
         imports.add("keystone.api.wrappers.entities");
+        imports.add("keystone.api.wrappers.nbt");
 
         imports.add("java.util");
         imports.add("java.lang");

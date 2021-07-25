@@ -3,6 +3,8 @@ package keystone.api.wrappers.entities;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
+import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.math.BlockPosMath;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import net.minecraft.command.arguments.NBTPathArgument;
@@ -215,6 +217,7 @@ public class Entity
         clone.killed = killed;
         return clone;
     }
+    public String type() { return this.entityData.getString("id"); }
     /**
      * @return The x-coordinate of the entity
      */
@@ -235,6 +238,15 @@ public class Entity
      * @return The pitch angle of the entity, in degrees
      */
     public float pitch() { return this.pitch; }
+    /**
+     * @return An {@link NBTCompound} representing this entity's data. Note that modifying
+     * this NBT Compound will not modify the entity unless you call {@link Entity#data(NBTCompound)}
+     * once finished
+     */
+    public NBTCompound data()
+    {
+        return new NBTCompound(this.entityData.copy());
+    }
     /**
      * @return If this entity is in the world, the UUID of the Minecraft
      * entity it represents, otherwise null
@@ -336,7 +348,8 @@ public class Entity
     public void setKilled(boolean killed) { this.killed = killed; }
 
     /**
-     * Set NBT data at a given path to a given value
+     * Set NBT data at a given path to a given value. This cannot be used to change
+     * the entity's type
      * @param path The NBT path. [e.g. "Items[0].Count", "Items[{Slot:0b}]"]
      * @param data The value to set. [e.g. "32b", "{id:"minecraft:diamond",Count:2b}"]
      * @return The modified entity instance
@@ -362,6 +375,66 @@ public class Entity
             Keystone.abortFilter(e.getLocalizedMessage());
             return this;
         }
+    }
+
+    /**
+     * Set this entity's NBT data compound. This cannot be used to change the entity's type
+     * @param data The {@link NBTCompound} to set this entity's data to
+     * @return The modified entity instance
+     */
+    public Entity data(NBTCompound data)
+    {
+        if (data.getString("id") != this.entityData.getString("id"))
+        {
+            Keystone.abortFilter("Modifying an entity's type ID is not allowed!");
+            return this;
+        }
+
+        CompoundNBT newEntityData = data.getMinecraftNBT().copy();
+        newEntityData.remove("UUID");
+        this.entityData = newEntityData;
+
+        if (this.entityData.contains("Pos"))
+        {
+            ListNBT posNBT = this.entityData.getList("Pos", Constants.NBT.TAG_DOUBLE);
+            this.position = new Vector3d(posNBT.getDouble(0), posNBT.getDouble(1), posNBT.getDouble(2));
+        }
+        if (this.entityData.contains("Rotation"))
+        {
+            ListNBT rotationNBT = this.entityData.getList("Rotation", Constants.NBT.TAG_FLOAT);
+            this.yaw = rotationNBT.getFloat(0);
+            this.pitch = rotationNBT.getFloat(1);
+        }
+
+        return this;
+    }
+    //endregion
+    //region Object Overrides
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Entity entity = (Entity) o;
+        return toString().equals(entity.toString());
+    }
+    @Override
+    public int hashCode()
+    {
+        return toString().hashCode();
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder stringBuilder = new StringBuilder(this.entityData.getString("id"));
+        stringBuilder.append(this.entityData.toString());
+        stringBuilder.append("<");
+        stringBuilder.append(keystoneUUID.toString());
+        stringBuilder.append("|");
+        stringBuilder.append(minecraftUUID == null ? "NULL" : minecraftUUID.toString());
+        stringBuilder.append(">");
+        return stringBuilder.toString();
     }
     //endregion
 }
