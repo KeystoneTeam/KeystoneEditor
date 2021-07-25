@@ -3,16 +3,20 @@ package keystone.core.gui.screens.selection;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
+import keystone.api.tools.AnalyzeTool;
+import keystone.api.tools.DeleteEntitiesTool;
 import keystone.api.tools.FillTool;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.file_browser.SaveFileScreen;
+import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.clipboard.ClipboardModule;
+import keystone.core.modules.entities.EntitiesModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
@@ -71,7 +75,7 @@ public class SelectionScreen extends KeystoneOverlay
     @SubscribeEvent(priority = EventPriority.LOW)
     public static final void onSelectionsChanged(final KeystoneSelectionChangedEvent event)
     {
-        if (event.selections.length > 0) open();
+        if (event.selections.length > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
         else if (open != null) open.onClose();
     }
     //endregion
@@ -107,8 +111,6 @@ public class SelectionScreen extends KeystoneOverlay
                 createButton(panelMinY + MARGINS, 6, "keystone.selection_panel.paste", this::buttonPaste),
                 createButton(panelMinY + MARGINS, 7, "keystone.selection_panel.export", this::buttonExport)
         };
-        buttons[2].active = false;
-        buttons[3].active = false;
 
         for (SimpleButton button : buttons)
         {
@@ -150,15 +152,15 @@ public class SelectionScreen extends KeystoneOverlay
     }
     private final void buttonDeleteBlocks(Button button)
     {
-        Keystone.runTool(new FillTool(Blocks.AIR.defaultBlockState()));
+        Keystone.runInternalFilter(new FillTool(Blocks.AIR.defaultBlockState()));
     }
     private final void buttonDeleteEntities(Button button)
     {
-        // TODO: Implement Delete Entities Button
+        Keystone.runInternalFilter(new DeleteEntitiesTool());
     }
     private final void buttonAnalyze(Button button)
     {
-        // TODO: Implement Analyze Button
+        Keystone.runInternalFilter(new AnalyzeTool());
     }
     private final void buttonCut(Button button)
     {
@@ -174,11 +176,12 @@ public class SelectionScreen extends KeystoneOverlay
     }
     private final void buttonExport(Button button)
     {
-        SaveFileScreen.saveFile("kschem", KeystoneDirectories.getSchematicDirectory(), true, file ->
+        SaveFileScreen.saveFile("kschem", KeystoneDirectories.getSchematicsDirectory(), true, file ->
                 Keystone.runOnMainThread(() ->
                 {
                     BlocksModule blocks = Keystone.getModule(BlocksModule.class);
-                    KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(SelectionNudgeScreen.getSelectionToNudge(), blocks);
+                    EntitiesModule entities = Keystone.getModule(EntitiesModule.class);
+                    KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(SelectionNudgeScreen.getSelectionToNudge(), blocks, entities);
                     CompoundNBT schematicNBT = KeystoneSchematicFormat.saveSchematic(schematic);
                     NBTSerializer.serialize(file, schematicNBT);
                 }));

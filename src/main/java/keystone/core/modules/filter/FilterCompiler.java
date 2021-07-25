@@ -106,8 +106,8 @@ public class FilterCompiler
 
                 compiler.setParentClassLoader(KeystoneFilter.class.getClassLoader());
                 compiler.cook(scanner);
-
                 ClassLoader classLoader = compiler.getClassLoader();
+
                 try
                 {
                     Class loadedClass = Class.forName(newClassName, true, classLoader);

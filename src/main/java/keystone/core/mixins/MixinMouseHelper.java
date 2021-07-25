@@ -1,7 +1,6 @@
 package keystone.core.mixins;
 
 import keystone.api.Keystone;
-import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.KeystoneInputHandler;
 import net.minecraft.client.Minecraft;

@@ -1,6 +1,6 @@
 package keystone.core.gui.widgets.inputs.properties;
 
-import keystone.api.wrappers.Block;
+import keystone.api.wrappers.blocks.Block;
 import keystone.core.gui.widgets.inputs.EnumWidget;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.state.EnumProperty;

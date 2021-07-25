@@ -1,19 +1,14 @@
 package keystone.api;
 
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.tools.interfaces.IBlockTool;
-import keystone.api.tools.interfaces.IKeystoneTool;
-import keystone.api.tools.interfaces.ISelectionBoxTool;
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
@@ -179,43 +174,39 @@ public final class Keystone
         else addList.add(new DelayedRunnable(delay, runnable));
     }
     //endregion
-    //region Tools
+    //region Internal Filters
     /**
-     * Run an {@link keystone.api.tools.interfaces.IKeystoneTool} on the current selection boxes
-     * @param tool The tool to run
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Run an internal, hard-coded filter on the current selection boxes
+     * @param filter The {@link KeystoneFilter} to run
      */
-    public static void runTool(IKeystoneTool tool)
+    public static void runInternalFilter(KeystoneFilter filter)
     {
-        runOnMainThread(() ->
-        {
-            historyModule.tryBeginHistoryEntry();
-            BlockRegion[] regions = getModule(SelectionModule.class).buildRegions(false);
-
-            Set<BlockPos> processedBlocks = new HashSet<>();
-            for (BlockRegion region : regions)
-            {
-                if (tool instanceof ISelectionBoxTool) ((ISelectionBoxTool)tool).process(region);
-                if (tool instanceof IBlockTool)
-                {
-                    IBlockTool blockTool = (IBlockTool)tool;
-                    region.forEachBlock(((x, y, z, block) ->
-                    {
-                        BlockPos pos = new BlockPos(x, y, z);
-                        if (!blockTool.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
-                        {
-                            blockTool.process(x, y, z, region);
-                            processedBlocks.add(pos);
-                        }
-                    }));
-                }
-            }
-            historyModule.tryEndHistoryEntry();
-        });
+        runInternalFilter(filter, 0);
+    }
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Run an internal, hard-coded filter on the current selection boxes after a given tick delay
+     * @param filter The {@link KeystoneFilter} to run
+     * @param ticksDelay The amount of ticks to wait before running the filter
+     */
+    public static void runInternalFilter(KeystoneFilter filter, int ticksDelay)
+    {
+        filterModule.runFilter(filter.compiledSuccessfully().setName(filter.getClass().getSimpleName()), ticksDelay);
     }
     //endregion
     //region API
+    /**
+     * Cancel filter execution and log the reason
+     * @param reason The reason for canceling filter execution
+     */
     public static void abortFilter(String... reason) { filterModule.abortFilter(reason); }
-    public static void filterException(KeystoneFilter filter, Exception e) { filterModule.filterException(filter, e); }
+    /**
+     * Report an exception raised by a filter and log it to the player
+     * @param filter The {@link KeystoneFilter} which raised the exception
+     * @param throwable The Throwable that was raised
+     */
+    public static void filterException(KeystoneFilter filter, Throwable throwable) { filterModule.filterException(filter, throwable); }
     //endregion
     //region Event Handling
     /**

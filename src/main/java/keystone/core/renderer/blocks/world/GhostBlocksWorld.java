@@ -39,7 +39,6 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     protected Rotation rotation;
     protected Mirror mirror;
     protected int scale;
-    public boolean renderMode;
 
     public GhostBlocksWorld(World original)
     {
@@ -225,16 +224,16 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     }
 
     @Override
-    public boolean setBlock(BlockPos pos, BlockState arg1, int arg2)
+    public boolean setBlock(BlockPos pos, BlockState state, int flags)
     {
         pos = pos.immutable();
         bounds.expand(new MutableBoundingBox(pos, pos));
-        blocks.put(pos, arg1);
+        blocks.put(pos, state);
         if (tileEntities.containsKey(pos))
         {
             TileEntity tileEntity = tileEntities.get(pos);
             if (!tileEntity.getType()
-                    .isValid(arg1.getBlock()))
+                    .isValid(state.getBlock()))
             {
                 tileEntities.remove(pos);
                 renderedTileEntities.remove(tileEntity);

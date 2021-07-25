@@ -1,50 +1,52 @@
 package keystone.api;
 
-import keystone.api.enums.BlockRetrievalMode;
+import keystone.api.enums.RetrievalMode;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.wrappers.Block;
-import keystone.api.wrappers.BlockPalette;
-import keystone.api.wrappers.BlockPos;
-import keystone.api.wrappers.Vector3i;
+import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.wrappers.coordinates.BlockPos;
+import keystone.api.wrappers.coordinates.BoundingBox;
+import keystone.api.wrappers.coordinates.Vector3i;
+import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.blocks.BlocksModule;
+import keystone.core.modules.entities.EntitiesModule;
+import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.common.models.Coords;
 
-public class BlockRegion
+public class WorldRegion
 {
     //region Function Types
     public interface BlockConsumer
     {
         void accept(int x, int y, int z, Block block);
     }
+    public interface EntityConsumer
+    {
+        void accept(Entity entity);
+    }
     //endregion
 
+    private final WorldCacheModule worldCache;
     private final BlocksModule blocks;
+    private final EntitiesModule entities;
 
     public boolean allowBlocksOutside = false;
 
     public final BlockPos min;
     public final BlockPos max;
     public final Vector3i size;
+    public final BoundingBox bounds;
 
-    public BlockRegion(Coords min, Coords max)
+    public WorldRegion(Coords min, Coords max)
     {
+        this.worldCache = Keystone.getModule(WorldCacheModule.class);
         this.blocks = Keystone.getModule(BlocksModule.class);
+        this.entities = Keystone.getModule(EntitiesModule.class);
+
         this.min = new BlockPos(min.getX(), min.getY(), min.getZ());
         this.max = new BlockPos(max.getX(), max.getY(), max.getZ());
         this.size = new Vector3i(max.getX() - min.getX() + 1, max.getY() - min.getY() + 1, max.getZ() - min.getZ() + 1);
-    }
-    /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @param min The minimum corner of the region
-     * @param max The maximum corner of the region
-     * @param blocks The block module to use for getting and setting blocks
-     */
-    public BlockRegion(net.minecraft.util.math.BlockPos min, net.minecraft.util.math.BlockPos max, BlocksModule blocks)
-    {
-        this.blocks = blocks;
-        this.min = new BlockPos(min);
-        this.max = new BlockPos(max);
-        this.size = new Vector3i(max.subtract(min).offset(1, 1, 1));
+        this.bounds = new BoundingBox(this.min, this.max);
     }
 
     /**
@@ -98,17 +100,17 @@ public class BlockRegion
      * @param z The z coordinate
      * @return The block at the given coordinates
      */
-    public Block getBlock(int x, int y, int z) { return blocks.getBlock(x, y, z, BlockRetrievalMode.LAST_SWAPPED); }
+    public Block getBlock(int x, int y, int z) { return blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED); }
 
     /**
      * Get the block at a position in the filter box
      * @param x The x coordinate
      * @param y The y coordinate
      * @param z The z coordinate
-     * @param retrievalMode The {@link BlockRetrievalMode} to use when getting the block
+     * @param retrievalMode The {@link RetrievalMode} to use when getting the block
      * @return The block at the given coordinates
      */
-    public Block getBlock(int x, int y, int z, BlockRetrievalMode retrievalMode)
+    public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
     {
         return blocks.getBlock(x, y, z, retrievalMode);
     }
@@ -127,23 +129,24 @@ public class BlockRegion
     }
 
     /**
-     * Set the block at a position in the filter box to a random entry in a {@link keystone.api.wrappers.BlockPalette}.
+     * Set the block at a position in the filter box to a random entry in a {@link BlockPalette}.
      * This will only work if the position is within the filter box
      * @param x The x coordinate
      * @param y The y coordinate
      * @param z The z coordinate
-     * @param palette The {@link keystone.api.wrappers.BlockPalette} to change the position to
+     * @param palette The {@link BlockPalette} to change the position to
      * @return Whether the change was successful
      */
     public boolean setBlock(int x, int y, int z, BlockPalette palette) { return setBlock(x, y, z, palette.randomBlock()); }
 
     /**
-     * Set the block at a position in the filter box to a {@link keystone.api.wrappers.Block}.
-     * This will only work if the position is within the filter box
+     * Set the block at a position in the filter box to a {@link Block}.
+     * This will only work if the position is within the filter box or
+     * allowBlocksOutside is true
      * @param x The x coordinate
      * @param y The y coordinate
      * @param z The z coordinate
-     * @param block The {@link keystone.api.wrappers.Block} to change the position to
+     * @param block The {@link Block} to change the position to
      * @return Whether the change was successful
      */
     public boolean setBlock(int x, int y, int z, Block block)
@@ -157,19 +160,28 @@ public class BlockRegion
     }
 
     /**
-     * Run a {@link BlockRegion.BlockConsumer} on every block in the filter box
-     * @param consumer The {@link BlockRegion.BlockConsumer} to run
+     * Add or modify an {@link Entity} in the region
+     * @param entity The {@link Entity} to add or modify
+     */
+    public void setEntity(Entity entity)
+    {
+        this.entities.setEntity(entity);
+    }
+
+    /**
+     * Run a {@link WorldRegion.BlockConsumer} on every block in the filter box
+     * @param consumer The {@link WorldRegion.BlockConsumer} to run
      */
     public void forEachBlock(BlockConsumer consumer)
     {
-        forEachBlock(consumer, BlockRetrievalMode.LAST_SWAPPED);
+        forEachBlock(consumer, RetrievalMode.LAST_SWAPPED);
     }
     /**
-     * Run a {@link BlockRegion.BlockConsumer} on every block in the filter box
-     * @param consumer The {@link BlockRegion.BlockConsumer} to run
-     * @param retrievalMode The {@link BlockRetrievalMode} to use when getting block states
+     * Run a {@link WorldRegion.BlockConsumer} on every block in the filter box
+     * @param consumer The {@link WorldRegion.BlockConsumer} to run
+     * @param retrievalMode The {@link RetrievalMode} to use when getting block states
      */
-    public void forEachBlock(BlockConsumer consumer, BlockRetrievalMode retrievalMode)
+    public void forEachBlock(BlockConsumer consumer, RetrievalMode retrievalMode)
     {
         for (int x = min.x; x <= max.x; x++)
         {
@@ -181,5 +193,23 @@ public class BlockRegion
                 }
             }
         }
+    }
+
+    /**
+     * Run an {@link EntityConsumer} on every entity in the filter box
+     * @param consumer The {@link EntityConsumer} to run
+     */
+    public void forEachEntity(EntityConsumer consumer)
+    {
+        forEachEntity(consumer, RetrievalMode.LAST_SWAPPED);
+    }
+    /**
+     * Run an {@link EntityConsumer} on every entity in the filter box
+     * @param consumer The {@link EntityConsumer} to run
+     * @param retrievalMode The {@link RetrievalMode} to use when getting entities
+     */
+    public void forEachEntity(EntityConsumer consumer, RetrievalMode retrievalMode)
+    {
+        this.entities.getEntities(this.bounds, retrievalMode).forEach(entity -> consumer.accept(entity));
     }
 }

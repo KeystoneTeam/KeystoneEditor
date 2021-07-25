@@ -1,10 +1,10 @@
 package keystone.core.modules.brush.operations;
 
-import keystone.api.enums.BlockRetrievalMode;
+import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.Hook;
 import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.Block;
+import keystone.api.wrappers.blocks.Block;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.brush.BrushOperation;
 import net.minecraft.util.Direction;
@@ -69,7 +69,7 @@ public class ErodeBrushOperation extends BrushOperation
 
     private void meltIteration(int x, int y, int z, BlocksModule blocks)
     {
-        Block currentBlock = blocks.getBlock(x, y, z, BlockRetrievalMode.LAST_SWAPPED);
+        Block currentBlock = blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED);
         if (currentBlock.isAirOrLiquid()) return;
 
         neighborBlockCounts.clear();
@@ -80,7 +80,7 @@ public class ErodeBrushOperation extends BrushOperation
         for (Direction direction : Direction.values())
         {
             BlockPos neighborPos = new BlockPos(x, y, z).relative(direction);
-            Block neighbor = blocks.getBlock(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), BlockRetrievalMode.LAST_SWAPPED);
+            Block neighbor = blocks.getBlock(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
             if (!neighbor.isAirOrLiquid()) continue;
 
             total++;
@@ -101,7 +101,7 @@ public class ErodeBrushOperation extends BrushOperation
     }
     private void fillIteration(int x, int y, int z, BlocksModule blocks)
     {
-        Block currentBlock = blocks.getBlock(x, y, z, BlockRetrievalMode.LAST_SWAPPED);
+        Block currentBlock = blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED);
         if (!currentBlock.isAirOrLiquid()) return;
 
         neighborBlockCounts.clear();
@@ -112,7 +112,7 @@ public class ErodeBrushOperation extends BrushOperation
         for (Direction direction : Direction.values())
         {
             BlockPos neighborPos = new BlockPos(x, y, z).relative(direction);
-            Block neighbor = blocks.getBlock(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), BlockRetrievalMode.LAST_SWAPPED);
+            Block neighbor = blocks.getBlock(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
             if (neighbor.isAirOrLiquid()) continue;
 
             total++;

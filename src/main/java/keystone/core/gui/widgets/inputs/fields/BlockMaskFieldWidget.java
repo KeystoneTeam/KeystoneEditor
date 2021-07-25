@@ -2,7 +2,7 @@ package keystone.core.gui.widgets.inputs.fields;
 
 import keystone.api.Keystone;
 import keystone.api.variables.Hook;
-import keystone.api.wrappers.BlockMask;
+import keystone.api.wrappers.blocks.BlockMask;
 import keystone.core.gui.widgets.inputs.BlockMaskWidget;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.gui.widget.Widget;

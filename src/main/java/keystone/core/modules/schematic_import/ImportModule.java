@@ -2,6 +2,7 @@ package keystone.core.modules.schematic_import;
 
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
+import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.gui.screens.file_browser.OpenFilesScreen;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
@@ -14,6 +15,7 @@ import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
 import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
 import keystone.core.modules.schematic_import.providers.ImportBoxProvider;
+import keystone.core.modules.selection.SelectionModule;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
@@ -32,6 +34,7 @@ import java.util.List;
 public class ImportModule implements IKeystoneModule
 {
     private List<ImportBoundingBox> importBoxes;
+    private HistoryModule historyModule;
     private BlocksModule blocksModule;
     private GhostBlocksModule ghostBlocksModule;
 
@@ -51,6 +54,7 @@ public class ImportModule implements IKeystoneModule
     @Override
     public void postInit()
     {
+        this.historyModule = Keystone.getModule(HistoryModule.class);
         this.blocksModule = Keystone.getModule(BlocksModule.class);
         this.ghostBlocksModule = Keystone.getModule(GhostBlocksModule.class);
     }
@@ -83,7 +87,7 @@ public class ImportModule implements IKeystoneModule
     public void promptImportSchematic(Coords minPosition)
     {
         OpenFilesScreen.openFiles(new StringTextComponent("Import Schematics"), SchematicLoader.getExtensions(),
-                KeystoneDirectories.getSchematicDirectory(), true, (files) ->
+                KeystoneDirectories.getSchematicsDirectory(), true, (files) ->
         {
             for (File schematic : files) importSchematic(schematic, Player.getHighlightedBlock());
         });
@@ -100,7 +104,6 @@ public class ImportModule implements IKeystoneModule
     }
     public void importSchematic(KeystoneSchematic schematic, Coords minPosition)
     {
-        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
         historyModule.tryBeginHistoryEntry();
         historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
         historyModule.tryEndHistoryEntry();
@@ -133,7 +136,8 @@ public class ImportModule implements IKeystoneModule
 
     public void rotateAll()
     {
-        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        if (importBoxes.size() == 0) return;
+
         historyModule.tryBeginHistoryEntry();
         historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
         historyModule.tryEndHistoryEntry();
@@ -142,7 +146,8 @@ public class ImportModule implements IKeystoneModule
     }
     public void mirrorAll()
     {
-        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        if (importBoxes.size() == 0) return;
+
         historyModule.tryBeginHistoryEntry();
         historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
         historyModule.tryEndHistoryEntry();
@@ -151,11 +156,13 @@ public class ImportModule implements IKeystoneModule
     }
     public void nudgeAll(Direction direction, int amount)
     {
+        if (importBoxes.size() == 0) return;
         for (ImportBoundingBox importBox : importBoxes) importBox.nudgeBox(direction, amount);
     }
     public void setScaleAll(int scale)
     {
-        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        if (importBoxes.size() == 0) return;
+
         historyModule.tryBeginHistoryEntry();
         historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
         historyModule.tryEndHistoryEntry();
@@ -164,11 +171,19 @@ public class ImportModule implements IKeystoneModule
     }
     public void placeAll()
     {
+        if (importBoxes.size() == 0) return;
+
         Keystone.runOnMainThread(() ->
         {
-            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+            SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
+
             historyModule.tryBeginHistoryEntry();
             importBoxes.forEach(importBox -> importBox.place());
+
+            List<BoundingBox> boxes = new ArrayList<>(importBoxes.size());
+            importBoxes.forEach(box -> boxes.add(box.getBoundingBox()));
+            selectionModule.setSelections(boxes);
+
             resetModule();
             historyModule.tryEndHistoryEntry();
 
@@ -177,9 +192,10 @@ public class ImportModule implements IKeystoneModule
     }
     public void clearImportBoxes(boolean createHistoryEntry)
     {
+        if (importBoxes.size() == 0) return;
+
         if (createHistoryEntry)
         {
-            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
             historyModule.tryBeginHistoryEntry();
             historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
             historyModule.tryEndHistoryEntry();

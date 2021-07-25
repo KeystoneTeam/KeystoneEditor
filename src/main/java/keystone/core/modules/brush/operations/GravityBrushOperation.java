@@ -1,7 +1,7 @@
 package keystone.core.modules.brush.operations;
 
-import keystone.api.enums.BlockRetrievalMode;
-import keystone.api.wrappers.Block;
+import keystone.api.enums.RetrievalMode;
+import keystone.api.wrappers.blocks.Block;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.brush.BrushOperation;
 import net.minecraft.block.Blocks;
@@ -20,18 +20,18 @@ public class GravityBrushOperation extends BrushOperation
     @Override
     public boolean process(int x, int y, int z, BlocksModule blocks, int iteration)
     {
-        Block existing = blocks.getBlock(x, y, z, BlockRetrievalMode.CURRENT);
+        Block existing = blocks.getBlock(x, y, z, RetrievalMode.CURRENT);
         if (!existing.isAir())
         {
             int newY = y - 1;
-            Block current = blocks.getBlock(x, newY, z, BlockRetrievalMode.CURRENT);
+            Block current = blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
             if (!current.isAir()) return true;
             else
             {
                 while (current.isAir())
                 {
                     newY --;
-                    current = blocks.getBlock(x, newY, z, BlockRetrievalMode.CURRENT);
+                    current = blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
                 }
                 newY++;
             }

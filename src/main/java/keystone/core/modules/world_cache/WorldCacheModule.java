@@ -2,6 +2,7 @@ package keystone.core.modules.world_cache;
 
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.renderer.common.models.DimensionId;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
@@ -11,7 +12,7 @@ import java.util.Map;
 
 public class WorldCacheModule implements IKeystoneModule
 {
-    private Map<DimensionId, World> loadedWorlds = new HashMap<>();
+    private Map<DimensionId, IServerWorld> loadedWorlds;
 
     public WorldCacheModule()
     {
@@ -31,9 +32,13 @@ public class WorldCacheModule implements IKeystoneModule
     {
         return loadedWorlds.containsKey(dimensionId);
     }
+    public IServerWorld getDimensionServerWorld(DimensionId dimension)
+    {
+        return loadedWorlds.getOrDefault(dimension, null);
+    }
     public World getDimensionWorld(DimensionId dimension)
     {
-        if (loadedWorlds.containsKey(dimension)) return loadedWorlds.get(dimension);
+        if (loadedWorlds.containsKey(dimension)) return loadedWorlds.get(dimension).getLevel();
         else return null;
     }
 
@@ -42,11 +47,11 @@ public class WorldCacheModule implements IKeystoneModule
         if (event.getWorld() instanceof World)
         {
             World world = (World)event.getWorld();
-            if (!world.isClientSide)
+            if (!world.isClientSide && world instanceof IServerWorld)
             {
                 DimensionId dimensionId = DimensionId.from(world.dimension());
                 if (loadedWorlds.containsKey(dimensionId)) loadedWorlds.clear();
-                loadedWorlds.put(dimensionId, world);
+                loadedWorlds.put(dimensionId, (IServerWorld)world);
             }
         }
     }
@@ -55,7 +60,7 @@ public class WorldCacheModule implements IKeystoneModule
         if (event.getWorld() instanceof World)
         {
             World world = (World)event.getWorld();
-            if (!world.isClientSide)
+            if (!world.isClientSide && world instanceof IServerWorld)
             {
                 DimensionId dimensionId = DimensionId.from(world.dimension());
                 if (loadedWorlds.containsKey(dimensionId)) loadedWorlds.clear();

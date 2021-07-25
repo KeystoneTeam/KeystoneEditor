@@ -1,38 +1,38 @@
 package keystone.api.tools;
 
-import keystone.api.BlockRegion;
-import keystone.api.tools.interfaces.IBlockTool;
-import keystone.api.wrappers.Block;
+import keystone.api.WorldRegion;
+import keystone.api.filters.KeystoneFilter;
+import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockPalette;
 import net.minecraft.block.BlockState;
 import net.minecraft.tileentity.TileEntity;
 
 /**
- * An {@link keystone.api.tools.interfaces.IBlockTool} which sets every block to a given block state
+ * A {@link KeystoneFilter} which sets every block to a given block state
  */
-public class FillTool implements IBlockTool
+public class FillTool extends KeystoneFilter
 {
-    private Block block;
+    private BlockPalette palette;
 
     /**
-     * @param block The block state to fill
+     * @param palette The block palette to fill
      */
-    public FillTool(BlockState block) { this(new Block(block)); }
+    public FillTool(BlockPalette palette) { this.palette = palette; }
     /**
-     * @param block The {@link keystone.api.wrappers.Block} to fill
-     * @param tileEntity The {@link net.minecraft.tileentity.TileEntity} to fill
-     */
-    public FillTool(BlockState block, TileEntity tileEntity) { this(new Block(block, tileEntity)); }
-    /**
-     * @param block The {@link keystone.api.wrappers.Block} to fill
+     * @param block The {@link Block} to fill
      */
     public FillTool(Block block)
     {
-        this.block = block;
+        this(new BlockPalette().with(block));
+    }
+    public FillTool(BlockState block)
+    {
+        this(new BlockPalette().with(new Block(block)));
     }
 
     @Override
-    public void process(int x, int y, int z, BlockRegion region)
+    public void processBlock(int x, int y, int z, WorldRegion region)
     {
-        if (block != null) region.setBlock(x, y, z, block);
+        region.setBlock(x, y, z, palette.randomBlock());
     }
 }

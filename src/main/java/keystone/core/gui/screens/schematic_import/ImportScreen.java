@@ -132,7 +132,7 @@ public class ImportScreen extends KeystoneOverlay
     {
         int y = startY + index * (BUTTON_HEIGHT + PADDING);
         int buttonWidth = 2 * PADDING + font.width(NudgeButton.NUDGE.getString());
-        return (NudgeButton) new NudgeButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, consumer)
+        return (NudgeButton) new NudgeButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, consumer, NudgeButton.IMPORT_HISTORY_SUPPLIER)
         {
             @Override
             protected int getNudgeStep(Direction direction, int button)

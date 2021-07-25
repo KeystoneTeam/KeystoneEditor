@@ -1,7 +1,7 @@
 package keystone.core.modules.filter;
 
-import keystone.api.BlockRegion;
 import keystone.api.Keystone;
+import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.UUID;
 
 public class FilterModule implements IKeystoneModule
 {
@@ -72,8 +73,8 @@ public class FilterModule implements IKeystoneModule
             if (filter.isCompiledSuccessfully())
             {
                 historyModule.beginHistoryEntry();
-                BlockRegion[] boxes = selectionModule.buildRegions(filter.allowBlocksOutsideRegion());
-                filter.setBlockRegions(boxes);
+                WorldRegion[] regions = selectionModule.buildRegions(filter.allowBlocksOutsideRegion());
+                filter.setBlockRegions(regions);
 
                 try
                 {
@@ -90,7 +91,8 @@ public class FilterModule implements IKeystoneModule
                         }
 
                         Set<BlockPos> processedBlocks = new HashSet<>();
-                        for (BlockRegion box : boxes)
+                        Set<UUID> processedEntities = new HashSet<>();
+                        for (WorldRegion box : regions)
                         {
                             filter.processRegion(box);
                             if (abortFilter != null)
@@ -116,9 +118,29 @@ public class FilterModule implements IKeystoneModule
                                     return;
                                 }
                             });
+
+                            box.forEachEntity(entity ->
+                            {
+                                if (!filter.ignoreRepeatEntities() || !processedEntities.contains(entity.keystoneUUID()))
+                                {
+                                    filter.processEntity(entity, box);
+                                    processedEntities.add(entity.keystoneUUID());
+                                }
+
+                                if (abortFilter != null)
+                                {
+                                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
+                                    historyModule.abortHistoryEntry();
+                                    return;
+                                }
+                            });
                         }
 
-                        if (iteration < iterations - 1) historyModule.swapBlockBuffers(true);
+                        if (iteration < iterations - 1)
+                        {
+                            historyModule.swapBlockBuffers(true);
+                            historyModule.swapEntityBuffers(true);
+                        }
                     }
                 }
                 catch (Exception e)
@@ -155,9 +177,9 @@ public class FilterModule implements IKeystoneModule
         abortFilter = new ITextComponent[reason.length];
         for (int i = 0; i < reason.length; i++) abortFilter[i] = new StringTextComponent(reason[i]).withStyle(TextFormatting.RED);
     }
-    public void filterException(KeystoneFilter filter, Exception e)
+    public void filterException(KeystoneFilter filter, Throwable throwable)
     {
-        e.printStackTrace();
+        throwable.printStackTrace();
 
         StringBuilder reasonBuilder = new StringBuilder();
         reasonBuilder.append("An exception was thrown executing filter '");
@@ -169,7 +191,7 @@ public class FilterModule implements IKeystoneModule
         String utf8 = StandardCharsets.UTF_8.name();
         try (PrintStream printStream = new PrintStream(byteStream, true, utf8))
         {
-            e.printStackTrace(printStream);
+            throwable.printStackTrace(printStream);
             reasonBuilder.append(byteStream.toString(utf8));
         }
         catch (UnsupportedEncodingException uee)

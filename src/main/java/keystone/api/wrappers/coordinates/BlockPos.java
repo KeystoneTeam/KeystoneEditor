@@ -1,4 +1,4 @@
-package keystone.api.wrappers;
+package keystone.api.wrappers.coordinates;
 
 /**
  * A wrapper for a Minecraft block position. Used in filters to prevent obfuscation issues

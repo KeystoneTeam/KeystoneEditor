@@ -1,6 +1,6 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 buildscript {
     repositories {

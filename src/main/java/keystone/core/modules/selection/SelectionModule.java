@@ -1,8 +1,9 @@
 package keystone.core.modules.selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import keystone.api.BlockRegion;
 import keystone.api.Keystone;
+import keystone.api.WorldRegion;
+import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.events.KeystoneInputEvent;
@@ -34,7 +35,8 @@ import java.util.List;
 
 public class SelectionModule implements IKeystoneModule
 {
-    private final MouseModule mouseModule;
+    private HistoryModule historyModule;
+    private MouseModule mouseModule;
     private List<SelectionBoundingBox> selectionBoxes;
     private IBoundingBoxProvider[] renderProviders;
 
@@ -45,7 +47,6 @@ public class SelectionModule implements IKeystoneModule
     {
         MinecraftForge.EVENT_BUS.register(this);
 
-        mouseModule = Keystone.getModule(MouseModule.class);
         selectionBoxes = new ArrayList<>();
         renderProviders = new IBoundingBoxProvider[]
         {
@@ -53,17 +54,13 @@ public class SelectionModule implements IKeystoneModule
                 new HighlightBoxProvider()
         };
     }
+    @Override
+    public void postInit()
+    {
+        historyModule = Keystone.getModule(HistoryModule.class);
+        mouseModule = Keystone.getModule(MouseModule.class);
+    }
 
-    public List<SelectionBoundingBox> getSelectionBoundingBoxes()
-    {
-        return selectionBoxes;
-    }
-    public int getSelectionBoxCount()
-    {
-        int count = selectionBoxes.size();
-        if (creatingSelection) count--;
-        return count;
-    }
     public void onCancelPressed()
     {
         ImportModule importModule = Keystone.getModule(ImportModule.class);
@@ -74,7 +71,6 @@ public class SelectionModule implements IKeystoneModule
     {
         if (selectionBoxes.size() > 0)
         {
-            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
             historyModule.beginHistoryEntry();
             historyModule.pushToEntry(new SelectionHistoryEntry(selectionBoxes, true));
             historyModule.endHistoryEntry();
@@ -95,21 +91,41 @@ public class SelectionModule implements IKeystoneModule
         return old;
     }
 
-    public BlockRegion[] buildRegions(boolean allowBlocksOutside)
+    public WorldRegion[] buildRegions(boolean allowBlocksOutside)
     {
-        BlockRegion[] regions = new BlockRegion[selectionBoxes.size()];
+        WorldRegion[] regions = new WorldRegion[selectionBoxes.size()];
         for (int i = 0; i < regions.length; i++)
         {
-            regions[i] = new BlockRegion(selectionBoxes.get(i).getMinCoords(), selectionBoxes.get(i).getMaxCoords());
+            regions[i] = new WorldRegion(selectionBoxes.get(i).getMinCoords(), selectionBoxes.get(i).getMaxCoords());
             regions[i].allowBlocksOutside = allowBlocksOutside;
         }
         return regions;
+    }
+
+    public void setSelections(List<BoundingBox> boxes)
+    {
+        historyModule.tryBeginHistoryEntry();
+        historyModule.pushToEntry(new SelectionHistoryEntry(selectionBoxes, true));
+        selectionBoxes.clear();
+        boxes.forEach(box -> selectionBoxes.add(SelectionBoundingBox.createFromBoundingBox(box)));
+        MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes, false));
+        historyModule.tryEndHistoryEntry();
     }
 
     //region Getters
     public boolean isCreatingSelection()
     {
         return creatingSelection;
+    }
+    public List<SelectionBoundingBox> getSelectionBoundingBoxes()
+    {
+        return selectionBoxes;
+    }
+    public int getSelectionBoxCount()
+    {
+        int count = selectionBoxes.size();
+        if (creatingSelection) count--;
+        return count;
     }
     //endregion
     //region Rendering
@@ -212,7 +228,6 @@ public class SelectionModule implements IKeystoneModule
 
         if (creatingSelection)
         {
-            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
             historyModule.beginHistoryEntry();
             historyModule.pushToEntry(new SelectionHistoryEntry(selectionBoxes, false));
             historyModule.endHistoryEntry();

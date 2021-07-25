@@ -1,4 +1,4 @@
-package keystone.api.wrappers;
+package keystone.api.wrappers.blocks;
 
 import keystone.api.filters.KeystoneFilter;
 import net.minecraft.block.Blocks;
@@ -33,8 +33,8 @@ public class BlockMask
     private boolean blacklist;
 
     /**
-     * Create a new {@link keystone.api.wrappers.BlockMask} with the same contents as this one
-     * @return The cloned {@link keystone.api.wrappers.BlockMask}
+     * Create a new {@link BlockMask} with the same contents as this one
+     * @return The cloned {@link BlockMask}
      */
     public BlockMask clone()
     {
@@ -47,7 +47,7 @@ public class BlockMask
     /**
      * Add a block ID to the mask. Any ID that is a valid ID for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param block The block ID to add
-     * @return The modified {@link keystone.api.wrappers.BlockMask}
+     * @return The modified {@link BlockMask}
      */
     public BlockMask with(String block)
     {
@@ -65,9 +65,9 @@ public class BlockMask
         else return with(KeystoneFilter.block(block));
     }
     /**
-     * Add a {@link keystone.api.wrappers.Block} to the mask
-     * @param block The {@link keystone.api.wrappers.Block} to add
-     * @return The modified {@link keystone.api.wrappers.BlockMask}
+     * Add a {@link Block} to the mask
+     * @param block The {@link Block} to add
+     * @return The modified {@link BlockMask}
      */
     public BlockMask with(Block block)
     {
@@ -83,7 +83,7 @@ public class BlockMask
     /**
      * Remove a block ID from the mask. Any ID that is a valid ID for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param block The block ID to remove
-     * @return the modified {@link keystone.api.wrappers.BlockMask}
+     * @return the modified {@link BlockMask}
      */
     public BlockMask without(String block)
     {
@@ -101,9 +101,9 @@ public class BlockMask
         else return without(KeystoneFilter.block(block));
     }
     /**
-     * Remove a {@link keystone.api.wrappers.Block} from the mask
-     * @param block The {@link keystone.api.wrappers.Block} to remove
-     * @return The modified {@link keystone.api.wrappers.BlockMask}
+     * Remove a {@link Block} from the mask
+     * @param block The {@link Block} to remove
+     * @return The modified {@link BlockMask}
      */
     public BlockMask without(Block block)
     {
@@ -117,8 +117,8 @@ public class BlockMask
     }
 
     /**
-     * Mark this {@link keystone.api.wrappers.BlockMask} as a blacklist. This will match all blocks except the mask contents
-     * @return The modified {@link keystone.api.wrappers.BlockMask}
+     * Mark this {@link BlockMask} as a blacklist. This will match all blocks except the mask contents
+     * @return The modified {@link BlockMask}
      */
     public BlockMask blacklist()
     {
@@ -127,8 +127,8 @@ public class BlockMask
     }
 
     /**
-     * Mark this {@link keystone.api.wrappers.BlockMask} as a whitelist. This will match all blocks that are in the mask contents
-     * @return The modified {@link keystone.api.wrappers.BlockMask}
+     * Mark this {@link BlockMask} as a whitelist. This will match all blocks that are in the mask contents
+     * @return The modified {@link BlockMask}
      */
     public BlockMask whitelist()
     {
@@ -137,26 +137,26 @@ public class BlockMask
     }
 
     /**
-     * @return Whether this {@link keystone.api.wrappers.BlockMask} is a blacklist. If true, this will match all blocks except
+     * @return Whether this {@link BlockMask} is a blacklist. If true, this will match all blocks except
      * the mask contents
      */
     public boolean isBlacklist() { return blacklist; }
 
     /**
-     * @return Whether this {@link keystone.api.wrappers.BlockMask} is a whitelist. If true, this will match all blocks that are
+     * @return Whether this {@link BlockMask} is a whitelist. If true, this will match all blocks that are
      * in the mask contents
      */
     public boolean isWhitelist() { return !blacklist; }
 
     /**
-     * Check if a {@link keystone.api.wrappers.Block} is matched by this mask
-     * @param block The {@link keystone.api.wrappers.Block} to check
-     * @return Whether the {@link keystone.api.wrappers.Block} is matched by this mask
+     * Check if a {@link Block} is matched by this mask
+     * @param block The {@link Block} to check
+     * @return Whether the {@link Block} is matched by this mask
      */
     public boolean valid(Block block) { return mask.contains(block) != blacklist; }
 
     /**
-     * Run a function on every {@link keystone.api.wrappers.Block} in the mask contents
+     * Run a function on every {@link Block} in the mask contents
      * @param consumer The function to run
      */
     public void forEach(Consumer<Block> consumer) { mask.forEach(block -> consumer.accept(block)); }

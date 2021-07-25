@@ -1,5 +1,6 @@
 package keystone.core.renderer.common.models;
 
+import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.MathHelper;
 import keystone.core.renderer.common.TypeHelper;
@@ -70,6 +71,7 @@ public class BoundingBoxCuboid extends AbstractBoundingBox
         }
     }
     public Vector3d getCenter() { return center; }
+    public BoundingBox getBoundingBox() { return new BoundingBox(minCoords.toBlockPos(), maxCoords.toBlockPos()); }
 
     public final void refreshMinMax()
     {

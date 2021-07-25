@@ -1,11 +1,11 @@
 package keystone.core.modules.blocks;
 
 import keystone.api.Keystone;
-import keystone.api.enums.BlockRetrievalMode;
-import keystone.api.wrappers.Block;
+import keystone.api.enums.RetrievalMode;
+import keystone.api.wrappers.blocks.Block;
 import keystone.core.modules.IKeystoneModule;
-import keystone.core.modules.history.BlockHistoryChunk;
 import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.history.WorldHistoryChunk;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.client.Player;
 import net.minecraft.util.math.BlockPos;
@@ -47,20 +47,20 @@ public class BlocksModule implements IKeystoneModule
     }
 
     /**
-     * Set a {@link keystone.api.wrappers.Block} in the current world. This will automatically hook into the history system, allowing
+     * Set a {@link Block} in the current world. This will automatically hook into the history system, allowing
      * for undo and redo support. Be sure that the {@link keystone.core.modules.history.HistoryModule}
      * has an entry open first
      * @param x The x-coordinate
      * @param y The y-coordinate
      * @param z The z-coordinate
-     * @param block The {@link keystone.api.wrappers.Block} to set
+     * @param block The {@link Block} to set
      */
     public void setBlock(int x, int y, int z, Block block)
     {
         historyModule.getOpenEntry().setBlock(x, y, z, block);
         listeners.forEach(listener -> listener.onChanged(x, y, z, block));
     }
-    public Block getBlock(int x, int y, int z, BlockRetrievalMode retrievalMode)
+    public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
     {
         World world = worldCacheModule.getDimensionWorld(Player.getDimensionId());
         if (!historyModule.isEntryOpen())
@@ -69,7 +69,7 @@ public class BlocksModule implements IKeystoneModule
             return new Block(world.getBlockState(pos), world.getBlockEntity(pos));
         }
 
-        BlockHistoryChunk chunk = historyModule.getOpenEntry().getChunk(x, y, z);
+        WorldHistoryChunk chunk = historyModule.getOpenEntry().getChunk(x, y, z);
         if (chunk != null) return chunk.getBlock(x, y, z, retrievalMode);
         else
         {

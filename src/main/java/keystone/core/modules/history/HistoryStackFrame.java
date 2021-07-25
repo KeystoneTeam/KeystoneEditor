@@ -1,11 +1,12 @@
 package keystone.core.modules.history;
 
 import keystone.api.Keystone;
-import keystone.api.wrappers.Block;
+import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.client.Player;
 import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.World;
+import net.minecraft.world.IServerWorld;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,31 +16,31 @@ import java.util.Map;
 public class HistoryStackFrame
 {
     private HistoryModule historyModule;
-    private World world;
+    private IServerWorld world;
     private List<IHistoryEntry> entries;
-    private Map<Vector3i, BlockHistoryChunk> chunks;
+    private Map<Vector3i, WorldHistoryChunk> chunks;
 
     public HistoryStackFrame()
     {
         this.historyModule = Keystone.getModule(HistoryModule.class);
-        this.world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimensionId());
+        this.world = Keystone.getModule(WorldCacheModule.class).getDimensionServerWorld(Player.getDimensionId());
         this.entries = new ArrayList<>();
         this.chunks = new HashMap<>();
     }
 
     public void undo()
     {
-        for (BlockHistoryChunk chunk : chunks.values()) chunk.undo();
+        for (WorldHistoryChunk chunk : chunks.values()) chunk.undo();
         for (int i = entries.size() - 1; i >= 0; i--) entries.get(i).undo();
     }
     public void redo()
     {
-        for (BlockHistoryChunk chunk : chunks.values()) chunk.redo();
+        for (WorldHistoryChunk chunk : chunks.values()) chunk.redo();
         for (IHistoryEntry entry : entries) entry.redo();
     }
-    public void applyBlocks()
+    public void applyChanges()
     {
-        for (BlockHistoryChunk chunk : chunks.values()) chunk.redo();
+        for (WorldHistoryChunk chunk : chunks.values()) chunk.redo();
     }
     public boolean addToUnsavedChanges()
     {
@@ -65,18 +66,34 @@ public class HistoryStackFrame
     public void setBlock(int x, int y, int z, Block block)
     {
         Vector3i chunkPosition = new Vector3i(x >> 4, y >> 4, z >> 4);
-        if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new BlockHistoryChunk(chunkPosition, world));
+        if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new WorldHistoryChunk(chunkPosition, world));
         chunks.get(chunkPosition).setBlock(x, y, z, block);
     }
+    public void setEntity(Entity entity)
+    {
+        Vector3i chunkPosition = new Vector3i((int)entity.x() >> 4, (int)entity.y() >> 4, (int)entity.z() >> 4);
+        if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new WorldHistoryChunk(chunkPosition, world));
+        chunks.get(chunkPosition).setEntity(entity);
+    }
 
-    public BlockHistoryChunk getChunk(int x, int y, int z)
+    public WorldHistoryChunk getChunk(int x, int y, int z)
     {
         Vector3i chunkPosition = new Vector3i(x >> 4, y >> 4, z >> 4);
         if (chunks.containsKey(chunkPosition)) return chunks.get(chunkPosition);
         else return null;
     }
+    public WorldHistoryChunk getOrAddChunk(int x, int y, int z)
+    {
+        Vector3i chunkPosition = new Vector3i(x >> 4, y >> 4, z >> 4);
+        if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new WorldHistoryChunk(chunkPosition, world));
+        return chunks.get(chunkPosition);
+    }
     public void swapBlockBuffers(boolean copy)
     {
-        for (BlockHistoryChunk chunk : chunks.values()) chunk.swapBuffers(copy);
+        for (WorldHistoryChunk chunk : chunks.values()) chunk.swapBlockBuffers(copy);
+    }
+    public void swapEntityBuffers(boolean copy)
+    {
+        for (WorldHistoryChunk chunk : chunks.values()) chunk.swapEntityBuffers(copy);
     }
 }

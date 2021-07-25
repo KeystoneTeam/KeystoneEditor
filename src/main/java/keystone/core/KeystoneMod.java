@@ -13,6 +13,7 @@ import keystone.core.modules.brush.boxes.BrushPreviewBox;
 import keystone.core.modules.brush.renderers.BrushPositionBoxRenderer;
 import keystone.core.modules.brush.renderers.BrushPreviewBoxRenderer;
 import keystone.core.modules.clipboard.ClipboardModule;
+import keystone.core.modules.entities.EntitiesModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
@@ -27,6 +28,8 @@ import keystone.core.modules.selection.renderers.HighlightBoxRenderer;
 import keystone.core.modules.selection.renderers.SelectionBoxRenderer;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.*;
@@ -34,6 +37,7 @@ import net.minecraft.util.text.event.ClickEvent;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.VersionChecker;
 import net.minecraftforge.fml.common.Mod;
@@ -58,6 +62,7 @@ public class KeystoneMod
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultModules);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultSchematicFormats);
         MinecraftForge.EVENT_BUS.addListener(this::onWorldLoaded);
+        MinecraftForge.EVENT_BUS.addListener(this::onLivingUpdate);
     }
 
     private void setup(final FMLCommonSetupEvent event)
@@ -100,6 +105,7 @@ public class KeystoneMod
         event.register(new MouseModule());
         event.register(new WorldCacheModule());
         event.register(new BlocksModule());
+        event.register(new EntitiesModule());
         event.register(new GhostBlocksModule());
         event.register(new HistoryModule());
         event.register(new ClipboardModule());
@@ -148,6 +154,18 @@ public class KeystoneMod
                     Keystone.disableKeystone();
                 }
             }
+        }
+    }
+    private void onLivingUpdate(final LivingEvent.LivingUpdateEvent event)
+    {
+        if (Keystone.isActive() && !event.getEntity().getType().equals(EntityType.PLAYER))
+        {
+            LivingEntity living = event.getEntityLiving();
+            living.yBodyRotO = living.yBodyRot;
+            living.yHeadRotO = living.yHeadRot;
+            living.xRotO = living.xRot;
+            living.yRotO = living.yRot;
+            event.setCanceled(true);
         }
     }
 }

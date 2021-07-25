@@ -31,6 +31,10 @@ public class FilterImports
         imports.add("keystone.api.utils");
         imports.add("keystone.api.variables");
         imports.add("keystone.api.wrappers");
+        imports.add("keystone.api.wrappers.blocks");
+        imports.add("keystone.api.wrappers.coordinates");
+        imports.add("keystone.api.wrappers.entities");
+        imports.add("keystone.api.wrappers.nbt");
 
         imports.add("java.util");
         imports.add("java.lang");
