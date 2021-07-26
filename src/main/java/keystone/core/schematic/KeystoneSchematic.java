@@ -4,13 +4,12 @@ import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.entities.Entity;
+import keystone.core.events.SchematicEvent;
 import keystone.core.math.BlockPosMath;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.entities.EntitiesModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
-import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
-import keystone.core.renderer.client.Player;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.CompoundNBT;
@@ -20,8 +19,8 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
 
 import java.util.Arrays;
 import java.util.List;
@@ -172,11 +171,15 @@ public class KeystoneSchematic
      * Place the schematic at a given {@link BlockPos} in a given {@link GhostBlocksWorld}
      * @param ghostWorld The {@link GhostBlocksWorld} to place the schematic in
      */
-    public void place(GhostBlocksWorld ghostWorld)
+    public void place(GhostBlocksWorld ghostWorld, int scale)
     {
+        scale = Math.max(1, scale);
+
         for (Entity entityTemplate : entities)
         {
-            entityTemplate.spawnInWorld(ghostWorld);
+            Entity scaled = entityTemplate.clone();
+            scaled.position(scaled.x() * scale, scaled.y() * scale, scaled.z() * scale);
+            scaled.spawnInWorld(ghostWorld);
         }
 
         int i = 0;
@@ -186,20 +189,33 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    BlockPos localPos = new BlockPos(x, y, z);
+                    SchematicEvent.ScaleBlock scaleEvent = new SchematicEvent.ScaleBlock(blocks[i], scale);
+                    MinecraftForge.EVENT_BUS.post(scaleEvent);
 
-                    Block block = blocks[i];
-                    BlockState state = block.getMinecraftBlock();
-                    ghostWorld.setBlockAndUpdate(localPos, state);
-                    if (block.getTileEntityData() != null)
+                    for (int sx = 0; sx < scale; sx++)
                     {
-                        CompoundNBT tileEntityData = block.getTileEntityData().copy();
-                        tileEntityData.putInt("x", x);
-                        tileEntityData.putInt("y", y);
-                        tileEntityData.putInt("z", z);
+                        for (int sy = 0; sy < scale; sy++)
+                        {
+                            for (int sz = 0; sz < scale; sz++)
+                            {
+                                BlockPos localPos = new BlockPos(x * scale + sx, y * scale + sy, z * scale + sz);
+                                Block block = scaleEvent.getBlock(sx, sy, sz);
 
-                        TileEntity tileEntity = ghostWorld.getBlockEntity(localPos);
-                        if (tileEntity != null) tileEntity.deserializeNBT(block.getMinecraftBlock(), tileEntityData);
+                                BlockState state = block.getMinecraftBlock();
+                                ghostWorld.setBlockAndUpdate(localPos, state);
+                                if (block.getTileEntityData() != null)
+                                {
+                                    CompoundNBT tileEntityData = block.getTileEntityData().copy();
+                                    tileEntityData.putInt("x", x);
+                                    tileEntityData.putInt("y", y);
+                                    tileEntityData.putInt("z", z);
+
+                                    TileEntity tileEntity = ghostWorld.getBlockEntity(localPos);
+                                    if (tileEntity != null)
+                                        tileEntity.deserializeNBT(block.getMinecraftBlock(), tileEntityData);
+                                }
+                            }
+                        }
                     }
                     i++;
                 }
@@ -228,9 +244,8 @@ public class KeystoneSchematic
      */
     public void place(BlockPos anchor, BlocksModule blocksModule, EntitiesModule entitiesModule, Rotation rotation, Mirror mirror, int scale)
     {
-        scale = scale < 1 ? 1 : scale;
+        scale = Math.max(scale, 1);
 
-        IServerWorld serverWorld = Keystone.getModule(WorldCacheModule.class).getDimensionServerWorld(Player.getDimensionId());
         for (Entity entityTemplate : entities)
         {
             Entity oriented = entityTemplate.getOrientedEntity(Vector3d.atLowerCornerOf(anchor), rotation, mirror, size, scale);
@@ -244,6 +259,9 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
+                    SchematicEvent.ScaleBlock scaleEvent = new SchematicEvent.ScaleBlock(blocks[i], scale);
+                    MinecraftForge.EVENT_BUS.post(scaleEvent);
+
                     for (int sx = 0; sx < scale; sx++)
                     {
                         for (int sy = 0; sy < scale; sy++)
@@ -252,8 +270,8 @@ public class KeystoneSchematic
                             {
                                 BlockPos localPos = new BlockPos(x * scale + sx, y * scale + sy, z * scale + sz);
                                 BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, scale).offset(anchor);
+                                Block block = scaleEvent.getBlock(sx, sy, sz).clone();
 
-                                Block block = blocks[i].clone();
                                 block.setMinecraftBlock(block.getMinecraftBlock().rotate(blocksModule.getWorld(), worldPos, rotation).mirror(mirror));
                                 blocksModule.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), block);
                             }

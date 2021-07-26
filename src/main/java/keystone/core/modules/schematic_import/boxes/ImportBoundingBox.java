@@ -23,6 +23,7 @@ import net.minecraft.util.math.vector.Vector3i;
 
 public class ImportBoundingBox extends SelectableBoundingBox
 {
+    private GhostBlocksModule ghostBlocksModule;
     private KeystoneSchematic schematic;
     private GhostBlocksWorld ghostBlocks;
 
@@ -43,7 +44,8 @@ public class ImportBoundingBox extends SelectableBoundingBox
         this.mirror = Mirror.NONE;
         this.scale = 1;
 
-        this.ghostBlocks = Keystone.getModule(GhostBlocksModule.class).createWorldFromSchematic(schematic);
+        this.ghostBlocksModule = Keystone.getModule(GhostBlocksModule.class);
+        this.ghostBlocks = ghostBlocksModule.createWorldFromSchematic(schematic, 1);
         this.ghostBlocks.getRenderer().offset = getMinCoords().toVector3d();
 
         refreshMinMax();
@@ -99,13 +101,14 @@ public class ImportBoundingBox extends SelectableBoundingBox
     }
     public void setScale(int scale)
     {
+        scale = Math.max(1, scale);
         this.scale = scale;
-        this.ghostBlocks.setScale(scale);
+        ghostBlocksModule.updateWorldFromSchematic(ghostBlocks, schematic, scale);
         updateBounds();
     }
 
     @Override
-    public boolean isEnabled() { return true; /* return Keystone.getModule(ClipboardModule.class).isEnabled(); */ }
+    public boolean isEnabled() { return true; }
 
     @Override
     public void startDrag(SelectedFace face)
@@ -185,7 +188,7 @@ public class ImportBoundingBox extends SelectableBoundingBox
     {
         BlocksModule blocksModule = Keystone.getModule(BlocksModule.class);
         EntitiesModule entitiesModule = Keystone.getModule(EntitiesModule.class);
-        schematic.place(getMinCoords().toBlockPos(), blocksModule, entitiesModule, rotation, mirror, 1);
+        schematic.place(getMinCoords().toBlockPos(), blocksModule, entitiesModule, rotation, mirror, scale);
     }
 
     private void updateBounds()

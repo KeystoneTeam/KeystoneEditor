@@ -3,7 +3,6 @@ package keystone.api.wrappers.entities;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.math.BlockPosMath;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
@@ -16,7 +15,6 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.IServerWorld;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.Optional;

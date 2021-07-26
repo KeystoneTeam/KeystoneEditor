@@ -53,7 +53,7 @@ public class BlockPosMath
         int sizeX = size.getX() * scale;
         int sizeZ = size.getZ() * scale;
 
-        Vector3d modifiedVector = localVector;
+        Vector3d modifiedVector = localVector.multiply(scale, scale, scale);
 
         Rotation check = rotation;
         if (mirror != Mirror.NONE)

@@ -74,7 +74,7 @@
 
   "keystone.schematic_import.rotate": "Rotate",
   "keystone.schematic_import.mirror": "Mirror",
-  "keystone.schematic_import.scale": "Scale (WIP)",
+  "keystone.schematic_import.scale": "Scale",
   "keystone.schematic_import.import": "Import",
   "keystone.schematic_import.rotate.tooltip": "Rotate all import boxes. Shortcut: R",
   "keystone.schematic_import.mirror.tooltip": "Mirror all import boxes. Shortcut: M",

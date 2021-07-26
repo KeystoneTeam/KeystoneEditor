@@ -11,7 +11,6 @@ import keystone.core.renderer.client.Camera;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.renderers.RenderQueue;
 import keystone.core.schematic.KeystoneSchematic;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -76,11 +75,16 @@ public class GhostBlocksModule implements IKeystoneModule
     {
         if (!ghostWorlds.contains(ghostBlocks)) ghostWorlds.add(ghostBlocks);
     }
-    public GhostBlocksWorld createWorldFromSchematic(KeystoneSchematic schematic)
+    public GhostBlocksWorld createWorldFromSchematic(KeystoneSchematic schematic, int scale)
     {
         GhostBlocksWorld world = createWorld();
-        schematic.place(world);
+        schematic.place(world, scale);
         return world;
+    }
+    public void updateWorldFromSchematic(GhostBlocksWorld world, KeystoneSchematic schematic, int scale)
+    {
+        world.clearAllContents();
+        schematic.place(world, scale);
     }
     public void releaseWorld(GhostBlocksWorld world)
     {

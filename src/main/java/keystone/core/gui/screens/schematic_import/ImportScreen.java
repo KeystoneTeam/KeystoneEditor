@@ -100,7 +100,6 @@ public class ImportScreen extends KeystoneOverlay
                 return true;
             }
         };
-        scale.active = false;
 
         SimpleButton importButton = createButton(y, 2, "keystone.schematic_import.import", this::importButton);
         importButton.x = (panelWidth - importButton.getWidth()) / 2;

@@ -5,7 +5,6 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockPalette;
 import net.minecraft.block.BlockState;
-import net.minecraft.tileentity.TileEntity;
 
 /**
  * A {@link KeystoneFilter} which sets every block to a given block state

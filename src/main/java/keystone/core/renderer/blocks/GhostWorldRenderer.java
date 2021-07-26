@@ -104,8 +104,6 @@ public class GhostWorldRenderer
             ms.translate(0, 0, -ghostBlocks.getBounds().getZSpan());
         }
 
-        ms.scale(ghostBlocks.getScale(), ghostBlocks.getScale(), ghostBlocks.getScale());
-
         buffer.getBuffer(RenderType.solid());
 
         // Dispatch Ghost World Entity Rendering

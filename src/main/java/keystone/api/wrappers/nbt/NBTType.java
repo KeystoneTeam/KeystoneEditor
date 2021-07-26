@@ -2,9 +2,6 @@ package keystone.api.wrappers.nbt;
 
 import net.minecraftforge.common.util.Constants;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public enum NBTType
 {
     TAG_END(Constants.NBT.TAG_END),
