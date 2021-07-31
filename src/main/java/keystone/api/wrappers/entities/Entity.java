@@ -142,6 +142,11 @@ public class Entity
 
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @param anchor The Vector3d to use as an anchor for rotation
+     * @param rotation The Rotation
+     * @param mirror The Mirror
+     * @param size The size of the region that is being oriented
+     * @param scale The scale
      * @return A copy of this entity with an applied orientation
      */
     public Entity getOrientedEntity(Vector3d anchor, Rotation rotation, Mirror mirror, Vector3i size, int scale)
@@ -342,6 +347,7 @@ public class Entity
     /**
      * Set whether the entity is killed. When updated, if true, the entity will be
      * removed from the world
+     * @param killed Whether this entity is killed
      */
     public void setKilled(boolean killed) { this.killed = killed; }
 

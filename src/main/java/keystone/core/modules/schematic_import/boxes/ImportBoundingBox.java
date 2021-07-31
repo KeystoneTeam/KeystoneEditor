@@ -1,6 +1,5 @@
 package keystone.core.modules.schematic_import.boxes;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import keystone.api.Keystone;
 import keystone.core.math.RayTracing;
 import keystone.core.modules.WorldModifierModules;

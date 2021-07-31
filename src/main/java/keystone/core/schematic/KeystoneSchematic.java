@@ -43,6 +43,8 @@ public class KeystoneSchematic
     /**
      * @param size The size of the schematic
      * @param blocks The {@link Block} contents of the schematic
+     * @param entities The {@link Entity} contents of the schematic
+     * @param extensions The {@link ISchematicExtension Extensions} stored in this schematic
      */
     public KeystoneSchematic(Vector3i size, Block[] blocks, Entity[] entities, Map<ResourceLocation, ISchematicExtension> extensions)
     {
@@ -195,6 +197,7 @@ public class KeystoneSchematic
     /**
      * Place the schematic at a given {@link BlockPos} in a given {@link GhostBlocksWorld}
      * @param ghostWorld The {@link GhostBlocksWorld} to place the schematic in
+     * @param scale The scale to place the schematic with
      */
     public void place(GhostBlocksWorld ghostWorld, int scale)
     {
@@ -268,12 +271,13 @@ public class KeystoneSchematic
         place(worldModifiers, anchor, Rotation.NONE, Mirror.NONE, 1, new HashMap<>());
     }
     /**
-     * Place the schematic at a given {@link BlockPos} in a given {@link World}
+     * Place the schematic at a given {@link BlockPos}
      * @param worldModifiers The {@link WorldModifierModules} to place the schematic with
      * @param anchor The minimum {@link BlockPos} to place the schematic at
      * @param rotation The {@link Rotation} of the schematic
      * @param mirror The {@link Mirror} of the schematic
      * @param scale The scale of the schematic
+     * @param extensionsToPlace A Map containing which extensions should be placed in the world and which should be ignored
      */
     public void place(WorldModifierModules worldModifiers, BlockPos anchor, Rotation rotation, Mirror mirror, int scale, Map<ResourceLocation, Boolean> extensionsToPlace)
     {
