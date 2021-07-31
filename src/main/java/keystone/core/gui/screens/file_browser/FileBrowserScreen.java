@@ -2,6 +2,7 @@ package keystone.core.gui.screens.file_browser;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
+import keystone.core.gui.widgets.buttons.SimpleButton;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.ITextComponent;
@@ -56,7 +57,7 @@ public abstract class FileBrowserScreen extends Screen
             return directory.toPath().resolve(fileName).toFile();
         }
     }
-    protected class IndexedButton extends ButtonNoHotkey
+    protected class IndexedButton extends SimpleButton
     {
         protected int index;
 
@@ -64,6 +65,7 @@ public abstract class FileBrowserScreen extends Screen
         {
             super(MARGINS, MARGINS + index * (BUTTON_HEIGHT + PADDING), width, BUTTON_HEIGHT, label, pressable);
             this.index = index;
+            setBorderColor(0xFF202020);
         }
 
         public void setScrollIndex(int minIndex, int maxIndex)
@@ -223,14 +225,23 @@ public abstract class FileBrowserScreen extends Screen
         fileButton.selected = !fileButton.selected;
         if (fileButton.selected)
         {
+            fileButton.setTextColor(0xFF00FF00);
             if (!allowMultipleFiles())
             {
-                for (FileButton selected : selectedFiles) selected.selected = false;
+                for (FileButton selected : selectedFiles)
+                {
+                    selected.selected = false;
+                    selected.setTextColor(0xFFFFFF00);
+                }
                 selectedFiles.clear();
             }
             this.selectedFiles.add(fileButton);
         }
-        else this.selectedFiles.remove(fileButton);
+        else
+        {
+            fileButton.setTextColor(0xFFFFFF00);
+            this.selectedFiles.remove(fileButton);
+        }
     }
     protected void moveToDirectory(DirectoryButton directory)
     {

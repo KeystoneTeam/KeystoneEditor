@@ -259,13 +259,13 @@ public class KeystoneSchematic
     }
 
     /**
-     * Place the schematic at a given {@link BlockPos} in a given {@link World}
+     * Place the schematic at a given {@link BlockPos}
      * @param worldModifiers The {@link WorldModifierModules} to place the schematic with
      * @param anchor The minimum {@link BlockPos} to place the schematic at
      */
     public void place(WorldModifierModules worldModifiers, BlockPos anchor)
     {
-        place(worldModifiers, anchor, Rotation.NONE, Mirror.NONE, 1);
+        place(worldModifiers, anchor, Rotation.NONE, Mirror.NONE, 1, new HashMap<>());
     }
     /**
      * Place the schematic at a given {@link BlockPos} in a given {@link World}
@@ -275,7 +275,7 @@ public class KeystoneSchematic
      * @param mirror The {@link Mirror} of the schematic
      * @param scale The scale of the schematic
      */
-    public void place(WorldModifierModules worldModifiers, BlockPos anchor, Rotation rotation, Mirror mirror, int scale)
+    public void place(WorldModifierModules worldModifiers, BlockPos anchor, Rotation rotation, Mirror mirror, int scale, Map<ResourceLocation, Boolean> extensionsToPlace)
     {
         int clampedScale = Math.max(scale, 1);
 
@@ -323,7 +323,9 @@ public class KeystoneSchematic
 
         extensions.values().forEach(extension ->
         {
-            if (extension.placeByDefault()) extension.place(this, worldModifiers, anchor, rotation, mirror, clampedScale);
+            Boolean place = extensionsToPlace.get(extension.id());
+            if (place == null) place = extension.placeByDefault();
+            if (place) extension.place(this, worldModifiers, anchor, rotation, mirror, clampedScale);
         });
     }
 }

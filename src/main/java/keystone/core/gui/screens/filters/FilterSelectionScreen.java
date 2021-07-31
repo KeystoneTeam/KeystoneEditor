@@ -106,7 +106,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
             }
             recreateFilterInstance();
         }
-        panelMaxX = KeystoneHotbar.getX() - 5;
+        panelMaxX = Math.min(KeystoneHotbar.getX() - 5, 280);
         filterVariablesList = new FieldWidgetList(this::getFilterInstance, PADDING, panelMaxX - 10, this::disableWidgets, this::restoreWidgets);
         filterVariablesList.bake();
         int centerHeight = height / 2;

@@ -10,6 +10,7 @@ public class SimpleButton extends ButtonNoHotkey
 {
     private FontRenderer font;
 
+    protected int borderColor = 0xFF404040;
     protected int buttonColor = 0xFF404040;
     protected int textColor = 0xFFFFFF00;
     protected int textColorHovered = 0xFFFFFFFF;
@@ -26,8 +27,34 @@ public class SimpleButton extends ButtonNoHotkey
         this.font = Minecraft.getInstance().font;
     }
 
-    public SimpleButton setColors(int buttonColor, int textColor, int textColorHovered, int textColorDisabled)
+    public SimpleButton setBorderColor(int borderColor)
     {
+        this.borderColor = borderColor;
+        return this;
+    }
+    public SimpleButton setButtonColor(int buttonColor)
+    {
+        this.buttonColor = buttonColor;
+        return this;
+    }
+    public SimpleButton setTextColor(int textColor)
+    {
+        this.textColor = textColor;
+        return this;
+    }
+    public SimpleButton setTextColorHovered(int textColorHovered)
+    {
+        this.textColorHovered = textColorHovered;
+        return this;
+    }
+    public SimpleButton setTextColorDisabled(int textColorDisabled)
+    {
+        this.textColorDisabled = textColorDisabled;
+        return this;
+    }
+    public SimpleButton setColors(int borderColor, int buttonColor, int textColor, int textColorHovered, int textColorDisabled)
+    {
+        this.borderColor = borderColor;
         this.buttonColor = buttonColor;
         this.textColor = textColor;
         this.textColorHovered = textColorHovered;
@@ -40,7 +67,8 @@ public class SimpleButton extends ButtonNoHotkey
     {
         if (active)
         {
-            fill(matrixStack, x, y, x + width, y + height, buttonColor);
+            fill(matrixStack, x, y, x + width, y + height, borderColor);
+            if (buttonColor != borderColor) fill(matrixStack, x + 1, y + 1, x + width - 1, y + height - 1, buttonColor);
             if (isHovered())
             {
                 drawCenteredString(matrixStack, font, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, textColorHovered);
@@ -50,7 +78,8 @@ public class SimpleButton extends ButtonNoHotkey
         }
         else
         {
-            fill(matrixStack, x, y, x + width, y + height, 0xFF404040);
+            fill(matrixStack, x, y, x + width, y + height, borderColor);
+            if (buttonColor != borderColor) fill(matrixStack, x + 1, y + 1, x + width - 1, y + height - 1, buttonColor);
             drawCenteredString(matrixStack, font, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, textColorDisabled);
             if (isHovered()) renderToolTip(matrixStack, mouseX, mouseY);
         }

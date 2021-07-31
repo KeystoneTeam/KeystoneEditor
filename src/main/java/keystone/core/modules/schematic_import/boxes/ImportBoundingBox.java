@@ -1,5 +1,6 @@
 package keystone.core.modules.schematic_import.boxes;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import keystone.api.Keystone;
 import keystone.core.math.RayTracing;
 import keystone.core.modules.WorldModifierModules;
@@ -16,9 +17,12 @@ import keystone.core.renderer.common.models.SelectableBoundingBox;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Mirror;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
+
+import java.util.Map;
 
 public class ImportBoundingBox extends SelectableBoundingBox
 {
@@ -183,9 +187,9 @@ public class ImportBoundingBox extends SelectableBoundingBox
         super.move(newMin);
     }
 
-    public void place()
+    public void place(Map<ResourceLocation, Boolean> extensionsToPlace)
     {
-        schematic.place(new WorldModifierModules(), getMinCoords().toBlockPos(), rotation, mirror, scale);
+        schematic.place(new WorldModifierModules(), getMinCoords().toBlockPos(), rotation, mirror, scale, extensionsToPlace);
     }
 
     private void updateBounds()

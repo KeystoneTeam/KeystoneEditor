@@ -117,9 +117,9 @@ public class SelectionNudgeScreen extends KeystoneOverlay
             updateSize();
         }, NudgeButton.SELECTION_HISTORY_SUPPLIER);
 
-        this.nudgeBox.setColors(0x80C0C0C0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
-        this.nudgeCorner1.setColors(0x800000FF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
-        this.nudgeCorner2.setColors(0x80FFFF00, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
+        this.nudgeBox.setColors(0x80008000, 0x80008000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
+        this.nudgeCorner1.setColors(0x800000FF, 0x800000FF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
+        this.nudgeCorner2.setColors(0x80FFFF00, 0x80FFFF00, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
 
         addButton(this.nudgeBox);
         addButton(this.nudgeCorner1);

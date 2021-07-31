@@ -71,7 +71,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
         brushModule = Keystone.getModule(BrushModule.class);
 
         // Calculate panel size
-        panelMaxX = KeystoneHotbar.getX() - 5;
+        panelMaxX = Math.min(KeystoneHotbar.getX() - 5, 280);
         brushVariablesList = new FieldWidgetList(brushModule::getBrushOperation, PADDING, panelMaxX - 2 * PADDING, this::disableWidgets, this::restoreWidgets);
         brushVariablesList.bake();
         int centerHeight = height / 2;

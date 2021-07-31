@@ -81,6 +81,9 @@
   "keystone.schematic_import.scale.tooltip": "Scale all import boxes",
   "keystone.schematic_import.import.tooltip": "Place all imported schematics. Shortcut: Enter",
 
+  "keystone.biomes.shouldPlace": "Place Biomes",
+  "keystone.structure_voids.shouldPlace": "Place Structure Voids",
+
   "keystone.file_browser.fileName": "File Name",
   "keystone.file_browser.saveFile": "Save File",
   "keystone.file_browser.open": "Open",

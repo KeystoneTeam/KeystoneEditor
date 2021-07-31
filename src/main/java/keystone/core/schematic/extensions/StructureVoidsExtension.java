@@ -36,7 +36,10 @@ public class StructureVoidsExtension implements ISchematicExtension
         List<BlockPos> structureVoidsList = new ArrayList<>();
         bounds.forEachCoordinate((x, y, z) ->
         {
-            if (blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED).getMinecraftBlock().is(Blocks.STRUCTURE_VOID)) structureVoidsList.add(new BlockPos(x, y, z));
+            if (blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED).getMinecraftBlock().is(Blocks.STRUCTURE_VOID))
+            {
+                structureVoidsList.add(new BlockPos(x - bounds.minX, y - bounds.minY, z - bounds.minZ));
+            }
         });
 
         if (structureVoidsList.size() > 0)
@@ -94,7 +97,7 @@ public class StructureVoidsExtension implements ISchematicExtension
         Block structureVoid = new Block(Blocks.STRUCTURE_VOID.defaultBlockState());
         for (BlockPos pos : structureVoids)
         {
-            BlockPos oriented = BlockPosMath.getOrientedBlockPos(pos, schematic.getSize(), rotation, mirror, scale);
+            BlockPos oriented = BlockPosMath.getOrientedBlockPos(pos, schematic.getSize(), rotation, mirror, scale).offset(anchor);
             worldModifiers.blocks.setBlock(oriented.getX(), oriented.getY(), oriented.getZ(), structureVoid);
         }
     }

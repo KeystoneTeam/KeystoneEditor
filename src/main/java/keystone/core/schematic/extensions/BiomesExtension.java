@@ -36,7 +36,7 @@ public class BiomesExtension implements ISchematicExtension
         bounds.forEachCoordinate((x, y, z) ->
         {
             if (blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED).getMinecraftBlock().is(Blocks.STRUCTURE_VOID)) biomesList.add(null);
-            else biomesList.add(world.getBiome(new BlockPos(x, y, z)));
+            else biomesList.add(world.getBiome(new BlockPos(x - bounds.minX, y - bounds.minY, z - bounds.minZ)));
         });
 
         if (biomesList.size() > 0)
@@ -119,7 +119,7 @@ public class BiomesExtension implements ISchematicExtension
             CompoundNBT biomeNBT = biomesNBT.getCompound(i);
             ListNBT posNBT = biomeNBT.getList("pos", Constants.NBT.TAG_INT);
             int index = posNBT.getInt(2) + posNBT.getInt(1) * size.getZ() + posNBT.getInt(0) * size.getZ() * size.getY();
-            biomes[i] = palette.get(biomeNBT.getInt("biome"));
+            biomes[index] = palette.get(biomeNBT.getInt("biome"));
         }
 
         // Build Extension

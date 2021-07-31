@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 public class HotbarButton extends ButtonNoHotkey
 {
-    public static final float SCALE = 1.5f;
+    public static final float SCALE = 2f;
     private static final ResourceLocation selectionTexture = new ResourceLocation("keystone:textures/gui/hotbar.png");
 
     private Minecraft mc;

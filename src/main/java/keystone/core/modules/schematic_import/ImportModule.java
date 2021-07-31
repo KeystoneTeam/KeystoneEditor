@@ -21,6 +21,7 @@ import keystone.core.renderer.common.models.Coords;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
 import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -29,6 +30,7 @@ import org.lwjgl.glfw.GLFW;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ImportModule implements IKeystoneModule
 {
@@ -73,8 +75,7 @@ public class ImportModule implements IKeystoneModule
             if (event.getKey() == GLFW.GLFW_KEY_ESCAPE) resetModule();
             else if (importBoxes.size() > 0)
             {
-                if (event.getKey() == GLFW.GLFW_KEY_ENTER || event.getKey() == GLFW.GLFW_KEY_KP_ENTER) placeAll();
-                else if (event.getKey() == GLFW.GLFW_KEY_R) rotateAll();
+                if (event.getKey() == GLFW.GLFW_KEY_R) rotateAll();
                 else if (event.getKey() == GLFW.GLFW_KEY_M) mirrorAll();
             }
         }
@@ -166,7 +167,7 @@ public class ImportModule implements IKeystoneModule
 
         for (ImportBoundingBox importBox : importBoxes) importBox.setScale(scale);
     }
-    public void placeAll()
+    public void placeAll(Map<ResourceLocation, Boolean> extensionsToPlace)
     {
         if (importBoxes.size() == 0) return;
 
@@ -175,7 +176,7 @@ public class ImportModule implements IKeystoneModule
             SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
 
             historyModule.tryBeginHistoryEntry();
-            importBoxes.forEach(importBox -> importBox.place());
+            importBoxes.forEach(importBox -> importBox.place(extensionsToPlace));
 
             List<BoundingBox> boxes = new ArrayList<>(importBoxes.size());
             importBoxes.forEach(box -> boxes.add(box.getBoundingBox()));
