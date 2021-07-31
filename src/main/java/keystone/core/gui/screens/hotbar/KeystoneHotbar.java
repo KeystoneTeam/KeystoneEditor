@@ -88,7 +88,6 @@ public class KeystoneHotbar extends KeystoneOverlay
                 },
                 new HotbarButton(this, KeystoneHotbarSlot.SPAWN,     getSlotX(6), offsetY + 3)
         };
-        hotbarButtons[2].active = false; // Clone
         hotbarButtons[6].active = false; // Spawn
         for (HotbarButton button : hotbarButtons) addButton(button);
 

@@ -3,11 +3,12 @@ package keystone.core.modules.schematic_import;
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.api.wrappers.coordinates.BoundingBox;
+import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.gui.screens.file_browser.OpenFilesScreen;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
-import keystone.core.gui.screens.schematic_import.ImportScreen;
+import keystone.core.gui.screens.schematics.ImportScreen;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
@@ -109,6 +110,19 @@ public class ImportModule implements IKeystoneModule
         this.importBoxes.add(ImportBoundingBox.create(minPosition, schematic));
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.IMPORT);
         ImportScreen.open();
+    }
+    public void addCloneImportBox(KeystoneSchematic schematic, Coords minPosition)
+    {
+        this.importBoxes.add(ImportBoundingBox.create(minPosition, schematic));
+    }
+    public void setCloneImportBoxes(KeystoneSchematic schematic, Coords minPosition, Vector3i offset, int repeat)
+    {
+        importBoxes.forEach(importBox -> ghostBlocksModule.releaseWorld(importBox.getGhostBlocks()));
+        this.importBoxes.clear();
+        for (int i = 1; i <= repeat; i++)
+        {
+            this.importBoxes.add(ImportBoundingBox.create(minPosition.add(offset.x * i, offset.y * i, offset.z * i), schematic));
+        }
     }
     //endregion
     //region Import Box Functions

@@ -1,4 +1,4 @@
-package keystone.core.gui.screens.schematic_import;
+package keystone.core.gui.screens.schematics;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;

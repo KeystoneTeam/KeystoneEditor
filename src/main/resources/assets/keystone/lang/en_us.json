@@ -12,6 +12,7 @@
   "keystone.screen.filterPanel": "Filter panel",
   "keystone.screen.brushPanel": "Brush panel",
   "keystone.screen.import": "Import schematic panel",
+  "keystone.screen.clone": "Clone selection panel",
   "keystone.screen.hotbar": "Keystone hotbar",
 
   "keystone.done": "Done",
@@ -32,7 +33,7 @@
 
   "keystone.hotbar.selection": "Selection",
   "keystone.hotbar.brush": "Brush",
-  "keystone.hotbar.clone": "Clone (WIP)",
+  "keystone.hotbar.clone": "Clone",
   "keystone.hotbar.fill": "Fill",
   "keystone.hotbar.filter": "Filter",
   "keystone.hotbar.import": "Import",
@@ -83,6 +84,13 @@
 
   "keystone.biomes.shouldPlace": "Place Biomes",
   "keystone.structure_voids.shouldPlace": "Place Structure Voids",
+
+  "keystone.clone.offsetX": "X Offset",
+  "keystone.clone.offsetY": "Y Offset",
+  "keystone.clone.offsetZ": "Z Offset",
+  "keystone.clone.repeat": "Repeat",
+  "keystone.clone.clone": "Clone",
+  "keystone.clone.clone.tooltip": "Perform the clone operation. Shortcut: Enter",
 
   "keystone.file_browser.fileName": "File Name",
   "keystone.file_browser.saveFile": "Save File",
