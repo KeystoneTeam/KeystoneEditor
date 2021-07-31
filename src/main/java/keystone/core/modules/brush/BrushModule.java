@@ -6,7 +6,7 @@ import keystone.core.events.KeystoneInputEvent;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.modules.IKeystoneModule;
-import keystone.core.modules.blocks.BlocksModule;
+import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.brush.boxes.BrushPositionBox;
 import keystone.core.modules.brush.providers.BrushPositionBoxProvider;
 import keystone.core.modules.brush.providers.BrushPreviewBoxProvider;
@@ -29,7 +29,7 @@ public class BrushModule implements IKeystoneModule
     public static final int IMMEDIATE_MODE_COOLDOWN_TICKS = 5;
 
     private HistoryModule historyModule;
-    private BlocksModule blocksModule;
+    private WorldModifierModules worldModifiers;
 
     private IBoundingBoxProvider[] providers;
     private BrushOperation brushOperation;
@@ -72,7 +72,7 @@ public class BrushModule implements IKeystoneModule
     public void postInit()
     {
         historyModule = Keystone.getModule(HistoryModule.class);
-        blocksModule = Keystone.getModule(BlocksModule.class);
+        worldModifiers = new WorldModifierModules();
     }
     @Override
     public boolean isEnabled() { return KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.BRUSH; }
@@ -224,7 +224,7 @@ public class BrushModule implements IKeystoneModule
         {
             if (starting)
             {
-                if (blocksModule.isEnabled()) historyModule.beginHistoryEntry();
+                if (worldModifiers.blocks.isEnabled()) historyModule.beginHistoryEntry();
                 else
                 {
                     brushPositions.clear();
@@ -254,7 +254,7 @@ public class BrushModule implements IKeystoneModule
             Coords min = immediateModePosition.sub(brushSize[0] / 2, brushSize[1] / 2, brushSize[2] / 2);
             Coords max = min.add(brushSize[0] - 1, brushSize[1] - 1, brushSize[2] - 1);
             executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, immediateModeShapeMask, iteration);
-            if (iteration < iterations - 1) blocksModule.swapBuffers(true);
+            if (iteration < iterations - 1) worldModifiers.blocks.swapBuffers(true);
         }
 
         lastImmediateModePosition = immediateModePosition;
@@ -275,7 +275,7 @@ public class BrushModule implements IKeystoneModule
                 executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, shapeMask, iteration);
             }
             processedBlocks.clear();
-            if (iteration < iterations - 1) blocksModule.swapBuffers(true);
+            if (iteration < iterations - 1) worldModifiers.blocks.swapBuffers(true);
         }
 
         brushPositions.clear();
@@ -294,7 +294,7 @@ public class BrushModule implements IKeystoneModule
 
                     if (!processedBlocks.contains(pos) && shapeMask.test(nPos.getX(), nPos.getY(), nPos.getZ()))
                     {
-                        if (brushOperation.process(x, y, z, blocksModule, iteration)) processedBlocks.add(pos);
+                        if (brushOperation.process(x, y, z, worldModifiers, iteration)) processedBlocks.add(pos);
                     }
                 }
             }

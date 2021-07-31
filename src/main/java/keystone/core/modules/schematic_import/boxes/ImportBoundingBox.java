@@ -2,8 +2,7 @@ package keystone.core.modules.schematic_import.boxes;
 
 import keystone.api.Keystone;
 import keystone.core.math.RayTracing;
-import keystone.core.modules.blocks.BlocksModule;
-import keystone.core.modules.entities.EntitiesModule;
+import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
@@ -186,9 +185,7 @@ public class ImportBoundingBox extends SelectableBoundingBox
 
     public void place()
     {
-        BlocksModule blocksModule = Keystone.getModule(BlocksModule.class);
-        EntitiesModule entitiesModule = Keystone.getModule(EntitiesModule.class);
-        schematic.place(getMinCoords().toBlockPos(), blocksModule, entitiesModule, rotation, mirror, scale);
+        schematic.place(new WorldModifierModules(), getMinCoords().toBlockPos(), rotation, mirror, scale);
     }
 
     private void updateBounds()

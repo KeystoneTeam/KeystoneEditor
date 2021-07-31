@@ -9,7 +9,6 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.screens.schematic_import.ImportScreen;
 import keystone.core.modules.IKeystoneModule;
-import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
@@ -35,7 +34,6 @@ public class ImportModule implements IKeystoneModule
 {
     private List<ImportBoundingBox> importBoxes;
     private HistoryModule historyModule;
-    private BlocksModule blocksModule;
     private GhostBlocksModule ghostBlocksModule;
 
     public ImportModule()
@@ -55,7 +53,6 @@ public class ImportModule implements IKeystoneModule
     public void postInit()
     {
         this.historyModule = Keystone.getModule(HistoryModule.class);
-        this.blocksModule = Keystone.getModule(BlocksModule.class);
         this.ghostBlocksModule = Keystone.getModule(GhostBlocksModule.class);
     }
     @Override

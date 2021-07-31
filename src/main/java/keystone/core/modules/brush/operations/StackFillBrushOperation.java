@@ -4,7 +4,7 @@ import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockPalette;
-import keystone.core.modules.blocks.BlocksModule;
+import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.brush.BrushOperation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -21,10 +21,10 @@ public class StackFillBrushOperation extends BrushOperation
         return new TranslationTextComponent("keystone.brush.stackFill");
     }
     @Override
-    public boolean process(int x, int y, int z, BlocksModule blocks, int iteration)
+    public boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration)
     {
         int newY = y;
-        Block current = blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
+        Block current = worldModifiers.blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
         if (current.isAir())
         {
             if (gravity)
@@ -32,11 +32,11 @@ public class StackFillBrushOperation extends BrushOperation
                 while (current.isAir())
                 {
                     newY--;
-                    current = blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
+                    current = worldModifiers.blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
                 }
                 newY++;
             }
-            else if (blocks.getBlock(x, newY - 1, z, RetrievalMode.CURRENT).isAir()) return true;
+            else if (worldModifiers.blocks.getBlock(x, newY - 1, z, RetrievalMode.CURRENT).isAir()) return true;
         }
         else
         {
@@ -45,13 +45,13 @@ public class StackFillBrushOperation extends BrushOperation
                 while (!current.isAir())
                 {
                     newY++;
-                    current = blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
+                    current = worldModifiers.blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
                 }
             }
             else return true;
         }
 
-        blocks.setBlock(x, newY, z, palette.randomBlock());
+        worldModifiers.blocks.setBlock(x, newY, z, palette.randomBlock());
         return true;
     }
 }

@@ -27,6 +27,7 @@ import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.selection.renderers.HighlightBoxRenderer;
 import keystone.core.modules.selection.renderers.SelectionBoxRenderer;
 import keystone.core.modules.world_cache.WorldCacheModule;
+import keystone.core.schematic.extensions.BiomesExtension;
 import keystone.core.schematic.extensions.StructureVoidsExtension;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
 import net.minecraft.entity.EntityType;
@@ -124,6 +125,7 @@ public class KeystoneMod
     }
     private void registerDefaultSchematicExtensions(final KeystoneEvent.RegisterSchematicExtensions event)
     {
+        event.register(new BiomesExtension());
         event.register(new StructureVoidsExtension());
     }
     private void onWorldLoaded(final EntityJoinWorldEvent event)

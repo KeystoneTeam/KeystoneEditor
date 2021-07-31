@@ -1,7 +1,7 @@
 package keystone.core.modules.brush;
 
 import keystone.core.gui.widgets.inputs.fields.EditableObject;
-import keystone.core.modules.blocks.BlocksModule;
+import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.brush.operations.ErodeBrushOperation;
 import keystone.core.modules.brush.operations.FillBrushOperation;
 import keystone.core.modules.brush.operations.GravityBrushOperation;
@@ -31,7 +31,7 @@ public abstract class BrushOperation extends EditableObject
 
     public abstract ITextComponent getName();
     public int iterations() { return 1; }
-    public abstract boolean process(int x, int y, int z, BlocksModule blocks, int iteration);
+    public abstract boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration);
 
     public final BrushOperation getNextOperation() { return VALUES.get((listIndex + 1) % VALUES.size()); }
 }

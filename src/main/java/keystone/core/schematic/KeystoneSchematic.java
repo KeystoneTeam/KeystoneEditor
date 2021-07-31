@@ -6,8 +6,7 @@ import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.events.SchematicEvent;
 import keystone.core.math.BlockPosMath;
-import keystone.core.modules.blocks.BlocksModule;
-import keystone.core.modules.entities.EntitiesModule;
+import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
@@ -57,11 +56,10 @@ public class KeystoneSchematic
     /**
      * Create a schematic from a selection box
      * @param box The {@link keystone.core.modules.selection.boxes.SelectionBoundingBox} to create the schematic from
-     * @param blocksModule The {@link keystone.core.modules.blocks.BlocksModule} that the schematic contents is read from
-     * @param entitiesModule The {@link EntitiesModule} that the schematic contents is read from
+     * @param worldModifiers The {@link keystone.core.modules.WorldModifierModules} that the schematic contents is read from
      * @return The generated {@link keystone.core.schematic.KeystoneSchematic}
      */
-    public static KeystoneSchematic createFromSelection(SelectionBoundingBox box, BlocksModule blocksModule, EntitiesModule entitiesModule)
+    public static KeystoneSchematic createFromSelection(SelectionBoundingBox box, WorldModifierModules worldModifiers)
     {
         // Get size
         Vector3i size = new Vector3i(box.getMaxCoords().getX() - box.getMinCoords().getX() + 1,
@@ -77,7 +75,7 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    blocks[i] = blocksModule.getBlock(x + box.getMinCoords().getX(), y + box.getMinCoords().getY(), z + box.getMinCoords().getZ(), RetrievalMode.ORIGINAL);
+                    blocks[i] = worldModifiers.blocks.getBlock(x + box.getMinCoords().getX(), y + box.getMinCoords().getY(), z + box.getMinCoords().getZ(), RetrievalMode.ORIGINAL);
                     if (blocks[i].getMinecraftBlock().is(Blocks.STRUCTURE_VOID)) blocks[i] = null;
                     i++;
                 }
@@ -85,7 +83,7 @@ public class KeystoneSchematic
         }
 
         // Get entities
-        List<Entity> entityList = entitiesModule.getEntities(box.getBoundingBox(), RetrievalMode.ORIGINAL);
+        List<Entity> entityList = worldModifiers.entities.getEntities(box.getBoundingBox(), RetrievalMode.ORIGINAL);
         Entity[] entities = new Entity[entityList.size()];
         entities = entityList.toArray(entities);
         for (Entity entity : entities)
@@ -143,7 +141,8 @@ public class KeystoneSchematic
     /**
      * Get the {@link Block} at a relative block position in the schematic
      * @param relativePos The relative block position
-     * @return The {@link Block} at the position, or air if it is outside the schematic
+     * @return The {@link Block} at the position, or air if it is outside the schematic. Can return
+     * null if there is no block at that location
      */
     public Block getBlock(BlockPos relativePos)
     {
@@ -253,36 +252,37 @@ public class KeystoneSchematic
             }
         }
 
-        extensions.values().forEach(extension -> extension.place(ghostWorld));
+        extensions.values().forEach(extension ->
+        {
+            if (extension.placeByDefault()) extension.place(this, ghostWorld);
+        });
     }
 
     /**
      * Place the schematic at a given {@link BlockPos} in a given {@link World}
+     * @param worldModifiers The {@link WorldModifierModules} to place the schematic with
      * @param anchor The minimum {@link BlockPos} to place the schematic at
-     * @param blocksModule The {@link BlocksModule} to place the schematic with
-     * @param entitiesModule The {@link EntitiesModule} to place the schematic with
      */
-    public void place(BlockPos anchor, BlocksModule blocksModule, EntitiesModule entitiesModule)
+    public void place(WorldModifierModules worldModifiers, BlockPos anchor)
     {
-        place(anchor, blocksModule, entitiesModule, Rotation.NONE, Mirror.NONE, 1);
+        place(worldModifiers, anchor, Rotation.NONE, Mirror.NONE, 1);
     }
     /**
      * Place the schematic at a given {@link BlockPos} in a given {@link World}
+     * @param worldModifiers The {@link WorldModifierModules} to place the schematic with
      * @param anchor The minimum {@link BlockPos} to place the schematic at
-     * @param blocksModule The {@link BlocksModule} to place the schematic with
-     * @param entitiesModule The {@link EntitiesModule} to place the schematic with
      * @param rotation The {@link Rotation} of the schematic
      * @param mirror The {@link Mirror} of the schematic
      * @param scale The scale of the schematic
      */
-    public void place(BlockPos anchor, BlocksModule blocksModule, EntitiesModule entitiesModule, Rotation rotation, Mirror mirror, int scale)
+    public void place(WorldModifierModules worldModifiers, BlockPos anchor, Rotation rotation, Mirror mirror, int scale)
     {
         int clampedScale = Math.max(scale, 1);
 
         for (Entity entityTemplate : entities)
         {
             Entity oriented = entityTemplate.getOrientedEntity(Vector3d.atLowerCornerOf(anchor), rotation, mirror, size, clampedScale);
-            entitiesModule.setEntity(oriented);
+            worldModifiers.entities.setEntity(oriented);
         }
 
         int i = 0;
@@ -311,8 +311,8 @@ public class KeystoneSchematic
                                 BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, clampedScale).offset(anchor);
                                 Block block = scaleEvent.getBlock(sx, sy, sz).clone();
 
-                                block.setMinecraftBlock(block.getMinecraftBlock().rotate(blocksModule.getWorld(), worldPos, rotation).mirror(mirror));
-                                blocksModule.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), block);
+                                block.setMinecraftBlock(block.getMinecraftBlock().rotate(worldModifiers.blocks.getWorld(), worldPos, rotation).mirror(mirror));
+                                worldModifiers.blocks.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), block);
                             }
                         }
                     }
@@ -321,6 +321,9 @@ public class KeystoneSchematic
             }
         }
 
-        extensions.values().forEach(extension -> extension.place(anchor, blocksModule, entitiesModule, rotation, mirror, clampedScale));
+        extensions.values().forEach(extension ->
+        {
+            if (extension.placeByDefault()) extension.place(this, worldModifiers, anchor, rotation, mirror, clampedScale);
+        });
     }
 }

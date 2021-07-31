@@ -14,9 +14,8 @@ import keystone.core.gui.screens.file_browser.SaveFileScreen;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.SimpleButton;
-import keystone.core.modules.blocks.BlocksModule;
+import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.clipboard.ClipboardModule;
-import keystone.core.modules.entities.EntitiesModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
@@ -177,9 +176,7 @@ public class SelectionScreen extends KeystoneOverlay
         SaveFileScreen.saveFile("kschem", KeystoneDirectories.getSchematicsDirectory(), true, file ->
                 Keystone.runOnMainThread(() ->
                 {
-                    BlocksModule blocks = Keystone.getModule(BlocksModule.class);
-                    EntitiesModule entities = Keystone.getModule(EntitiesModule.class);
-                    KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(SelectionNudgeScreen.getSelectionToNudge(), blocks, entities);
+                    KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(SelectionNudgeScreen.getSelectionToNudge(), new WorldModifierModules());
                     SchematicLoader.saveSchematic(schematic, file);
                 }));
     }

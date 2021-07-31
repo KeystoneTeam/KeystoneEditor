@@ -136,10 +136,10 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         {
             ISchematicExtension extension = schematic.getExtension(id);
             if (extension == null) continue;
-            CompoundNBT namespaceNBT = nbt.contains(id.getNamespace(), Constants.NBT.TAG_COMPOUND) ? nbt.getCompound(id.getNamespace()) : new CompoundNBT();
+            CompoundNBT namespaceNBT = extensionsNBT.contains(id.getNamespace(), Constants.NBT.TAG_COMPOUND) ? extensionsNBT.getCompound(id.getNamespace()) : new CompoundNBT();
 
             CompoundNBT extensionNBT = new CompoundNBT();
-            extension.serialize(extensionNBT);
+            extension.serialize(schematic, extensionNBT);
             namespaceNBT.put(id.getPath(), extensionNBT);
             extensionsNBT.put(id.getNamespace(), namespaceNBT);
         }
@@ -194,7 +194,7 @@ public class KeystoneSchematicFormat implements ISchematicFormat
                 ResourceLocation id = new ResourceLocation(namespace, path);
                 if (!dataExtensions.containsKey(id)) continue;
 
-                ISchematicExtension extension = dataExtensions.get(id).deserialize(namespaceNBT.getCompound(path));
+                ISchematicExtension extension = dataExtensions.get(id).deserialize(size, blocks, entities, namespaceNBT.getCompound(path));
                 extensions.put(id, extension);
             }
         }

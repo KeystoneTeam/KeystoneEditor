@@ -5,7 +5,7 @@ import keystone.api.variables.Hook;
 import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.blocks.Block;
-import keystone.core.modules.blocks.BlocksModule;
+import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.brush.BrushOperation;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -59,17 +59,17 @@ public class ErodeBrushOperation extends BrushOperation
         return strength * ((melt ? 1 : 0) + (fill ? 1 : 0));
     }
     @Override
-    public boolean process(int x, int y, int z, BlocksModule blocks, int iteration)
+    public boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration)
     {
-        if (iteration < strength * (melt ? 1 : 0)) meltIteration(x, y, z, blocks);
-        else fillIteration(x, y, z, blocks);
+        if (iteration < strength * (melt ? 1 : 0)) meltIteration(x, y, z, worldModifiers);
+        else fillIteration(x, y, z, worldModifiers);
 
         return true;
     }
 
-    private void meltIteration(int x, int y, int z, BlocksModule blocks)
+    private void meltIteration(int x, int y, int z, WorldModifierModules worldModifiers)
     {
-        Block currentBlock = blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED);
+        Block currentBlock = worldModifiers.blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED);
         if (currentBlock.isAirOrLiquid()) return;
 
         neighborBlockCounts.clear();
@@ -80,7 +80,7 @@ public class ErodeBrushOperation extends BrushOperation
         for (Direction direction : Direction.values())
         {
             BlockPos neighborPos = new BlockPos(x, y, z).relative(direction);
-            Block neighbor = blocks.getBlock(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
+            Block neighbor = worldModifiers.blocks.getBlock(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
             if (!neighbor.isAirOrLiquid()) continue;
 
             total++;
@@ -97,11 +97,11 @@ public class ErodeBrushOperation extends BrushOperation
             neighborBlockCounts.put(neighbor, count);
         }
 
-        if (total >= meltFaces) blocks.setBlock(x, y, z, highestBlock);
+        if (total >= meltFaces) worldModifiers.blocks.setBlock(x, y, z, highestBlock);
     }
-    private void fillIteration(int x, int y, int z, BlocksModule blocks)
+    private void fillIteration(int x, int y, int z, WorldModifierModules worldModifiers)
     {
-        Block currentBlock = blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED);
+        Block currentBlock = worldModifiers.blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED);
         if (!currentBlock.isAirOrLiquid()) return;
 
         neighborBlockCounts.clear();
@@ -112,7 +112,7 @@ public class ErodeBrushOperation extends BrushOperation
         for (Direction direction : Direction.values())
         {
             BlockPos neighborPos = new BlockPos(x, y, z).relative(direction);
-            Block neighbor = blocks.getBlock(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
+            Block neighbor = worldModifiers.blocks.getBlock(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
             if (neighbor.isAirOrLiquid()) continue;
 
             total++;
@@ -129,7 +129,7 @@ public class ErodeBrushOperation extends BrushOperation
             neighborBlockCounts.put(neighbor, count);
         }
 
-        if (total >= meltFaces) blocks.setBlock(x, y, z, highestBlock);
+        if (total >= meltFaces) worldModifiers.blocks.setBlock(x, y, z, highestBlock);
     }
 
     public void onPresetChanged()

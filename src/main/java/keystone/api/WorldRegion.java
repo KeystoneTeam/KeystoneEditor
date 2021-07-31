@@ -8,8 +8,7 @@ import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.api.wrappers.entities.Entity;
-import keystone.core.modules.blocks.BlocksModule;
-import keystone.core.modules.entities.EntitiesModule;
+import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.common.models.Coords;
 
@@ -27,8 +26,7 @@ public class WorldRegion
     //endregion
 
     private final WorldCacheModule worldCache;
-    private final BlocksModule blocks;
-    private final EntitiesModule entities;
+    private final WorldModifierModules worldModifiers;
 
     public boolean allowBlocksOutside = false;
 
@@ -40,8 +38,7 @@ public class WorldRegion
     public WorldRegion(Coords min, Coords max)
     {
         this.worldCache = Keystone.getModule(WorldCacheModule.class);
-        this.blocks = Keystone.getModule(BlocksModule.class);
-        this.entities = Keystone.getModule(EntitiesModule.class);
+        this.worldModifiers = new WorldModifierModules();
 
         this.min = new BlockPos(min.getX(), min.getY(), min.getZ());
         this.max = new BlockPos(max.getX(), max.getY(), max.getZ());
@@ -100,7 +97,7 @@ public class WorldRegion
      * @param z The z coordinate
      * @return The block at the given coordinates
      */
-    public Block getBlock(int x, int y, int z) { return blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED); }
+    public Block getBlock(int x, int y, int z) { return worldModifiers.blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED); }
 
     /**
      * Get the block at a position in the filter box
@@ -112,7 +109,7 @@ public class WorldRegion
      */
     public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
     {
-        return blocks.getBlock(x, y, z, retrievalMode);
+        return worldModifiers.blocks.getBlock(x, y, z, retrievalMode);
     }
 
     /**
@@ -153,7 +150,7 @@ public class WorldRegion
     {
         if (allowBlocksOutside || isPositionInBox(x, y, z))
         {
-            blocks.setBlock(x, y, z, block);
+            worldModifiers.blocks.setBlock(x, y, z, block);
             return true;
         }
         else return false;
@@ -165,7 +162,7 @@ public class WorldRegion
      */
     public void setEntity(Entity entity)
     {
-        this.entities.setEntity(entity);
+        worldModifiers.entities.setEntity(entity);
     }
 
     /**
@@ -210,6 +207,6 @@ public class WorldRegion
      */
     public void forEachEntity(EntityConsumer consumer, RetrievalMode retrievalMode)
     {
-        this.entities.getEntities(this.bounds, retrievalMode).forEach(entity -> consumer.accept(entity));
+        worldModifiers.entities.getEntities(this.bounds, retrievalMode).forEach(entity -> consumer.accept(entity));
     }
 }
