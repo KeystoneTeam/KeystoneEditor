@@ -9,12 +9,17 @@ import keystone.core.math.BlockPosMath;
 import keystone.core.modules.blocks.BlocksModule;
 import keystone.core.modules.entities.EntitiesModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
+import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
+import keystone.core.renderer.client.Player;
+import keystone.core.schematic.extensions.ISchematicExtension;
+import keystone.core.schematic.formats.KeystoneSchematicFormat;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Mirror;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
@@ -22,8 +27,7 @@ import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -35,17 +39,19 @@ public class KeystoneSchematic
     private Vector3i size;
     private Block[] blocks;
     private Entity[] entities;
+    private Map<ResourceLocation, ISchematicExtension> extensions;
 
     /**
      * @param size The size of the schematic
      * @param blocks The {@link Block} contents of the schematic
      */
-    public KeystoneSchematic(Vector3i size, Block[] blocks, Entity[] entities)
+    public KeystoneSchematic(Vector3i size, Block[] blocks, Entity[] entities, Map<ResourceLocation, ISchematicExtension> extensions)
     {
         this.size = size;
         this.blocks = blocks;
         this.entities = entities == null ? new Entity[0] : entities;
         for (Entity entity : this.entities) entity.breakMinecraftEntityConnection();
+        this.extensions = extensions;
     }
 
     /**
@@ -72,6 +78,7 @@ public class KeystoneSchematic
                 for (int z = 0; z < size.getZ(); z++)
                 {
                     blocks[i] = blocksModule.getBlock(x + box.getMinCoords().getX(), y + box.getMinCoords().getY(), z + box.getMinCoords().getZ(), RetrievalMode.ORIGINAL);
+                    if (blocks[i].getMinecraftBlock().is(Blocks.STRUCTURE_VOID)) blocks[i] = null;
                     i++;
                 }
             }
@@ -88,7 +95,8 @@ public class KeystoneSchematic
         }
 
         // Create schematic from data
-        return new KeystoneSchematic(size, blocks, entities);
+        World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimensionId());
+        return new KeystoneSchematic(size, blocks, entities, KeystoneSchematicFormat.createExtensions(world, box.getBoundingBox()));
     }
 
     /**
@@ -97,7 +105,7 @@ public class KeystoneSchematic
      */
     public KeystoneSchematic clone()
     {
-        return new KeystoneSchematic(new Vector3i(size.getX(), size.getY(), size.getZ()), Arrays.copyOf(blocks, blocks.length), Arrays.copyOf(entities, entities.length));
+        return new KeystoneSchematic(new Vector3i(size.getX(), size.getY(), size.getZ()), Arrays.copyOf(blocks, blocks.length), Arrays.copyOf(entities, entities.length), Collections.unmodifiableMap(new HashMap<>(extensions)));
     }
 
     /**
@@ -129,6 +137,10 @@ public class KeystoneSchematic
      */
     public int getEntityCount() { return entities.length; }
     /**
+     * @return A Set containing the Resource Locations of all extensions that are added to this schematic
+     */
+    public Set<ResourceLocation> getExtensionIDs() { return extensions.keySet(); }
+    /**
      * Get the {@link Block} at a relative block position in the schematic
      * @param relativePos The relative block position
      * @return The {@link Block} at the position, or air if it is outside the schematic
@@ -138,6 +150,14 @@ public class KeystoneSchematic
         int index = getIndex(relativePos);
         if (index < 0) return new Block(Blocks.AIR.defaultBlockState());
         else return blocks[getIndex(relativePos)];
+    }
+    /**
+     * @param id The Resource Location of the extension
+     * @return The {@link ISchematicExtension Extension} to this schematic with a given ID
+     */
+    public ISchematicExtension getExtension(ResourceLocation id)
+    {
+        return extensions.get(id);
     }
     /**
      * Run a function for every block position and state in the schematic
@@ -152,6 +172,11 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
+                    if (blocks[i] == null)
+                    {
+                        i++;
+                        continue;
+                    }
                     consumer.accept(new BlockPos(x, y, z), blocks[i]);
                     i++;
                 }
@@ -166,6 +191,7 @@ public class KeystoneSchematic
     {
         for (Entity entity : entities) consumer.accept(entity);
     }
+    public void forEachExtension(Consumer<ISchematicExtension> consumer) { extensions.values().forEach(consumer); }
 
     /**
      * Place the schematic at a given {@link BlockPos} in a given {@link GhostBlocksWorld}
@@ -189,6 +215,11 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
+                    if (blocks[i] == null)
+                    {
+                        i++;
+                        continue;
+                    }
                     SchematicEvent.ScaleBlock scaleEvent = new SchematicEvent.ScaleBlock(blocks[i], scale);
                     MinecraftForge.EVENT_BUS.post(scaleEvent);
 
@@ -221,6 +252,8 @@ public class KeystoneSchematic
                 }
             }
         }
+
+        extensions.values().forEach(extension -> extension.place(ghostWorld));
     }
 
     /**
@@ -244,11 +277,11 @@ public class KeystoneSchematic
      */
     public void place(BlockPos anchor, BlocksModule blocksModule, EntitiesModule entitiesModule, Rotation rotation, Mirror mirror, int scale)
     {
-        scale = Math.max(scale, 1);
+        int clampedScale = Math.max(scale, 1);
 
         for (Entity entityTemplate : entities)
         {
-            Entity oriented = entityTemplate.getOrientedEntity(Vector3d.atLowerCornerOf(anchor), rotation, mirror, size, scale);
+            Entity oriented = entityTemplate.getOrientedEntity(Vector3d.atLowerCornerOf(anchor), rotation, mirror, size, clampedScale);
             entitiesModule.setEntity(oriented);
         }
 
@@ -259,17 +292,23 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    SchematicEvent.ScaleBlock scaleEvent = new SchematicEvent.ScaleBlock(blocks[i], scale);
+                    if (blocks[i] == null)
+                    {
+                        i++;
+                        continue;
+                    }
+
+                    SchematicEvent.ScaleBlock scaleEvent = new SchematicEvent.ScaleBlock(blocks[i], clampedScale);
                     MinecraftForge.EVENT_BUS.post(scaleEvent);
 
-                    for (int sx = 0; sx < scale; sx++)
+                    for (int sx = 0; sx < clampedScale; sx++)
                     {
-                        for (int sy = 0; sy < scale; sy++)
+                        for (int sy = 0; sy < clampedScale; sy++)
                         {
-                            for (int sz = 0; sz < scale; sz++)
+                            for (int sz = 0; sz < clampedScale; sz++)
                             {
-                                BlockPos localPos = new BlockPos(x * scale + sx, y * scale + sy, z * scale + sz);
-                                BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, scale).offset(anchor);
+                                BlockPos localPos = new BlockPos(x * clampedScale + sx, y * clampedScale + sy, z * clampedScale + sz);
+                                BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, clampedScale).offset(anchor);
                                 Block block = scaleEvent.getBlock(sx, sy, sz).clone();
 
                                 block.setMinecraftBlock(block.getMinecraftBlock().rotate(blocksModule.getWorld(), worldPos, rotation).mirror(mirror));
@@ -281,5 +320,7 @@ public class KeystoneSchematic
                 }
             }
         }
+
+        extensions.values().forEach(extension -> extension.place(anchor, blocksModule, entitiesModule, rotation, mirror, clampedScale));
     }
 }

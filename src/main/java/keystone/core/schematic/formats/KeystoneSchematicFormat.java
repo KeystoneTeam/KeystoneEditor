@@ -1,30 +1,54 @@
 package keystone.core.schematic.formats;
 
+import keystone.api.Keystone;
 import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.schematic.KeystoneSchematic;
+import keystone.core.schematic.extensions.ISchematicExtension;
 import keystone.core.utils.NBTSerializer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.*;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SharedConstants;
 import net.minecraft.util.datafix.DefaultTypeReferences;
 import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class KeystoneSchematicFormat implements ISchematicFormat
 {
-    private static final String[] EXTENSIONS = new String[] { "nbt", "kschem" };
+    private static final String[] FILE_EXTENSIONS = new String[] { "nbt", "kschem" };
+    private static Map<ResourceLocation, ISchematicExtension> dataExtensions = new HashMap<>();
 
     @Override
     public String[] getFileExtensions()
     {
-        return EXTENSIONS;
+        return FILE_EXTENSIONS;
+    }
+
+    public static void registerExtension(ISchematicExtension extension)
+    {
+        if (dataExtensions.containsKey(extension.id()))
+        {
+            Keystone.LOGGER.error("Trying to register Schematic Extension under already used id '" + extension.id().toString() + "'!");
+            return;
+        }
+        dataExtensions.put(extension.id(), extension);
+    }
+    public static Map<ResourceLocation, ISchematicExtension> createExtensions(World world, BoundingBox bounds)
+    {
+        Map<ResourceLocation, ISchematicExtension> ret = new HashMap<>();
+        for (Map.Entry<ResourceLocation, ISchematicExtension> entry : dataExtensions.entrySet())
+        {
+            ISchematicExtension extension = entry.getValue().create(world, bounds);
+            if (extension != null) ret.put(entry.getKey(), extension);
+        }
+        return Collections.unmodifiableMap(ret);
     }
 
     //region Saving
@@ -53,7 +77,6 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         // Blocks
         {
             ListNBT blocksNBT = new ListNBT();
-            int i = 0;
             schematic.forEachBlock((pos, block) ->
             {
                 CompoundNBT blockNBT = new CompoundNBT();
@@ -75,7 +98,7 @@ public class KeystoneSchematicFormat implements ISchematicFormat
                     blockNBT.put("nbt", tileEntityNBT);
                 }
 
-                blocksNBT.add(index(schematic.getSize(), new int[]{pos.getX(), pos.getY(), pos.getZ()}), blockNBT);
+                blocksNBT.add(blockNBT);
             });
             nbt.put("blocks", blocksNBT);
         }
@@ -104,6 +127,23 @@ public class KeystoneSchematicFormat implements ISchematicFormat
             });
             nbt.put("entities", entitiesNBT);
         }
+
+        // Extensions
+        List<ResourceLocation> ids = new ArrayList<>(dataExtensions.keySet());
+        ids.sort(ResourceLocation::compareNamespaced);
+        CompoundNBT extensionsNBT = new CompoundNBT();
+        for (ResourceLocation id : ids)
+        {
+            ISchematicExtension extension = schematic.getExtension(id);
+            if (extension == null) continue;
+            CompoundNBT namespaceNBT = nbt.contains(id.getNamespace(), Constants.NBT.TAG_COMPOUND) ? nbt.getCompound(id.getNamespace()) : new CompoundNBT();
+
+            CompoundNBT extensionNBT = new CompoundNBT();
+            extension.serialize(extensionNBT);
+            namespaceNBT.put(id.getPath(), extensionNBT);
+            extensionsNBT.put(id.getNamespace(), namespaceNBT);
+        }
+        nbt.put("extensions", extensionsNBT);
 
         nbt.putInt("DataVersion", SharedConstants.getCurrentVersion().getWorldVersion());
         return nbt;
@@ -135,7 +175,7 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         // Palette and Blocks
         Block[] palette = loadPalette(nbt.getList("palette", Constants.NBT.TAG_COMPOUND));
         ListNBT blocksNBT = nbt.getList("blocks", Constants.NBT.TAG_COMPOUND);
-        Block[] blocks = new Block[blocksNBT.size()];
+        Block[] blocks = new Block[size.getX() * size.getY() * size.getZ()];
         loadBlocks(size, blocks, blocksNBT, palette);
 
         // Entities
@@ -143,7 +183,23 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         Entity[] entities = new Entity[entitiesNBT.size()];
         loadEntities(entities, entitiesNBT);
 
-        return new KeystoneSchematic(size, blocks, entities);
+        // Extensions
+        Map<ResourceLocation, ISchematicExtension> extensions = new HashMap<>();
+        CompoundNBT extensionsNBT = nbt.getCompound("extensions");
+        for (String namespace : extensionsNBT.getAllKeys())
+        {
+            CompoundNBT namespaceNBT = extensionsNBT.getCompound(namespace);
+            for (String path : namespaceNBT.getAllKeys())
+            {
+                ResourceLocation id = new ResourceLocation(namespace, path);
+                if (!dataExtensions.containsKey(id)) continue;
+
+                ISchematicExtension extension = dataExtensions.get(id).deserialize(namespaceNBT.getCompound(path));
+                extensions.put(id, extension);
+            }
+        }
+
+        return new KeystoneSchematic(size, blocks, entities, extensions);
     }
 
     private Block[] loadPalette(ListNBT paletteNBT)

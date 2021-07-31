@@ -19,11 +19,9 @@ import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.entities.EntitiesModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.schematic.KeystoneSchematic;
-import keystone.core.schematic.formats.KeystoneSchematicFormat;
-import keystone.core.utils.NBTSerializer;
+import keystone.core.schematic.SchematicLoader;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -182,8 +180,7 @@ public class SelectionScreen extends KeystoneOverlay
                     BlocksModule blocks = Keystone.getModule(BlocksModule.class);
                     EntitiesModule entities = Keystone.getModule(EntitiesModule.class);
                     KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(SelectionNudgeScreen.getSelectionToNudge(), blocks, entities);
-                    CompoundNBT schematicNBT = KeystoneSchematicFormat.saveSchematic(schematic);
-                    NBTSerializer.serialize(file, schematicNBT);
+                    SchematicLoader.saveSchematic(schematic, file);
                 }));
     }
     //endregion

@@ -7,6 +7,8 @@ import net.minecraft.util.math.AxisAlignedBB;
  */
 public class BoundingBox
 {
+    public interface CoordinateConsumer { void accept(int x, int y, int z); }
+
     private AxisAlignedBB bb;
     public final double minX, minY, minZ;
     public final double maxX, maxY, maxZ;
@@ -86,5 +88,23 @@ public class BoundingBox
      * @return The size of the bounding box along the z-axis
      */
     public double getZSize() { return maxZ - minZ; }
+
+    /**
+     * Run a {@link CoordinateConsumer} for each block coordinate within the bounding box
+     * @param consumer The {@link CoordinateConsumer} to run
+     */
+    public void forEachCoordinate(CoordinateConsumer consumer)
+    {
+        for (int x = (int)minX; x < maxX; x++)
+        {
+            for (int y = (int)minY; y < maxY; y++)
+            {
+                for (int z = (int)minZ; z < maxZ; z++)
+                {
+                    consumer.accept(x, y, z);
+                }
+            }
+        }
+    }
     //endregion
 }

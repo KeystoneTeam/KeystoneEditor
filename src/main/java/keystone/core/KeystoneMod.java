@@ -27,6 +27,7 @@ import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.selection.renderers.HighlightBoxRenderer;
 import keystone.core.modules.selection.renderers.SelectionBoxRenderer;
 import keystone.core.modules.world_cache.WorldCacheModule;
+import keystone.core.schematic.extensions.StructureVoidsExtension;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -61,6 +62,7 @@ public class KeystoneMod
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultBoxes);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultModules);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultSchematicFormats);
+        MinecraftForge.EVENT_BUS.addListener(this::registerDefaultSchematicExtensions);
         MinecraftForge.EVENT_BUS.addListener(this::onWorldLoaded);
         MinecraftForge.EVENT_BUS.addListener(this::onLivingUpdate);
     }
@@ -86,6 +88,7 @@ public class KeystoneMod
         MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterBoundingBoxTypes());
         MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterModules());
         MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterSchematicFormats());
+        MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterSchematicExtensions());
         Keystone.postInit();
     }
     private void registerDefaultBoxes(final KeystoneEvent.RegisterBoundingBoxTypes event)
@@ -118,6 +121,10 @@ public class KeystoneMod
     private void registerDefaultSchematicFormats(final KeystoneEvent.RegisterSchematicFormats event)
     {
         event.register(new KeystoneSchematicFormat());
+    }
+    private void registerDefaultSchematicExtensions(final KeystoneEvent.RegisterSchematicExtensions event)
+    {
+        event.register(new StructureVoidsExtension());
     }
     private void onWorldLoaded(final EntityJoinWorldEvent event)
     {

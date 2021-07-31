@@ -8,7 +8,9 @@ import keystone.core.renderer.client.renderers.AbstractRenderer;
 import keystone.core.renderer.common.BoundingBoxType;
 import keystone.core.renderer.common.models.AbstractBoundingBox;
 import keystone.core.schematic.SchematicLoader;
+import keystone.core.schematic.extensions.ISchematicExtension;
 import keystone.core.schematic.formats.ISchematicFormat;
+import keystone.core.schematic.formats.KeystoneSchematicFormat;
 import net.minecraftforge.eventbus.api.Event;
 
 public class KeystoneEvent extends Event
@@ -45,6 +47,15 @@ public class KeystoneEvent extends Event
         public void registerAll(ISchematicFormat... formats)
         {
             for (ISchematicFormat format : formats) register(format);
+        }
+    }
+
+    public static class RegisterSchematicExtensions extends KeystoneEvent
+    {
+        public void register(ISchematicExtension extension) { KeystoneSchematicFormat.registerExtension(extension); }
+        public void registerAll(ISchematicExtension... extensions)
+        {
+            for (ISchematicExtension extension : extensions) register(extension);
         }
     }
 }
