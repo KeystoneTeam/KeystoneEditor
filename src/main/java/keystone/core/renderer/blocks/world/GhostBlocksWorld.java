@@ -39,7 +39,7 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     protected Rotation rotation;
     protected Mirror mirror;
 
-    public GhostBlocksWorld(World original)
+    public GhostBlocksWorld(World original, Rotation rotation, Mirror mirror)
     {
         super(original, new WrappedChunkProvider(WrappedChunk::new));
         this.blocks = new HashMap<>();
@@ -51,8 +51,8 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
         this.renderer = new GhostWorldRenderer();
         this.renderer.display(this);
 
-        this.rotation = Rotation.NONE;
-        this.mirror = Mirror.NONE;
+        this.rotation = rotation;
+        this.mirror = mirror;
     }
 
     public GhostWorldRenderer getRenderer () { return renderer; }

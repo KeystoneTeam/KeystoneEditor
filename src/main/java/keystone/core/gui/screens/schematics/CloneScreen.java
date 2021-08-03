@@ -2,6 +2,7 @@ package keystone.core.gui.screens.schematics;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
+import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
@@ -13,6 +14,8 @@ import keystone.core.gui.widgets.buttons.NudgeButton;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
 import keystone.core.modules.WorldModifierModules;
+import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.history.entries.CloneImportBoxesHistoryEntry;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.renderer.common.models.Coords;
@@ -20,7 +23,9 @@ import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.CheckboxButton;
 import net.minecraft.util.Direction;
+import net.minecraft.util.Mirror;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -44,6 +49,13 @@ public class CloneScreen extends KeystoneOverlay
     private static final double tooltipWidth = 0.2;
 
     private static CloneScreen open;
+    private static Coords anchor;
+    private static Rotation rotation;
+    private static Mirror mirror;
+    private static Vector3i offset = new Vector3i(0, 0, 0);
+    private static int repeat = 1;
+    private static int scale = 1;
+    private static Map<ResourceLocation, Boolean> extensionsToPlace;
 
     private final SelectionBoundingBox selectionBox;
     private final KeystoneSchematic schematic;
@@ -56,37 +68,73 @@ public class CloneScreen extends KeystoneOverlay
     private IntegerWidget offsetX;
     private IntegerWidget offsetY;
     private IntegerWidget offsetZ;
+    private IntegerWidget repeatField;
+    private IntegerWidget scaleField;
 
-    private Coords anchor;
-    private Vector3i offset = new Vector3i(0, 0, 0);
-    private int repeat = 1;
-    private Map<ResourceLocation, Boolean> extensionsToPlace;
-
-    protected CloneScreen()
+    protected CloneScreen(BoundingBox selectionBounds, KeystoneSchematic schematic, Coords anchor, Rotation rotation, Mirror mirror, Vector3i offset, int repeat, int scale, boolean addHistoryEntry)
     {
         super(new TranslationTextComponent("keystone.screen.clone"));
 
-        selectionBox = SelectionNudgeScreen.getSelectionToNudge();
-        schematic = KeystoneSchematic.createFromSelection(selectionBox, new WorldModifierModules());
+        importModule = Keystone.getModule(ImportModule.class);
+        selectionBox = SelectionBoundingBox.createFromBoundingBox(selectionBounds);
+        this.schematic = schematic;
+        CloneScreen.anchor = anchor;
+        CloneScreen.rotation = rotation;
+        CloneScreen.mirror = mirror;
+        CloneScreen.offset = offset;
+        CloneScreen.repeat = repeat;
+        CloneScreen.scale = scale;
         extensionsToPlace = new HashMap<>();
         for (ResourceLocation extension : schematic.getExtensionIDs())
         {
             if (!extensionsToPlace.containsKey(extension)) extensionsToPlace.put(extension, schematic.getExtension(extension).placeByDefault());
         }
 
-        anchor = selectionBox.getMinCoords();
-        importModule = Keystone.getModule(ImportModule.class);
-        importModule.setCloneImportBoxes(schematic, anchor, offset, repeat);
+        if (addHistoryEntry)
+        {
+            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+            historyModule.tryBeginHistoryEntry();
+            historyModule.pushToEntry(new CloneImportBoxesHistoryEntry(selectionBounds, schematic, anchor, rotation, mirror, offset, repeat, scale, true));
+            historyModule.tryEndHistoryEntry();
+        }
+
+        importModule.restoreCloneImportBoxes(schematic, anchor, rotation, mirror, offset, repeat, scale);
+        importModule.setHistoryEntrySupplier(() -> new CloneImportBoxesHistoryEntry(selectionBox.getBoundingBox(), schematic, anchor, rotation, mirror, offset, repeat, scale, false));
     }
     public static void open()
     {
         if (open == null)
         {
-            open = new CloneScreen();
+            SelectionBoundingBox selection = SelectionNudgeScreen.getSelectionToNudge();
+            open = new CloneScreen(selection.getBoundingBox(), KeystoneSchematic.createFromSelection(selection, new WorldModifierModules()), selection.getMinCoords(), Rotation.NONE, Mirror.NONE, new Vector3i(0, 0, 0), 1, 1, true);
             KeystoneOverlayHandler.addOverlay(open);
         }
     }
+    public static void reopen(BoundingBox bounds, KeystoneSchematic schematic, Coords anchor, Rotation rotation, Mirror mirror, Vector3i offset, int repeat, int scale)
+    {
+        if (open == null)
+        {
+            open = new CloneScreen(bounds, schematic, anchor, rotation, mirror, offset, repeat, scale, false);
+            KeystoneOverlayHandler.addOverlay(open);
+            KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.CLONE);
+        }
+        else
+        {
+            open.offsetX.setTypedValue(offset.x);
+            open.offsetY.setTypedValue(offset.y);
+            open.offsetZ.setTypedValue(offset.z);
+            open.repeatField.setTypedValue(repeat);
+            open.scaleField.setTypedValue(scale);
+        }
+    }
 
+    public static Coords getAnchor() { return anchor; }
+    public static Rotation getRotation() { return rotation; }
+    public static Mirror getMirror() { return mirror; }
+    public static Vector3i getOffset() { return offset; }
+    public static int getRepeat() { return repeat; }
+    public static int getScale() { return scale; }
+    public static Map<ResourceLocation, Boolean> getExtensionsToPlace() { return extensionsToPlace; }
     //region Static Event Handlers
     @SubscribeEvent(priority = EventPriority.LOW)
     public static final void onHotbarChanged(final KeystoneHotbarEvent event)
@@ -102,6 +150,7 @@ public class CloneScreen extends KeystoneOverlay
     public void removed()
     {
         open = null;
+        Keystone.getModule(ImportModule.class).setHistoryEntrySupplier(ImportModule.IMPORT_HISTORY_SUPPLIER);
     }
 
     @Override
@@ -138,8 +187,9 @@ public class CloneScreen extends KeystoneOverlay
             @Override
             protected boolean onSetValue(Integer value)
             {
-                offset = new Vector3i(value, offset.y, offset.z);
-                importModule.setCloneImportBoxes(schematic, anchor, offset, repeat);
+                Vector3i newOffset = new Vector3i(value, offset.y, offset.z);
+                importModule.setCloneImportBoxes(selectionBox, schematic, anchor, rotation, mirror, newOffset, repeat, scale);
+                offset = newOffset;
                 return true;
             }
         });
@@ -148,8 +198,9 @@ public class CloneScreen extends KeystoneOverlay
             @Override
             protected boolean onSetValue(Integer value)
             {
-                offset = new Vector3i(offset.x, value, offset.z);
-                importModule.setCloneImportBoxes(schematic, anchor, offset, repeat);
+                Vector3i newOffset = new Vector3i(offset.x, value, offset.z);
+                importModule.setCloneImportBoxes(selectionBox, schematic, anchor, rotation, mirror, newOffset, repeat, scale);
+                offset = newOffset;
                 return true;
             }
         });
@@ -158,21 +209,22 @@ public class CloneScreen extends KeystoneOverlay
             @Override
             protected boolean onSetValue(Integer value)
             {
-                offset = new Vector3i(offset.x, offset.y, value);
-                importModule.setCloneImportBoxes(schematic, anchor, offset, repeat);
+                Vector3i newOffset = new Vector3i(offset.x, offset.y, value);
+                importModule.setCloneImportBoxes(selectionBox, schematic, anchor, rotation, mirror, newOffset, repeat, scale);
+                offset = newOffset;
                 return true;
             }
         });
         y += IntegerWidget.getFinalHeight() + PADDING;
 
         // Repeat Field
-        IntegerWidget repeatField = addButton(new IntegerWidget(new TranslationTextComponent("keystone.clone.repeat"), MARGINS, y, idealWidth - 2 * MARGINS, repeat, 1, Integer.MAX_VALUE)
+        repeatField = addButton(new IntegerWidget(new TranslationTextComponent("keystone.clone.repeat"), MARGINS, y, idealWidth - 2 * MARGINS, repeat, 1, Integer.MAX_VALUE)
         {
             @Override
             protected boolean onSetValue(Integer value)
             {
+                importModule.setCloneImportBoxes(selectionBox, schematic, anchor, rotation, mirror, offset, value, scale);
                 repeat = value;
-                importModule.setCloneImportBoxes(schematic, anchor, offset, repeat);
                 return true;
             }
         });
@@ -180,17 +232,18 @@ public class CloneScreen extends KeystoneOverlay
 
         // Scale Field
         TranslationTextComponent scaleLabel = new TranslationTextComponent("keystone.schematic_import.scale");
-        IntegerWidget scale = new IntegerWidget(scaleLabel, MARGINS, y, idealWidth - 2 * MARGINS, 1, 1, 8)
+        scaleField = new IntegerWidget(scaleLabel, MARGINS, y, idealWidth - 2 * MARGINS, scale, 1, 8)
         {
             @Override
             protected boolean onSetValue(Integer value)
             {
-                importModule.setScaleAll(value);
+                importModule.setCloneImportBoxes(selectionBox, schematic, anchor, rotation, mirror, offset, repeat, value);
+                scale = value;
                 return true;
             }
-        };
-        y += scale.getHeight() + PADDING;
-        addButton(scale);
+        };;
+        y += scaleField.getHeight() + PADDING;
+        addButton(scaleField);
 
         for (ResourceLocation extension : extensionsToPlace.keySet())
         {
@@ -203,7 +256,7 @@ public class CloneScreen extends KeystoneOverlay
         mirrorButton.x += (panelWidth - idealWidth) / 2;
         nudgeImports.x += (panelWidth - idealWidth) / 2;
         repeatField.x += (panelWidth - idealWidth) / 2;
-        scale.x += (panelWidth - idealWidth) / 2;
+        scaleField.x += (panelWidth - idealWidth) / 2;
 
         y += OPTIONS_PADDING;
         SimpleButton cloneButton = createButton(y, "keystone.clone.clone", this::cloneButton);
@@ -232,6 +285,38 @@ public class CloneScreen extends KeystoneOverlay
             cloneButton(null);
             return true;
         }
+        else if (keyCode == GLFW.GLFW_KEY_R)
+        {
+            Rotation newRotation = rotation.getRotated(Rotation.CLOCKWISE_90);
+            importModule.setCloneImportBoxes(selectionBox, schematic, anchor, newRotation, mirror, offset, repeat, scale);
+            rotation = newRotation;
+            return true;
+        }
+        else if (keyCode == GLFW.GLFW_KEY_M)
+        {
+            Mirror newMirror = mirror;
+            switch (mirror)
+            {
+                case NONE:
+                    newMirror = Mirror.LEFT_RIGHT;
+                    break;
+                case LEFT_RIGHT:
+                    newMirror = Mirror.FRONT_BACK;
+                    break;
+                case FRONT_BACK:
+                    newMirror = Mirror.NONE;
+                    break;
+            }
+            importModule.setCloneImportBoxes(selectionBox, schematic, anchor, rotation, newMirror, offset, repeat, scale);
+            mirror = newMirror;
+            return true;
+        }
+        else if (keyCode == GLFW.GLFW_KEY_ESCAPE)
+        {
+            importModule.clearImportBoxes(true);
+            KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
+            return true;
+        }
         else return super.keyPressed(keyCode, scanCode, modifiers);
     }
     //endregion
@@ -239,7 +324,7 @@ public class CloneScreen extends KeystoneOverlay
     private NudgeButton createNudgeButton(int y, NudgeButton.NudgeConsumer consumer)
     {
         int buttonWidth = 2 * PADDING + font.width(NudgeButton.NUDGE.getString());
-        return (NudgeButton) new NudgeButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, consumer, NudgeButton.IMPORT_HISTORY_SUPPLIER)
+        return (NudgeButton) new NudgeButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, consumer, () -> new CloneImportBoxesHistoryEntry(selectionBox.getBoundingBox(), schematic, anchor, rotation, mirror, offset, repeat, scale, false))
         {
             @Override
             protected int getNudgeStep(Direction direction, int button)
@@ -299,12 +384,11 @@ public class CloneScreen extends KeystoneOverlay
         offsetX.setValue(String.valueOf(offset.x));
         offsetY.setValue(String.valueOf(offset.y));
         offsetZ.setValue(String.valueOf(offset.z));
-        importModule.setCloneImportBoxes(schematic, anchor, offset, repeat);
+        importModule.setCloneImportBoxes(selectionBox, schematic, anchor, rotation, mirror, offset, repeat, scale);
     }
     private void cloneButton(Button button)
     {
         importModule.placeAll(extensionsToPlace);
-        //TODO: Implement new history entry for clone operations
     }
     //endregion
 }

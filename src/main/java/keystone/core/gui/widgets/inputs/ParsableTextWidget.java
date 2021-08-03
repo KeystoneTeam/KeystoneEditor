@@ -94,8 +94,8 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
         else return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    protected final T getTypedValue() { return value; }
-    protected final void setTypedValue(T newValue)
+    public final T getTypedValue() { return value; }
+    public final void setTypedValue(T newValue)
     {
         value = postProcess(newValue);
         if (onSetValue(newValue)) setValue(value.toString());

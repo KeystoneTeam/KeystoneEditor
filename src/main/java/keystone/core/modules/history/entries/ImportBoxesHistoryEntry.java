@@ -14,7 +14,7 @@ import java.util.List;
 
 public class ImportBoxesHistoryEntry implements IHistoryEntry
 {
-    public class ImportBoxDescription
+    public static class ImportBoxDescription
     {
         public final Coords minCoords;
         public final KeystoneSchematic schematic;

@@ -94,13 +94,13 @@ public class ClientRenderer
         {
             if (provider.canProvide(dimensionId))
             {
-                for (AbstractBoundingBox boundingBox : provider.get(dimensionId))
+                provider.get(dimensionId).forEach(boundingBox ->
                 {
                     if (isWithinRenderDistance(boundingBox))
                     {
                         boundingBoxes.accept(boundingBox);
                     }
-                }
+                });
             }
         }
 

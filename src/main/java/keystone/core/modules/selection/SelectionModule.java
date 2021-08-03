@@ -14,7 +14,6 @@ import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.mouse.MouseModule;
-import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.selection.providers.HighlightBoxProvider;
 import keystone.core.modules.selection.providers.SelectionBoxProvider;
@@ -61,12 +60,6 @@ public class SelectionModule implements IKeystoneModule
         mouseModule = Keystone.getModule(MouseModule.class);
     }
 
-    public void onCancelPressed()
-    {
-        ImportModule importModule = Keystone.getModule(ImportModule.class);
-        if (importModule.getImportBoxes().size() > 0) importModule.resetModule();
-        else deselect();
-    }
     public void deselect()
     {
         if (selectionBoxes.size() > 0)

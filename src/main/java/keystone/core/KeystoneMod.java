@@ -30,7 +30,6 @@ import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.schematic.extensions.BiomesExtension;
 import keystone.core.schematic.extensions.StructureVoidsExtension;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
-import net.minecraft.client.gui.screen.IngameMenuScreen;
 import net.minecraft.client.gui.screen.MainMenuScreen;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;

@@ -5,7 +5,7 @@ import keystone.core.math.RayTracing;
 import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
+import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectedFace;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
@@ -38,23 +38,28 @@ public class ImportBoundingBox extends SelectableBoundingBox
     private int dragLockY;
     private int dragLockZ;
 
-    private ImportBoundingBox(Coords corner1, Coords corner2, KeystoneSchematic schematic)
+    private ImportBoundingBox(Coords corner1, Coords corner2, KeystoneSchematic schematic, Rotation rotation, Mirror mirror, int scale)
     {
         super(corner1, corner2, BoundingBoxType.get("paste_box"));
         this.schematic = schematic;
-        this.rotation = Rotation.NONE;
-        this.mirror = Mirror.NONE;
-        this.scale = 1;
+        this.rotation = rotation;
+        this.mirror = mirror;
+        this.scale = scale;
 
         this.ghostBlocksModule = Keystone.getModule(GhostBlocksModule.class);
-        this.ghostBlocks = ghostBlocksModule.createWorldFromSchematic(schematic, 1);
+        this.ghostBlocks = ghostBlocksModule.createWorldFromSchematic(schematic, rotation, mirror, scale);
         this.ghostBlocks.getRenderer().offset = getMinCoords().toVector3d();
 
         refreshMinMax();
+        updateBounds();
+    }
+    public static ImportBoundingBox create(Coords minCoords, KeystoneSchematic contents, Rotation rotation, Mirror mirror, int scale)
+    {
+        return new ImportBoundingBox(minCoords, minCoords.add(Vector3d.atLowerCornerOf(contents.getSize()).add(-1, -1, -1)), contents, rotation, mirror, scale);
     }
     public static ImportBoundingBox create(Coords minCoords, KeystoneSchematic contents)
     {
-        return new ImportBoundingBox(minCoords, minCoords.add(Vector3d.atLowerCornerOf(contents.getSize()).add(-1, -1, -1)), contents);
+        return create(minCoords, contents, Rotation.NONE, Mirror.NONE, 1);
     }
 
     public KeystoneSchematic getSchematic() { return schematic; }
@@ -128,9 +133,14 @@ public class ImportBoundingBox extends SelectableBoundingBox
         }
 
         HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
-        historyModule.beginHistoryEntry();
-        historyModule.pushToEntry(new ImportBoxesHistoryEntry(Keystone.getModule(ImportModule.class).getImportBoxes()));
-        historyModule.endHistoryEntry();
+        ImportModule importModule = Keystone.getModule(ImportModule.class);
+        IHistoryEntry historyEntry = importModule.makeHistoryEntry();
+        if (historyEntry != null)
+        {
+            historyModule.tryBeginHistoryEntry();
+            historyModule.pushToEntry(historyEntry);
+            historyModule.tryEndHistoryEntry();
+        }
     }
     @Override
     public void drag(SelectedFace face)

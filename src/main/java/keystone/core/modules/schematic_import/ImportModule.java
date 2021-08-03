@@ -12,39 +12,54 @@ import keystone.core.gui.screens.schematics.ImportScreen;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.history.IHistoryEntry;
+import keystone.core.modules.history.entries.CloneImportBoxesHistoryEntry;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
 import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
 import keystone.core.modules.schematic_import.providers.ImportBoxProvider;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.renderer.client.Player;
+import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
 import net.minecraft.util.Direction;
+import net.minecraft.util.Mirror;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
-import org.lwjgl.glfw.GLFW;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class ImportModule implements IKeystoneModule
 {
+    public static final Supplier<IHistoryEntry> IMPORT_HISTORY_SUPPLIER = () ->
+    {
+        ImportModule importModule = Keystone.getModule(ImportModule.class);
+        return new ImportBoxesHistoryEntry(importModule.getImportBoxes());
+    };
+
+    private Supplier<IHistoryEntry> historyEntrySupplier;
     private List<ImportBoundingBox> importBoxes;
     private HistoryModule historyModule;
     private GhostBlocksModule ghostBlocksModule;
 
     public ImportModule()
     {
-        importBoxes = new ArrayList<>();
+        historyEntrySupplier = IMPORT_HISTORY_SUPPLIER;
+        importBoxes = Collections.synchronizedList(new ArrayList<>());
         MinecraftForge.EVENT_BUS.addListener(this::onSlotChanged);
-        MinecraftForge.EVENT_BUS.addListener(this::onKeyPressed);
     }
+
+    public IHistoryEntry makeHistoryEntry() { return historyEntrySupplier.get(); }
+    public void setHistoryEntrySupplier(@Nonnull Supplier<IHistoryEntry> historyEntrySupplier) { this.historyEntrySupplier = historyEntrySupplier; }
 
     //region Module Implementation
     @Override
@@ -69,18 +84,6 @@ public class ImportModule implements IKeystoneModule
     {
         if (event.previousSlot == KeystoneHotbarSlot.IMPORT && event.slot != KeystoneHotbarSlot.IMPORT) clearImportBoxes(true);
     }
-    private void onKeyPressed(final InputEvent.KeyInputEvent event)
-    {
-        if (event.getAction() == GLFW.GLFW_PRESS)
-        {
-            if (event.getKey() == GLFW.GLFW_KEY_ESCAPE) resetModule();
-            else if (importBoxes.size() > 0)
-            {
-                if (event.getKey() == GLFW.GLFW_KEY_R) rotateAll();
-                else if (event.getKey() == GLFW.GLFW_KEY_M) mirrorAll();
-            }
-        }
-    }
     //endregion
     //region Import Calls
     public void promptImportSchematic(Coords minPosition)
@@ -88,7 +91,7 @@ public class ImportModule implements IKeystoneModule
         OpenFilesScreen.openFiles(new StringTextComponent("Import Schematics"), SchematicLoader.getExtensions(),
                 KeystoneDirectories.getSchematicsDirectory(), true, (files) ->
         {
-            for (File schematic : files) importSchematic(schematic, Player.getHighlightedBlock());
+            for (File schematic : files) importSchematic(schematic, minPosition);
         });
     }
     public void importSchematic(String path, Coords minPosition)
@@ -103,24 +106,24 @@ public class ImportModule implements IKeystoneModule
     }
     public void importSchematic(KeystoneSchematic schematic, Coords minPosition)
     {
-        historyModule.tryBeginHistoryEntry();
-        historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
-        historyModule.tryEndHistoryEntry();
+        IHistoryEntry historyEntry = historyEntrySupplier.get();
+        if (historyEntry != null)
+        {
+            historyModule.tryBeginHistoryEntry();
+            historyModule.pushToEntry(historyEntry);
+            historyModule.tryEndHistoryEntry();
+        }
 
         this.importBoxes.add(ImportBoundingBox.create(minPosition, schematic));
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.IMPORT);
         ImportScreen.open();
     }
-    public void setCloneImportBoxes(KeystoneSchematic schematic, Coords minPosition, Vector3i offset, int repeat)
+    public void setCloneImportBoxes(SelectionBoundingBox selection, KeystoneSchematic schematic, Coords minPosition, Rotation rotation, Mirror mirror, Vector3i offset, int repeat, int scale)
     {
-        importBoxes.forEach(importBox -> ghostBlocksModule.releaseWorld(importBox.getGhostBlocks()));
-        this.importBoxes.clear();
-        for (int i = 1; i <= repeat; i++)
-        {
-            ImportBoundingBox box = ImportBoundingBox.create(minPosition.add(offset.x * i, offset.y * i, offset.z * i), schematic);
-            if (i != 1) box.setSelectable(false);
-            this.importBoxes.add(box);
-        }
+        historyModule.tryBeginHistoryEntry();
+        historyModule.pushToEntry(new CloneImportBoxesHistoryEntry(selection.getBoundingBox(), schematic, minPosition, rotation, mirror, offset, repeat, scale, false));
+        restoreCloneImportBoxes(schematic, minPosition, rotation, mirror, offset, repeat, scale);
+        historyModule.tryEndHistoryEntry();
     }
     //endregion
     //region Import Box Functions
@@ -138,19 +141,38 @@ public class ImportModule implements IKeystoneModule
 
         return old;
     }
-    public void resetModule()
+    public void restoreCloneImportBoxes(KeystoneSchematic schematic, Coords minPosition, Rotation rotation, Mirror mirror, Vector3i offset, int repeat, int scale)
     {
-        clearImportBoxes(true);
-        KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
-    }
+        importBoxes.forEach(importBox -> ghostBlocksModule.releaseWorld(importBox.getGhostBlocks()));
+        this.importBoxes.clear();
 
+        int dx = offset.x;
+        int dy = offset.y;
+        int dz = offset.z;
+        for (int i = 1; i <= repeat; i++)
+        {
+            ImportBoundingBox box = ImportBoundingBox.create(minPosition.add(dx, dy, dz), schematic, rotation, mirror, scale);
+            // TODO: Implement Clone Dragging
+            //if (i != 1) box.setSelectable(false);
+            box.setSelectable(false);
+            this.importBoxes.add(box);
+
+            dx += offset.x * scale;
+            dy += offset.y * scale;
+            dz += offset.z * scale;
+        }
+    }
     public void rotateAll()
     {
         if (importBoxes.size() == 0) return;
 
-        historyModule.tryBeginHistoryEntry();
-        historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
-        historyModule.tryEndHistoryEntry();
+        IHistoryEntry historyEntry = historyEntrySupplier.get();
+        if (historyEntry != null)
+        {
+            historyModule.tryBeginHistoryEntry();
+            historyModule.pushToEntry(historyEntry);
+            historyModule.tryEndHistoryEntry();
+        }
 
         for (ImportBoundingBox importBox : importBoxes) importBox.cycleRotate();
     }
@@ -158,9 +180,13 @@ public class ImportModule implements IKeystoneModule
     {
         if (importBoxes.size() == 0) return;
 
-        historyModule.tryBeginHistoryEntry();
-        historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
-        historyModule.tryEndHistoryEntry();
+        IHistoryEntry historyEntry = historyEntrySupplier.get();
+        if (historyEntry != null)
+        {
+            historyModule.tryBeginHistoryEntry();
+            historyModule.pushToEntry(historyEntry);
+            historyModule.tryEndHistoryEntry();
+        }
 
         for (ImportBoundingBox importBox : importBoxes) importBox.cycleMirror();
     }
@@ -173,9 +199,13 @@ public class ImportModule implements IKeystoneModule
     {
         if (importBoxes.size() == 0) return;
 
-        historyModule.tryBeginHistoryEntry();
-        historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
-        historyModule.tryEndHistoryEntry();
+        IHistoryEntry historyEntry = historyEntrySupplier.get();
+        if (historyEntry != null)
+        {
+            historyModule.tryBeginHistoryEntry();
+            historyModule.pushToEntry(historyEntry);
+            historyModule.tryEndHistoryEntry();
+        }
 
         for (ImportBoundingBox importBox : importBoxes) importBox.setScale(scale);
     }
@@ -194,7 +224,7 @@ public class ImportModule implements IKeystoneModule
             importBoxes.forEach(box -> boxes.add(box.getBoundingBox()));
             selectionModule.setSelections(boxes);
 
-            resetModule();
+            clearImportBoxes(true);
             historyModule.tryEndHistoryEntry();
 
             KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
@@ -206,9 +236,13 @@ public class ImportModule implements IKeystoneModule
 
         if (createHistoryEntry)
         {
-            historyModule.tryBeginHistoryEntry();
-            historyModule.pushToEntry(new ImportBoxesHistoryEntry(importBoxes));
-            historyModule.tryEndHistoryEntry();
+            IHistoryEntry historyEntry = historyEntrySupplier.get();
+            if (historyEntry != null)
+            {
+                historyModule.tryBeginHistoryEntry();
+                historyModule.pushToEntry(historyEntry);
+                historyModule.tryEndHistoryEntry();
+            }
         }
 
         importBoxes.forEach(importBox -> ghostBlocksModule.releaseWorld(importBox.getGhostBlocks()));

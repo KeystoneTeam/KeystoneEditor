@@ -5,6 +5,7 @@ import keystone.api.Keystone;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
+import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.NudgeButton;
 import keystone.core.gui.widgets.buttons.SimpleButton;
@@ -171,6 +172,22 @@ public class ImportScreen extends KeystoneOverlay
         if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
         {
             importButton(null);
+            return true;
+        }
+        else if (keyCode == GLFW.GLFW_KEY_R)
+        {
+            importModule.rotateAll();
+            return true;
+        }
+        else if (keyCode == GLFW.GLFW_KEY_M)
+        {
+            importModule.mirrorAll();
+            return true;
+        }
+        else if (keyCode == GLFW.GLFW_KEY_ESCAPE)
+        {
+            importModule.clearImportBoxes(true);
+            KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
             return true;
         }
         else return super.keyPressed(keyCode, scanCode, modifiers);

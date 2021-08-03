@@ -11,6 +11,8 @@ import keystone.core.renderer.client.Camera;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.renderers.RenderQueue;
 import keystone.core.schematic.KeystoneSchematic;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -66,9 +68,9 @@ public class GhostBlocksModule implements IKeystoneModule
         });
     }
 
-    public GhostBlocksWorld createWorld()
+    public GhostBlocksWorld createWorld(Rotation rotation, Mirror mirror)
     {
-        GhostBlocksWorld world = new GhostBlocksWorld(worldCache.getDimensionWorld(Player.getDimensionId()));
+        GhostBlocksWorld world = new GhostBlocksWorld(worldCache.getDimensionWorld(Player.getDimensionId()), rotation, mirror);
         ghostWorlds.add(world);
         return world;
     }
@@ -76,9 +78,9 @@ public class GhostBlocksModule implements IKeystoneModule
     {
         if (!ghostWorlds.contains(ghostBlocks)) ghostWorlds.add(ghostBlocks);
     }
-    public GhostBlocksWorld createWorldFromSchematic(KeystoneSchematic schematic, int scale)
+    public GhostBlocksWorld createWorldFromSchematic(KeystoneSchematic schematic, Rotation rotation, Mirror mirror, int scale)
     {
-        GhostBlocksWorld world = createWorld();
+        GhostBlocksWorld world = createWorld(rotation, mirror);
         schematic.place(world, scale);
         return world;
     }
