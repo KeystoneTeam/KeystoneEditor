@@ -9,10 +9,16 @@ import net.minecraft.util.math.vector.Vector3d;
 
 public abstract class SelectableBoundingBox extends BoundingBoxCuboid
 {
+    private boolean selectable;
+
     protected SelectableBoundingBox(Coords corner1, Coords corner2, BoundingBoxType type)
     {
         super(corner1, corner2, type);
+        this.selectable = true;
     }
+
+    public boolean isSelectable() { return selectable; }
+    public final void setSelectable(boolean selectable) { this.selectable = selectable; }
 
     public int getPriority() { return 0; }
     public abstract boolean isEnabled();
@@ -22,6 +28,8 @@ public abstract class SelectableBoundingBox extends BoundingBoxCuboid
 
     public SelectedFace getSelectedFace()
     {
+        if (!selectable) return null;
+
         Vector3d origin = Player.getEyePosition();
         Vector3d heading = Player.getLookDirection();
 

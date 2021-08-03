@@ -111,17 +111,15 @@ public class ImportModule implements IKeystoneModule
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.IMPORT);
         ImportScreen.open();
     }
-    public void addCloneImportBox(KeystoneSchematic schematic, Coords minPosition)
-    {
-        this.importBoxes.add(ImportBoundingBox.create(minPosition, schematic));
-    }
     public void setCloneImportBoxes(KeystoneSchematic schematic, Coords minPosition, Vector3i offset, int repeat)
     {
         importBoxes.forEach(importBox -> ghostBlocksModule.releaseWorld(importBox.getGhostBlocks()));
         this.importBoxes.clear();
         for (int i = 1; i <= repeat; i++)
         {
-            this.importBoxes.add(ImportBoundingBox.create(minPosition.add(offset.x * i, offset.y * i, offset.z * i), schematic));
+            ImportBoundingBox box = ImportBoundingBox.create(minPosition.add(offset.x * i, offset.y * i, offset.z * i), schematic);
+            if (i != 1) box.setSelectable(false);
+            this.importBoxes.add(box);
         }
     }
     //endregion

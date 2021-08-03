@@ -17,19 +17,16 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class KeystoneOverlayHandler
 {
     private static boolean worldFinishedLoading = false;
     private static Queue<IKeystoneTooltip> tooltips = new ArrayDeque<>();
-    private static List<Screen> overlays = new ArrayList<>();
-    private static List<Screen> addList = new ArrayList<>();
-    private static List<Screen> removeList = new ArrayList<>();
+    private static List<Screen> overlays = Collections.synchronizedList(new ArrayList<>());
+    private static List<Screen> addList = Collections.synchronizedList(new ArrayList<>());
+    private static List<Screen> removeList = Collections.synchronizedList(new ArrayList<>());
 
     private static boolean rendering;
 

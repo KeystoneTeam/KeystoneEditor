@@ -3,13 +3,12 @@ package keystone.core.gui.screens.schematics;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.wrappers.coordinates.Vector3i;
-import keystone.core.KeystoneConfig;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
-import keystone.core.gui.screens.selection.SelectionNudgeScreen;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
+import keystone.core.gui.screens.selection.SelectionNudgeScreen;
 import keystone.core.gui.widgets.buttons.NudgeButton;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
@@ -46,6 +45,7 @@ public class CloneScreen extends KeystoneOverlay
 
     private static CloneScreen open;
 
+    private final SelectionBoundingBox selectionBox;
     private final KeystoneSchematic schematic;
     private final ImportModule importModule;
     private int panelMinY;
@@ -66,15 +66,15 @@ public class CloneScreen extends KeystoneOverlay
     {
         super(new TranslationTextComponent("keystone.screen.clone"));
 
-        SelectionBoundingBox currentSelection = SelectionNudgeScreen.getSelectionToNudge();
-        schematic = KeystoneSchematic.createFromSelection(currentSelection, new WorldModifierModules());
+        selectionBox = SelectionNudgeScreen.getSelectionToNudge();
+        schematic = KeystoneSchematic.createFromSelection(selectionBox, new WorldModifierModules());
         extensionsToPlace = new HashMap<>();
         for (ResourceLocation extension : schematic.getExtensionIDs())
         {
             if (!extensionsToPlace.containsKey(extension)) extensionsToPlace.put(extension, schematic.getExtension(extension).placeByDefault());
         }
 
-        anchor = currentSelection.getMinCoords();
+        anchor = selectionBox.getMinCoords();
         importModule = Keystone.getModule(ImportModule.class);
         importModule.setCloneImportBoxes(schematic, anchor, offset, repeat);
     }
@@ -284,6 +284,8 @@ public class CloneScreen extends KeystoneOverlay
     }
     private void nudgeButton(Direction direction, int amount)
     {
+        if (amount < 0) amount = selectionBox.getAxisSize(direction.getAxis());
+
         switch (direction)
         {
             case EAST: offset = new Vector3i(offset.x + amount, offset.y, offset.z); break;

@@ -6,6 +6,7 @@ import keystone.api.KeystoneDirectories;
 import keystone.api.tools.AnalyzeTool;
 import keystone.api.tools.DeleteEntitiesTool;
 import keystone.api.tools.FillTool;
+import keystone.api.wrappers.blocks.Block;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
@@ -13,20 +14,28 @@ import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.file_browser.SaveFileScreen;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
+import keystone.core.gui.widgets.buttons.NudgeButton;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.clipboard.ClipboardModule;
+import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.selection.SelectionModule;
+import keystone.core.modules.selection.boxes.SelectionBoundingBox;
+import keystone.core.renderer.common.models.Coords;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.gui.GuiUtils;
 import net.minecraftforge.fml.common.Mod;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +54,7 @@ public class SelectionScreen extends KeystoneOverlay
     private int panelMinY;
     private int panelMaxY;
     private int panelWidth;
+    private NudgeButton nudgeButton;
 
     protected SelectionScreen()
     {
@@ -91,22 +101,24 @@ public class SelectionScreen extends KeystoneOverlay
     @Override
     protected void init()
     {
-        int buttonHeight = (8 * (BUTTON_HEIGHT + PADDING)) - PADDING;
+        int buttonHeight = (9 * (BUTTON_HEIGHT + PADDING)) - PADDING;
         int y = (height - buttonHeight) / 2;
         panelMinY = y - MARGINS;
         panelMaxY = panelMinY + buttonHeight + MARGINS + MARGINS;
         panelWidth = 0;
 
+        nudgeButton = createNudgeButton(panelMinY + MARGINS, 0, "keystone.nudge", this::buttonNudge);
         SimpleButton[] buttons = new SimpleButton[]
         {
-                createButton(panelMinY + MARGINS, 0, "keystone.selection_panel.deselect", this::buttonDeselect),
-                createButton(panelMinY + MARGINS, 1, "keystone.selection_panel.deleteBlocks", this::buttonDeleteBlocks),
-                createButton(panelMinY + MARGINS, 2, "keystone.selection_panel.deleteEntities", this::buttonDeleteEntities),
-                createButton(panelMinY + MARGINS, 3, "keystone.selection_panel.analyze", this::buttonAnalyze),
-                createButton(panelMinY + MARGINS, 4, "keystone.selection_panel.cut", this::buttonCut),
-                createButton(panelMinY + MARGINS, 5, "keystone.selection_panel.copy", this::buttonCopy),
-                createButton(panelMinY + MARGINS, 6, "keystone.selection_panel.paste", this::buttonPaste),
-                createButton(panelMinY + MARGINS, 7, "keystone.selection_panel.export", this::buttonExport)
+                nudgeButton,
+                createButton(panelMinY + MARGINS, 1, "keystone.selection_panel.deselect", this::buttonDeselect),
+                createButton(panelMinY + MARGINS, 2, "keystone.selection_panel.deleteBlocks", this::buttonDeleteBlocks),
+                createButton(panelMinY + MARGINS, 3, "keystone.selection_panel.deleteEntities", this::buttonDeleteEntities),
+                createButton(panelMinY + MARGINS, 4, "keystone.selection_panel.analyze", this::buttonAnalyze),
+                createButton(panelMinY + MARGINS, 5, "keystone.selection_panel.cut", this::buttonCut),
+                createButton(panelMinY + MARGINS, 6, "keystone.selection_panel.copy", this::buttonCopy),
+                createButton(panelMinY + MARGINS, 7, "keystone.selection_panel.paste", this::buttonPaste),
+                createButton(panelMinY + MARGINS, 8, "keystone.selection_panel.export", this::buttonExport)
         };
 
         for (SimpleButton button : buttons)
@@ -123,14 +135,36 @@ public class SelectionScreen extends KeystoneOverlay
     }
 
     @Override
+    public void tick()
+    {
+        nudgeButton.tick();
+        super.tick();
+    }
+
+    @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
         fill(matrixStack, 0, panelMinY, panelWidth, panelMaxY, 0x80000000);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
-
     //endregion
     //region Helpers
+    private NudgeButton createNudgeButton(int startY, int index, String translationKey, NudgeButton.NudgeConsumer nudgeConsumer)
+    {
+        TranslationTextComponent label = new TranslationTextComponent(translationKey);
+        int y = startY + index * (BUTTON_HEIGHT + PADDING);
+        int buttonWidth = 2 * PADDING + font.width(label.getString());
+        return (NudgeButton) new NudgeButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, nudgeConsumer, () -> null)
+        {
+            @Override
+            protected int getNudgeStep(Direction direction, int button)
+            {
+                if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) return 1;
+                else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) return -1;
+                else return 0;
+            }
+        }.setColors(0x80008000, 0x80008000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
+    }
     private SimpleButton createButton(int startY, int index, String translationKey, Button.IPressable pressable)
     {
         TranslationTextComponent label = new TranslationTextComponent(translationKey);
@@ -143,6 +177,40 @@ public class SelectionScreen extends KeystoneOverlay
     }
     //endregion
     //region Button Callbacks
+    private final void buttonNudge(Direction direction, int amount)
+    {
+        Keystone.runOnMainThread(() ->
+        {
+            SelectionBoundingBox selection = SelectionNudgeScreen.getSelectionToNudge();
+            int newAmount = (amount < 0) ? selection.getAxisSize(direction.getAxis()) : amount;
+
+            WorldModifierModules worldModifiers = new WorldModifierModules();
+            KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(selection, worldModifiers);
+
+            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+            historyModule.tryBeginHistoryEntry();
+
+            Block air = new Block(Blocks.AIR.defaultBlockState());
+            for (int x = selection.getMinCoords().getX(); x <= selection.getMaxCoords().getX(); x++)
+            {
+                for (int y = selection.getMinCoords().getY(); y <= selection.getMaxCoords().getY(); y++)
+                {
+                    for (int z = selection.getMinCoords().getZ(); z <= selection.getMaxCoords().getZ(); z++)
+                    {
+                        worldModifiers.blocks.setBlock(x, y, z, air);
+                    }
+                }
+            }
+
+            BlockPos anchor = selection.getMinCoords().toBlockPos().offset(direction.getStepX() * newAmount, direction.getStepY() * newAmount, direction.getStepZ() * newAmount);
+            schematic.place(worldModifiers, anchor);
+
+            historyModule.pushToEntry(NudgeButton.SELECTION_HISTORY_SUPPLIER.get());
+            selection.nudgeBox(direction, newAmount);
+
+            historyModule.tryEndHistoryEntry();
+        });
+    }
     private final void buttonDeselect(Button button)
     {
         selectionModule.deselect();

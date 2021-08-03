@@ -30,6 +30,8 @@ import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.schematic.extensions.BiomesExtension;
 import keystone.core.schematic.extensions.StructureVoidsExtension;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
+import net.minecraft.client.gui.screen.IngameMenuScreen;
+import net.minecraft.client.gui.screen.MainMenuScreen;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -54,6 +56,7 @@ public class KeystoneMod
     public static final String MODID = "keystone";
     private static boolean initialized = false;
     private static boolean ranVersionCheck = false;
+    private static boolean inWorld;
 
     public KeystoneMod()
     {
@@ -65,6 +68,7 @@ public class KeystoneMod
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultSchematicFormats);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultSchematicExtensions);
         MinecraftForge.EVENT_BUS.addListener(this::onWorldLoaded);
+        MinecraftForge.EVENT_BUS.addListener(this::onWorldLeft);
         MinecraftForge.EVENT_BUS.addListener(this::onLivingUpdate);
     }
 
@@ -132,6 +136,9 @@ public class KeystoneMod
     {
         if (event.getEntity() instanceof PlayerEntity && event.getWorld().isClientSide)
         {
+            if (KeystoneConfig.startActive) Keystone.enableKeystone();
+            inWorld = true;
+
             if (!ranVersionCheck)
             {
                 ranVersionCheck = true;
@@ -163,6 +170,14 @@ public class KeystoneMod
                     Keystone.disableKeystone();
                 }
             }
+        }
+    }
+    private void onWorldLeft(final GuiOpenEvent event)
+    {
+        if (event.getGui() instanceof MainMenuScreen && inWorld)
+        {
+            inWorld = false;
+            Keystone.disableKeystone();
         }
     }
     private void onLivingUpdate(final LivingEvent.LivingUpdateEvent event)

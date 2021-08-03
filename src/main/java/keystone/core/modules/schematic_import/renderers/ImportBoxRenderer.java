@@ -44,7 +44,7 @@ public class ImportBoxRenderer extends AbstractRenderer<ImportBoundingBox>
             renderPlane(new OffsetPoint(centerX, centerY, centerZ), selectedFace.getFaceDirection(), 1.0, direction -> Color.white, direction -> 64, false);
         }
 
-        renderCuboid(bb, direction -> Color.green, direction ->
+        renderCuboid(bb, direction -> box.isSelectable() ? Color.green : new Color(0.75f, 1.0f, 0.75f), direction ->
         {
             if (selectedFace != null && selectedFace.getBox().equals(box)) return 64;
             return 32;

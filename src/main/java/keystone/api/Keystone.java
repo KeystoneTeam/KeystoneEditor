@@ -3,9 +3,9 @@ package keystone.api;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
+import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
-import keystone.core.modules.history.HistoryModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -31,13 +31,13 @@ public final class Keystone
     public static final Logger LOGGER = LogManager.getLogger();
     public static final Random RANDOM = new Random();
 
-    private static HistoryModule historyModule;
     private static FilterModule filterModule;
     private static Thread serverThread;
 
     //region Active Toggle
-    private static boolean enabled = KeystoneConfig.startActive;
+    private static boolean enabled;
     private static boolean revertGamemode;
+    private static int revertGuiScale;
 
     /**
      * Toggle whether Keystone is enabled
@@ -59,6 +59,11 @@ public final class Keystone
         KeystoneGlobalState.AllowPlayerLook = false;
         minecraft.mouseHandler.releaseMouse();
         minecraft.player.abilities.setFlyingSpeed(KeystoneConfig.flySpeed);
+
+        revertGuiScale = minecraft.options.guiScale;
+        minecraft.options.guiScale = 3;
+        minecraft.resizeDisplay();
+        KeystoneOverlayHandler.resize(minecraft, minecraft.getWindow().getGuiScaledWidth(), minecraft.getWindow().getGuiScaledHeight());
     }
     /**
      * Disable Keystone if it isn't already
@@ -71,6 +76,10 @@ public final class Keystone
         enabled = false;
         minecraft.mouseHandler.grabMouse();
         revertGamemode = true;
+
+        minecraft.options.guiScale = revertGuiScale;
+        minecraft.resizeDisplay();
+        KeystoneOverlayHandler.resize(minecraft, minecraft.getWindow().getGuiScaledWidth(), minecraft.getWindow().getGuiScaledHeight());
     }
     /**
      * @return If Keystone is active and a world is loaded
@@ -81,7 +90,7 @@ public final class Keystone
     }
     //endregion
     //region Module Registry
-    private static Map<Class, IKeystoneModule> modules = new HashMap<>();
+    private static final Map<Class<? extends IKeystoneModule>, IKeystoneModule> modules = new HashMap<>();
 
     /**
      * Register a new {@link keystone.core.modules.IKeystoneModule Module}
@@ -154,8 +163,8 @@ public final class Keystone
         }
     }
 
-    private static List<DelayedRunnable> runOnMainThread = new ArrayList<>();
-    private static List<DelayedRunnable> addList = new ArrayList<>();
+    private static final List<DelayedRunnable> runOnMainThread = new ArrayList<>();
+    private static final List<DelayedRunnable> addList = new ArrayList<>();
 
     /**
      * Schedule a {@link java.lang.Runnable} to run on the server thread next tick
@@ -213,7 +222,7 @@ public final class Keystone
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Initialize Keystone. Ran once when the mod setup event is called in {@link keystone.core.KeystoneMod}
      */
-    public static final void init()
+    public static void init()
     {
         MinecraftForge.EVENT_BUS.addListener(Keystone::onWorldTick);
         MinecraftForge.EVENT_BUS.addListener(Keystone::onPlayerTick);
@@ -225,9 +234,8 @@ public final class Keystone
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Post-initialize keystone. Ran once after all modules have been registered
      */
-    public static final void postInit()
+    public static void postInit()
     {
-        historyModule = getModule(HistoryModule.class);
         filterModule = getModule(FilterModule.class);
         for (IKeystoneModule module : modules.values()) module.postInit();
     }
@@ -236,7 +244,7 @@ public final class Keystone
      * on the server thread
      * @param event The {@link net.minecraftforge.event.TickEvent.WorldTickEvent} that was posted
      */
-    private static final void onWorldTick(final TickEvent.WorldTickEvent event)
+    private static void onWorldTick(final TickEvent.WorldTickEvent event)
     {
         if (Keystone.isActive() && event.phase == TickEvent.Phase.START && event.side == LogicalSide.SERVER)
         {
@@ -246,7 +254,7 @@ public final class Keystone
             addList.clear();
 
             for (DelayedRunnable runnable : runOnMainThread) runnable.tick();
-            runOnMainThread.removeIf(runnable -> runnable.executed());
+            runOnMainThread.removeIf(DelayedRunnable::executed);
         }
     }
     /**
@@ -254,7 +262,7 @@ public final class Keystone
      * on the server thread
      * @param event The {@link net.minecraftforge.event.TickEvent.PlayerTickEvent} that was posted
      */
-    private static final void onPlayerTick(final TickEvent.PlayerTickEvent event)
+    private static void onPlayerTick(final TickEvent.PlayerTickEvent event)
     {
         ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
         if (clientPlayer == null || event.side != LogicalSide.SERVER) return;
@@ -291,7 +299,7 @@ public final class Keystone
      * Keystone is active
      * @param event The {@link net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock} that was posted
      */
-    private static final void onRightClickBlock(final PlayerInteractEvent.RightClickBlock event)
+    private static void onRightClickBlock(final PlayerInteractEvent.RightClickBlock event)
     {
         if (Keystone.isActive()) event.setCanceled(true);
     }
@@ -301,7 +309,7 @@ public final class Keystone
      * Keystone is active
      * @param event The {@link net.minecraftforge.event.entity.player.PlayerEvent.PlayerChangeGameModeEvent} that was posted
      */
-    private static final void onGamemodeChanged(final PlayerEvent.PlayerChangeGameModeEvent event)
+    private static void onGamemodeChanged(final PlayerEvent.PlayerChangeGameModeEvent event)
     {
         if (Keystone.isActive() && event.getNewGameMode() != GameType.SPECTATOR) event.setCanceled(true);
     }

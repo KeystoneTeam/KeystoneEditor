@@ -17,13 +17,14 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 public class GhostBlocksModule implements IKeystoneModule
 {
     private WorldCacheModule worldCache;
-    private Set<GhostBlocksWorld> ghostWorlds = new HashSet<>();
+    private Set<GhostBlocksWorld> ghostWorlds = Collections.synchronizedSet(new HashSet<>());
 
     public GhostBlocksModule()
     {

@@ -165,10 +165,14 @@ public class NudgeButton extends SimpleButton
                 nudgeButtonDown = button == GLFW.GLFW_MOUSE_BUTTON_LEFT || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
                 if (nudgeButtonDown)
                 {
-                    HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
-                    historyModule.beginHistoryEntry();
-                    historyModule.pushToEntry(historySupplier.get());
-                    historyModule.endHistoryEntry();
+                    IHistoryEntry historyEntry = historySupplier.get();
+                    if (historyEntry != null)
+                    {
+                        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+                        historyModule.tryBeginHistoryEntry();
+                        historyModule.pushToEntry(historyEntry);
+                        historyModule.tryEndHistoryEntry();
+                    }
 
                     nudgeButton = button;
                     return true;
