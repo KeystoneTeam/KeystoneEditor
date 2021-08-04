@@ -73,7 +73,7 @@ public class ImportScreen extends KeystoneOverlay
 
     //region Static Event Handlers
     @SubscribeEvent(priority = EventPriority.LOW)
-    public static final void onHotbarChanged(final KeystoneHotbarEvent event)
+    public static void onHotbarChanged(final KeystoneHotbarEvent event)
     {
         if (event.isCanceled()) return;
 

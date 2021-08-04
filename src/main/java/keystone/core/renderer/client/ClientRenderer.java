@@ -44,7 +44,7 @@ public class ClientRenderer
         providers.add(provider);
     }
 
-    public static <T extends AbstractBoundingBox> void registerRenderer(Class<? extends T> type, AbstractRenderer<T> renderer)
+    public static <T extends AbstractBoundingBox> void registerRenderer(Class<T> type, AbstractRenderer<? super T> renderer)
     {
         boundingBoxRendererMap.put(type, renderer);
     }

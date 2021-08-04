@@ -89,7 +89,6 @@ public class PlacementSimulationWorld extends WrappedWorld
         return condition.test(getBlockState(pos));
     }
 
-    // TODO: Check if this needs inverting
     @Override
     public boolean isEmptyBlock(BlockPos pos)
     {

@@ -45,13 +45,13 @@ public class KeystoneInputHandler
         KeystoneInputHandler.rightClickLocation = new Vector3d(x, y, 0);
     }
 
-    public static final void onMouseMove(double mouseX, double mouseY)
+    public static void onMouseMove(double mouseX, double mouseY)
     {
         if (Minecraft.getInstance().level == null) return;
         MinecraftForge.EVENT_BUS.post(new KeystoneInputEvent.MouseMoveEvent(mouseX, mouseY));
     }
     @SubscribeEvent
-    public static final void postRender(final RenderWorldLastEvent event)
+    public static void postRender(final RenderWorldLastEvent event)
     {
         MouseHelper mouse = Minecraft.getInstance().mouseHandler;
 
@@ -103,7 +103,7 @@ public class KeystoneInputHandler
     }
 
     @SubscribeEvent
-    public static final void onMouseInput(final InputEvent.MouseInputEvent event)
+    public static void onMouseInput(final InputEvent.MouseInputEvent event)
     {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
@@ -134,7 +134,7 @@ public class KeystoneInputHandler
         }
         else if (event.getAction() == GLFW.GLFW_RELEASE) onRelease(event.getButton());
     }
-    public static final void onMouseDrag(int button, double mouseX, double mouseY, double dragX, double dragY)
+    public static void onMouseDrag(int button, double mouseX, double mouseY, double dragX, double dragY)
     {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
@@ -181,7 +181,7 @@ public class KeystoneInputHandler
         }
     }
     @SubscribeEvent
-    public static final void onKeyInput(final InputEvent.KeyInputEvent event)
+    public static void onKeyInput(final InputEvent.KeyInputEvent event)
     {
         GameSettings settings = Minecraft.getInstance().options;
         MouseHelper mouse = Minecraft.getInstance().mouseHandler;

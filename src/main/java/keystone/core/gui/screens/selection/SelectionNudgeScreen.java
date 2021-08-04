@@ -25,11 +25,11 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     private static final int PADDING = 2;
     private static final int BUTTON_HEIGHT = 14;
     private static SelectionNudgeScreen open;
+    private static SelectionBoundingBox selectedBox;
 
     private final SelectionModule selectionModule;
 
     private int selectionToNudge;
-    private SelectionBoundingBox selectionBox;
     private String boxSize;
     private int x;
     private int y;
@@ -49,21 +49,21 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         super(new TranslationTextComponent("keystone.screen.selectionNudge"));
         this.selectionModule = Keystone.getModule(SelectionModule.class);
         selectionToNudge = selectionModule.getSelectionBoxCount() - 1;
-        selectionBox = resolveSelectionIndex();
+        selectedBox = resolveSelectionIndex();
     }
     public static void open()
     {
         if (open == null)
         {
             open = new SelectionNudgeScreen();
-            if (open.selectionBox != null) KeystoneOverlayHandler.addOverlay(open);
+            if (selectedBox != null) KeystoneOverlayHandler.addOverlay(open);
             else open = null;
         }
     }
 
     //region Event Handlers
     @SubscribeEvent(priority = EventPriority.LOW)
-    public static final void onHotbarChanged(final KeystoneHotbarEvent event)
+    public static void onHotbarChanged(final KeystoneHotbarEvent event)
     {
         if (event.isCanceled()) return;
 
@@ -71,8 +71,10 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         else if (open != null) open.onClose();
     }
     @SubscribeEvent
-    public static final void onSelectionsChanged(final KeystoneSelectionChangedEvent event)
+    public static void onSelectionsChanged(final KeystoneSelectionChangedEvent event)
     {
+        if (event.selections.length == 0) selectedBox = null;
+
         if (open == null)
         {
             if (event.selections.length > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
@@ -81,8 +83,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         {
             if (event.selections.length == 0) open.onClose();
             else if (event.createdSelection && open.selectionToNudge >= event.selections.length - 2) open.setSelectionToNudge(event.selections.length - 1);
-            else if (open.selectionToNudge > event.selections.length - 1) open.setSelectionToNudge(event.selections.length - 1);
-            else open.setSelectionToNudge(open.selectionToNudge);
+            else open.setSelectionToNudge(Math.min(open.selectionToNudge, event.selections.length - 1));
         }
     }
     //endregion
@@ -105,15 +106,15 @@ public class SelectionNudgeScreen extends KeystoneOverlay
 
         int panelCenter = x + panelWidth / 2;
         int bottomButtonsY = y + panelHeight - MARGINS - BUTTON_HEIGHT;
-        this.nudgeBox = new NudgeButton(panelCenter - buttonWidth / 2, y + MARGINS, buttonWidth, BUTTON_HEIGHT, (direction, amount) ->selectionBox.nudgeBox(direction, amount), NudgeButton.SELECTION_HISTORY_SUPPLIER);
+        this.nudgeBox = new NudgeButton(panelCenter - buttonWidth / 2, y + MARGINS, buttonWidth, BUTTON_HEIGHT, (direction, amount) -> selectedBox.nudgeBox(direction, amount), NudgeButton.SELECTION_HISTORY_SUPPLIER);
         this.nudgeCorner1 = new NudgeButton(panelCenter - PADDING - buttonWidth, bottomButtonsY, buttonWidth, BUTTON_HEIGHT, (direction, amount) ->
         {
-            selectionBox.nudgeCorner1(direction, amount);
+            selectedBox.nudgeCorner1(direction, amount);
             updateSize();
         }, NudgeButton.SELECTION_HISTORY_SUPPLIER);
         this.nudgeCorner2 = new NudgeButton(panelCenter + PADDING, bottomButtonsY, buttonWidth, BUTTON_HEIGHT, (direction, amount) ->
         {
-            selectionBox.nudgeCorner2(direction, amount);
+            selectedBox.nudgeCorner2(direction, amount);
             updateSize();
         }, NudgeButton.SELECTION_HISTORY_SUPPLIER);
 
@@ -166,8 +167,8 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     private void setSelectionToNudge(int value)
     {
         selectionToNudge = value;
-        selectionBox = resolveSelectionIndex();
-        if (selectionBox == null) onClose();
+        selectedBox = resolveSelectionIndex();
+        if (selectedBox == null) onClose();
         else updateSize();
     }
     private SelectionBoundingBox resolveSelectionIndex()
@@ -179,7 +180,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     }
     private void updateSize()
     {
-        boxSize = String.format("%dW x %dL x %dH", selectionBox.getSize().getX(), selectionBox.getSize().getZ(), selectionBox.getSize().getY());
+        boxSize = String.format("%dW x %dL x %dH", selectedBox.getSize().getX(), selectedBox.getSize().getZ(), selectedBox.getSize().getY());
         int strWidth = font.width(boxSize);
         int minWidth = 2 * MARGINS + 2 * (2 * PADDING + font.width(new TranslationTextComponent("keystone.nudge").getString())) + PADDING;
         panelWidth = Math.max(strWidth + MARGINS + MARGINS, minWidth);
@@ -207,8 +208,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     //region Getters
     public static SelectionBoundingBox getSelectionToNudge()
     {
-        if (open != null) return open.selectionBox;
-        else return null;
+        return selectedBox;
     }
     //endregion
 }

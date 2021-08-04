@@ -31,7 +31,7 @@ public class KeystoneEvent extends Event
 
     public static class RegisterBoundingBoxTypes extends KeystoneEvent
     {
-        public <T extends AbstractBoundingBox> void register(Class<T> boxClass, AbstractRenderer<T> renderer, String name)
+        public <T extends AbstractBoundingBox> void register(Class<T> boxClass, AbstractRenderer<? super T> renderer, String name)
         {
             BoundingBoxType.register(name);
             ClientRenderer.registerRenderer(boxClass, renderer);

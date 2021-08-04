@@ -52,7 +52,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
 
     //region Event Handlers
     @SubscribeEvent(priority = EventPriority.LOW)
-    public static final void onHotbarChanged(final KeystoneHotbarEvent event)
+    public static void onHotbarChanged(final KeystoneHotbarEvent event)
     {
         if (event.slot == KeystoneHotbarSlot.BRUSH) open();
         else if (open != null) open.onClose();

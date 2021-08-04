@@ -137,7 +137,7 @@ public class CloneScreen extends KeystoneOverlay
     public static Map<ResourceLocation, Boolean> getExtensionsToPlace() { return extensionsToPlace; }
     //region Static Event Handlers
     @SubscribeEvent(priority = EventPriority.LOW)
-    public static final void onHotbarChanged(final KeystoneHotbarEvent event)
+    public static void onHotbarChanged(final KeystoneHotbarEvent event)
     {
         if (event.isCanceled()) return;
 

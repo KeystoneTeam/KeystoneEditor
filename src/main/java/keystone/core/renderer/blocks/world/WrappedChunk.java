@@ -40,7 +40,6 @@ public class WrappedChunk implements IChunk
     public WrappedChunk(PlacementSimulationWorld world, int x, int z)
     {
         this.world = world;
-        // TODO: Check if this needs to be false
         this.needsLight = true;
         this.x = x;
         this.z = z;

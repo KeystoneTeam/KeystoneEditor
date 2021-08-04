@@ -70,7 +70,7 @@ public class SelectionScreen extends KeystoneOverlay
 
     //region Static Event Handlers
     @SubscribeEvent(priority = EventPriority.LOW)
-    public static final void onHotbarChanged(final KeystoneHotbarEvent event)
+    public static void onHotbarChanged(final KeystoneHotbarEvent event)
     {
         if (event.isCanceled()) return;
 
@@ -78,7 +78,7 @@ public class SelectionScreen extends KeystoneOverlay
         else if (open != null) open.onClose();
     }
     @SubscribeEvent(priority = EventPriority.LOW)
-    public static final void onSelectionsChanged(final KeystoneSelectionChangedEvent event)
+    public static void onSelectionsChanged(final KeystoneSelectionChangedEvent event)
     {
         if (event.selections.length > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
         else if (open != null) open.onClose();

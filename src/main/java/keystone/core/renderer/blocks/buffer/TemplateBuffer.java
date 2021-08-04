@@ -18,7 +18,6 @@ public class TemplateBuffer
         ByteBuffer rendered = state.getSecond();
         rendered.order(ByteOrder.nativeOrder()); // Vanilla bug, endianness does not carry over into sliced buffers
 
-        // TODO: Check if this needs to be IntegerSize (CHECKED ONCE)
         formatSize = buf.getVertexFormat().getVertexSize();
         vertexCount = state.getFirst().vertexCount();
         int size = vertexCount * formatSize;

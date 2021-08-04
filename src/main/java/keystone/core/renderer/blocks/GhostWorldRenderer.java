@@ -169,7 +169,6 @@ public class GhostWorldRenderer
                 ForgeHooksClient.setRenderLayer(renderType);
 
                 // Fluid Rendering
-                // TODO: Fluids aren't rendering past a certain distance
                 if (!fluidState.isEmpty() && RenderTypeLookup.canRenderInLayer(fluidState, renderType))
                 {
                     if (!fluidBuffers.containsKey(renderType)) fluidBuffers.put(renderType, new HashMap<>());

@@ -2,6 +2,8 @@ package keystone.core.modules.selection.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
+import keystone.core.gui.screens.hotbar.KeystoneHotbar;
+import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.screens.selection.SelectionNudgeScreen;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.modules.selection.SelectedFace;
@@ -24,7 +26,7 @@ public class SelectionBoxRenderer extends AbstractRenderer<SelectionBoundingBox>
         OffsetBox bb = new OffsetBox(box.getMinCoords(), box.getMaxCoords());
         SelectedFace selectedFace = Keystone.getModule(MouseModule.class).getSelectedFace();
 
-        boolean selectedForNudge = box.equals(SelectionNudgeScreen.getSelectionToNudge());
+        boolean selectedForNudge = box.equals(SelectionNudgeScreen.getSelectionToNudge()) && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION;
         Function<Direction, Color> colorProvider = direction ->
         {
             if (selectedForNudge) return box.isFaceCorner1(direction) ? blue : yellow;
