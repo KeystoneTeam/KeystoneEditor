@@ -1,8 +1,8 @@
-package keystone.core.modules.blocks;
+package keystone.core.modules.world;
 
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
-import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.Biome;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.WorldHistoryChunk;
@@ -14,19 +14,19 @@ import net.minecraft.world.World;
 import java.util.HashSet;
 import java.util.Set;
 
-public class BlocksModule implements IKeystoneModule
+public class BiomesModule implements IKeystoneModule
 {
-    public interface BlockListener
+    public interface BiomeListener
     {
-        void onChanged(int x, int y, int z, Block block);
+        void onChanged(int x, int y, int z, Biome biome);
     }
 
     private HistoryModule historyModule;
     private WorldCacheModule worldCacheModule;
-    private Set<BlockListener> listeners = new HashSet<>();
+    private Set<BiomeListener> listeners = new HashSet<>();
 
-    public void addListener(BlockListener listener) { listeners.add(listener); }
-    public void removeListener(BlockListener listener) { listeners.remove(listener); }
+    public void addListener(BiomeListener listener) { listeners.add(listener); }
+    public void removeListener(BiomeListener listener) { listeners.remove(listener); }
     public void clearListeners() { listeners.clear(); }
 
     @Override
@@ -47,39 +47,38 @@ public class BlocksModule implements IKeystoneModule
     }
 
     /**
-     * Set a {@link Block} in the current world. This will automatically hook into the history system, allowing
-     * for undo and redo support. Be sure that the {@link keystone.core.modules.history.HistoryModule}
-     * has an entry open first
+     * Set the {@link Biome} of a block in the current world. This will automatically hook into the history system, allowing
+     * for undo and redo support. Be sure that the {@link HistoryModule} has an entry open first
      * @param x The x-coordinate
      * @param y The y-coordinate
      * @param z The z-coordinate
-     * @param block The {@link Block} to set
+     * @param biome The {@link Biome} to set
      */
-    public void setBlock(int x, int y, int z, Block block)
+    public void setBiome(int x, int y, int z, Biome biome)
     {
-        historyModule.getOpenEntry().setBlock(x, y, z, block);
-        listeners.forEach(listener -> listener.onChanged(x, y, z, block));
+        historyModule.getOpenEntry().setBiome(x, y, z, biome);
+        listeners.forEach(listener -> listener.onChanged(x, y, z, biome));
     }
-    public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
+    public Biome getBiome(int x, int y, int z, RetrievalMode retrievalMode)
     {
         World world = worldCacheModule.getDimensionWorld(Player.getDimensionId());
         if (!historyModule.isEntryOpen())
         {
             BlockPos pos = new BlockPos(x, y, z);
-            return new Block(world.getBlockState(pos), world.getBlockEntity(pos));
+            return new Biome(world.getBiome(pos));
         }
 
         WorldHistoryChunk chunk = historyModule.getOpenEntry().getChunk(x, y, z);
-        if (chunk != null) return chunk.getBlock(x, y, z, retrievalMode);
+        if (chunk != null) return chunk.getBiome(x, y, z, retrievalMode);
         else
         {
             BlockPos pos = new BlockPos(x, y, z);
-            return new Block(world.getBlockState(pos), world.getBlockEntity(pos));
+            return new Biome(world.getBiome(pos));
         }
     }
 
     public void swapBuffers(boolean copy)
     {
-        historyModule.swapBlockBuffers(copy);
+        historyModule.swapBiomeBuffers(copy);
     }
 }

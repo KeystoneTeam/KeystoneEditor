@@ -1,6 +1,7 @@
 package keystone.core.modules.history;
 
 import keystone.api.Keystone;
+import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.world_cache.WorldCacheModule;
@@ -69,6 +70,12 @@ public class HistoryStackFrame
         if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new WorldHistoryChunk(chunkPosition, world));
         chunks.get(chunkPosition).setBlock(x, y, z, block);
     }
+    public void setBiome(int x, int y, int z, Biome biome)
+    {
+        Vector3i chunkPosition = new Vector3i(x >> 4, y >> 4, z >> 4);
+        if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new WorldHistoryChunk(chunkPosition, world));
+        chunks.get(chunkPosition).setBiome(x, y, z, biome);
+    }
     public void setEntity(Entity entity)
     {
         Vector3i chunkPosition = new Vector3i((int)entity.x() >> 4, (int)entity.y() >> 4, (int)entity.z() >> 4);
@@ -91,6 +98,10 @@ public class HistoryStackFrame
     public void swapBlockBuffers(boolean copy)
     {
         for (WorldHistoryChunk chunk : chunks.values()) chunk.swapBlockBuffers(copy);
+    }
+    public void swapBiomeBuffers(boolean copy)
+    {
+        for (WorldHistoryChunk chunk : chunks.values()) chunk.swapBiomeBuffers(copy);
     }
     public void swapEntityBuffers(boolean copy)
     {

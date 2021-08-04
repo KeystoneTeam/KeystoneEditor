@@ -2,13 +2,14 @@ package keystone.api;
 
 import keystone.api.enums.RetrievalMode;
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.api.wrappers.entities.Entity;
-import keystone.core.modules.WorldModifierModules;
+import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.common.models.Coords;
 
@@ -113,6 +114,19 @@ public class WorldRegion
     }
 
     /**
+     * Get the biome at a position in the filter box
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     * @param retrievalMode The {@link RetrievalMode} to use when getting the biome
+     * @return The biome at the given coordinates
+     */
+    public Biome getBiome(int x, int y, int z, RetrievalMode retrievalMode)
+    {
+        return worldModifiers.biomes.getBiome(x, y, z, retrievalMode);
+    }
+
+    /**
      * Set the block at a position in the filter box. This will only work if the position is within the filter box
      * @param x The x coordinate
      * @param y The y coordinate
@@ -151,6 +165,26 @@ public class WorldRegion
         if (allowBlocksOutside || isPositionInBox(x, y, z))
         {
             worldModifiers.blocks.setBlock(x, y, z, block);
+            return true;
+        }
+        else return false;
+    }
+
+    /**
+     * Set the biome at a position in the filter box to a {@link Biome}.
+     * This will only work if the position is within the filter box or
+     * allowBlocksOutside is true
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     * @param biome The {@link Biome} to change the position to
+     * @return Whether the change was successful
+     */
+    public boolean setBiome(int x, int y, int z, Biome biome)
+    {
+        if (allowBlocksOutside || isPositionInBox(x, y, z))
+        {
+            worldModifiers.biomes.setBiome(x, y, z, biome);
             return true;
         }
         else return false;

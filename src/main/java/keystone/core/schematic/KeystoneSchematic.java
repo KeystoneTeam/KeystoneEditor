@@ -6,8 +6,8 @@ import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.events.SchematicEvent;
 import keystone.core.math.BlockPosMath;
-import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
+import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import keystone.core.renderer.client.Player;
@@ -58,7 +58,7 @@ public class KeystoneSchematic
     /**
      * Create a schematic from a selection box
      * @param box The {@link keystone.core.modules.selection.boxes.SelectionBoundingBox} to create the schematic from
-     * @param worldModifiers The {@link keystone.core.modules.WorldModifierModules} that the schematic contents is read from
+     * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
      * @return The generated {@link keystone.core.schematic.KeystoneSchematic}
      */
     public static KeystoneSchematic createFromSelection(SelectionBoundingBox box, WorldModifierModules worldModifiers)

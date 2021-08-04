@@ -3,7 +3,7 @@ package keystone.core.schematic.extensions;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
-import keystone.core.modules.WorldModifierModules;
+import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.nbt.CompoundNBT;

@@ -1,6 +1,7 @@
 package keystone.core.modules.history;
 
 import keystone.api.enums.RetrievalMode;
+import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
@@ -10,6 +11,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.IServerWorld;
+import net.minecraft.world.biome.BiomeContainer;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,21 +20,26 @@ import java.util.UUID;
 
 public class WorldHistoryChunk
 {
-    private int chunkX;
-    private int chunkY;
-    private int chunkZ;
-    private IServerWorld world;
+    private final int chunkX;
+    private final int chunkY;
+    private final int chunkZ;
+    private final IServerWorld world;
 
-    private Block[] oldBlocks;
-    private Block[] blockBuffer1;
-    private Block[] blockBuffer2;
+    private final Block[] oldBlocks;
+    private final Block[] blockBuffer1;
+    private final Block[] blockBuffer2;
 
-    private Map<UUID, Entity> oldEntities;
-    private Map<UUID, Entity> entityBuffer1;
-    private Map<UUID, Entity> entityBuffer2;
-    private Map<UUID, Entity> allEntities;
+    private final Biome[] oldBiomes;
+    private final Biome[] biomeBuffer1;
+    private final Biome[] biomeBuffer2;
+
+    private final Map<UUID, Entity> oldEntities;
+    private final Map<UUID, Entity> entityBuffer1;
+    private final Map<UUID, Entity> entityBuffer2;
+    private final Map<UUID, Entity> allEntities;
 
     private boolean swappedBlocks;
+    private boolean swappedBiomes;
     private boolean swappedEntities;
 
     public WorldHistoryChunk(Vector3i chunkPosition, IServerWorld world)
@@ -46,6 +53,10 @@ public class WorldHistoryChunk
         blockBuffer1 = new Block[4096];
         blockBuffer2 = new Block[4096];
 
+        oldBiomes = new Biome[4096];
+        biomeBuffer1 = new Biome[4096];
+        biomeBuffer2 = new Biome[4096];
+
         int i = 0;
         for (int x = chunkX * 16; x < (chunkX + 1) * 16; x++)
         {
@@ -55,6 +66,7 @@ public class WorldHistoryChunk
                 {
                     BlockPos pos = new BlockPos(x, y, z);
                     oldBlocks[i] = new Block(world.getBlockState(pos), world.getBlockEntity(pos));
+                    oldBiomes[i] = new Biome(world.getBiome(pos));
                     i++;
                 }
             }
@@ -94,6 +106,21 @@ public class WorldHistoryChunk
 
         if (block == null) return oldBlocks[index];
         else return block;
+    }
+    public Biome getBiome(int x, int y, int z, RetrievalMode retrievalMode)
+    {
+        int index = getIndex(x, y, z);
+        Biome biome = null;
+
+        switch (retrievalMode)
+        {
+            case ORIGINAL: return oldBiomes[index];
+            case LAST_SWAPPED: biome = swappedBiomes ? biomeBuffer1[index] : biomeBuffer2[index]; break;
+            case CURRENT: biome = swappedBiomes ? biomeBuffer2[index] : biomeBuffer1[index]; break;
+        }
+
+        if (biome == null) return oldBiomes[index];
+        else return biome;
     }
     public Entity getEntity(UUID keystoneUUID, RetrievalMode retrievalMode)
     {
@@ -136,6 +163,11 @@ public class WorldHistoryChunk
         if (swappedBlocks) blockBuffer2[getIndex(x, y, z)] = block;
         else blockBuffer1[getIndex(x, y, z)] = block;
     }
+    public void setBiome(int x, int y, int z, Biome biome)
+    {
+        if (swappedBiomes) biomeBuffer2[getIndex(x, y, z)] = biome;
+        else biomeBuffer1[getIndex(x, y, z)] = biome;
+    }
     public void setEntity(Entity entity)
     {
         if (swappedEntities) entityBuffer2.put(entity.keystoneUUID(), entity);
@@ -143,6 +175,7 @@ public class WorldHistoryChunk
         allEntities.put(entity.keystoneUUID(), entity);
     }
 
+    //TODO: Add biome setting support
     public void undo()
     {
         int i = 0;
@@ -154,6 +187,7 @@ public class WorldHistoryChunk
                 {
                     BlockPos pos = new BlockPos(x, y, z);
                     Block block = oldBlocks[i];
+                    Biome biome = oldBiomes[i];
 
                     world.getLevel().setBlockAndUpdate(pos, block.getMinecraftBlock());
                     if (block.getTileEntityData() != null)
@@ -239,6 +273,14 @@ public class WorldHistoryChunk
         if (copy)
         {
             System.arraycopy(swappedBlocks ? blockBuffer1 : blockBuffer2, 0, swappedBlocks ? blockBuffer2 : blockBuffer1, 0, blockBuffer1.length);
+        }
+    }
+    public void swapBiomeBuffers(boolean copy)
+    {
+        swappedBiomes = !swappedBiomes;
+        if (copy)
+        {
+            System.arraycopy(swappedBiomes ? biomeBuffer1 : biomeBuffer2, 0, swappedBiomes ? biomeBuffer2 : biomeBuffer1, 0, biomeBuffer1.length);
         }
     }
     public void swapEntityBuffers(boolean copy)

@@ -2,12 +2,12 @@ package keystone.core.modules.schematic_import.boxes;
 
 import keystone.api.Keystone;
 import keystone.core.math.RayTracing;
-import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectedFace;
+import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.BoundingBoxType;

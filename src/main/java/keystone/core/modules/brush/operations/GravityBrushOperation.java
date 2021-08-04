@@ -2,8 +2,8 @@ package keystone.core.modules.brush.operations;
 
 import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.blocks.Block;
-import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.brush.BrushOperation;
+import keystone.core.modules.world.WorldModifierModules;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;

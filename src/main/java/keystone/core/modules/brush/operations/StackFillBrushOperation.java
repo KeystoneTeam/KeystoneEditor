@@ -4,8 +4,8 @@ import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockPalette;
-import keystone.core.modules.WorldModifierModules;
 import keystone.core.modules.brush.BrushOperation;
+import keystone.core.modules.world.WorldModifierModules;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 

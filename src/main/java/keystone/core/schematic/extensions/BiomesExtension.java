@@ -5,7 +5,7 @@ import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
-import keystone.core.modules.blocks.BlocksModule;
+import keystone.core.modules.world.BlocksModule;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.CompoundNBT;

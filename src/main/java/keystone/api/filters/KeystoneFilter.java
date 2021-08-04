@@ -4,6 +4,7 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
 import keystone.api.WorldRegion;
+import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.Item;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
@@ -18,8 +19,10 @@ import net.minecraft.command.arguments.BlockStateParser;
 import net.minecraft.command.arguments.ItemParser;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * A filter compilable by Keystone. All filters must contain a class which extends {@link keystone.api.filters.KeystoneFilter}.
@@ -320,7 +323,28 @@ public class KeystoneFilter extends EditableObject
      */
     public static Entity entity(String id)
     {
-        return new Entity(id);
+        if (ForgeRegistries.ENTITIES.containsKey(new ResourceLocation(id))) return new Entity(id);
+        else
+        {
+            Keystone.abortFilter("Invalid entity ID: '" + id + "'!");
+            return null;
+        }
+    }
+    /**
+     * Create a {@link Biome} from a biome ID. Any ID that is a valid ID for the
+     * /locatebiome command will work. [e.g. "minecraft:plains"]
+     * @param id The biome ID
+     * @return The generated {@link Biome}
+     */
+    public static Biome biome(String id)
+    {
+        ResourceLocation location = new ResourceLocation(id);
+        if (ForgeRegistries.BIOMES.containsKey(location)) return new Biome(ForgeRegistries.BIOMES.getValue(location));
+        else
+        {
+            Keystone.abortFilter("Invalid biome ID: '" + id + "'!");
+            return null;
+        }
     }
     //endregion
 }

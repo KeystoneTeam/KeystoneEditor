@@ -8,8 +8,7 @@ public enum RetrievalMode
      */
     ORIGINAL,
     /**
-     * Retrieve the content that was last swapped via the
-     * the swapBuffers or swapWorldBuffers method
+     * Retrieve the content that was last swapped via swapBuffers
      */
     LAST_SWAPPED,
     /**
