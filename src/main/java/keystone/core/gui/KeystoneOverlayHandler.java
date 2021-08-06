@@ -140,6 +140,7 @@ public class KeystoneOverlayHandler
     public static void resize(Minecraft minecraft, int width, int height)
     {
         if (Minecraft.getInstance().screen != null) return;
+        addList.forEach(screen -> screen.resize(minecraft, width, height));
         overlays.forEach(screen -> screen.resize(minecraft, width, height));
     }
     public static void render(MatrixStack matrixStack, float partialTicks)

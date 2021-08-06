@@ -146,7 +146,7 @@ public class KeystoneFilter extends EditableObject
      * Send a message to the player in in-game chat
      * @param message The message to send
      */
-    protected final void print(Object message)
+    public final void print(Object message)
     {
         if (message == null) message = "null";
         Minecraft.getInstance().player.sendMessage(new StringTextComponent(message.toString()), Util.NIL_UUID);
@@ -155,7 +155,7 @@ public class KeystoneFilter extends EditableObject
      * Abort filter execution
      * @param reason The reason the filter cannot be completed
      */
-    protected final void abort(String reason)
+    public final void abort(String reason)
     {
         Keystone.abortFilter(reason);
     }
@@ -164,11 +164,11 @@ public class KeystoneFilter extends EditableObject
      * Throw an throwable and abort further execution
      * @param throwable The throwable to be thrown
      */
-    protected final void throwException(Throwable throwable) { Keystone.filterException(this, throwable); }
+    public final void throwException(Throwable throwable) { Keystone.filterException(this, throwable); }
     /**
      * @return The number of {@link WorldRegion FilterBoxes} that the filter is modifying
      */
-    protected final int regionCount() { return Keystone.getModule(SelectionModule.class).getSelectionBoxCount(); }
+    public final int regionCount() { return Keystone.getModule(SelectionModule.class).getSelectionBoxCount(); }
 
     /**
      * Create a {@link BlockPalette} from multiple block IDs. Any ID that is a valid ID
@@ -177,7 +177,7 @@ public class KeystoneFilter extends EditableObject
      * @param contents A list of block IDs and optionally weights
      * @return The {@link BlockPalette} that is generated
      */
-    protected final BlockPalette palette(String... contents)
+    public final BlockPalette palette(String... contents)
     {
         BlockPalette palette = new BlockPalette();
         for (String content : contents)
@@ -209,7 +209,7 @@ public class KeystoneFilter extends EditableObject
      * @param blocks A list of {@link Block Blocks}
      * @return The {@link BlockPalette} that is generated
      */
-    protected final BlockPalette palette(Block... blocks)
+    public final BlockPalette palette(Block... blocks)
     {
         BlockPalette palette = new BlockPalette();
         for (Block block : blocks) palette = palette.with(block);
@@ -217,25 +217,35 @@ public class KeystoneFilter extends EditableObject
     }
 
     /**
+     * Create an empty blacklist {@link BlockMask}
+     * @return The blacklist {@link BlockMask}
+     */
+    public final BlockMask blacklist() { return new BlockMask().blacklist(); }
+    /**
      * Create a blacklist {@link BlockMask} from multiple block IDs. Any ID that
      * is a valid ID for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param contents A list of block IDs
      * @return The blacklist {@link BlockMask}
      */
-    protected final BlockMask blacklist(String... contents) { return whitelist(contents).blacklist(); }
+    public final BlockMask blacklist(String... contents) { return whitelist(contents).blacklist(); }
     /**
      * Create a blacklist {@link BlockMask} from multiple {@link Block Blocks}
      * @param blocks A list of {@link Block Blocks}
      * @return The blacklist {@link BlockMask}
      */
-    protected final BlockMask blacklist(Block... blocks) { return whitelist(blocks).blacklist(); }
+    public final BlockMask blacklist(Block... blocks) { return whitelist(blocks).blacklist(); }
+    /**
+     * Create an empty whitelist {@link BlockMask}
+     * @return The whitelist {@link BlockMask}
+     */
+    public final BlockMask whitelist() { return new BlockMask(); }
     /**
      * Create a whitelist {@link BlockMask} from multiple block IDs. Any ID that
      * is a valid ID for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param contents A list of block IDs
      * @return The whitelist {@link BlockMask}
      */
-    protected final BlockMask whitelist(String... contents)
+    public final BlockMask whitelist(String... contents)
     {
         BlockMask mask = new BlockMask();
         for (String content : contents) mask = mask.with(content);
@@ -246,7 +256,7 @@ public class KeystoneFilter extends EditableObject
      * @param blocks A list of {@link Block Blocks}
      * @return The whitelist {@link BlockMask} that is generated
      */
-    protected final BlockMask whitelist(Block... blocks)
+    public final BlockMask whitelist(Block... blocks)
     {
         BlockMask mask = new BlockMask();
         for (Block block : blocks) mask = mask.with(block);
@@ -259,7 +269,7 @@ public class KeystoneFilter extends EditableObject
      * @param palettes A list of {@link BlockPalette BlockPalettes}
      * @return An array containing the resolved {@link Block Blocks}, in the same order as the provided {@link BlockPalette BlockPalettes}
      */
-    protected final Block[] resolvePalettes(BlockPalette... palettes)
+    public final Block[] resolvePalettes(BlockPalette... palettes)
     {
         Block[] ret = new Block[palettes.length];
         if (palettes.length == 0) return ret;

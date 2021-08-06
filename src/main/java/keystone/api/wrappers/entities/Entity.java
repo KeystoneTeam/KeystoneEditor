@@ -3,9 +3,12 @@ package keystone.api.wrappers.entities;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
+import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.math.BlockPosMath;
+import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
+import keystone.core.renderer.client.Player;
 import net.minecraft.command.arguments.NBTPathArgument;
 import net.minecraft.command.arguments.NBTTagArgument;
 import net.minecraft.entity.EntityType;
@@ -15,6 +18,7 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.IServerWorld;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.Optional;
@@ -32,6 +36,7 @@ public class Entity
     private float pitch;
     private float yaw;
     private boolean killed;
+    private BoundingBox boundingBox;
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
@@ -49,6 +54,7 @@ public class Entity
         this.pitch = 0;
         this.yaw = 0;
         this.killed = false;
+        updateBoundingBox();
     }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
@@ -99,6 +105,8 @@ public class Entity
             this.pitch = rotationNBT.getFloat(1);
         }
         this.killed = false;
+
+        updateBoundingBox();
     }
 
     /**
@@ -116,7 +124,6 @@ public class Entity
         this.minecraftUUID = null;
         this.entityData.remove("UUID");
     }
-
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Spawn a new instance of this entity into a server world
@@ -195,6 +202,12 @@ public class Entity
         if (this.minecraftUUID != null)
         {
             net.minecraft.entity.Entity mcEntity = world.getLevel().getEntity(this.minecraftUUID);
+            if (mcEntity == null)
+            {
+                breakMinecraftEntityConnection();
+                spawnInWorld(world);
+            }
+
             if (!this.killed) mcEntity.deserializeNBT(this.entityData);
             else
             {
@@ -203,6 +216,14 @@ public class Entity
             }
         }
         else spawnInWorld(world);
+    }
+
+    public void updateBoundingBox()
+    {
+        World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimensionId());
+        net.minecraft.entity.Entity mcEntity = EntityType.create(this.entityData.copy(), world).orElse(null);
+        if (mcEntity == null) Keystone.LOGGER.error("Cannot update bounding box of Entity " + this);
+        else boundingBox = new BoundingBox(mcEntity.getBoundingBox());
     }
     //endregion
     //region API
@@ -218,6 +239,7 @@ public class Entity
         clone.pitch = pitch;
         clone.yaw = yaw;
         clone.killed = killed;
+        clone.boundingBox = boundingBox;
         return clone;
     }
     public String type() { return this.entityData.getString("id"); }
@@ -233,6 +255,10 @@ public class Entity
      * @return The z-coordinate of the entity
      */
     public double z() { return this.position.z; }
+    /**
+     * @return This Entity's {@link BoundingBox}
+     */
+    public BoundingBox boundingBox() { return this.boundingBox; }
     /**
      * @return The yaw angle of the entity, in degrees
      */
@@ -371,7 +397,7 @@ public class Entity
             NBTPathArgument.NBTPath nbtPath = NBTPathArgument.nbtPath().parse(new StringReader(path));
             INBT nbt = NBTTagArgument.nbtTag().parse(new StringReader(data));
             nbtPath.set(this.entityData, () -> nbt);
-
+            updateBoundingBox();
             return this;
         }
         catch (CommandSyntaxException e)
@@ -410,6 +436,7 @@ public class Entity
             this.pitch = rotationNBT.getFloat(1);
         }
 
+        updateBoundingBox();
         return this;
     }
     //endregion

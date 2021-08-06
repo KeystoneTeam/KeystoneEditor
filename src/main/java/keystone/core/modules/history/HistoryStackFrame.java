@@ -9,10 +9,7 @@ import keystone.core.renderer.client.Player;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.IServerWorld;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class HistoryStackFrame
 {
@@ -25,8 +22,8 @@ public class HistoryStackFrame
     {
         this.historyModule = Keystone.getModule(HistoryModule.class);
         this.world = Keystone.getModule(WorldCacheModule.class).getDimensionServerWorld(Player.getDimensionId());
-        this.entries = new ArrayList<>();
-        this.chunks = new HashMap<>();
+        this.entries = Collections.synchronizedList(new ArrayList<>());
+        this.chunks = Collections.synchronizedMap(new HashMap<>());
     }
 
     public void undo()

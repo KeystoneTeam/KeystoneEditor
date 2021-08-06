@@ -12,6 +12,7 @@ public class BoundingBox
     private AxisAlignedBB bb;
     public final double minX, minY, minZ;
     public final double maxX, maxY, maxZ;
+    public final double centerX, centerY, centerZ;
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
@@ -27,6 +28,9 @@ public class BoundingBox
         this.maxX = minecraftBB.maxX;
         this.maxY = minecraftBB.maxY;
         this.maxZ = minecraftBB.maxZ;
+        this.centerX = minecraftBB.getCenter().x;
+        this.centerY = minecraftBB.getCenter().y;
+        this.centerZ = minecraftBB.getCenter().z;
     }
 
     /**
