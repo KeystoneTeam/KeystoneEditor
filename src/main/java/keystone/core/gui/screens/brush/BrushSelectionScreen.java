@@ -72,7 +72,8 @@ public class BrushSelectionScreen extends KeystoneOverlay
 
         // Calculate panel size
         panelMaxX = Math.min(KeystoneHotbar.getX() - 5, 280);
-        brushVariablesList = new FieldWidgetList(brushModule::getBrushOperation, PADDING, panelMaxX - 2 * PADDING, this::disableWidgets, this::restoreWidgets);
+        int maxPanelHeight = minecraft.getWindow().getGuiScaledHeight() - (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getFinalHeight() + PADDING) + PADDING);
+        brushVariablesList = new FieldWidgetList(new TranslationTextComponent("keystone.brush.brushVariables"), brushModule::getBrushOperation, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
         brushVariablesList.bake();
         int centerHeight = height / 2;
         int halfPanelHeight = (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getFinalHeight() + PADDING) + PADDING + brushVariablesList.getHeight()) / 2;
@@ -159,9 +160,8 @@ public class BrushSelectionScreen extends KeystoneOverlay
         y += IntegerWidget.getFinalHeight() + PADDING;
 
         // Brush variables
-        brushVariablesList.offset(PADDING, y);
-        brushVariablesList.addWidgets(this::addButton);
-        brushVariablesList.addQueuedWidgets(this::addButton);
+        brushVariablesList.offset(0, y);
+        addButton(brushVariablesList);
 
         brushModule.getBrushOperation().undirtyEditor();
     }

@@ -7,6 +7,7 @@ import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.EnumProperty;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.Property;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Collection;
 import java.util.function.BiConsumer;
@@ -19,27 +20,21 @@ public class BlockPropertiesWidgetList extends WidgetList
     protected final Runnable restoreWidgets;
     protected final BiConsumer<Widget, Boolean> addDropdown;
 
-    public BlockPropertiesWidgetList(Block block, int padding, int width, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
+    public BlockPropertiesWidgetList(Block block, int x, int y, int width, int maxHeight, int padding, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
     {
-        this.intendedWidth = width;
+        super(x, y, width, maxHeight, padding, new TranslationTextComponent("keystone.block_properties.propertiesPanel"));
+
+        this.intendedWidth = width - 2 * padding;
         this.disableWidgets = disableWidgets;
         this.restoreWidgets = restoreWidgets;
         this.addDropdown = this::add;
 
-        int y = 0;
+        int propertyY = 0;
         Collection<Property<?>> properties = block.getMinecraftBlock().getProperties();
         for (Property<?> property : properties)
         {
-            y += createVariableEditor(block, property, y) + padding;
+            propertyY += createVariableEditor(block, property, propertyY) + padding;
         }
-    }
-
-    @Override
-    public void bake()
-    {
-        super.bake();
-        height += y;
-        y = 0;
     }
 
     private int createVariableEditor(Block block, Property<?> property, int y)

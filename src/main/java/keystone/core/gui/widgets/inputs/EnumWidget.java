@@ -28,12 +28,13 @@ public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
 
     public EnumWidget(ITextComponent name, int x, int y, int width, T value, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets, BiConsumer<Widget, Boolean> addDropdown)
     {
-        super(x, y + 11, width, 20, name, (button) ->
+        super(x, y, width, getFinalHeight(), name, (button) ->
         {
-            EnumWidget paletteWidget = (EnumWidget)button;
+            EnumWidget enumWidget = (EnumWidget)button;
 
-            disableWidgets.accept(new Widget[] { paletteWidget.dropdown });
-            paletteWidget.dropdown.visible = true;
+            disableWidgets.accept(new Widget[] { enumWidget.dropdown });
+            enumWidget.dropdown.y = enumWidget.y + getEnumOffset() + 20;
+            enumWidget.dropdown.visible = true;
         });
 
         this.mc = Minecraft.getInstance();
@@ -45,7 +46,8 @@ public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
 
         if (autoBuild()) build();
     }
-    public static final int getFinalHeight()
+    public static int getEnumOffset() { return 11; }
+    public static int getFinalHeight()
     {
         return 31;
     }
@@ -61,7 +63,7 @@ public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
             for (Enum test : enumClass.getEnumConstants()) if (isValueAllowed((T)test)) valuesList.add((T)test);
 
             this.dropdown = null;
-            this.dropdown = new Dropdown<>(x, y + 11, width, getMessage(), entry -> new StringTextComponent(AnnotationUtils.getEnumValueName(entry)), (entry, title) ->
+            this.dropdown = new Dropdown<>(x, y + getEnumOffset() + 20, width, getMessage(), entry -> new StringTextComponent(AnnotationUtils.getEnumValueName(entry)), (entry, title) ->
             {
                 setMessage(title);
                 onSetValue(entry);
@@ -88,8 +90,14 @@ public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        drawCenteredString(matrixStack, font, name, x + width / 2, y - 11, 0xFFFFFF);
+        drawCenteredString(matrixStack, font, name, x + width / 2, y, 0xFFFFFF);
+        matrixStack.pushPose();
+        y += getEnumOffset();
+        height -= getEnumOffset();
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
+        height += getEnumOffset();
+        y -= getEnumOffset();
+        matrixStack.popPose();
     }
 
     public T getValue() { return value; }

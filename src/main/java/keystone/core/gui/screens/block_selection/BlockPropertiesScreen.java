@@ -53,7 +53,8 @@ public class BlockPropertiesScreen extends KeystoneOverlay
         // Calculate panel size
         panelWidth = minecraft.getWindow().getGuiScaledWidth() / 4;
         panelX = (minecraft.getWindow().getGuiScaledWidth() - panelWidth) / 2;
-        propertiesList = new BlockPropertiesWidgetList(block, PADDING, panelWidth - PADDING - PADDING, this::disableWidgets, this::restoreWidgets);
+        int maxPanelHeight = minecraft.getWindow().getGuiScaledHeight() - 60 - 3 * PADDING;
+        propertiesList = new BlockPropertiesWidgetList(block, 0, 0, panelWidth, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
         propertiesList.bake();
         panelHeight = PADDING + propertiesList.getHeight() + PADDING + 20 + PADDING;
         panelY = (minecraft.getWindow().getGuiScaledHeight() - panelHeight) / 2;
@@ -70,9 +71,8 @@ public class BlockPropertiesScreen extends KeystoneOverlay
         }));
 
         // Block Properties
-        propertiesList.offset(panelX + PADDING, panelY + PADDING);
-        propertiesList.addWidgets(this::addButton);
-        propertiesList.addQueuedWidgets(this::addButton);
+        propertiesList.offset(panelX, panelY);
+        addButton(propertiesList);
     }
 
     @Override

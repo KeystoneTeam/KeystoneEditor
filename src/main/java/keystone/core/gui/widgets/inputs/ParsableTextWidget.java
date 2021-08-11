@@ -19,7 +19,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
 
     public ParsableTextWidget(ITextComponent name, int x, int y, int width, T value)
     {
-        super(Minecraft.getInstance().font, x, y + 11, width, getFinalHeight() - 11, name);
+        super(Minecraft.getInstance().font, x, y, width, getFinalHeight(), name);
 
         this.mc = Minecraft.getInstance();
         this.font = mc.font;
@@ -29,6 +29,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
         setBordered(true);
         setValue(this.value.toString());
     }
+    public static int getFieldOffset() { return 11; }
     public static int getFinalHeight() { return 23; }
 
     protected abstract T parse(String str) throws Exception;
@@ -44,8 +45,14 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        drawCenteredString(matrixStack, font, getMessage(), x + width / 2, y - 11, 0xFFFFFF);
+        drawCenteredString(matrixStack, font, getMessage(), x + width / 2, y, 0xFFFFFF);
+        matrixStack.pushPose();
+        y += getFieldOffset();
+        height -= getFieldOffset();
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
+        height += getFieldOffset();
+        y -= getFieldOffset();
+        matrixStack.popPose();
     }
 
     @Override

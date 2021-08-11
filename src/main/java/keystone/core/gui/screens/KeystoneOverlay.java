@@ -21,6 +21,8 @@ public class KeystoneOverlay extends Screen
 {
     private static final ResourceLocation ROUNDED_BOX = new ResourceLocation("keystone:textures/gui/rounded_box.png");
 
+    private static int itemOffsetY = 0;
+
     private Map<Widget, Boolean> widgetsActive = new HashMap<>();
     private boolean restoreWidgets = false;
 
@@ -83,6 +85,7 @@ public class KeystoneOverlay extends Screen
         // Center
         fill(stack, minX + cornerSize, minY + cornerSize, maxX - cornerSize, maxY - cornerSize, 0x80000000);
     }
+
     public static void drawItem(Widget widget, Minecraft mc, ItemStack stack, int x, int y)
     {
         drawItem(widget, mc, stack, x, y, null);
@@ -94,11 +97,15 @@ public class KeystoneOverlay extends Screen
 
         FontRenderer font = stack.getItem().getFontRenderer(stack);
         if (font == null) font = mc.font;
-        mc.getItemRenderer().renderAndDecorateItem(stack, x, y);
-        mc.getItemRenderer().renderGuiItemDecorations(font, stack, x, y, text);
+        mc.getItemRenderer().renderAndDecorateItem(stack, x, y + itemOffsetY);
+        mc.getItemRenderer().renderGuiItemDecorations(font, stack, x, y + itemOffsetY, text);
 
         widget.setBlitOffset(0);
         mc.getItemRenderer().blitOffset = 0.0F;
+    }
+    public static void setItemOffsetY(int offset)
+    {
+        itemOffsetY = offset;
     }
     public static void drawTooltip(IKeystoneTooltip tooltip)
     {

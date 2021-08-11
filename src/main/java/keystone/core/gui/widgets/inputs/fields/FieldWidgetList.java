@@ -10,6 +10,7 @@ import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.Util;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
@@ -26,15 +27,17 @@ public class FieldWidgetList extends WidgetList
     protected final Runnable restoreWidgets;
     protected final BiConsumer<Widget, Boolean> addDropdown;
 
-    public FieldWidgetList(Supplier<Object> instance, int padding, int width, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
+    public FieldWidgetList(ITextComponent label, Supplier<Object> instance, int x, int y, int width, int maxHeight, int padding, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
     {
+        super(x, y, width, maxHeight, padding, label);
+
         this.instance = instance;
-        this.intendedWidth = width;
+        this.intendedWidth = width - 2 * padding;
         this.disableWidgets = disableWidgets;
         this.restoreWidgets = restoreWidgets;
         this.addDropdown = this::add;
 
-        int y = 0;
+        int fieldY = 0;
         Field[] fields = instance.get().getClass().getDeclaredFields();
         for (Field field : fields)
         {
@@ -46,7 +49,7 @@ public class FieldWidgetList extends WidgetList
             try
             {
                 field.setAccessible(true);
-                y += createVariableEditor(field.getType(), field, hook, variableName, y) + padding;
+                fieldY += createVariableEditor(field.getType(), field, hook, variableName, fieldY) + padding;
             }
             catch (SecurityException e)
             {
@@ -63,14 +66,6 @@ public class FieldWidgetList extends WidgetList
                 e.printStackTrace();
             }
         }
-    }
-
-    @Override
-    public void bake()
-    {
-        super.bake();
-        height += y;
-        y = 0;
     }
 
     private int createVariableEditor(Class<?> type, Field field, Hook hook, String name, int y) throws IllegalAccessException

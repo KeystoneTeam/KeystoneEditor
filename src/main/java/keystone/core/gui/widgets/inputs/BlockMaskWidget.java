@@ -33,7 +33,7 @@ public class BlockMaskWidget extends ButtonNoHotkey
 
     public BlockMaskWidget(ITextComponent name, int x, int y, int width, BlockMask value, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
     {
-        super(x, y + 11, width, 20, name, (button) ->
+        super(x, y, width, getFinalHeight(), name, (button) ->
         {
             BlockMaskWidget maskWidget = (BlockMaskWidget)button;
 
@@ -61,6 +61,7 @@ public class BlockMaskWidget extends ButtonNoHotkey
         this.stacks = new ArrayList<>();
         rebuildStacks();
     }
+    public static int getMaskOffset() { return 11; }
     public static final int getFinalHeight()
     {
         return 31;
@@ -86,8 +87,9 @@ public class BlockMaskWidget extends ButtonNoHotkey
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        drawCenteredString(matrixStack, font, getMessage(), x + width / 2, y - 11, 0xFFFFFF);
-        fill(matrixStack, x, y, x + width, y + height, 0x80FFFFFF);
+        int y = this.y + getMaskOffset();
+        drawCenteredString(matrixStack, font, getMessage(), x + width / 2, y - getMaskOffset(), 0xFFFFFF);
+        fill(matrixStack, x, y, x + width, y + height - getMaskOffset(), 0x80FFFFFF);
 
         if (mask.isBlacklist()) fill(matrixStack, x + width - 4, y, x + width, y + 4, 0xFF000000);
         else fill(matrixStack, x + width - 4, y, x + width, y + 4, 0xFFFFFFFF);
@@ -96,7 +98,7 @@ public class BlockMaskWidget extends ButtonNoHotkey
         for (ItemStack stack : this.stacks)
         {
             if (stack.isEmpty()) continue;
-            KeystoneOverlay.drawItem(this, mc, stack, x, this.y + 1);
+            KeystoneOverlay.drawItem(this, mc, stack, x, y + 1);
             x += 20;
         }
     }

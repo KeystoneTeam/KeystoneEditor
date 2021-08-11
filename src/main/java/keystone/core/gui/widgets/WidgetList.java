@@ -1,66 +1,63 @@
 package keystone.core.gui.widgets;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+import keystone.core.gui.screens.KeystoneOverlay;
+import keystone.core.gui.widgets.inputs.ParsableTextWidget;
 import net.minecraft.client.gui.widget.Widget;
+import net.minecraft.util.text.ITextComponent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
-public class WidgetList
+public class WidgetList extends Widget
 {
-    protected int x;
-    protected int y;
-    protected int width;
-    protected int height;
-    private List<Widget> widgets = new ArrayList<>();
-    private List<Widget> queuedWidgets = new ArrayList<>();
+    private int scrollIndex;
+    private int maxScrollIndex;
+
+    private final int padding;
+    private final int maxHeight;
+    private final List<Widget> currentWidgets = new ArrayList<>();
+    private final List<Widget> widgets = new ArrayList<>();
+    private final List<Widget> queuedWidgets = new ArrayList<>();
+
+    public WidgetList(int x, int y, int width, int maxHeight, int padding, ITextComponent label)
+    {
+        super(x, y, width, 0, label);
+        this.padding = padding;
+        this.maxHeight = maxHeight;
+    }
 
     public void add(Widget widget) { add(widget, false); }
     public void add(Widget widget, boolean queued)
     {
+        widget.x += this.x + padding;
+
         if (queued) queuedWidgets.add(widget);
         else widgets.add(widget);
-    }
-    public void remove(Widget widget) { remove(widget, false); }
-    public void remove(Widget widget, boolean queued)
-    {
-        if (queued) queuedWidgets.remove(widget);
-        else widgets.remove(widget);
     }
 
     public void bake()
     {
         if (widgets.size() == 0 && queuedWidgets.size() == 0)
         {
-            x = 0;
-            y = 0;
-            width = 0;
             height = 0;
             return;
         }
 
-        x = Integer.MAX_VALUE;
-        y = Integer.MAX_VALUE;
-        int maxX = Integer.MIN_VALUE;
-        int maxY = Integer.MIN_VALUE;
-
-        for (Widget widget : widgets)
+        scrollIndex = 0;
+        while (true)
         {
-            x = Math.min(x, widget.x);
-            y = Math.min(y, widget.y);
-            maxX = Math.max(maxX, widget.x + widget.getWidth());
-            maxY = Math.max(maxY, widget.y + widget.getHeight());
+            updateCurrentWidgets();
+            if (currentWidgets.size() + scrollIndex >= widgets.size())
+            {
+                maxScrollIndex = scrollIndex;
+                break;
+            }
+            else scrollIndex++;
         }
-        for (Widget widget : queuedWidgets)
-        {
-            x = Math.min(x, widget.x);
-            y = Math.min(y, widget.y);
-            maxX = Math.max(maxX, widget.x + widget.getWidth());
-            maxY = Math.max(maxY, widget.y + widget.getHeight());
-        }
-
-        width = maxX - x;
-        height = maxY - y;
+        scrollIndex = 0;
+        if (maxScrollIndex > 0) width += 2;
+        updateCurrentWidgets();
     }
     public void offset(int x, int y)
     {
@@ -77,29 +74,148 @@ public class WidgetList
             widget.y += y;
         }
     }
-    public void addWidgets(Consumer<Widget> consumer)
+
+    private boolean scrollPanel(double mouseX, double mouseY, double scrollDelta)
     {
-        widgets.forEach(consumer);
+        if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height)
+        {
+            scrollIndex += scrollDelta < 0 ? 1 : -1;
+            if (scrollIndex < 0) scrollIndex = 0;
+            if (scrollIndex > maxScrollIndex) scrollIndex = maxScrollIndex;
+
+            updateCurrentWidgets();
+            return true;
+        }
+        return false;
     }
-    public void addQueuedWidgets(Consumer<Widget> consumer)
+    private void updateCurrentWidgets()
     {
-        queuedWidgets.forEach(consumer);
+        currentWidgets.clear();
+        height = 0;
+
+        int y = this.y;
+        int i = scrollIndex;
+
+        while (i < widgets.size())
+        {
+            Widget widget = widgets.get(i);
+            if (height + widget.getHeight() > maxHeight) break;
+            widget.y = y;
+
+            y += widget.getHeight() + padding;
+            height += widget.getHeight() + padding;
+            currentWidgets.add(widget);
+            i++;
+        }
+    }
+    //region Widget Overrides
+    @Override
+    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+    {
+        if (currentWidgets.size() != widgets.size())
+        {
+            int scrollbarY = y + (int)(height * (scrollIndex / (float)widgets.size()));
+            int scrollbarHeight = (int)(height * (currentWidgets.size() / (float)widgets.size()));
+            fill(stack, x + width, scrollbarY, x + width + 2, scrollbarY + scrollbarHeight, 0xFF808080);
+        }
+
+        stack.pushPose();
+        currentWidgets.forEach(widget -> widget.render(stack, mouseX, mouseY, partialTicks));
+        queuedWidgets.forEach(widget -> widget.render(stack, mouseX, mouseY, partialTicks));
+        stack.popPose();
     }
 
-    public int getX()
+    @Override
+    public void onClick(double mouseX, double mouseY)
     {
-        return x;
+        currentWidgets.forEach(widget -> widget.onClick(mouseX, mouseY));
+        queuedWidgets.forEach(widget -> widget.onClick(mouseX, mouseY));
     }
-    public int getY()
+
+    @Override
+    public void onRelease(double mouseX, double mouseY)
     {
-        return y;
+        currentWidgets.forEach(widget -> widget.onRelease(mouseX, mouseY));
+        queuedWidgets.forEach(widget -> widget.onRelease(mouseX, mouseY));
     }
-    public int getWidth()
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button)
     {
-        return width;
+        for (Widget widget : queuedWidgets) if (widget.mouseClicked(mouseX, mouseY, button)) return true;
+        for (Widget widget : currentWidgets) if (widget.mouseClicked(mouseX, mouseY, button)) return true;
+        return false;
     }
-    public int getHeight()
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button)
     {
-        return height;
+        for (Widget widget : queuedWidgets) if (widget.mouseReleased(mouseX, mouseY, button)) return true;
+        for (Widget widget : currentWidgets) if (widget.mouseReleased(mouseX, mouseY, button)) return true;
+        return false;
     }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY)
+    {
+        for (Widget widget : queuedWidgets) if (widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
+        for (Widget widget : currentWidgets) if (widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
+        return false;
+    }
+
+    @Override
+    public boolean isHovered()
+    {
+        for (Widget widget : queuedWidgets) if (widget.isHovered()) return true;
+        for (Widget widget : currentWidgets) if (widget.isHovered()) return true;
+        return false;
+    }
+
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY)
+    {
+        for (Widget widget : queuedWidgets) if (widget.isMouseOver(mouseX, mouseY)) return true;
+        for (Widget widget : currentWidgets) if (widget.isMouseOver(mouseX, mouseY)) return true;
+        return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+    }
+
+    @Override
+    public void mouseMoved(double mouseX, double mouseY)
+    {
+        currentWidgets.forEach(widget -> widget.mouseMoved(mouseX, mouseY));
+        queuedWidgets.forEach(widget -> widget.mouseMoved(mouseX, mouseY));
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollDelta)
+    {
+        for (Widget widget : queuedWidgets) if (widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
+        for (Widget widget : currentWidgets) if (widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
+        return scrollPanel(mouseX, mouseY, scrollDelta);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
+    {
+        for (Widget widget : queuedWidgets) if (widget.keyPressed(keyCode, scanCode, modifiers)) return true;
+        for (Widget widget : currentWidgets) if (widget.keyPressed(keyCode, scanCode, modifiers)) return true;
+        return false;
+    }
+
+    @Override
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers)
+    {
+        for (Widget widget : queuedWidgets) if (widget.keyReleased(keyCode, scanCode, modifiers)) return true;
+        for (Widget widget : currentWidgets) if (widget.keyReleased(keyCode, scanCode, modifiers)) return true;
+        return false;
+    }
+
+    @Override
+    public boolean charTyped(char codePoint, int modifiers)
+    {
+        for (Widget widget : queuedWidgets) if (widget.charTyped(codePoint, modifiers)) return true;
+        for (Widget widget : currentWidgets) if (widget.charTyped(codePoint, modifiers)) return true;
+        return false;
+    }
+    //endregion
 }

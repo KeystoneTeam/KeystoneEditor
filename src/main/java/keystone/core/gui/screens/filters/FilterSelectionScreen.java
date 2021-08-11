@@ -107,7 +107,8 @@ public class FilterSelectionScreen extends KeystoneOverlay
             recreateFilterInstance();
         }
         panelMaxX = Math.min(KeystoneHotbar.getX() - 5, 280);
-        filterVariablesList = new FieldWidgetList(this::getFilterInstance, PADDING, panelMaxX - 10, this::disableWidgets, this::restoreWidgets);
+        int maxPanelHeight = minecraft.getWindow().getGuiScaledHeight() - 50 - 2 * PADDING;
+        filterVariablesList = new FieldWidgetList(new TranslationTextComponent("keystone.filter_panel.filterVariables"), this::getFilterInstance, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
         filterVariablesList.bake();
         int centerHeight = height / 2;
         int halfPanelHeight = 25 + PADDING + filterVariablesList.getHeight() / 2;
@@ -163,9 +164,8 @@ public class FilterSelectionScreen extends KeystoneOverlay
         this.children.add(dropdown);
 
         // Create Filter Variables
-        filterVariablesList.offset(5, panelMinY + ((panelMaxY - panelMinY) / 2) - (filterVariablesList.getHeight() / 2));
-        filterVariablesList.addWidgets(this::addButton);
-        filterVariablesList.addQueuedWidgets(this::addButton);
+        filterVariablesList.offset(0, panelMinY + ((panelMaxY - panelMinY) / 2) - (filterVariablesList.getHeight() / 2));
+        addButton(filterVariablesList);
 
         filterInstance.undirtyEditor();
     }

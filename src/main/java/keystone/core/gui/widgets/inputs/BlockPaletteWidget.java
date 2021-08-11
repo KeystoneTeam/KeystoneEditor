@@ -33,7 +33,7 @@ public class BlockPaletteWidget extends ButtonNoHotkey
 
     public BlockPaletteWidget(ITextComponent name, int x, int y, int width, BlockPalette value, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
     {
-        super(x, y + 11, width, 20, name, (button) ->
+        super(x, y, width, getFinalHeight(), name, (button) ->
         {
             BlockPaletteWidget paletteWidget = (BlockPaletteWidget)button;
 
@@ -61,7 +61,8 @@ public class BlockPaletteWidget extends ButtonNoHotkey
         this.stacks = new ArrayList<>();
         rebuildStacks();
     }
-    public static final int getFinalHeight()
+    public static int getPaletteOffset() { return 11; }
+    public static int getFinalHeight()
     {
         return 31;
     }
@@ -82,14 +83,16 @@ public class BlockPaletteWidget extends ButtonNoHotkey
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        drawCenteredString(matrixStack, font, getMessage(), x + width / 2, y - 11, 0xFFFFFF);
-        fill(matrixStack, x, y, x + width, y + height, 0x80FFFFFF);
+        int y = this.y + getPaletteOffset();
+
+        drawCenteredString(matrixStack, font, getMessage(), x + width / 2, y - getPaletteOffset(), 0xFFFFFF);
+        fill(matrixStack, x, y, x + width, y + height - getPaletteOffset(), 0x80FFFFFF);
 
         int x = this.x + 1;
         for (ItemStack stack : this.stacks)
         {
             if (stack.isEmpty()) continue;
-            KeystoneOverlay.drawItem(this, mc, stack, x, this.y + 1);
+            KeystoneOverlay.drawItem(this, mc, stack, x, y + 1);
             x += 20;
         }
     }

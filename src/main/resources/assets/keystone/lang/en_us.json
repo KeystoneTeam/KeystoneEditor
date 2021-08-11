@@ -58,6 +58,9 @@
 
   "keystone.filter_panel.select": "Filter: ",
   "keystone.filter_panel.runFilter": "Filter",
+  "keystone.filter_panel.filterVariables": "Filter Variables",
+
+  "keystone.block_properties.propertiesPanel": "Block Properties",
 
   "keystone.brush.minimumSpacing": "Minimum Spacing",
   "keystone.brush.noise": "Noise",
@@ -65,6 +68,7 @@
   "keystone.brush.erode": "Erode",
   "keystone.brush.gravity": "Gravity",
   "keystone.brush.stackFill": "Stack Fill",
+  "keystone.brush.brushVariables": "Brush Variables",
 
   "keystone.shape.round": "Round",
   "keystone.shape.diamond": "Diamond",
