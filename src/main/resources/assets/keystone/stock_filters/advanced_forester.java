@@ -1,5 +1,6 @@
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.DiscSampler;
 import keystone.api.variables.FloatRange;
 import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
@@ -7,6 +8,7 @@ import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.coordinates.Axis;
+import keystone.api.wrappers.coordinates.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +17,7 @@ import java.lang.Float;
 
 public class AdvancedForester extends KeystoneFilter
 {
+    //region Enums
     public enum TreeType
     {
         //PROCEDURAL,
@@ -45,7 +48,7 @@ public class AdvancedForester extends KeystoneFilter
             }
         }
     }
-
+    //endregion
     //region Tree Classes
     /**
      * Base tree class, used to define the shape of a tree's trunk and foliage
@@ -160,7 +163,7 @@ public class AdvancedForester extends KeystoneFilter
 
         protected void placeCrossSection(float centerX, float centerY, float centerZ, float radius, Axis axis, Block block, WorldRegion region)
         {
-            radius += 0.618f;
+            radius = (int)(radius + 0.618f);
             if (radius <= 0) return;
 
             for (float i = -radius + 0.5f; i <= radius + 0.5f; i++)
@@ -637,14 +640,14 @@ public class AdvancedForester extends KeystoneFilter
         }
     }
     //endregion
-
+    //region Variables
     @Variable public BlockMask groundMask = whitelist("minecraft:grass_block");
     @Variable public BlockMask stoneMask = whitelist("minecraft:stone", "minecraft:granite", "minecraft:diorite", "minecraft:andesite");
     @Variable public BlockPalette logPalette = palette("minecraft:oak_log");
     @Variable public BlockPalette leavesPalette = palette("minecraft:oak_leaves");
     @Variable public TreeType treeType = TreeType.NORMAL;
     @Variable public RootType rootType = RootType.NORMAL;
-    @Variable @IntRange(min = 1, max = 100, scrollStep = 25) public int treeChance = 25;
+    @Variable @IntRange(min = 1, max = 100, scrollStep = 5) public int treeDistance = 20;
     @Variable public int height = 35;
     @Variable public int heightVariation = 12;
     @Variable @FloatRange(min = 0.0f, max = 1.0f, scrollStep = 0.1f) public float trunkHeight = 0.7f;
@@ -653,10 +656,12 @@ public class AdvancedForester extends KeystoneFilter
     @Variable @FloatRange(min = 0.0f, max = 10.0f, scrollStep = 0.1f) public float foliageDensity = 1.0f;
     @Variable public boolean hollowTrunk = false;
     @Variable public boolean rootButtresses = false;
+    @Variable public int seed = 0;
 
     public BlockMask airMask = whitelist("minecraft:air");
     public Block air = block("minecraft:air");
     public Random random;
+    //endregion
 
     @Override
     public boolean allowBlocksOutsideRegion() { return true; }
@@ -664,30 +669,44 @@ public class AdvancedForester extends KeystoneFilter
     @Override
     public void prepare()
     {
-        this.random = new Random();
+        this.random = seed == 0 ? new Random() : new Random(seed);
     }
 
     @Override
     public void processRegion(WorldRegion region)
     {
-        int x = region.min.x + (int)((region.max.x - region.min.x) * 0.5f);
-        int z = region.min.z + (int)((region.max.z - region.min.z) * 0.5f);
-        int y = region.min.y;
-        Tree tree = null;
+        List trees = new ArrayList();
+        //trees.add(getTreeInstance(region.min.x + region.size.x * 0.5f, region.min.y, region.min.z + region.size.z * 0.5f));
 
-        switch (treeType)
+        long startTime = System.currentTimeMillis();
+        List treePositions = DiscSampler.sample2D(random, treeDistance, region.size.x, region.size.z);
+        print(System.currentTimeMillis() - startTime);
+        startTime = System.currentTimeMillis();
+
+        for (Object obj : treePositions)
         {
-            case NORMAL: tree = new NormalTree(this, x, y, z); break;
-            case BAMBOO: tree = new BambooTree(this, x, y, z); break;
-            case ROUND: tree = new RoundTree(this, x, y, z); break;
-            case CONE: tree = new ConeTree(this, x, y, z); break;
-            case RAINFOREST: tree = new RainforestTree(this, x, y, z); break;
-            case MANGROVE: tree = new MangroveTree(this, x, y, z); break;
+            Vector2f treePosition = (Vector2f) obj;
+            int y = region.getTopBlock((int)Math.floor(treePosition.x), (int)Math.floor(treePosition.y));
+            trees.add(getTreeInstance(treePosition.x + region.min.x, y, treePosition.y + region.min.z));
         }
+        print(System.currentTimeMillis() - startTime);
+        startTime = System.currentTimeMillis();
 
-        tree.prepare(region);
-        tree.makeFoliage(region);
-        tree.makeTrunk(region);
+        for (Object obj : trees)
+        {
+            Tree tree = (Tree)obj;
+            tree.prepare(region);
+            tree.makeFoliage(region);
+        }
+        print(System.currentTimeMillis() - startTime);
+        startTime = System.currentTimeMillis();
+
+        for (Object obj : trees)
+        {
+            Tree tree = (Tree)obj;
+            tree.makeTrunk(region);
+        }
+        print(System.currentTimeMillis() - startTime);
     }
 
     public int distanceToBlock(float startX, float startY, float startZ, float dirX, float dirY, float dirZ, BlockMask mask, WorldRegion region, float limit)
@@ -717,5 +736,22 @@ public class AdvancedForester extends KeystoneFilter
         }
 
         return iterations;
+    }
+    public Tree getTreeInstance(float x, float y, float z)
+    {
+        x = (int)Math.floor(x);
+        y = (int)Math.floor(y);
+        z = (int)Math.floor(z);
+
+        switch (treeType)
+        {
+            case NORMAL: return new NormalTree(this, (int)x, (int)y, (int)z);
+            case BAMBOO: return new BambooTree(this, (int)x, (int)y, (int)z);
+            case ROUND: return new RoundTree(this, (int)x, (int)y, (int)z);
+            case CONE: return new ConeTree(this, (int)x, (int)y, (int)z);
+            case RAINFOREST: return new RainforestTree(this, (int)x, (int)y, (int)z);
+            case MANGROVE: return new MangroveTree(this, (int)x, (int)y, (int)z);
+            default: return null;
+        }
     }
 }

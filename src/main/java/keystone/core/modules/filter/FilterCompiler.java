@@ -13,6 +13,7 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.InternalCompilerException;
+import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
 

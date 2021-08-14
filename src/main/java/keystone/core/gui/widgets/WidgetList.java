@@ -116,7 +116,7 @@ public class WidgetList extends Widget
         {
             int scrollbarY = y + (int)(height * (scrollIndex / (float)widgets.size()));
             int scrollbarHeight = (int)(height * (currentWidgets.size() / (float)widgets.size()));
-            fill(stack, x + width, scrollbarY, x + width + 2, scrollbarY + scrollbarHeight, 0xFF808080);
+            fill(stack, x + width - 1, scrollbarY, x + width + 1, scrollbarY + scrollbarHeight, 0xFF808080);
         }
 
         stack.pushPose();

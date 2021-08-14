@@ -3,6 +3,7 @@ package keystone.core.modules.filter;
 import keystone.api.Keystone;
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
@@ -92,48 +93,62 @@ public class FilterModule implements IKeystoneModule
 
                         Set<BlockPos> processedBlocks = new HashSet<>();
                         Set<UUID> processedEntities = new HashSet<>();
+                        Class<? extends KeystoneFilter> filterClass = filter.getClass();
+                        boolean processRegions = filterClass.getMethod("processRegion", WorldRegion.class).getDeclaringClass().equals(filterClass);
+                        boolean processBlocks = filterClass.getMethod("processBlock", int.class, int.class, int.class, WorldRegion.class).getDeclaringClass().equals(filterClass);
+                        boolean processEntities = filterClass.getMethod("processEntity", Entity.class, WorldRegion.class).getDeclaringClass().equals(filterClass);
+
                         for (WorldRegion box : regions)
                         {
-                            filter.processRegion(box);
-                            if (abortFilter != null)
+                            if (processRegions)
                             {
-                                for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
-                                historyModule.abortHistoryEntry();
-                                return;
+                                filter.processRegion(box);
+                                if (abortFilter != null)
+                                {
+                                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
+                                    historyModule.abortHistoryEntry();
+                                    return;
+                                }
                             }
 
-                            box.forEachBlock((x, y, z, block) ->
+                            if (processBlocks)
                             {
-                                BlockPos pos = new BlockPos(x, y, z);
-                                if (!filter.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
+                                box.forEachBlock((x, y, z, block) ->
                                 {
-                                    filter.processBlock(x, y, z, box);
-                                    processedBlocks.add(pos);
-                                }
+                                    BlockPos pos = new BlockPos(x, y, z);
+                                    if (!filter.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
+                                    {
+                                        filter.processBlock(x, y, z, box);
+                                        processedBlocks.add(pos);
+                                    }
 
-                                if (abortFilter != null)
-                                {
-                                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
-                                    historyModule.abortHistoryEntry();
-                                    return;
-                                }
-                            });
+                                    if (abortFilter != null)
+                                    {
+                                        for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
+                                        historyModule.abortHistoryEntry();
+                                        return;
+                                    }
+                                });
+                            }
 
-                            box.forEachEntity(entity ->
+                            if (processEntities)
                             {
-                                if (!filter.ignoreRepeatEntities() || !processedEntities.contains(entity.keystoneUUID()))
+                                box.forEachEntity(entity ->
                                 {
-                                    filter.processEntity(entity, box);
-                                    processedEntities.add(entity.keystoneUUID());
-                                }
+                                    if (!filter.ignoreRepeatEntities() || !processedEntities.contains(entity.keystoneUUID()))
+                                    {
+                                        filter.processEntity(entity, box);
+                                        processedEntities.add(entity.keystoneUUID());
+                                    }
 
-                                if (abortFilter != null)
-                                {
-                                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
-                                    historyModule.abortHistoryEntry();
-                                    return;
-                                }
-                            });
+                                    if (abortFilter != null)
+                                    {
+                                        for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
+                                        historyModule.abortHistoryEntry();
+                                        return;
+                                    }
+                                });
+                            }
                         }
 
                         if (iteration < iterations - 1)
