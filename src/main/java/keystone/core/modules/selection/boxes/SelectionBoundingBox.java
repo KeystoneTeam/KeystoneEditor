@@ -35,6 +35,12 @@ public class SelectionBoundingBox extends SelectableBoundingBox
         Coords corner2 = new Coords(boundingBox.maxX - 1, boundingBox.maxY - 1, boundingBox.maxZ - 1);
         return new SelectionBoundingBox(corner1, corner2);
     }
+    public static SelectionBoundingBox create(int corner1X, int corner1Y, int corner1Z, int corner2X, int corner2Y, int corner2Z)
+    {
+        Coords corner1 = new Coords(corner1X, corner1Y, corner1Z);
+        Coords corner2 = new Coords(corner2X, corner2Y, corner2Z);
+        return new SelectionBoundingBox(corner1, corner2);
+    }
 
     public SelectionBoundingBox clone()
     {

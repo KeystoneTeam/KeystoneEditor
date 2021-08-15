@@ -8,6 +8,8 @@ public class KeystoneConfig
     public static String schematicsDirectory = "schematics";
     public static String stockFilterCache = "stock_filters";
 
+    public static String historyDirectory = "history";
+
     public static boolean startActive = true;
     public static boolean disableInGameMenu = true;
     public static boolean debugHistoryLog = false;

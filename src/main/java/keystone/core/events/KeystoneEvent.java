@@ -2,6 +2,8 @@ package keystone.core.events;
 
 import keystone.api.Keystone;
 import keystone.core.modules.IKeystoneModule;
+import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.renderer.client.ClientRenderer;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.client.renderers.AbstractRenderer;
@@ -11,6 +13,7 @@ import keystone.core.schematic.SchematicLoader;
 import keystone.core.schematic.extensions.ISchematicExtension;
 import keystone.core.schematic.formats.ISchematicFormat;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.eventbus.api.Event;
 
 public class KeystoneEvent extends Event
@@ -35,6 +38,20 @@ public class KeystoneEvent extends Event
         {
             BoundingBoxType.register(name);
             ClientRenderer.registerRenderer(boxClass, renderer);
+        }
+    }
+
+    public static class RegisterHistoryEntryTypes extends KeystoneEvent
+    {
+        public static interface HistoryEntryDeserializer
+        {
+            IHistoryEntry deserialize(CompoundNBT nbt);
+        }
+
+        public <T extends IHistoryEntry> void register(String id, HistoryEntryDeserializer deserializer)
+        {
+            HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+            historyModule.registerDeserializer(id, deserializer);
         }
     }
 

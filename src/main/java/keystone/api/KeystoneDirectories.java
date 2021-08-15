@@ -2,11 +2,18 @@ package keystone.api;
 
 import keystone.core.KeystoneConfig;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.MainMenuScreen;
+import net.minecraft.world.storage.FolderName;
+import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.world.storage.WorldSummary;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 public class KeystoneDirectories
 {
+    private static String currentLevelID;
     private static File keystoneDirectory;
 
     private static File analysesDirectory;
@@ -25,6 +32,11 @@ public class KeystoneDirectories
         stockFilterCache = getKeystoneSubdirectory(KeystoneConfig.stockFilterCache);
     }
 
+    public static void setCurrentLevelID(String levelID)
+    {
+        currentLevelID = levelID;
+    }
+
     public static File getKeystoneDirectory() { return keystoneDirectory; }
     public static File getKeystoneSubdirectory(String subdirectory)
     {
@@ -37,4 +49,19 @@ public class KeystoneDirectories
     public static File getFilterDirectory() { return filterDirectory; }
     public static File getSchematicsDirectory() { return schematicsDirectory; }
     public static File getStockFilterCache() { return stockFilterCache; }
+
+    public static File getWorldCacheDirectory()
+    {
+        File file = Minecraft.getInstance().getLevelSource().getBaseDir().resolve(currentLevelID).resolve("##KEYSTONE.TEMP##").toFile();
+        if (!file.exists()) file.mkdirs();
+        return file;
+    }
+    public static File getWorldCacheSubdirectory(String subdirectory)
+    {
+        File file = getWorldCacheDirectory().toPath().resolve(subdirectory).toFile();
+        if (!file.exists()) file.mkdirs();
+        return file;
+    }
+
+    public static File getHistoryDirectory() { return getWorldCacheSubdirectory(KeystoneConfig.historyDirectory); }
 }

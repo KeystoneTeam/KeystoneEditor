@@ -30,7 +30,7 @@ import java.util.UUID;
 public class Entity
 {
     private CompoundNBT entityData;
-    private final UUID keystoneUUID;
+    private UUID keystoneUUID;
     private UUID minecraftUUID;
     private Vector3d position;
     private float pitch;
@@ -107,6 +107,65 @@ public class Entity
         this.killed = false;
 
         updateBoundingBox();
+    }
+    private Entity() {}
+
+    /**
+     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @return The serialized CompoundNBT
+     */
+    public CompoundNBT serialize()
+    {
+        CompoundNBT nbt = new CompoundNBT();
+        nbt.putUUID("keystone_uuid", keystoneUUID);
+        if (minecraftUUID != null) nbt.putUUID("minecraft_uuid", minecraftUUID);
+
+        ListNBT posNBT = new ListNBT();
+        posNBT.add(DoubleNBT.valueOf(position.x));
+        posNBT.add(DoubleNBT.valueOf(position.y));
+        posNBT.add(DoubleNBT.valueOf(position.z));
+        nbt.put("pos", posNBT);
+
+        nbt.putFloat("pitch", pitch);
+        nbt.putFloat("yaw", yaw);
+        nbt.putBoolean("killed", killed);
+
+        ListNBT boundingBoxNBT = new ListNBT();
+        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.minX));
+        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.minY));
+        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.minZ));
+        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.maxX));
+        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.maxY));
+        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.maxZ));
+        nbt.put("bounding_box", boundingBoxNBT);
+
+        nbt.put("nbt", entityData);
+        return nbt;
+    }
+
+    /**
+     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * @param nbt The serialized CompoundNBT
+     * @return The deserialized Entity
+     */
+    public static Entity deserialize(CompoundNBT nbt)
+    {
+        Entity entity = new Entity();
+        entity.entityData = nbt.getCompound("nbt");
+        entity.keystoneUUID = nbt.getUUID("keystone_uuid");
+        if (nbt.contains("minecraft_uuid")) entity.minecraftUUID = nbt.getUUID("minecraft_uuid");
+
+        ListNBT posNBT = nbt.getList("pos", Constants.NBT.TAG_DOUBLE);
+        entity.position = new Vector3d(posNBT.getDouble(0), posNBT.getDouble(1), posNBT.getDouble(2));
+
+        entity.pitch = nbt.getFloat("pitch");
+        entity.yaw = nbt.getFloat("yaw");
+        entity.killed = nbt.getBoolean("killed");
+
+        ListNBT bb = nbt.getList("bounding_box", Constants.NBT.TAG_DOUBLE);
+        entity.boundingBox = new BoundingBox(bb.getDouble(0), bb.getDouble(1), bb.getDouble(2), bb.getDouble(3), bb.getDouble(4), bb.getDouble(5));
+
+        return entity;
     }
 
     /**

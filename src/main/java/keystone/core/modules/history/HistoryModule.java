@@ -1,17 +1,26 @@
 package keystone.core.modules.history;
 
 import keystone.api.Keystone;
+import keystone.api.KeystoneDirectories;
 import keystone.core.KeystoneConfig;
+import keystone.core.events.KeystoneEvent;
 import keystone.core.modules.IKeystoneModule;
+import keystone.core.utils.NBTSerializer;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.glfw.GLFW;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HistoryModule implements IKeystoneModule
 {
+    private Map<String, KeystoneEvent.RegisterHistoryEntryTypes.HistoryEntryDeserializer> deserializers = new HashMap<>();
     private List<HistoryStackFrame> history = new ArrayList<>();
     private HistoryStackFrame currentStackFrame;
     private int tryBeginHooksOpen = 0;
@@ -38,6 +47,27 @@ public class HistoryModule implements IKeystoneModule
         return true;
     }
 
+    //region Deserializers
+    public void registerDeserializer(String id, KeystoneEvent.RegisterHistoryEntryTypes.HistoryEntryDeserializer deserializer)
+    {
+        if (deserializers.containsKey(id))
+        {
+            Keystone.LOGGER.error("Trying to register already registered IHistoryEntry deserializer '" + id + "'!");
+            return;
+        }
+        deserializers.put(id, deserializer);
+    }
+    public IHistoryEntry deserializeHistoryEntry(CompoundNBT entryNBT)
+    {
+        String id = entryNBT.getString("id");
+        if (!deserializers.containsKey(id))
+        {
+            Keystone.LOGGER.error("Trying to deserialize unregistered IHistoryEntry '" + id +"'!");
+            return null;
+        }
+        return deserializers.get(id).deserialize(entryNBT);
+    }
+    //endregion
     //region History
     public void tryBeginHistoryEntry()
     {
@@ -217,6 +247,16 @@ public class HistoryModule implements IKeystoneModule
         return currentStackFrame != null;
     }
 
+    public void serializeHistoryStack()
+    {
+        File historyDirectory = KeystoneDirectories.getHistoryDirectory();
+        for (File file : historyDirectory.listFiles()) file.delete();
+        for (int i = 0; i < history.size(); i++)
+        {
+            File stackFrameFile = historyDirectory.toPath().resolve((i - currentHistoryIndex) + ".nbt").toFile();
+            NBTSerializer.serialize(stackFrameFile, history.get(i).serialize());
+        }
+    }
     public void logHistoryStack()
     {
         Keystone.LOGGER.info("###########################################################################");

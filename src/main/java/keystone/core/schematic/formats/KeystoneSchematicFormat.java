@@ -164,7 +164,10 @@ public class KeystoneSchematicFormat implements ISchematicFormat
     @Override
     public KeystoneSchematic loadFile(File file)
     {
-        CompoundNBT nbt = NBTSerializer.deserialize(file);
+        return deserialize(NBTSerializer.deserialize(file));
+    }
+    public KeystoneSchematic deserialize(CompoundNBT nbt)
+    {
         if (nbt.isEmpty()) return null;
         nbt = NBTUtil.update(Minecraft.getInstance().getFixerUpper(), DefaultTypeReferences.STRUCTURE, nbt, nbt.getInt("DataVersion"));
 

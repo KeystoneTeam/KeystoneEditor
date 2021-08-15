@@ -15,6 +15,7 @@ import java.util.*;
 public class SchematicLoader
 {
     private static Set<String> extensions = new HashSet<>();
+    private static KeystoneSchematicFormat defaultFormat;
     private static final Map<String, List<ISchematicFormat>> formats = new HashMap<>();
 
     public static void registerFormat(ISchematicFormat format)
@@ -25,6 +26,7 @@ public class SchematicLoader
             formats.get(extension.toLowerCase()).add(format);
             extensions.add(extension);
         }
+        if (format instanceof KeystoneSchematicFormat) defaultFormat = (KeystoneSchematicFormat) format;
     }
     public static void finalizeFormats()
     {
@@ -33,16 +35,9 @@ public class SchematicLoader
 
     public static Set<String> getExtensions() { return extensions; }
 
-    public static void saveSchematic(KeystoneSchematic schematic, String path)
-    {
-        CompoundNBT schematicNBT = KeystoneSchematicFormat.saveSchematic(schematic);
-        NBTSerializer.serialize(path, schematicNBT);
-    }
-    public static void saveSchematic(KeystoneSchematic schematic, File file)
-    {
-        CompoundNBT schematicNBT = KeystoneSchematicFormat.saveSchematic(schematic);
-        NBTSerializer.serialize(file, schematicNBT);
-    }
+    public static CompoundNBT serializeSchematic(KeystoneSchematic schematic) { return KeystoneSchematicFormat.saveSchematic(schematic); }
+    public static void saveSchematic(KeystoneSchematic schematic, String path) { NBTSerializer.serialize(path, serializeSchematic(schematic)); }
+    public static void saveSchematic(KeystoneSchematic schematic, File file) { NBTSerializer.serialize(file, serializeSchematic(schematic)); }
 
     public static KeystoneSchematic loadSchematic(String path)
     {
@@ -71,5 +66,9 @@ public class SchematicLoader
             if (schematic != null) return schematic;
         }
         return null;
+    }
+    public static KeystoneSchematic deserializeSchematic(CompoundNBT schematicNBT)
+    {
+        return defaultFormat.deserialize(schematicNBT);
     }
 }

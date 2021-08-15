@@ -15,6 +15,9 @@ import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.history.entries.CloneImportBoxesHistoryEntry;
+import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
+import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
@@ -65,6 +68,7 @@ public class KeystoneMod
         MinecraftForge.EVENT_BUS.addListener(this::gameLoaded);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultBoxes);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultModules);
+        MinecraftForge.EVENT_BUS.addListener(this::registerDefaultHistoryEntries);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultSchematicFormats);
         MinecraftForge.EVENT_BUS.addListener(this::registerDefaultSchematicExtensions);
         MinecraftForge.EVENT_BUS.addListener(this::onWorldLoaded);
@@ -92,6 +96,7 @@ public class KeystoneMod
         Keystone.init();
         MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterBoundingBoxTypes());
         MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterModules());
+        MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterHistoryEntryTypes());
         MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterSchematicFormats());
         MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterSchematicExtensions());
         Keystone.postInit();
@@ -123,6 +128,12 @@ public class KeystoneMod
         event.register(new BrushModule());
         event.register(new ImportModule());
         event.register(new FilterModule());
+    }
+    private void registerDefaultHistoryEntries(final KeystoneEvent.RegisterHistoryEntryTypes event)
+    {
+        event.register("clone_import_boxes", CloneImportBoxesHistoryEntry::new);
+        event.register("import_boxes", ImportBoxesHistoryEntry::new);
+        event.register("selection_boxes", SelectionHistoryEntry::new);
     }
     private void registerDefaultSchematicFormats(final KeystoneEvent.RegisterSchematicFormats event)
     {

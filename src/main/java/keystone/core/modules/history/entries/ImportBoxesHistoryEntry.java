@@ -6,8 +6,12 @@ import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.schematic.KeystoneSchematic;
+import keystone.core.schematic.SchematicLoader;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
+import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +34,15 @@ public class ImportBoxesHistoryEntry implements IHistoryEntry
             this.mirror = box.getMirror();
             this.scale = box.getScale();
         }
+        public ImportBoxDescription(CompoundNBT nbt)
+        {
+            int[] anchorNBT = nbt.getIntArray("anchor");
+            minCoords = new Coords(anchorNBT[0], anchorNBT[1], anchorNBT[2]);
+            schematic = SchematicLoader.deserializeSchematic(nbt.getCompound("schematic"));
+            rotation = Rotation.valueOf(nbt.getString("rotation"));
+            mirror = Mirror.valueOf(nbt.getString("mirror"));
+            scale = nbt.getInt("scale");
+        }
 
         public ImportBoundingBox createImportBox()
         {
@@ -38,11 +51,26 @@ public class ImportBoxesHistoryEntry implements IHistoryEntry
             box.setScale(scale);
             return box;
         }
+
+        public CompoundNBT serialize()
+        {
+            CompoundNBT nbt = new CompoundNBT();
+            nbt.putIntArray("anchor", new int[] { minCoords.getX(), minCoords.getY(), minCoords.getZ() });
+            nbt.put("schematic", SchematicLoader.serializeSchematic(schematic));
+            nbt.putString("rotation", rotation.name());
+            nbt.putString("mirror", mirror.name());
+            nbt.putInt("scale", scale);
+            return nbt;
+        }
     }
 
     private List<ImportBoxDescription> buffer;
     private List<ImportBoxDescription> restore;
 
+    public ImportBoxesHistoryEntry(CompoundNBT nbt)
+    {
+        deserialize(nbt);
+    }
     public ImportBoxesHistoryEntry(List<ImportBoundingBox> importBoxes)
     {
         buffer = new ArrayList<>(importBoxes.size());
@@ -64,5 +92,39 @@ public class ImportBoxesHistoryEntry implements IHistoryEntry
         List<ImportBoundingBox> pasteBoxes = new ArrayList<>(restore.size());
         for (ImportBoxDescription description : restore) pasteBoxes.add(description.createImportBox());
         Keystone.getModule(ImportModule.class).restoreImportBoxes(pasteBoxes);
+    }
+
+    @Override
+    public String id()
+    {
+        return "import_boxes";
+    }
+    @Override
+    public void serialize(CompoundNBT nbt)
+    {
+        ListNBT bufferNBT = new ListNBT();
+        for (ImportBoxDescription box : buffer) bufferNBT.add(box.serialize());
+        nbt.put("buffer", bufferNBT);
+
+        if (restore != null)
+        {
+            ListNBT restoreNBT = new ListNBT();
+            for (ImportBoxDescription box : restore) bufferNBT.add(box.serialize());
+            nbt.put("restore", restoreNBT);
+        }
+    }
+    @Override
+    public void deserialize(CompoundNBT nbt)
+    {
+        ListNBT bufferNBT = nbt.getList("buffer", Constants.NBT.TAG_COMPOUND);
+        buffer = new ArrayList<>(bufferNBT.size());
+        for (int i = 0; i < bufferNBT.size(); i++) buffer.add(new ImportBoxDescription(bufferNBT.getCompound(i)));
+
+        if (nbt.contains("restore"))
+        {
+            ListNBT restoreNBT = nbt.getList("restore", Constants.NBT.TAG_COMPOUND);
+            restore = new ArrayList<>(restoreNBT.size());
+            for (int i = 0; i < restoreNBT.size(); i++) restore.add(new ImportBoxDescription(restoreNBT.getCompound(i)));
+        }
     }
 }

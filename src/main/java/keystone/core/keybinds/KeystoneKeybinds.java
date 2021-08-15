@@ -63,6 +63,7 @@ public class KeystoneKeybinds
         else if (Keystone.isActive())
         {
             if (DELETE_BLOCKS.isDown()) Keystone.runInternalFilter(new FillTool(Blocks.AIR.defaultBlockState()));
+            if (event.getAction() == GLFW.GLFW_PRESS && event.getKey() == GLFW.GLFW_KEY_O) Keystone.getModule(HistoryModule.class).serializeHistoryStack();
             if (event.getAction() == GLFW.GLFW_PRESS && event.getKey() == GLFW.GLFW_KEY_P) Keystone.getModule(HistoryModule.class).logHistoryStack();
         }
     }

@@ -1,17 +1,21 @@
 package keystone.core.modules.history;
 
+import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
+import keystone.core.modules.world_cache.WorldCacheModule;
+import keystone.core.renderer.common.models.DimensionId;
+import keystone.core.utils.NBTSerializer;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.IServerWorld;
-import net.minecraft.world.biome.BiomeContainer;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,9 +24,9 @@ import java.util.UUID;
 
 public class WorldHistoryChunk
 {
-    private final int chunkX;
-    private final int chunkY;
-    private final int chunkZ;
+    public final int chunkX;
+    public final int chunkY;
+    public final int chunkZ;
     private final IServerWorld world;
 
     private final Block[] oldBlocks;
@@ -90,6 +94,57 @@ public class WorldHistoryChunk
             entityBuffer2.put(entity.keystoneUUID(), entity);
             allEntities.put(entity.keystoneUUID(), entity);
         }
+    }
+    public WorldHistoryChunk(CompoundNBT nbt)
+    {
+        WorldCacheModule worldCache = Keystone.getModule(WorldCacheModule.class);
+        int[] chunkPos = nbt.getIntArray("ChunkPos");
+        chunkX = chunkPos[0];
+        chunkY = chunkPos[1];
+        chunkZ = chunkPos[2];
+        world = worldCache.getDimensionServerWorld(DimensionId.from(new ResourceLocation(nbt.getString("World"))));
+
+        oldBlocks = NBTSerializer.deserializeBlocks(nbt.getCompound("OldBlocks"));
+        blockBuffer1 = NBTSerializer.deserializeBlocks(nbt.getCompound("BlockBuffer1"));
+        blockBuffer2 = NBTSerializer.deserializeBlocks(nbt.getCompound("BlockBuffer2"));
+        swappedBlocks = nbt.getBoolean("SwappedBlocks");
+
+        oldBiomes = NBTSerializer.deserializeBiomes(nbt.getCompound("OldBiomes"));
+        biomeBuffer1 = NBTSerializer.deserializeBiomes(nbt.getCompound("BiomeBuffer1"));
+        biomeBuffer2 = NBTSerializer.deserializeBiomes(nbt.getCompound("BiomeBuffer2"));
+        swappedBiomes = nbt.getBoolean("SwappedBiomes");
+
+        oldEntities = NBTSerializer.deserializeEntities(nbt.getCompound("OldEntities"));
+        entityBuffer1 = NBTSerializer.deserializeEntities(nbt.getCompound("EntityBuffer1"));
+        entityBuffer2 = NBTSerializer.deserializeEntities(nbt.getCompound("EntityBuffer2"));
+        allEntities = NBTSerializer.deserializeEntities(nbt.getCompound("AllEntities"));
+        swappedEntities = nbt.getBoolean("SwappedEntities");
+    }
+
+    public CompoundNBT serialize()
+    {
+        CompoundNBT nbt = new CompoundNBT();
+
+        nbt.putIntArray("ChunkPos", new int[] { chunkX, chunkY, chunkZ });
+        nbt.putString("World", world.getLevel().dimension().location().toString());
+
+        nbt.put("OldBlocks", NBTSerializer.serializeBlocks(oldBlocks));
+        nbt.put("BlockBuffer1", NBTSerializer.serializeBlocks(blockBuffer1));
+        nbt.put("BlockBuffer2", NBTSerializer.serializeBlocks(blockBuffer2));
+        nbt.putBoolean("SwappedBlocks", swappedBlocks);
+
+        nbt.put("OldBiomes", NBTSerializer.serializeBiomes(oldBiomes));
+        nbt.put("BiomeBuffer1", NBTSerializer.serializeBiomes(biomeBuffer1));
+        nbt.put("BiomeBuffer2", NBTSerializer.serializeBiomes(biomeBuffer2));
+        nbt.putBoolean("SwappedBiomes", swappedBiomes);
+
+        nbt.put("OldEntities", NBTSerializer.serializeEntities(oldEntities));
+        nbt.put("EntityBuffer1", NBTSerializer.serializeEntities(entityBuffer1));
+        nbt.put("EntityBuffer2", NBTSerializer.serializeEntities(entityBuffer2));
+        nbt.put("AllEntities", NBTSerializer.serializeEntities(allEntities));
+        nbt.putBoolean("SwappedEntities", swappedEntities);
+
+        return nbt;
     }
 
     public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
