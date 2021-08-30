@@ -3,11 +3,13 @@ package keystone.core.schematic.extensions;
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.math.BlockPosMath;
 import keystone.core.modules.world.BlocksModule;
 import keystone.core.modules.world.WorldModifierModules;
+import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.CompoundNBT;
@@ -36,7 +38,7 @@ public class StructureVoidsExtension implements ISchematicExtension
         List<BlockPos> structureVoidsList = new ArrayList<>();
         bounds.forEachCoordinate((x, y, z) ->
         {
-            if (blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED).getMinecraftBlock().is(Blocks.STRUCTURE_VOID))
+            if (blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED).getMinecraftBlock().is(Blocks.STRUCTURE_VOID))
             {
                 structureVoidsList.add(new BlockPos(x - bounds.minX, y - bounds.minY, z - bounds.minZ));
             }
@@ -94,7 +96,7 @@ public class StructureVoidsExtension implements ISchematicExtension
     @Override
     public void place(KeystoneSchematic schematic, WorldModifierModules worldModifiers, BlockPos anchor, Rotation rotation, Mirror mirror, int scale)
     {
-        Block structureVoid = new Block(Blocks.STRUCTURE_VOID.defaultBlockState());
+        BlockType structureVoid = BlockTypeRegistry.fromMinecraftBlock(Blocks.STRUCTURE_VOID.defaultBlockState());
         for (BlockPos pos : structureVoids)
         {
             BlockPos oriented = BlockPosMath.getOrientedBlockPos(pos, schematic.getSize(), rotation, mirror, scale).offset(anchor);

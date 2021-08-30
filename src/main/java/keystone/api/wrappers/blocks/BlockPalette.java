@@ -2,10 +2,10 @@ package keystone.api.wrappers.blocks;
 
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
-import keystone.core.modules.filter.providers.BlockProvider;
+import keystone.core.modules.filter.providers.BlockTypeProvider;
 import keystone.core.modules.filter.providers.IBlockProvider;
 import keystone.core.modules.filter.providers.TagBlockProvider;
-import net.minecraft.block.Blocks;
+import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.tags.ITagCollection;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
- * A weighted palette of {@link Block Blocks} for a filter. Used to set a block to
+ * A weighted palette of {@link BlockType Blocks} for a filter. Used to set a block to
  * a random state from a list
  */
 public class BlockPalette
@@ -101,22 +101,22 @@ public class BlockPalette
             if (tag != null && tag instanceof ITag.INamedTag) with(new TagBlockProvider((ITag.INamedTag<net.minecraft.block.Block>)tag), weight);
             return this;
         }
-        else return with(KeystoneFilter.block(block), weight);
+        else return with(KeystoneFilter.block(block).blockType(), weight);
     }
     /**
-     * Add a {@link Block} to the palette with a weight of 1
-     * @param block The {@link Block} top add
+     * Add a {@link BlockType} to the palette with a weight of 1
+     * @param blockType The {@link BlockType} top add
      * @return The modified {@link BlockPalette}
      */
-    public BlockPalette with(Block block) { return with(block, 1); }
+    public BlockPalette with(BlockType blockType) { return with(blockType, 1); }
     /**
-     * Add a {@link Block} to the palette with a given weight. A higher weight is more
+     * Add a {@link BlockType} to the palette with a given weight. A higher weight is more
      * likely to be chosen
-     * @param block The {@link Block} to add
+     * @param blockType The {@link BlockType} to add
      * @param weight The weight of the block
      * @return The modified {@link BlockPalette}
      */
-    public BlockPalette with(Block block, int weight) { return with(new BlockProvider(block), weight); }
+    public BlockPalette with(BlockType blockType, int weight) { return with(new BlockTypeProvider(blockType), weight); }
     /**
      * Add an {@link keystone.core.modules.filter.providers.IBlockProvider} to the palette with a weight of 1
      * @param block The {@link keystone.core.modules.filter.providers.IBlockProvider} to add
@@ -194,22 +194,22 @@ public class BlockPalette
             if (tag != null && tag instanceof ITag.INamedTag) without(new TagBlockProvider((ITag.INamedTag<net.minecraft.block.Block>)tag), weight);
             return this;
         }
-        else return without(KeystoneFilter.block(block), weight);
+        else return without(KeystoneFilter.block(block).blockType(), weight);
     }
     /**
-     * Remove a {@link Block} from the palette
-     * @param block The {@link Block} to remove
+     * Remove a {@link BlockType} from the palette
+     * @param blockType The {@link BlockType} to remove
      * @return The modified {@link BlockPalette}
      */
-    public BlockPalette without(Block block) { return without(block, Integer.MAX_VALUE); }
+    public BlockPalette without(BlockType blockType) { return without(blockType, Integer.MAX_VALUE); }
     /**
-     * Remove weight from a {@link Block} in the palette. If the remaining weight is zero or less,
+     * Remove weight from a {@link BlockType} in the palette. If the remaining weight is zero or less,
      * the entry will be removed
-     * @param block The {@link Block} to effect
+     * @param blockType The {@link BlockType} to effect
      * @param weight The weight to remove
      * @return The modified {@link BlockPalette}
      */
-    public BlockPalette without(Block block, int weight) { return without(new BlockProvider(block), weight); }
+    public BlockPalette without(BlockType blockType, int weight) { return without(new BlockTypeProvider(blockType), weight); }
     /**
      * Remove an {@link keystone.core.modules.filter.providers.IBlockProvider} from the palette
      * @param block The {@link keystone.core.modules.filter.providers.IBlockProvider} to remove
@@ -249,13 +249,13 @@ public class BlockPalette
     //endregion
     //region Contains
     /**
-     * Check if the palette contains a {@link Block}
-     * @param block The {@link Block} to check
+     * Check if the palette contains a {@link BlockType}
+     * @param blockType The {@link BlockType} to check
      * @return Whether the palette contains the block
      */
-    public boolean contains(Block block)
+    public boolean contains(BlockType blockType)
     {
-        return contains(new BlockProvider(block));
+        return contains(new BlockTypeProvider(blockType));
     }
     /**
      * Check if the palette contains an {@link keystone.core.modules.filter.providers.IBlockProvider}
@@ -269,14 +269,14 @@ public class BlockPalette
     //endregion
 
     /**
-     * @return A random {@link Block} from the palette
+     * @return A random {@link BlockType} from the palette
      */
-    public Block randomBlock()
+    public BlockType randomBlock()
     {
         if (palette.size() == 0)
         {
             Keystone.abortFilter("Cannot get block from empty BlockPalette!");
-            return new Block(Blocks.AIR.defaultBlockState());
+            return BlockTypeRegistry.AIR;
         }
         return WeightedRandom.getRandomItem(Keystone.RANDOM, palette, totalWeight).blockProvider.get();
     }
@@ -295,16 +295,16 @@ public class BlockPalette
         return palette.indexOf(entry);
     }
     /**
-     * Get a {@link Block} at a given index in the palette
+     * Get a {@link BlockType} at a given index in the palette
      * @param index The index
      * @return The block at the given index
      */
-    public Block getBlock(int index)
+    public BlockType getBlockType(int index)
     {
         if (palette.size() == 0)
         {
             Keystone.abortFilter("Cannot get block at index from empty BlockPalette!");
-            return new Block(Blocks.AIR.defaultBlockState());
+            return BlockTypeRegistry.AIR;
         }
 
         while (index >= palette.size()) index -= palette.size();

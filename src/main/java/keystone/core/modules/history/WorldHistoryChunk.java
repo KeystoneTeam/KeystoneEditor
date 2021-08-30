@@ -4,9 +4,12 @@ import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
+import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.modules.world_cache.WorldCacheModule;
+import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.utils.NBTSerializer;
 import net.minecraft.nbt.CompoundNBT;
@@ -16,6 +19,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.IServerWorld;
+import net.minecraftforge.common.util.Constants;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,9 +33,12 @@ public class WorldHistoryChunk
     public final int chunkZ;
     private final IServerWorld world;
 
-    private final Block[] oldBlocks;
-    private final Block[] blockBuffer1;
-    private final Block[] blockBuffer2;
+    private final BlockType[] oldBlockTypes;
+    private final BlockType[] blockTypeBuffer1;
+    private final BlockType[] blockTypeBuffer2;
+    private final Map<BlockPos, NBTCompound> oldTileEntities;
+    private final Map<BlockPos, NBTCompound> tileEntityBuffer1;
+    private final Map<BlockPos, NBTCompound> tileEntityBuffer2;
 
     private final Biome[] oldBiomes;
     private final Biome[] biomeBuffer1;
@@ -53,9 +60,12 @@ public class WorldHistoryChunk
         this.chunkZ = chunkPosition.getZ();
         this.world = world;
 
-        oldBlocks = new Block[4096];
-        blockBuffer1 = new Block[4096];
-        blockBuffer2 = new Block[4096];
+        oldBlockTypes = new BlockType[4096];
+        blockTypeBuffer1 = new BlockType[4096];
+        blockTypeBuffer2 = new BlockType[4096];
+        oldTileEntities = new HashMap<>();
+        tileEntityBuffer1 = new HashMap<>();
+        tileEntityBuffer2 = new HashMap<>();
 
         oldBiomes = new Biome[4096];
         biomeBuffer1 = new Biome[4096];
@@ -69,9 +79,19 @@ public class WorldHistoryChunk
                 for (int z = chunkZ * 16; z < (chunkZ + 1) * 16; z++)
                 {
                     BlockPos pos = new BlockPos(x, y, z);
-                    oldBlocks[i] = new Block(world.getBlockState(pos), world.getBlockEntity(pos));
+                    oldBlockTypes[i] = BlockTypeRegistry.fromMinecraftBlock(world.getBlockState(pos));
+                    blockTypeBuffer2[i] = oldBlockTypes[i];
                     oldBiomes[i] = new Biome(world.getBiome(pos));
+                    biomeBuffer2[i] = oldBiomes[i];
                     i++;
+
+                    TileEntity tileEntity = world.getBlockEntity(pos);
+                    if (tileEntity != null)
+                    {
+                        CompoundNBT nbt = tileEntity.serializeNBT();
+                        oldTileEntities.put(pos, new NBTCompound(nbt.copy()));
+                        tileEntityBuffer2.put(pos, new NBTCompound(nbt.copy()));
+                    }
                 }
             }
         }
@@ -104,9 +124,12 @@ public class WorldHistoryChunk
         chunkZ = chunkPos[2];
         world = worldCache.getDimensionServerWorld(DimensionId.from(new ResourceLocation(nbt.getString("World"))));
 
-        oldBlocks = NBTSerializer.deserializeBlocks(nbt.getCompound("OldBlocks"));
-        blockBuffer1 = NBTSerializer.deserializeBlocks(nbt.getCompound("BlockBuffer1"));
-        blockBuffer2 = NBTSerializer.deserializeBlocks(nbt.getCompound("BlockBuffer2"));
+        oldBlockTypes = NBTSerializer.deserializeBlockTypes(nbt.getList("OldBlocks", Constants.NBT.TAG_SHORT));
+        blockTypeBuffer1 = NBTSerializer.deserializeBlockTypes(nbt.getList("BlockBuffer1", Constants.NBT.TAG_SHORT));
+        blockTypeBuffer2 = NBTSerializer.deserializeBlockTypes(nbt.getList("BlockBuffer2", Constants.NBT.TAG_SHORT));
+        oldTileEntities = NBTSerializer.deserializeTileEntities(nbt.getList("OldTileEntities", Constants.NBT.TAG_COMPOUND));
+        tileEntityBuffer1 = NBTSerializer.deserializeTileEntities(nbt.getList("TileEntityBuffer1", Constants.NBT.TAG_COMPOUND));
+        tileEntityBuffer2 = NBTSerializer.deserializeTileEntities(nbt.getList("TileEntityBuffer2", Constants.NBT.TAG_COMPOUND));
         swappedBlocks = nbt.getBoolean("SwappedBlocks");
 
         oldBiomes = NBTSerializer.deserializeBiomes(nbt.getCompound("OldBiomes"));
@@ -128,9 +151,12 @@ public class WorldHistoryChunk
         nbt.putIntArray("ChunkPos", new int[] { chunkX, chunkY, chunkZ });
         nbt.putString("World", world.getLevel().dimension().location().toString());
 
-        nbt.put("OldBlocks", NBTSerializer.serializeBlocks(oldBlocks));
-        nbt.put("BlockBuffer1", NBTSerializer.serializeBlocks(blockBuffer1));
-        nbt.put("BlockBuffer2", NBTSerializer.serializeBlocks(blockBuffer2));
+        nbt.put("OldBlocks", NBTSerializer.serializeBlockTypes(oldBlockTypes));
+        nbt.put("BlockBuffer1", NBTSerializer.serializeBlockTypes(blockTypeBuffer1));
+        nbt.put("BlockBuffer2", NBTSerializer.serializeBlockTypes(blockTypeBuffer2));
+        nbt.put("OldTileEntities", NBTSerializer.serializeTileEntities(oldTileEntities));
+        nbt.put("TileEntityBuffer1", NBTSerializer.serializeTileEntities(tileEntityBuffer1));
+        nbt.put("TileEntityBuffer2", NBTSerializer.serializeTileEntities(tileEntityBuffer2));
         nbt.putBoolean("SwappedBlocks", swappedBlocks);
 
         nbt.put("OldBiomes", NBTSerializer.serializeBiomes(oldBiomes));
@@ -147,21 +173,73 @@ public class WorldHistoryChunk
         return nbt;
     }
 
+    public BlockType getBlockType(int x, int y, int z, RetrievalMode retrievalMode)
+    {
+        int index = getIndex(x, y, z);
+        switch (retrievalMode)
+        {
+            case ORIGINAL: return oldBlockTypes[index];
+            case LAST_SWAPPED: return swappedBlocks ? blockTypeBuffer1[index] : blockTypeBuffer2[index];
+            case CURRENT: return swappedBlocks ? blockTypeBuffer2[index] : blockTypeBuffer1[index];
+        }
+        return null;
+    }
+    public NBTCompound getTileEntity(int x, int y, int z, RetrievalMode retrievalMode)
+    {
+        BlockPos pos = new BlockPos(x, y, z);
+        NBTCompound tileEntity = null;
+        switch (retrievalMode)
+        {
+            case ORIGINAL: tileEntity = oldTileEntities.getOrDefault(pos, null); break;
+            case LAST_SWAPPED: tileEntity = swappedBlocks ? tileEntityBuffer1.getOrDefault(pos, null) : tileEntityBuffer2.getOrDefault(pos, null); break;
+            case CURRENT: tileEntity = swappedBlocks ? tileEntityBuffer2.getOrDefault(pos, null) : tileEntityBuffer1.getOrDefault(pos, null); break;
+        }
+
+        if (tileEntity != null) return tileEntity.clone();
+        else return null;
+    }
     public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
     {
         int index = getIndex(x, y, z);
-        Block block = null;
+        BlockPos pos = new BlockPos(x, y, z);
+        BlockType blockType = null;
+        NBTCompound tileEntity = null;
 
         switch (retrievalMode)
         {
-            case ORIGINAL: return oldBlocks[index];
-            case LAST_SWAPPED: block = swappedBlocks ? blockBuffer1[index] : blockBuffer2[index]; break;
-            case CURRENT: block = swappedBlocks ? blockBuffer2[index] : blockBuffer1[index]; break;
+            case ORIGINAL:
+                blockType = oldBlockTypes[index];
+                tileEntity = oldTileEntities.getOrDefault(pos, null);
+                break;
+            case LAST_SWAPPED:
+                if (swappedBlocks)
+                {
+                    blockType = blockTypeBuffer1[index];
+                    tileEntity = tileEntityBuffer1.getOrDefault(pos, null);
+                }
+                else
+                {
+                    blockType = blockTypeBuffer2[index];
+                    tileEntity = tileEntityBuffer2.getOrDefault(pos, null);
+                }
+                break;
+            case CURRENT:
+                if (swappedBlocks)
+                {
+                    blockType = blockTypeBuffer2[index];
+                    tileEntity = tileEntityBuffer2.getOrDefault(pos, null);
+                }
+                else
+                {
+                    blockType = blockTypeBuffer1[index];
+                    tileEntity = tileEntityBuffer1.getOrDefault(pos, null);
+                }
+                break;
         }
 
-        if (block == null) return oldBlocks[index];
-        else return block;
+        return new Block(blockType, tileEntity != null ? tileEntity.clone() : null);
     }
+
     public Biome getBiome(int x, int y, int z, RetrievalMode retrievalMode)
     {
         int index = getIndex(x, y, z);
@@ -213,10 +291,26 @@ public class WorldHistoryChunk
         return entityCount;
     }
 
+    public void setBlock(int x, int y, int z, BlockType blockType)
+    {
+        if (swappedBlocks) blockTypeBuffer2[getIndex(x, y, z)] = blockType;
+        else blockTypeBuffer1[getIndex(x, y, z)] = blockType;
+    }
     public void setBlock(int x, int y, int z, Block block)
     {
-        if (swappedBlocks) blockBuffer2[getIndex(x, y, z)] = block;
-        else blockBuffer1[getIndex(x, y, z)] = block;
+        BlockPos pos = new BlockPos(x, y, z);
+        if (swappedBlocks)
+        {
+            blockTypeBuffer2[getIndex(x, y, z)] = block.blockType();
+            if (block.tileEntity() == null) tileEntityBuffer2.remove(pos);
+            else tileEntityBuffer2.put(pos, block.tileEntity());
+        }
+        else
+        {
+            blockTypeBuffer1[getIndex(x, y, z)] = block.blockType();
+            if (block.tileEntity() == null) tileEntityBuffer1.remove(pos);
+            else tileEntityBuffer1.put(pos, block.tileEntity());
+        }
     }
     public void setBiome(int x, int y, int z, Biome biome)
     {
@@ -241,19 +335,19 @@ public class WorldHistoryChunk
                 for (int z = chunkZ * 16; z < (chunkZ + 1) * 16; z++)
                 {
                     BlockPos pos = new BlockPos(x, y, z);
-                    Block block = oldBlocks[i];
-                    Biome biome = oldBiomes[i];
+                    BlockType blockType = oldBlockTypes[i];
 
-                    world.getLevel().setBlockAndUpdate(pos, block.getMinecraftBlock());
-                    if (block.getTileEntityData() != null)
+                    world.getLevel().setBlockAndUpdate(pos, blockType.getMinecraftBlock());
+                    NBTCompound blockData = oldTileEntities.getOrDefault(pos, null);
+                    if (blockData != null)
                     {
-                        CompoundNBT tileEntityData = block.getTileEntityData().copy();
+                        CompoundNBT tileEntityData = blockData.getMinecraftNBT().copy();
                         tileEntityData.putInt("x", x);
                         tileEntityData.putInt("y", y);
                         tileEntityData.putInt("z", z);
 
                         TileEntity tileEntity = world.getBlockEntity(pos);
-                        if (tileEntity != null) tileEntity.deserializeNBT(block.getMinecraftBlock(), tileEntityData);
+                        if (tileEntity != null) tileEntity.deserializeNBT(blockType.getMinecraftBlock(), tileEntityData);
                     }
                     i++;
                 }
@@ -284,21 +378,22 @@ public class WorldHistoryChunk
             {
                 for (int z = chunkZ * 16; z < (chunkZ + 1) * 16; z++)
                 {
-                    Block block = swappedBlocks ? blockBuffer2[i] : blockBuffer1[i];
-                    if (block != null && block.getMinecraftBlock() != null)
+                    BlockType blockType = swappedBlocks ? blockTypeBuffer2[i] : blockTypeBuffer1[i];
+                    if (blockType != null && blockType.getMinecraftBlock() != null)
                     {
                         BlockPos pos = new BlockPos(x, y, z);
+                        world.getLevel().setBlockAndUpdate(pos, blockType.getMinecraftBlock());
 
-                        world.getLevel().setBlockAndUpdate(pos, block.getMinecraftBlock());
-                        if (block.getTileEntityData() != null)
+                        NBTCompound blockData = (swappedBlocks ? tileEntityBuffer2 : tileEntityBuffer1).getOrDefault(pos, null);
+                        if (blockData != null)
                         {
-                            CompoundNBT tileEntityData = block.getTileEntityData().copy();
+                            CompoundNBT tileEntityData = blockData.getMinecraftNBT().copy();
                             tileEntityData.putInt("x", x);
                             tileEntityData.putInt("y", y);
                             tileEntityData.putInt("z", z);
 
                             TileEntity tileEntity = world.getBlockEntity(pos);
-                            if (tileEntity != null) tileEntity.deserializeNBT(block.getMinecraftBlock(), tileEntityData);
+                            if (tileEntity != null) tileEntity.deserializeNBT(blockType.getMinecraftBlock(), tileEntityData);
                         }
                     }
                     i++;
@@ -327,7 +422,11 @@ public class WorldHistoryChunk
         swappedBlocks = !swappedBlocks;
         if (copy)
         {
-            System.arraycopy(swappedBlocks ? blockBuffer1 : blockBuffer2, 0, swappedBlocks ? blockBuffer2 : blockBuffer1, 0, blockBuffer1.length);
+            System.arraycopy(swappedBlocks ? blockTypeBuffer1 : blockTypeBuffer2, 0, swappedBlocks ? blockTypeBuffer2 : blockTypeBuffer1, 0, blockTypeBuffer1.length);
+            Map<BlockPos, NBTCompound> tileEntitySource = swappedBlocks ? tileEntityBuffer1 : tileEntityBuffer2;
+            Map<BlockPos, NBTCompound> tileEntityDestination = swappedBlocks ? tileEntityBuffer2 : tileEntityBuffer1;
+            tileEntityDestination.clear();
+            tileEntityDestination.putAll(tileEntitySource);
         }
     }
     public void swapBiomeBuffers(boolean copy)
@@ -346,7 +445,7 @@ public class WorldHistoryChunk
             Map<UUID, Entity> entitySource = swappedEntities ? entityBuffer1 : entityBuffer2;
             Map<UUID, Entity> entityDestination = swappedEntities ? entityBuffer2 : entityBuffer1;
             entityDestination.clear();
-            for (Map.Entry<UUID, Entity> entry : entitySource.entrySet()) entityDestination.put(entry.getKey(), entry.getValue());
+            entityDestination.putAll(entitySource);
         }
     }
 

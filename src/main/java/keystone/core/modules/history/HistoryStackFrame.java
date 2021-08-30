@@ -3,18 +3,16 @@ package keystone.core.modules.history;
 import keystone.api.Keystone;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.common.models.DimensionId;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.IServerWorld;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.*;
@@ -124,6 +122,10 @@ public class HistoryStackFrame
         entry.onPushToHistory(historyModule, true);
         entries.add(entry);
         entry.onPushToHistory(historyModule, false);
+    }
+    public void setBlock(int x, int y, int z, BlockType blockType)
+    {
+        getOrAddChunk(x, y, z).setBlock(x, y, z, blockType);
     }
     public void setBlock(int x, int y, int z, Block block)
     {

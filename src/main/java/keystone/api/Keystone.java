@@ -6,6 +6,7 @@ import keystone.core.KeystoneGlobalState;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
+import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -228,6 +229,8 @@ public final class Keystone
         MinecraftForge.EVENT_BUS.addListener(Keystone::onPlayerTick);
         MinecraftForge.EVENT_BUS.addListener(Keystone::onRightClickBlock);
         MinecraftForge.EVENT_BUS.addListener(Keystone::onGamemodeChanged);
+
+        BlockTypeRegistry.buildRegistry();
     }
 
     /**

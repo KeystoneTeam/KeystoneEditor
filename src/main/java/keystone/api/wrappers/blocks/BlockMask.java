@@ -1,12 +1,14 @@
 package keystone.api.wrappers.blocks;
 
 import keystone.api.filters.KeystoneFilter;
+import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.Blocks;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.tags.ITagCollection;
 import net.minecraft.util.ResourceLocation;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,17 +21,17 @@ import java.util.function.Consumer;
  */
 public class BlockMask
 {
-    private static final Map<Block, Block[]> forcedBlockAdditions = new HashMap<>();
+    private static final Map<BlockType, BlockType[]> forcedBlockAdditions = new HashMap<>();
     static
     {
-        forcedBlockAdditions.put(new Block(Blocks.AIR.defaultBlockState()), new Block[]
+        forcedBlockAdditions.put(BlockTypeRegistry.AIR, new BlockType[]
         {
-                new Block(Blocks.CAVE_AIR.defaultBlockState()),
-                new Block(Blocks.VOID_AIR.defaultBlockState())
+                BlockTypeRegistry.fromMinecraftBlock(Blocks.CAVE_AIR.defaultBlockState()),
+                BlockTypeRegistry.fromMinecraftBlock(Blocks.VOID_AIR.defaultBlockState())
         });
     }
 
-    private List<Block> mask = new ArrayList<>();
+    private List<BlockType> mask = new ArrayList<>();
     private boolean blacklist;
 
     /**
@@ -39,7 +41,7 @@ public class BlockMask
     public BlockMask clone()
     {
         BlockMask clone = new BlockMask();
-        for (Block block : mask) clone.mask.add(new Block(block.getMinecraftBlock(), block.getTileEntityData()));
+        clone.mask.addAll(mask);
         clone.blacklist = blacklist;
         return clone;
     }
@@ -58,25 +60,25 @@ public class BlockMask
             if (tag != null)
             {
                 List<net.minecraft.block.Block> blocks = tag.getValues();
-                for (net.minecraft.block.Block add : blocks) with(new Block(add.defaultBlockState()));
+                for (net.minecraft.block.Block add : blocks) with(BlockTypeRegistry.fromMinecraftBlock(add.defaultBlockState()));
             }
             return this;
         }
-        else return with(KeystoneFilter.block(block));
+        else return with(KeystoneFilter.block(block).blockType());
     }
     /**
-     * Add a {@link Block} to the mask
-     * @param block The {@link Block} to add
+     * Add a {@link BlockType} to the mask
+     * @param blockType The {@link BlockType} to add
      * @return The modified {@link BlockMask}
      */
-    public BlockMask with(Block block)
+    public BlockMask with(BlockType blockType)
     {
-        if (forcedBlockAdditions.containsKey(block))
+        if (forcedBlockAdditions.containsKey(blockType))
         {
-            for (Block add : forcedBlockAdditions.get(block)) if (!mask.contains(add)) mask.add(add);
+            for (BlockType add : forcedBlockAdditions.get(blockType)) if (!mask.contains(add)) mask.add(add);
         }
 
-        if (!mask.contains(block)) mask.add(block);
+        if (!mask.contains(blockType)) mask.add(blockType);
         return this;
     }
 
@@ -94,25 +96,25 @@ public class BlockMask
             if (tag != null)
             {
                 List<net.minecraft.block.Block> blocks = tag.getValues();
-                for (net.minecraft.block.Block add : blocks) without(new Block(add.defaultBlockState()));
+                for (net.minecraft.block.Block add : blocks) without(BlockTypeRegistry.fromMinecraftBlock(add.defaultBlockState()));
             }
             return this;
         }
-        else return without(KeystoneFilter.block(block));
+        else return without(KeystoneFilter.block(block).blockType());
     }
     /**
-     * Remove a {@link Block} from the mask
-     * @param block The {@link Block} to remove
+     * Remove a {@link BlockType} from the mask
+     * @param blockType The {@link BlockType} to remove
      * @return The modified {@link BlockMask}
      */
-    public BlockMask without(Block block)
+    public BlockMask without(BlockType blockType)
     {
-        if (forcedBlockAdditions.containsKey(block))
+        if (forcedBlockAdditions.containsKey(blockType))
         {
-            for (Block remove : forcedBlockAdditions.get(block)) if (mask.contains(remove)) mask.remove(remove);
+            for (BlockType remove : forcedBlockAdditions.get(blockType)) if (mask.contains(remove)) mask.remove(remove);
         }
 
-        if (mask.contains(block)) mask.remove(block);
+        if (mask.contains(blockType)) mask.remove(blockType);
         return this;
     }
 
@@ -149,15 +151,22 @@ public class BlockMask
     public boolean isWhitelist() { return !blacklist; }
 
     /**
+     * Check if a {@link BlockType} is matched by this mask
+     * @param blockType The {@link BlockType} to check
+     * @return Whether the {@link BlockType} is matched by this mask
+     */
+    public boolean valid(@Nonnull BlockType blockType) { return mask.contains(blockType) != blacklist; }
+
+    /**
      * Check if a {@link Block} is matched by this mask
      * @param block The {@link Block} to check
      * @return Whether the {@link Block} is matched by this mask
      */
-    public boolean valid(Block block) { return mask.contains(block) != blacklist; }
+    public boolean valid(@Nonnull Block block) { return mask.contains(block.blockType()) != blacklist; }
 
     /**
-     * Run a function on every {@link Block} in the mask contents
+     * Run a function on every {@link BlockType} in the mask contents
      * @param consumer The function to run
      */
-    public void forEach(Consumer<Block> consumer) { mask.forEach(block -> consumer.accept(block)); }
+    public void forEach(Consumer<BlockType> consumer) { mask.forEach(block -> consumer.accept(block)); }
 }

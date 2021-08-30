@@ -1,6 +1,6 @@
 package keystone.core.events;
 
-import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import net.minecraftforge.eventbus.api.Event;
 
 import java.util.Arrays;
@@ -9,23 +9,23 @@ public class SchematicEvent extends Event
 {
     public static class ScaleBlock extends SchematicEvent
     {
-        public final Block block;
+        public final BlockType blockType;
         public final int scale;
-        public Block[] scaled;
+        public BlockType[] scaled;
 
-        public ScaleBlock(Block block, int scale)
+        public ScaleBlock(BlockType blockType, int scale)
         {
-            this.block = block;
+            this.blockType = blockType;
             this.scale = scale;
-            this.scaled = new Block[scale * scale * scale];
-            Arrays.fill(this.scaled, block);
+            this.scaled = new BlockType[scale * scale * scale];
+            Arrays.fill(this.scaled, blockType);
         }
 
-        public void setBlock(int x, int y, int z, Block block)
+        public void setBlock(int x, int y, int z, BlockType blockType)
         {
-            scaled[index(x, y, z)] = block;
+            scaled[index(x, y, z)] = blockType;
         }
-        public Block getBlock(int x, int y, int z)
+        public BlockType getBlockType(int x, int y, int z)
         {
             return scaled[index(x, y, z)];
         }

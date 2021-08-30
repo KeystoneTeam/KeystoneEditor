@@ -2,6 +2,7 @@ package keystone.core.gui.widgets.inputs.properties;
 
 import keystone.api.wrappers.blocks.Block;
 import keystone.core.gui.widgets.inputs.EnumWidget;
+import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.state.EnumProperty;
 import net.minecraft.util.IStringSerializable;
@@ -17,7 +18,7 @@ public class EnumPropertyWidget<T extends Enum<T> & IStringSerializable> extends
 
     public EnumPropertyWidget(Block block, EnumProperty<T> property, int x, int y, int width, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets, BiConsumer<Widget, Boolean> addDropdown)
     {
-        super(new StringTextComponent(property.getName()), x, y, width, block.getMinecraftBlock().getValue(property), disableWidgets, restoreWidgets, addDropdown);
+        super(new StringTextComponent(property.getName()), x, y, width, block.blockType().getMinecraftBlock().getValue(property), disableWidgets, restoreWidgets, addDropdown);
 
         this.block = block;
         this.property = property;
@@ -32,6 +33,6 @@ public class EnumPropertyWidget<T extends Enum<T> & IStringSerializable> extends
     @Override
     protected void onSetValue(T value)
     {
-        block.setMinecraftBlock(block.getMinecraftBlock().setValue(property, value));
+        block.setBlockType(BlockTypeRegistry.fromMinecraftBlock(block.blockType().getMinecraftBlock().setValue(property, value)));
     }
 }

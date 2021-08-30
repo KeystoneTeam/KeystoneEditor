@@ -2,9 +2,9 @@ import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.wrappers.blocks.BlockType;
 
 import java.util.Random;
 
@@ -48,19 +48,19 @@ public class Forester extends KeystoneFilter
                 if (random.nextFloat() >= treeChance) continue;
 
                 int y = region.getTopBlock(x, z);
-                if (!groundMask.valid(region.getBlock(x, y, z))) continue;
+                if (!groundMask.valid(region.getBlockType(x, y, z))) continue;
 
                 if (pairLogsAndLeaves)
                 {
-                    Block[] blocks = resolvePalettes(logPalette, leavesPalette);
-                    generateTree(x, y + 1, z, blocks[0], blocks[1], region);
+                    BlockType[] blockTypes = resolvePalettes(logPalette, leavesPalette);
+                    generateTree(x, y + 1, z, blockTypes[0], blockTypes[1], region);
                 }
                 else generateTree(x, y + 1, z, logPalette.randomBlock(), leavesPalette.randomBlock(), region);
             }
         }
     }
     //endregion
-    private void generateTree(int x, int y, int z, Block log, Block leaves, WorldRegion box)
+    private void generateTree(int x, int y, int z, BlockType log, BlockType leaves, WorldRegion box)
     {
         int height;
 
@@ -80,13 +80,13 @@ public class Forester extends KeystoneFilter
     }
 
     //region Trunks
-    private void generateStraightTrunk(int x, int y, int z, int height, Block log, WorldRegion box)
+    private void generateStraightTrunk(int x, int y, int z, int height, BlockType log, WorldRegion box)
     {
         for (int i = 0; i < height; i++) box.setBlock(x, y + i, z, log);
     }
     //endregion
     //region Leaves
-    private void generateBlobLeaves(int x, int y, int z, Block leaves, WorldRegion box)
+    private void generateBlobLeaves(int x, int y, int z, BlockType leaves, WorldRegion box)
     {
         box.setBlock(x, y, z, leaves);
         box.setBlock(x + 1, y, z, leaves);
@@ -115,7 +115,7 @@ public class Forester extends KeystoneFilter
             if (random.nextBoolean()) box.setBlock(x - 2, y, z - 2, leaves);
         }
     }
-    private void generateSmallSpruceLeaves(int x, int y, int z, int height, Block leaves, WorldRegion box)
+    private void generateSmallSpruceLeaves(int x, int y, int z, int height, BlockType leaves, WorldRegion box)
     {
         int radius = 1;
         for (int i = height, j = 0; i > 0; i--, j++)

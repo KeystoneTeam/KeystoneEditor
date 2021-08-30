@@ -5,6 +5,7 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3i;
@@ -18,7 +19,7 @@ public class WorldRegion
     //region Function Types
     public interface BlockConsumer
     {
-        void accept(int x, int y, int z, Block block);
+        void accept(int x, int y, int z, BlockType blockType);
     }
     public interface EntityConsumer
     {
@@ -82,11 +83,11 @@ public class WorldRegion
     public int getTopBlock(int x, int z)
     {
         int y = this.max.y;
-        Block block = getBlock(x, y, z);
-        while (block.isAir())
+        BlockType blockType = getBlockType(x, y, z);
+        while (blockType.isAir())
         {
             y--;
-            block = getBlock(x, y, z);
+            blockType = getBlockType(x, y, z);
         }
         return y;
     }
@@ -98,7 +99,7 @@ public class WorldRegion
      * @param z The z coordinate
      * @return The block at the given coordinates
      */
-    public Block getBlock(int x, int y, int z) { return worldModifiers.blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED); }
+    public BlockType getBlockType(int x, int y, int z) { return worldModifiers.blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED); }
 
     /**
      * Get the block at a position in the filter box
@@ -108,9 +109,9 @@ public class WorldRegion
      * @param retrievalMode The {@link RetrievalMode} to use when getting the block
      * @return The block at the given coordinates
      */
-    public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
+    public BlockType getBlockType(int x, int y, int z, RetrievalMode retrievalMode)
     {
-        return worldModifiers.blocks.getBlock(x, y, z, retrievalMode);
+        return worldModifiers.blocks.getBlockType(x, y, z, retrievalMode);
     }
 
     /**
@@ -151,7 +152,27 @@ public class WorldRegion
     public boolean setBlock(int x, int y, int z, BlockPalette palette) { return setBlock(x, y, z, palette.randomBlock()); }
 
     /**
-     * Set the block at a position in the filter box to a {@link Block}.
+     * Set the block at a position in the filter box to a {@link BlockType}.
+     * This will only work if the position is within the filter box or
+     * allowBlocksOutside is true
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     * @param blockType The {@link BlockType} to change the position to
+     * @return Whether the change was successful
+     */
+    public boolean setBlock(int x, int y, int z, BlockType blockType)
+    {
+        if (allowBlocksOutside || isPositionInBox(x, y, z))
+        {
+            worldModifiers.blocks.setBlock(x, y, z, blockType);
+            return true;
+        }
+        else return false;
+    }
+
+    /**
+     * Set the block at a position in the filter box to a {@link BlockType}.
      * This will only work if the position is within the filter box or
      * allowBlocksOutside is true
      * @param x The x coordinate
@@ -220,7 +241,7 @@ public class WorldRegion
             {
                 for (int z = min.z; z <= max.z; z++)
                 {
-                    consumer.accept(x, y, z, getBlock(x, y, z, retrievalMode));
+                    consumer.accept(x, y, z, getBlockType(x, y, z, retrievalMode));
                 }
             }
         }

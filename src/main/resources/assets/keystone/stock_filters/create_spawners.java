@@ -29,9 +29,8 @@ public class CreateSpawners extends KeystoneFilter
         spawnPotentials.add(entitySpawn);
 
         Block spawner = block("minecraft:spawner");
-        NBTCompound spawnerData = spawner.data();
+        NBTCompound spawnerData = spawner.tileEntity();
         spawnerData.put("SpawnPotentials", spawnPotentials);
-        spawner = spawner.data(spawnerData);
 
         region.setBlock((int)Math.floor(entity.boundingBox().centerX), (int)Math.floor(entity.y()), (int)Math.floor(entity.boundingBox().centerZ), spawner);
         entity.kill();

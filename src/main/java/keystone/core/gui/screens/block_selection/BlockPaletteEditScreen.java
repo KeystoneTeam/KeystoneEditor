@@ -1,12 +1,13 @@
 package keystone.core.gui.screens.block_selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
+import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.text.TranslationTextComponent;
 import org.lwjgl.glfw.GLFW;
@@ -38,7 +39,7 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
         super.init();
         this.palettePanel = BlockGridWidget.createWithMargins(KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 50, true, new TranslationTextComponent("keystone.mask_panel"), state ->
         {
-            Block wrapper = new Block(state);
+            BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(state);
             this.palette.without(wrapper, 1);
             this.palettePanel.removeBlock(state);
         }, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
@@ -93,7 +94,7 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
     @Override
     public void onBlockSelected(BlockState block)
     {
-        Block wrapper = new Block(block);
+        BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(block);
         this.palettePanel.addBlock(block);
         this.palette.with(wrapper);
     }

@@ -3,7 +3,7 @@ package keystone.api.tools;
 import keystone.api.KeystoneDirectories;
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
 import net.minecraft.util.Util;
 
@@ -56,9 +56,9 @@ public class AnalyzeTool extends KeystoneFilter
     @Override
     public void processBlock(int x, int y, int z, WorldRegion region)
     {
-        Block block = region.getBlock(x, y, z);
-        if (!blockCounts.containsKey(block.block())) blockCounts.put(block.block(), new Entry());
-        blockCounts.get(block.block()).add(block.allProperties());
+        BlockType blockType = region.getBlockType(x, y, z);
+        if (!blockCounts.containsKey(blockType.block())) blockCounts.put(blockType.block(), new Entry());
+        blockCounts.get(blockType.block()).add(blockType.allProperties());
     }
     @Override
     public void processEntity(Entity entity, WorldRegion region)

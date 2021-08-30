@@ -2,9 +2,9 @@ import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.wrappers.blocks.BlockType;
 
 public class Resurface extends KeystoneFilter
 {
@@ -15,8 +15,8 @@ public class Resurface extends KeystoneFilter
 
     public void processBlock(int x, int y, int z, WorldRegion region)
     {
-        Block block = region.getBlock(x, y, z);
-        if (airMask.valid(block) || !surfaceMask.valid(block)) return;
+        BlockType blockType = region.getBlockType(x, y, z);
+        if (airMask.valid(blockType) || !surfaceMask.valid(blockType)) return;
 
         for (int i = -depth; i <= depth; i++)
         {
@@ -24,7 +24,7 @@ public class Resurface extends KeystoneFilter
             {
                 for (int k = -depth; k <= depth; k++)
                 {
-                    Block original = region.getBlock(x + i, y + j, z + k);
+                    BlockType original = region.getBlockType(x + i, y + j, z + k);
                     if (airMask.valid(original))
                     {
                         region.setBlock(x, y, z, surfacePalette);

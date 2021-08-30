@@ -9,6 +9,7 @@ import keystone.api.wrappers.Item;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.gui.widgets.inputs.fields.EditableObject;
 import keystone.core.modules.history.HistoryModule;
@@ -227,14 +228,14 @@ public class KeystoneFilter extends EditableObject
     }
 
     /**
-     * Create a {@link BlockPalette} from multiple {@link Block Blocks}
-     * @param blocks A list of {@link Block Blocks}
+     * Create a {@link BlockPalette} from multiple {@link BlockType Blocks}
+     * @param blockTypes A list of {@link BlockType Blocks}
      * @return The {@link BlockPalette} that is generated
      */
-    public final BlockPalette palette(Block... blocks)
+    public final BlockPalette palette(BlockType... blockTypes)
     {
         BlockPalette palette = new BlockPalette();
-        for (Block block : blocks) palette = palette.with(block);
+        for (BlockType blockType : blockTypes) palette = palette.with(blockType);
         return palette;
     }
 
@@ -251,11 +252,11 @@ public class KeystoneFilter extends EditableObject
      */
     public final BlockMask blacklist(String... contents) { return whitelist(contents).blacklist(); }
     /**
-     * Create a blacklist {@link BlockMask} from multiple {@link Block Blocks}
-     * @param blocks A list of {@link Block Blocks}
+     * Create a blacklist {@link BlockMask} from multiple {@link BlockType Blocks}
+     * @param blockTypes A list of {@link BlockType Blocks}
      * @return The blacklist {@link BlockMask}
      */
-    public final BlockMask blacklist(Block... blocks) { return whitelist(blocks).blacklist(); }
+    public final BlockMask blacklist(BlockType... blockTypes) { return whitelist(blockTypes).blacklist(); }
     /**
      * Create an empty whitelist {@link BlockMask}
      * @return The whitelist {@link BlockMask}
@@ -274,14 +275,14 @@ public class KeystoneFilter extends EditableObject
         return mask;
     }
     /**
-     * Create a whitelist {@link BlockMask} from multiple {@link Block Blocks}
-     * @param blocks A list of {@link Block Blocks}
+     * Create a whitelist {@link BlockMask} from multiple {@link BlockType Blocks}
+     * @param blockTypes A list of {@link BlockType Blocks}
      * @return The whitelist {@link BlockMask} that is generated
      */
-    public final BlockMask whitelist(Block... blocks)
+    public final BlockMask whitelist(BlockType... blockTypes)
     {
         BlockMask mask = new BlockMask();
-        for (Block block : blocks) mask = mask.with(block);
+        for (BlockType blockType : blockTypes) mask = mask.with(blockType);
         return mask;
     }
 
@@ -289,25 +290,25 @@ public class KeystoneFilter extends EditableObject
      * Calculate the entry of multiple {@link BlockPalette BlockPalettes} at the same
      * random index. Use this matching related blocks, such as randomly selecting a log and leaf combo
      * @param palettes A list of {@link BlockPalette BlockPalettes}
-     * @return An array containing the resolved {@link Block Blocks}, in the same order as the provided {@link BlockPalette BlockPalettes}
+     * @return An array containing the resolved {@link BlockType Blocks}, in the same order as the provided {@link BlockPalette BlockPalettes}
      */
-    public final Block[] resolvePalettes(BlockPalette... palettes)
+    public final BlockType[] resolvePalettes(BlockPalette... palettes)
     {
-        Block[] ret = new Block[palettes.length];
+        BlockType[] ret = new BlockType[palettes.length];
         if (palettes.length == 0) return ret;
 
         int index = palettes[0].randomIndex();
-        for (int i = 0; i < ret.length; i++) ret[i] = palettes[i].getBlock(index);
+        for (int i = 0; i < ret.length; i++) ret[i] = palettes[i].getBlockType(index);
         return ret;
     }
 
     /**
-     * Create a {@link Block} from a block ID. Any ID that is a valid ID for the
+     * Create a {@link BlockType} from a block ID. Any ID that is a valid ID for the
      * /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param block The block ID
-     * @return The generated {@link Block}
+     * @return The generated {@link BlockType}
      */
-    public static final Block block(String block)
+    public static Block block(String block)
     {
         BlockState state = Blocks.RED_STAINED_GLASS.defaultBlockState();
         CompoundNBT tileEntity = null;

@@ -2,8 +2,11 @@ package keystone.core.schematic.formats;
 
 import keystone.api.Keystone;
 import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
+import keystone.api.wrappers.nbt.NBTCompound;
+import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.extensions.ISchematicExtension;
 import keystone.core.utils.NBTSerializer;
@@ -87,15 +90,15 @@ public class KeystoneSchematicFormat implements ISchematicFormat
                 positionNBT.add(2, IntNBT.valueOf(pos.getZ()));
 
                 blockNBT.put("pos", positionNBT);
-                blockNBT.putInt("state", palette.indexOf(block.getMinecraftBlock()));
+                blockNBT.putInt("state", palette.indexOf(block.blockType().getMinecraftBlock()));
 
-                CompoundNBT tileEntityNBT = block.getTileEntityData();
-                if (tileEntityNBT != null && !tileEntityNBT.isEmpty())
+                NBTCompound tileEntityNBT = block.tileEntity();
+                if (tileEntityNBT != null)
                 {
                     tileEntityNBT.remove("x");
                     tileEntityNBT.remove("y");
                     tileEntityNBT.remove("z");
-                    blockNBT.put("nbt", tileEntityNBT);
+                    blockNBT.put("nbt", tileEntityNBT.getMinecraftNBT());
                 }
 
                 blocksNBT.add(blockNBT);
@@ -153,7 +156,7 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         List<BlockState> palette = new ArrayList<>();
         schematic.forEachBlock((pos, block) ->
         {
-            BlockState paletteEntry = block.getMinecraftBlock();
+            BlockState paletteEntry = block.blockType().getMinecraftBlock();
             if (!palette.contains(paletteEntry)) palette.add(paletteEntry);
         });
         palette.sort(Comparator.comparing(BlockState::toString));
@@ -176,7 +179,7 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         Vector3i size = new Vector3i(sizeNBT.getInt(0), sizeNBT.getInt(1), sizeNBT.getInt(2));
 
         // Palette and Blocks
-        Block[] palette = loadPalette(nbt.getList("palette", Constants.NBT.TAG_COMPOUND));
+        BlockType[] palette = loadPalette(nbt.getList("palette", Constants.NBT.TAG_COMPOUND));
         ListNBT blocksNBT = nbt.getList("blocks", Constants.NBT.TAG_COMPOUND);
         Block[] blocks = new Block[size.getX() * size.getY() * size.getZ()];
         loadBlocks(size, blocks, blocksNBT, palette);
@@ -205,24 +208,26 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         return new KeystoneSchematic(size, blocks, entities, extensions);
     }
 
-    private Block[] loadPalette(ListNBT paletteNBT)
+    private BlockType[] loadPalette(ListNBT paletteNBT)
     {
-        Block[] palette = new Block[paletteNBT.size()];
+        BlockType[] palette = new BlockType[paletteNBT.size()];
         for (int i = 0; i < palette.length; i++)
         {
             CompoundNBT entry = paletteNBT.getCompound(i);
             BlockState blockState = NBTUtil.readBlockState(entry);
-            palette[i] = new Block(blockState);
+            palette[i] = BlockTypeRegistry.fromMinecraftBlock(blockState);
         }
         return palette;
     }
-    private void loadBlocks(Vector3i size, Block[] blocks, ListNBT blocksNBT, Block[] palette)
+    private void loadBlocks(Vector3i size, Block[] blocks, ListNBT blocksNBT, BlockType[] palette)
     {
         for (int i = 0; i < blocksNBT.size(); i++)
         {
             CompoundNBT blockNBT = blocksNBT.getCompound(i);
-            Block block = palette[blockNBT.getInt("state")].clone();
-            if (blockNBT.contains("nbt")) block.setTileEntity(blockNBT.getCompound("nbt"));
+            BlockType blockType = palette[blockNBT.getInt("state")];
+            Block block;
+            if (blockNBT.contains("nbt")) block = new Block(blockType, new NBTCompound(blockNBT.getCompound("nbt")));
+            else block = new Block(blockType);
 
             ListNBT posNBT = blockNBT.getList("pos", Constants.NBT.TAG_INT);
             blocks[index(size, new int[] { posNBT.getInt(0), posNBT.getInt(1), posNBT.getInt(2) })] = block;

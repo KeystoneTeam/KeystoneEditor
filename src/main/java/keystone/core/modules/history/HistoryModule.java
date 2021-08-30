@@ -12,10 +12,7 @@ import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class HistoryModule implements IKeystoneModule

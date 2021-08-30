@@ -2,6 +2,7 @@ package keystone.core.gui.screens.block_selection;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
@@ -15,7 +16,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
     private static final int PADDING = 5;
 
     private boolean ranCallback = false;
-    private final Consumer<Block> callback;
+    private final Consumer<BlockType> callback;
     private final Block block;
 
     private int panelX;
@@ -24,17 +25,17 @@ public class BlockPropertiesScreen extends KeystoneOverlay
     private int panelHeight;
     private BlockPropertiesWidgetList propertiesList;
 
-    protected BlockPropertiesScreen(Block block, Consumer<Block> callback)
+    protected BlockPropertiesScreen(BlockType blockType, Consumer<BlockType> callback)
     {
         super(new TranslationTextComponent("keystone.screen.blockProperties"));
 
         this.callback = callback;
-        this.block = block;
+        this.block = new Block(blockType);
     }
-    public static void editBlockProperties(Block block, Consumer<Block> callback)
+    public static void editBlockProperties(BlockType blockType, Consumer<BlockType> callback)
     {
-        if (block.getMinecraftBlock().getProperties().size() > 0) KeystoneOverlayHandler.addOverlay(new BlockPropertiesScreen(block.clone(), callback));
-        else callback.accept(block);
+        if (blockType.getMinecraftBlock().getProperties().size() > 0) KeystoneOverlayHandler.addOverlay(new BlockPropertiesScreen(blockType, callback));
+        else callback.accept(blockType);
     }
 
     @Override
@@ -42,7 +43,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
     {
         if (!ranCallback)
         {
-            callback.accept(block);
+            callback.accept(block.blockType());
             ranCallback = true;
         }
     }
@@ -64,7 +65,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
         {
             if (!ranCallback)
             {
-                callback.accept(block);
+                callback.accept(block.blockType());
                 ranCallback = true;
             }
             onClose();

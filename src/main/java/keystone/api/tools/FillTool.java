@@ -2,8 +2,9 @@ package keystone.api.tools;
 
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.wrappers.blocks.BlockType;
+import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
 
 /**
@@ -18,15 +19,15 @@ public class FillTool extends KeystoneFilter
      */
     public FillTool(BlockPalette palette) { this.palette = palette; }
     /**
-     * @param block The {@link Block} to fill
+     * @param blockType The {@link BlockType} to fill
      */
-    public FillTool(Block block)
+    public FillTool(BlockType blockType)
     {
-        this(new BlockPalette().with(block));
+        this(new BlockPalette().with(blockType));
     }
     public FillTool(BlockState block)
     {
-        this(new BlockPalette().with(new Block(block)));
+        this(new BlockPalette().with(BlockTypeRegistry.fromMinecraftBlock(block)));
     }
 
     @Override

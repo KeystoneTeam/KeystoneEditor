@@ -3,12 +3,14 @@ package keystone.core.schematic;
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.events.SchematicEvent;
 import keystone.core.math.BlockPosMath;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.modules.world_cache.WorldCacheModule;
+import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import keystone.core.renderer.client.Player;
 import keystone.core.schematic.extensions.ISchematicExtension;
@@ -78,7 +80,7 @@ public class KeystoneSchematic
                 for (int z = 0; z < size.getZ(); z++)
                 {
                     blocks[i] = worldModifiers.blocks.getBlock(x + box.getMinCoords().getX(), y + box.getMinCoords().getY(), z + box.getMinCoords().getZ(), RetrievalMode.ORIGINAL);
-                    if (blocks[i].getMinecraftBlock().is(Blocks.STRUCTURE_VOID)) blocks[i] = null;
+                    if (blocks[i].blockType().getMinecraftBlock().is(Blocks.STRUCTURE_VOID)) blocks[i] = null;
                     i++;
                 }
             }
@@ -222,7 +224,8 @@ public class KeystoneSchematic
                         i++;
                         continue;
                     }
-                    SchematicEvent.ScaleBlock scaleEvent = new SchematicEvent.ScaleBlock(blocks[i], scale);
+                    Block block = blocks[i];
+                    SchematicEvent.ScaleBlock scaleEvent = new SchematicEvent.ScaleBlock(block.blockType(), scale);
                     MinecraftForge.EVENT_BUS.post(scaleEvent);
 
                     for (int sx = 0; sx < scale; sx++)
@@ -232,20 +235,20 @@ public class KeystoneSchematic
                             for (int sz = 0; sz < scale; sz++)
                             {
                                 BlockPos localPos = new BlockPos(x * scale + sx, y * scale + sy, z * scale + sz);
-                                Block block = scaleEvent.getBlock(sx, sy, sz);
+                                BlockType blockType = scaleEvent.getBlockType(sx, sy, sz);
 
-                                BlockState state = block.getMinecraftBlock();
+                                BlockState state = blockType.getMinecraftBlock();
                                 ghostWorld.setBlockAndUpdate(localPos, state);
-                                if (block.getTileEntityData() != null)
+                                if (block.tileEntity() != null)
                                 {
-                                    CompoundNBT tileEntityData = block.getTileEntityData().copy();
+                                    CompoundNBT tileEntityData = block.tileEntity().getMinecraftNBT().copy();
                                     tileEntityData.putInt("x", x);
                                     tileEntityData.putInt("y", y);
                                     tileEntityData.putInt("z", z);
 
                                     TileEntity tileEntity = ghostWorld.getBlockEntity(localPos);
                                     if (tileEntity != null)
-                                        tileEntity.deserializeNBT(block.getMinecraftBlock(), tileEntityData);
+                                        tileEntity.deserializeNBT(blockType.getMinecraftBlock(), tileEntityData);
                                 }
                             }
                         }
@@ -302,7 +305,8 @@ public class KeystoneSchematic
                         continue;
                     }
 
-                    SchematicEvent.ScaleBlock scaleEvent = new SchematicEvent.ScaleBlock(blocks[i], clampedScale);
+                    Block block = blocks[i];
+                    SchematicEvent.ScaleBlock scaleEvent = new SchematicEvent.ScaleBlock(block.blockType(), clampedScale);
                     MinecraftForge.EVENT_BUS.post(scaleEvent);
 
                     for (int sx = 0; sx < clampedScale; sx++)
@@ -313,10 +317,10 @@ public class KeystoneSchematic
                             {
                                 BlockPos localPos = new BlockPos(x * clampedScale + sx, y * clampedScale + sy, z * clampedScale + sz);
                                 BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, clampedScale).offset(anchor);
-                                Block block = scaleEvent.getBlock(sx, sy, sz).clone();
+                                BlockType blockType = scaleEvent.getBlockType(sx, sy, sz);
 
-                                block.setMinecraftBlock(block.getMinecraftBlock().rotate(worldModifiers.blocks.getWorld(), worldPos, rotation).mirror(mirror));
-                                worldModifiers.blocks.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), block);
+                                blockType = BlockTypeRegistry.fromMinecraftBlock(blockType.getMinecraftBlock().rotate(worldModifiers.blocks.getWorld(), worldPos, rotation).mirror(mirror));
+                                worldModifiers.blocks.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), blockType);
                             }
                         }
                     }

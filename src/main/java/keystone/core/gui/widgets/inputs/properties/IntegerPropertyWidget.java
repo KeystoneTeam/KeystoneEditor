@@ -2,6 +2,7 @@ package keystone.core.gui.widgets.inputs.properties;
 
 import keystone.api.wrappers.blocks.Block;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
+import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.util.text.StringTextComponent;
 
@@ -12,7 +13,7 @@ public class IntegerPropertyWidget extends IntegerWidget
 
     public IntegerPropertyWidget(Block block, IntegerProperty property, int x, int y, int width)
     {
-        super(new StringTextComponent(property.getName()), x, y, width, block.getMinecraftBlock().getValue(property));
+        super(new StringTextComponent(property.getName()), x, y, width, block.blockType().getMinecraftBlock().getValue(property));
 
         this.block = block;
         this.property = property;
@@ -29,7 +30,7 @@ public class IntegerPropertyWidget extends IntegerWidget
     @Override
     protected boolean onSetValue(Integer value)
     {
-        block.setMinecraftBlock(block.getMinecraftBlock().setValue(property, value));
+        block.setBlockType(BlockTypeRegistry.fromMinecraftBlock(block.blockType().getMinecraftBlock().setValue(property, value)));
         return true;
     }
 }

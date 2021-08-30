@@ -30,7 +30,7 @@ public class BlockPropertiesWidgetList extends WidgetList
         this.addDropdown = this::add;
 
         int propertyY = 0;
-        Collection<Property<?>> properties = block.getMinecraftBlock().getProperties();
+        Collection<Property<?>> properties = block.blockType().getMinecraftBlock().getProperties();
         for (Property<?> property : properties)
         {
             propertyY += createVariableEditor(block, property, propertyY) + padding;

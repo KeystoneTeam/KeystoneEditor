@@ -12,6 +12,6 @@ public class AdvancedFill extends KeystoneFilter
     @Override
     public void processBlock(int x, int y, int z, WorldRegion box)
     {
-        if (mask.valid(box.getBlock(x, y, z))) box.setBlock(x, y, z, palette);
+        if (mask.valid(box.getBlockType(x, y, z))) box.setBlock(x, y, z, palette);
     }
 }

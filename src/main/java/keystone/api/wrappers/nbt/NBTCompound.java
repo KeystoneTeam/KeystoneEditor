@@ -1,6 +1,12 @@
 package keystone.api.wrappers.nbt;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import keystone.api.Keystone;
+import net.minecraft.command.arguments.NBTPathArgument;
+import net.minecraft.command.arguments.NBTTagArgument;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
 
 import java.util.List;
 import java.util.Set;
@@ -15,11 +21,32 @@ public class NBTCompound extends NBTWrapper<CompoundNBT>
     public NBTCompound(CompoundNBT nbt) { super(nbt); }
     public NBTCompound() { super(new CompoundNBT()); }
 
+    public NBTCompound clone() { return new NBTCompound(nbt.copy()); }
+
     public Set<String> getAllKeys() { return nbt.getAllKeys(); }
 
     public boolean contains(String key) { return this.nbt.contains(key); }
     public boolean contains(String key, NBTType tagType) { return this.nbt.contains(key, tagType.minecraftID); }
     public void remove(String key) { this.nbt.remove(key); }
+
+    /**
+     * Set NBT data at a given path to a given value
+     * @param path The NBT path. [e.g. "Items[0].Count", "Items[{Slot:0b}]"]
+     * @param data The value to set. [e.g. "32b", "{id:"minecraft:diamond",Count:2b}"]
+     */
+    public void setData(String path, String data)
+    {
+        try
+        {
+            NBTPathArgument.NBTPath nbtPath = NBTPathArgument.nbtPath().parse(new StringReader(path));
+            INBT nbt = NBTTagArgument.nbtTag().parse(new StringReader(data));
+            nbtPath.set(this.nbt, () -> nbt);
+        }
+        catch (CommandSyntaxException e)
+        {
+            Keystone.abortFilter(e.getLocalizedMessage());
+        }
+    }
 
     public void put(String key, NBTWrapper<?> nbt) { this.nbt.put(key, nbt.getMinecraftNBT()); }
     public void putByte(String key, byte value) { nbt.putByte(key, value); }

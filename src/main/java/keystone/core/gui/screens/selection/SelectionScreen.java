@@ -6,7 +6,6 @@ import keystone.api.KeystoneDirectories;
 import keystone.api.tools.AnalyzeTool;
 import keystone.api.tools.DeleteEntitiesTool;
 import keystone.api.tools.FillTool;
-import keystone.api.wrappers.blocks.Block;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.events.KeystoneSelectionChangedEvent;
 import keystone.core.gui.KeystoneOverlayHandler;
@@ -21,6 +20,7 @@ import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.world.WorldModifierModules;
+import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
 import net.minecraft.block.Blocks;
@@ -188,14 +188,13 @@ public class SelectionScreen extends KeystoneOverlay
             HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
             historyModule.tryBeginHistoryEntry();
 
-            Block air = new Block(Blocks.AIR.defaultBlockState());
             for (int x = selection.getMinCoords().getX(); x <= selection.getMaxCoords().getX(); x++)
             {
                 for (int y = selection.getMinCoords().getY(); y <= selection.getMaxCoords().getY(); y++)
                 {
                     for (int z = selection.getMinCoords().getZ(); z <= selection.getMaxCoords().getZ(); z++)
                     {
-                        worldModifiers.blocks.setBlock(x, y, z, air);
+                        worldModifiers.blocks.setBlock(x, y, z, BlockTypeRegistry.AIR);
                     }
                 }
             }

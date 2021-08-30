@@ -35,7 +35,7 @@ public class BiomesExtension implements ISchematicExtension
         List<Biome> biomesList = new ArrayList<>();
         bounds.forEachCoordinate((x, y, z) ->
         {
-            if (blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED).getMinecraftBlock().is(Blocks.STRUCTURE_VOID)) biomesList.add(null);
+            if (blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED).getMinecraftBlock().is(Blocks.STRUCTURE_VOID)) biomesList.add(null);
             else biomesList.add(world.getBiome(new BlockPos(x - bounds.minX, y - bounds.minY, z - bounds.minZ)));
         });
 

@@ -1,7 +1,8 @@
 package keystone.core.modules.filter.providers;
 
 import keystone.api.Keystone;
-import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
+import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.tags.ITag;
 
 public class TagBlockProvider implements IBlockProvider
@@ -14,14 +15,14 @@ public class TagBlockProvider implements IBlockProvider
     }
 
     @Override
-    public Block get()
+    public BlockType get()
     {
-        return new Block(this.blockTag.getRandomElement(Keystone.RANDOM).defaultBlockState());
+        return BlockTypeRegistry.fromMinecraftBlock(this.blockTag.getRandomElement(Keystone.RANDOM).defaultBlockState());
     }
     @Override
-    public Block getFirst()
+    public BlockType getFirst()
     {
-        return new Block(this.blockTag.getValues().get(0).defaultBlockState());
+        return BlockTypeRegistry.fromMinecraftBlock(this.blockTag.getValues().get(0).defaultBlockState());
     }
     @Override
     public IBlockProvider clone()

@@ -49,9 +49,9 @@ public class KeystoneHotbar extends KeystoneOverlay
                 Keystone.getModule(ClipboardModule.class).copy();
                 break;
             case FILL:
-                SingleBlockSelectionScreen.promptBlockStateChoice(block ->
+                SingleBlockSelectionScreen.promptBlockStateChoice(blockType ->
                 {
-                    Keystone.runInternalFilter(new FillTool(block));
+                    Keystone.runInternalFilter(new FillTool(blockType));
                     setSelectedSlot(KeystoneHotbarSlot.SELECTION);
                 });
                 break;

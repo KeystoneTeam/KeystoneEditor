@@ -2,8 +2,8 @@ package keystone.core.modules.brush.operations;
 
 import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
 import net.minecraft.util.text.ITextComponent;
@@ -24,7 +24,7 @@ public class StackFillBrushOperation extends BrushOperation
     public boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration)
     {
         int newY = y;
-        Block current = worldModifiers.blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
+        BlockType current = worldModifiers.blocks.getBlockType(x, newY, z, RetrievalMode.CURRENT);
         if (current.isAir())
         {
             if (gravity)
@@ -32,11 +32,11 @@ public class StackFillBrushOperation extends BrushOperation
                 while (current.isAir())
                 {
                     newY--;
-                    current = worldModifiers.blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
+                    current = worldModifiers.blocks.getBlockType(x, newY, z, RetrievalMode.CURRENT);
                 }
                 newY++;
             }
-            else if (worldModifiers.blocks.getBlock(x, newY - 1, z, RetrievalMode.CURRENT).isAir()) return true;
+            else if (worldModifiers.blocks.getBlockType(x, newY - 1, z, RetrievalMode.CURRENT).isAir()) return true;
         }
         else
         {
@@ -45,7 +45,7 @@ public class StackFillBrushOperation extends BrushOperation
                 while (!current.isAir())
                 {
                     newY++;
-                    current = worldModifiers.blocks.getBlock(x, newY, z, RetrievalMode.CURRENT);
+                    current = worldModifiers.blocks.getBlockType(x, newY, z, RetrievalMode.CURRENT);
                 }
             }
             else return true;

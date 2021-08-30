@@ -3,7 +3,10 @@ package keystone.core.utils;
 import keystone.api.Keystone;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
+import keystone.api.wrappers.nbt.NBTCompound;
+import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.*;
 import net.minecraft.util.ResourceLocation;
@@ -92,6 +95,24 @@ public class NBTSerializer
         return shorts;
     }
     //endregion
+    //region BlockType Arrays
+    public static ListNBT serializeBlockTypes(BlockType[] blockTypes)
+    {
+        short[] indices = new short[blockTypes.length];
+        for (int i = 0; i < blockTypes.length; i++) indices[i] = blockTypes[i] == null ? -1 : blockTypes[i].getKeystoneID();
+        return serializeShortArray(indices);
+    }
+    public static BlockType[] deserializeBlockTypes(ListNBT blockTypesNBT)
+    {
+        BlockType[] blockTypes = new BlockType[blockTypesNBT.size()];
+        for (int i = 0; i < blockTypes.length; i++)
+        {
+            short id = blockTypesNBT.getShort(i);
+            blockTypes[i] = id < 0 ? null : BlockTypeRegistry.fromKeystoneID(blockTypesNBT.getShort(i));
+        }
+        return blockTypes;
+    }
+    //endregion
     //region Block Arrays
     public static ListNBT serializeBlockPalette(BlockState[] palette)
     {
@@ -107,17 +128,18 @@ public class NBTSerializer
         }
         return paletteNBT;
     }
-    public static Block[] deserializeBlockPalette(ListNBT paletteNBT)
+    public static BlockType[] deserializeBlockPalette(ListNBT paletteNBT)
     {
-        Block[] palette = new Block[paletteNBT.size()];
+        BlockType[] palette = new BlockType[paletteNBT.size()];
         for (int i = 0; i < palette.length; i++)
         {
             CompoundNBT entry = paletteNBT.getCompound(i);
             BlockState blockState = NBTUtil.readBlockState(entry);
-            palette[i] = new Block(blockState);
+            palette[i] = BlockTypeRegistry.fromMinecraftBlock(blockState);
         }
         return palette;
     }
+
     public static CompoundNBT serializeBlocks(Block[] blocks)
     {
         CompoundNBT nbt = new CompoundNBT();
@@ -142,15 +164,15 @@ public class NBTSerializer
                 if (block == null) blockNBT.putInt("state", -1);
                 else
                 {
-                    blockNBT.putInt("state", palette.indexOf(block.getMinecraftBlock()));
+                    blockNBT.putInt("state", palette.indexOf(block.blockType().getMinecraftBlock()));
 
-                    CompoundNBT tileEntityNBT = block.getTileEntityData();
-                    if (tileEntityNBT != null && !tileEntityNBT.isEmpty())
+                    NBTCompound tileEntityNBT = block.tileEntity();
+                    if (tileEntityNBT != null && !tileEntityNBT.getMinecraftNBT().isEmpty())
                     {
                         tileEntityNBT.remove("x");
                         tileEntityNBT.remove("y");
                         tileEntityNBT.remove("z");
-                        blockNBT.put("nbt", tileEntityNBT);
+                        blockNBT.put("nbt", tileEntityNBT.getMinecraftNBT());
                     }
                 }
                 blocksNBT.add(blockNBT);
@@ -162,26 +184,26 @@ public class NBTSerializer
     }
     public static Block[] deserializeBlocks(CompoundNBT blocksNBT)
     {
-        Block[] palette = deserializeBlockPalette(blocksNBT.getList("palette", Constants.NBT.TAG_COMPOUND));
+        BlockType[] palette = deserializeBlockPalette(blocksNBT.getList("palette", Constants.NBT.TAG_COMPOUND));
         ListNBT statesNBT = blocksNBT.getList("blocks", Constants.NBT.TAG_COMPOUND);
         Block[] blocks = new Block[statesNBT.size()];
         loadBlocks(blocks, statesNBT, palette);
         return blocks;
     }
 
-    private static List<BlockState> generatePalette(Block[] blocks)
+    private static List<BlockState> generatePalette(Block[] blockTypes)
     {
         List<BlockState> palette = new ArrayList<>();
-        for (Block block : blocks)
+        for (Block block : blockTypes)
         {
             if (block == null) continue;
-            BlockState paletteEntry = block.getMinecraftBlock();
+            BlockState paletteEntry = block.blockType().getMinecraftBlock();
             if (!palette.contains(paletteEntry)) palette.add(paletteEntry);
         }
         palette.sort(Comparator.comparing(BlockState::toString));
         return palette;
     }
-    private static void loadBlocks(Block[] blocks, ListNBT blocksNBT, Block[] palette)
+    private static void loadBlocks(Block[] blocks, ListNBT blocksNBT, BlockType[] palette)
     {
         for (int i = 0; i < blocksNBT.size(); i++)
         {
@@ -190,9 +212,13 @@ public class NBTSerializer
             if (state < 0) blocks[i] = null;
             else
             {
-                Block block = palette[state].clone();
-                if (blockNBT.contains("nbt")) block.setTileEntity(blockNBT.getCompound("nbt"));
-                blocks[i] = block;
+                BlockType blockType = palette[state];
+                if (blockNBT.contains("nbt"))
+                {
+                    NBTCompound tileEntity = new NBTCompound(blockNBT.getCompound("nbt"));
+                    blocks[i] = new Block(blockType, tileEntity);
+                }
+                else blocks[i] = new Block(blockType);
             }
         }
     }
@@ -282,26 +308,26 @@ public class NBTSerializer
     }
     //endregion
     //region Tile Entity Maps
-    public static ListNBT serializeTileEntities(Map<BlockPos, CompoundNBT> tileEntities)
+    public static ListNBT serializeTileEntities(Map<BlockPos, NBTCompound> tileEntities)
     {
         ListNBT listNBT = new ListNBT();
-        for (Map.Entry<BlockPos, CompoundNBT> entry : tileEntities.entrySet())
+        for (Map.Entry<BlockPos, NBTCompound> entry : tileEntities.entrySet())
         {
             CompoundNBT entityNBT = new CompoundNBT();
             entityNBT.putIntArray("pos", new int[] { entry.getKey().getX(), entry.getKey().getY(), entry.getKey().getZ() });
-            entityNBT.put("nbt", entry.getValue());
+            entityNBT.put("nbt", entry.getValue().getMinecraftNBT());
             listNBT.add(entityNBT);
         }
         return listNBT;
     }
-    public static Map<BlockPos, CompoundNBT> deserializeTileEntities(ListNBT tileEntitiesNBT)
+    public static Map<BlockPos, NBTCompound> deserializeTileEntities(ListNBT tileEntitiesNBT)
     {
-        Map<BlockPos, CompoundNBT> ret = new HashMap<>();
+        Map<BlockPos, NBTCompound> ret = new HashMap<>();
         for (int i = 0; i < tileEntitiesNBT.size(); i++)
         {
             CompoundNBT entityNBT = tileEntitiesNBT.getCompound(i);
             int[] pos = entityNBT.getIntArray("pos");
-            ret.put(new BlockPos(pos[0], pos[1], pos[2]), entityNBT.getCompound("nbt"));
+            ret.put(new BlockPos(pos[0], pos[1], pos[2]), new NBTCompound(entityNBT.getCompound("nbt")));
         }
         return ret;
     }

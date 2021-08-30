@@ -34,8 +34,6 @@ import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.schematic.extensions.BiomesExtension;
 import keystone.core.schematic.extensions.StructureVoidsExtension;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.screen.MainMenuScreen;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -54,7 +52,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.forgespi.language.IModInfo;
-import net.minecraftforge.registries.ForgeRegistries;
 
 @Mod(KeystoneMod.MODID)
 public class KeystoneMod

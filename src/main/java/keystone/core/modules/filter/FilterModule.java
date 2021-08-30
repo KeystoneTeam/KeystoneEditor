@@ -114,7 +114,7 @@ public class FilterModule implements IKeystoneModule
 
                             if (processBlocks)
                             {
-                                box.forEachBlock((x, y, z, block) ->
+                                box.forEachBlock((x, y, z, blockType) ->
                                 {
                                     BlockPos pos = new BlockPos(x, y, z);
                                     if (!filter.ignoreRepeatBlocks() || !processedBlocks.contains(pos))

@@ -1,19 +1,18 @@
+import keystone.api.DiscSampler;
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.DiscSampler;
 import keystone.api.variables.FloatRange;
 import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.Axis;
 import keystone.api.wrappers.coordinates.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.lang.Float;
 
 public class AdvancedForester extends KeystoneFilter
 {
@@ -56,8 +55,8 @@ public class AdvancedForester extends KeystoneFilter
     public abstract class Tree
     {
         protected final AdvancedForester forester;
-        protected final Block log;
-        protected final Block foliage;
+        protected final BlockType log;
+        protected final BlockType foliage;
         protected final int x;
         protected final int y;
         protected final int z;
@@ -66,7 +65,7 @@ public class AdvancedForester extends KeystoneFilter
         public Tree(AdvancedForester forester, int x, int y, int z)
         {
             this.forester = forester;
-            Block[] palette = forester.resolvePalettes(forester.logPalette, forester.leavesPalette);
+            BlockType[] palette = forester.resolvePalettes(forester.logPalette, forester.leavesPalette);
             this.log = palette[0];
             this.foliage = palette[1];
 
@@ -161,7 +160,7 @@ public class AdvancedForester extends KeystoneFilter
             this.foliageCenters = new ArrayList<>();
         }
 
-        protected void placeCrossSection(float centerX, float centerY, float centerZ, float radius, Axis axis, Block block, WorldRegion region)
+        protected void placeCrossSection(float centerX, float centerY, float centerZ, float radius, Axis axis, BlockType blockType, WorldRegion region)
         {
             radius = (int)(radius + 0.618f);
             if (radius <= 0) return;
@@ -175,9 +174,9 @@ public class AdvancedForester extends KeystoneFilter
 
                     switch (axis)
                     {
-                        case X: region.setBlock((int)Math.floor(centerX), (int)Math.floor(centerY + i), (int)Math.floor(centerZ + j), block); break;
-                        case Y: region.setBlock((int)Math.floor(centerX + i), (int)Math.floor(centerY), (int)Math.floor(centerZ + j), block); break;
-                        case Z: region.setBlock((int)Math.floor(centerX + i), (int)Math.floor(centerY + j), (int)Math.floor(centerZ), block); break;
+                        case X: region.setBlock((int)Math.floor(centerX), (int)Math.floor(centerY + i), (int)Math.floor(centerZ + j), blockType); break;
+                        case Y: region.setBlock((int)Math.floor(centerX + i), (int)Math.floor(centerY), (int)Math.floor(centerZ + j), blockType); break;
+                        case Z: region.setBlock((int)Math.floor(centerX + i), (int)Math.floor(centerY + j), (int)Math.floor(centerZ), blockType); break;
                     }
                 }
             }
@@ -201,7 +200,7 @@ public class AdvancedForester extends KeystoneFilter
             }
         }
 
-        protected void placeTaperedCylinder(float startX, float startY, float startZ, float endX, float endY, float endZ, float startRadius, float endRadius, Block block, WorldRegion region)
+        protected void placeTaperedCylinder(float startX, float startY, float startZ, float endX, float endY, float endZ, float startRadius, float endRadius, BlockType blockType, WorldRegion region)
         {
             // Calculate difference between end and start
             int deltaX = (int)(endX - startX);
@@ -269,7 +268,7 @@ public class AdvancedForester extends KeystoneFilter
                         break;
                 }
                 float radius = endRadius + (startRadius - endRadius) * (float)Math.abs(maxDelta * maxDeltaSign - primaryOffset) / (float)maxDelta;
-                placeCrossSection(center[0], center[1], center[2], radius, axis, block, region);
+                placeCrossSection(center[0], center[1], center[2], radius, axis, blockType, region);
             }
         }
 
@@ -659,7 +658,7 @@ public class AdvancedForester extends KeystoneFilter
     @Variable public int seed = 0;
 
     public BlockMask airMask = whitelist("minecraft:air");
-    public Block air = block("minecraft:air");
+    public BlockType air = block("minecraft:air").blockType();
     public Random random;
     //endregion
 
@@ -721,9 +720,9 @@ public class AdvancedForester extends KeystoneFilter
             int x = (int)Math.floor(currentX);
             int y = (int)Math.floor(currentY);
             int z = (int)Math.floor(currentZ);
-            Block block = region.getBlock(x, y, z);
+            BlockType blockType = region.getBlockType(x, y, z);
 
-            if (mask.valid(block)) break;
+            if (mask.valid(blockType)) break;
             else
             {
                 currentX += dirX;

@@ -1,10 +1,10 @@
 package keystone.core.modules.filter.providers;
 
-import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 
 public interface IBlockProvider
 {
-    Block get();
-    Block getFirst();
+    BlockType get();
+    BlockType getFirst();
     IBlockProvider clone();
 }

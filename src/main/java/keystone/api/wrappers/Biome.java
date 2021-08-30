@@ -3,8 +3,6 @@ package keystone.api.wrappers;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 
-import java.util.Objects;
-
 /**
  * A wrapper for a Minecraft biome.
  */

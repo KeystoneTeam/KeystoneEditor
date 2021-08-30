@@ -1,8 +1,6 @@
 package keystone.core.gui.widgets;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import keystone.core.gui.screens.KeystoneOverlay;
-import keystone.core.gui.widgets.inputs.ParsableTextWidget;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.text.ITextComponent;
 

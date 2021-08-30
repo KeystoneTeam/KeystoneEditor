@@ -261,17 +261,20 @@ public class Entity
         if (this.minecraftUUID != null)
         {
             net.minecraft.entity.Entity mcEntity = world.getLevel().getEntity(this.minecraftUUID);
-            if (mcEntity == null)
+
+            try
+            {
+                if (!this.killed) mcEntity.deserializeNBT(this.entityData);
+                else
+                {
+                    mcEntity.remove();
+                    breakMinecraftEntityConnection();
+                }
+            }
+            catch (Exception e)
             {
                 breakMinecraftEntityConnection();
                 spawnInWorld(world);
-            }
-
-            if (!this.killed) mcEntity.deserializeNBT(this.entityData);
-            else
-            {
-                mcEntity.remove();
-                breakMinecraftEntityConnection();
             }
         }
         else spawnInWorld(world);

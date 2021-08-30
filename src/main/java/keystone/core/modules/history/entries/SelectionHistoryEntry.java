@@ -5,7 +5,6 @@ import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.IntArrayNBT;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;

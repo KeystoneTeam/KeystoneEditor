@@ -4,7 +4,7 @@ import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.Hook;
 import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
 import net.minecraft.util.Direction;
@@ -39,7 +39,7 @@ public class ErodeBrushOperation extends BrushOperation
         }
     }
 
-    private static final Map<Block, Integer> neighborBlockCounts = new HashMap<>();
+    private static final Map<BlockType, Integer> neighborBlockCounts = new HashMap<>();
 
     @Variable("Preset") @Hook("onPresetChanged") Preset preset = Preset.SMOOTH;
     @Variable @IntRange(min = 1, max = 5) int strength = 1;
@@ -69,18 +69,18 @@ public class ErodeBrushOperation extends BrushOperation
 
     private void meltIteration(int x, int y, int z, WorldModifierModules worldModifiers)
     {
-        Block currentBlock = worldModifiers.blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED);
-        if (currentBlock.isAirOrLiquid()) return;
+        BlockType currentBlockType = worldModifiers.blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED);
+        if (currentBlockType.isAirOrLiquid()) return;
 
         neighborBlockCounts.clear();
         int highest = 1;
-        Block highestBlock = currentBlock;
+        BlockType highestBlockType = currentBlockType;
         int total = 0;
 
         for (Direction direction : Direction.values())
         {
             BlockPos neighborPos = new BlockPos(x, y, z).relative(direction);
-            Block neighbor = worldModifiers.blocks.getBlock(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
+            BlockType neighbor = worldModifiers.blocks.getBlockType(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
             if (!neighbor.isAirOrLiquid()) continue;
 
             total++;
@@ -91,28 +91,28 @@ public class ErodeBrushOperation extends BrushOperation
             if (count > highest)
             {
                 highest = count;
-                highestBlock = neighbor;
+                highestBlockType = neighbor;
             }
 
             neighborBlockCounts.put(neighbor, count);
         }
 
-        if (total >= meltFaces) worldModifiers.blocks.setBlock(x, y, z, highestBlock);
+        if (total >= meltFaces) worldModifiers.blocks.setBlock(x, y, z, highestBlockType);
     }
     private void fillIteration(int x, int y, int z, WorldModifierModules worldModifiers)
     {
-        Block currentBlock = worldModifiers.blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED);
-        if (!currentBlock.isAirOrLiquid()) return;
+        BlockType currentBlockType = worldModifiers.blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED);
+        if (!currentBlockType.isAirOrLiquid()) return;
 
         neighborBlockCounts.clear();
         int highest = 1;
-        Block highestBlock = currentBlock;
+        BlockType highestBlockType = currentBlockType;
         int total = 0;
 
         for (Direction direction : Direction.values())
         {
             BlockPos neighborPos = new BlockPos(x, y, z).relative(direction);
-            Block neighbor = worldModifiers.blocks.getBlock(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
+            BlockType neighbor = worldModifiers.blocks.getBlockType(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
             if (neighbor.isAirOrLiquid()) continue;
 
             total++;
@@ -123,13 +123,13 @@ public class ErodeBrushOperation extends BrushOperation
             if (count > highest)
             {
                 highest = count;
-                highestBlock = neighbor;
+                highestBlockType = neighbor;
             }
 
             neighborBlockCounts.put(neighbor, count);
         }
 
-        if (total >= meltFaces) worldModifiers.blocks.setBlock(x, y, z, highestBlock);
+        if (total >= meltFaces) worldModifiers.blocks.setBlock(x, y, z, highestBlockType);
     }
 
     public void onPresetChanged()

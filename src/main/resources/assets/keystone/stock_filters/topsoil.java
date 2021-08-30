@@ -2,9 +2,9 @@ import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.wrappers.blocks.BlockType;
 
 public class Topsoil extends KeystoneFilter
 {
@@ -22,20 +22,20 @@ public class Topsoil extends KeystoneFilter
     public void processBlock(int x, int y, int z, WorldRegion region)
     {
         // Surface Check
-        Block block = region.getBlock(x, y, z);
-        if (!surfaceMask.valid(block)) return;
+        BlockType blockType = region.getBlockType(x, y, z);
+        if (!surfaceMask.valid(blockType)) return;
 
         // Minimum Air Check
         for (int airCheck = 1; airCheck <= minimumAir; airCheck++)
         {
-            block = region.getBlock(x, y + airCheck, z);
-            if (!airMask.valid(block)) return;
+            blockType = region.getBlockType(x, y + airCheck, z);
+            if (!airMask.valid(blockType)) return;
         }
 
         // Place Topsoil
         int depth = minimumDepth;
         region.setBlock(x, y + yOffset, z, surfacePalette);
         region.setBlock(x, y + yOffset + 1, z, foliagePalette);
-        for (int dy = 1; dy < depth; dy++) if (!airMask.valid(region.getBlock(x, y + yOffset - dy, z))) region.setBlock(x, y + yOffset - dy, z, depthPalette);
+        for (int dy = 1; dy < depth; dy++) if (!airMask.valid(region.getBlockType(x, y + yOffset - dy, z))) region.setBlock(x, y + yOffset - dy, z, depthPalette);
     }
 }
