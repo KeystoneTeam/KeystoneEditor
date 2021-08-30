@@ -48,6 +48,7 @@ public class Block
 
     private BlockState state;
     private CompoundNBT tileEntity;
+    private String string;
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
@@ -70,6 +71,7 @@ public class Block
     {
         this.state = state;
         if (tileEntity != null) this.tileEntity = tileEntity;
+        updateString();
     }
 
     /**
@@ -87,18 +89,18 @@ public class Block
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
      * @param block The block state to set
      */
-    public void setMinecraftBlock(BlockState block) { this.state = block; }
+    public void setMinecraftBlock(BlockState block) { this.state = block; updateString(); }
 
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
      * @param tileEntity The TileEntity instance to set
      */
-    public void setTileEntity(TileEntity tileEntity) { this.tileEntity = tileEntity == null ? null : tileEntity.serializeNBT(); }
+    public void setTileEntity(TileEntity tileEntity) { this.tileEntity = tileEntity == null ? null : tileEntity.serializeNBT(); updateString(); }
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
      * @param tileEntity The tile entity NBT to set
      */
-    public void setTileEntity(CompoundNBT tileEntity) { this.tileEntity = tileEntity; }
+    public void setTileEntity(CompoundNBT tileEntity) { this.tileEntity = tileEntity; updateString(); }
     //endregion
     //region API
     public Block clone()
@@ -215,6 +217,7 @@ public class Block
 
             BlockStateParser parser = new BlockStateParser(new StringReader(blockStr), false).parse(false);
             copy.state = parser.getState();
+            copy.updateString();
             return copy;
         }
         catch (ArrayIndexOutOfBoundsException e)
@@ -256,6 +259,7 @@ public class Block
 
             BlockStateParser parser = new BlockStateParser(new StringReader(blockStr), false).parse(false);
             copy.state = parser.getState();
+            copy.updateString();
             return copy;
         }
         catch (CommandSyntaxException e)
@@ -281,6 +285,7 @@ public class Block
             INBT nbt = NBTTagArgument.nbtTag().parse(new StringReader(data));
             nbtPath.set(copy.tileEntity, () -> nbt);
 
+            copy.updateString();
             return copy;
         }
         catch (CommandSyntaxException e)
@@ -298,6 +303,7 @@ public class Block
     {
         Block copy = clone();
         copy.tileEntity = nbt.getMinecraftNBT();
+        copy.updateString();
         return copy;
     }
 
@@ -323,16 +329,20 @@ public class Block
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Block block = (Block) o;
-        return toString().equals(block.toString());
+        return this.string.equals(block.string);
     }
     @Override
     public int hashCode()
     {
-        return toString().hashCode();
+        return string.hashCode();
     }
 
     @Override
     public String toString()
+    {
+        return this.string;
+    }
+    private void updateString()
     {
         StringBuilder stringbuilder = new StringBuilder(this.state.getBlock().getRegistryName().toString());
         if (!this.state.getValues().isEmpty())
@@ -342,7 +352,7 @@ public class Block
             stringbuilder.append(']');
         }
         if (this.tileEntity != null) stringbuilder.append(this.tileEntity);
-        return stringbuilder.toString();
+        this.string = stringbuilder.toString();
     }
     //endregion
 }

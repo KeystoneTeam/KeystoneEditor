@@ -11,6 +11,7 @@ import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.gui.widgets.inputs.fields.EditableObject;
+import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -60,6 +61,27 @@ public class KeystoneFilter extends EditableObject
     public final KeystoneFilter setBlockRegions(WorldRegion[] regions)
     {
         this.regions = regions;
+        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        for (WorldRegion region : regions)
+        {
+            int minChunkX = region.min.x >> 4;
+            int minChunkY = region.min.y >> 4;
+            int minChunkZ = region.min.z >> 4;
+            int maxChunkX = minChunkX + (int)Math.ceil(region.size.x / 16.0f);
+            int maxChunkY = minChunkY + (int)Math.ceil(region.size.y / 16.0f);
+            int maxChunkZ = minChunkZ + (int)Math.ceil(region.size.z / 16.0f);
+
+            for (int chunkX = minChunkX; chunkX < maxChunkX; chunkX++)
+            {
+                for (int chunkY = minChunkY; chunkY < maxChunkY; chunkY++)
+                {
+                    for (int chunkZ = minChunkZ; chunkZ < maxChunkZ; chunkZ++)
+                    {
+                        historyModule.getOpenEntry().preloadChunk(chunkX, chunkY, chunkZ);
+                    }
+                }
+            }
+        }
         return this;
     }
 

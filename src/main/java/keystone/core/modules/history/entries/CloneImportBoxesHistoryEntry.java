@@ -58,6 +58,12 @@ public class CloneImportBoxesHistoryEntry implements IHistoryEntry
             ImportModule importModule = Keystone.getModule(ImportModule.class);
             buffer = new ArrayList<>(importModule.getImportBoxes().size());
             for (ImportBoundingBox box : importModule.getImportBoxes()) buffer.add(new ImportBoxesHistoryEntry.ImportBoxDescription(box));
+
+            restoreRotation = Rotation.NONE;
+            restoreMirror = Mirror.NONE;
+            restoreOffset = new Vector3i(0, 0, 0);
+            restoreRepeat = 0;
+            restoreScale = 1;
         }
         else
         {
@@ -147,8 +153,8 @@ public class CloneImportBoxesHistoryEntry implements IHistoryEntry
         restoreScale = orientationNBT[12];
         rotation = Rotation.valueOf(nbt.getString("rotation"));
         mirror = Mirror.valueOf(nbt.getString("mirror"));
-        restoreRotation = Rotation.valueOf("restore_rotation");
-        restoreMirror = Mirror.valueOf("restore_mirror");
+        restoreRotation = Rotation.valueOf(nbt.getString("restore_rotation"));
+        restoreMirror = Mirror.valueOf(nbt.getString("restore_mirror"));
 
         if (nbt.contains("buffer"))
         {

@@ -5,6 +5,7 @@ import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.core.KeystoneConfig;
 import keystone.core.gui.KeystoneOverlayHandler;
+import keystone.core.modules.history.HistoryModule;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.IResourceManager;
@@ -42,5 +43,6 @@ public class MixinMinecraft
     public void loadWorld(String p_238195_1_, DynamicRegistries.Impl p_238195_2_, Function<SaveFormat.LevelSave, DatapackCodec> p_238195_3_, Function4<SaveFormat.LevelSave, DynamicRegistries.Impl, IResourceManager, DatapackCodec, IServerConfiguration> p_238195_4_, boolean p_238195_5_, Minecraft.WorldSelectionType p_238195_6_, boolean creating, CallbackInfo ci)
     {
         KeystoneDirectories.setCurrentLevelID(p_238195_1_);
+        Keystone.getModule(HistoryModule.class).clearHistory();
     }
 }

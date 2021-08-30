@@ -77,6 +77,7 @@ public class FilterModule implements IKeystoneModule
                 WorldRegion[] regions = selectionModule.buildRegions(filter.allowBlocksOutsideRegion());
                 filter.setBlockRegions(regions);
 
+                long start = System.currentTimeMillis();
                 try
                 {
                     int iterations = filter.iterations();
@@ -178,6 +179,7 @@ public class FilterModule implements IKeystoneModule
                     return;
                 }
 
+                filter.print("Filter finished in " + (System.currentTimeMillis() - start) + "ms");
                 historyModule.endHistoryEntry();
             }
         });

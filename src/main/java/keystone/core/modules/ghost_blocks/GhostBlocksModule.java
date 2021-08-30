@@ -43,6 +43,11 @@ public class GhostBlocksModule implements IKeystoneModule
     {
         this.worldCache = Keystone.getModule(WorldCacheModule.class);
     }
+    @Override
+    public void resetModule()
+    {
+        ghostWorlds.clear();
+    }
 
     @SubscribeEvent
     public void onTick(final TickEvent.ClientTickEvent event)

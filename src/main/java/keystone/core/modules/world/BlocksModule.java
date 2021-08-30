@@ -62,20 +62,15 @@ public class BlocksModule implements IKeystoneModule
     }
     public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
     {
-        World world = worldCacheModule.getDimensionWorld(Player.getDimensionId());
         if (!historyModule.isEntryOpen())
         {
+            World world = worldCacheModule.getDimensionWorld(Player.getDimensionId());
             BlockPos pos = new BlockPos(x, y, z);
             return new Block(world.getBlockState(pos), world.getBlockEntity(pos));
         }
 
-        WorldHistoryChunk chunk = historyModule.getOpenEntry().getChunk(x, y, z);
-        if (chunk != null) return chunk.getBlock(x, y, z, retrievalMode);
-        else
-        {
-            BlockPos pos = new BlockPos(x, y, z);
-            return new Block(world.getBlockState(pos), world.getBlockEntity(pos));
-        }
+        WorldHistoryChunk chunk = historyModule.getOpenEntry().getOrAddChunk(x, y, z);
+        return chunk.getBlock(x, y, z, retrievalMode);
     }
 
     public void swapBuffers(boolean copy)

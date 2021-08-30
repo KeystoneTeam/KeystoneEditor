@@ -59,6 +59,13 @@ public class SelectionModule implements IKeystoneModule
         historyModule = Keystone.getModule(HistoryModule.class);
         mouseModule = Keystone.getModule(MouseModule.class);
     }
+    @Override
+    public void resetModule()
+    {
+        selectionBoxes.clear();
+        firstSelectionPoint = null;
+        creatingSelection = false;
+    }
 
     public void deselect()
     {

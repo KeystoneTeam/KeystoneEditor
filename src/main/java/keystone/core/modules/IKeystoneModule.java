@@ -9,6 +9,7 @@ public interface IKeystoneModule
     boolean isEnabled();
 
     default void postInit() {  }
+    default void resetModule() {  }
     default IBoundingBoxProvider[] getBoundingBoxProviders() { return null; }
     default void preRender(MatrixStack stack, float partialTicks, DimensionId dimensionId) {  }
 }

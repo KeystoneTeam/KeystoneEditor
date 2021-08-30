@@ -150,7 +150,9 @@ public class CloneScreen extends KeystoneOverlay
     public void removed()
     {
         open = null;
-        Keystone.getModule(ImportModule.class).setHistoryEntrySupplier(ImportModule.IMPORT_HISTORY_SUPPLIER);
+        ImportModule importModule = Keystone.getModule(ImportModule.class);
+        importModule.clearImportBoxes(false);
+        importModule.setHistoryEntrySupplier(ImportModule.IMPORT_HISTORY_SUPPLIER);
     }
 
     @Override

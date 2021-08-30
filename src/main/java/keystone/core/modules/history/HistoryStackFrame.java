@@ -21,21 +21,25 @@ import java.util.*;
 
 public class HistoryStackFrame
 {
+    public final int index;
+
     private IServerWorld world;
     private final HistoryModule historyModule;
     private final List<IHistoryEntry> entries;
     private final Map<Vector3i, WorldHistoryChunk> chunks;
 
-    public HistoryStackFrame()
+    public HistoryStackFrame(int index)
     {
         this.historyModule = Keystone.getModule(HistoryModule.class);
+        this.index = index;
         this.world = Keystone.getModule(WorldCacheModule.class).getDimensionServerWorld(Player.getDimensionId());
         this.entries = Collections.synchronizedList(new ArrayList<>());
         this.chunks = Collections.synchronizedMap(new HashMap<>());
     }
-    public HistoryStackFrame(CompoundNBT nbt)
+    public HistoryStackFrame(int index, CompoundNBT nbt)
     {
         this.historyModule = Keystone.getModule(HistoryModule.class);
+        this.index = index;
         this.entries = Collections.synchronizedList(new ArrayList<>());
         this.chunks = Collections.synchronizedMap(new HashMap<>());
         deserialize(nbt);
@@ -123,34 +127,40 @@ public class HistoryStackFrame
     }
     public void setBlock(int x, int y, int z, Block block)
     {
-        Vector3i chunkPosition = new Vector3i(x >> 4, y >> 4, z >> 4);
-        if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new WorldHistoryChunk(chunkPosition, world));
-        chunks.get(chunkPosition).setBlock(x, y, z, block);
+        getOrAddChunk(x, y, z).setBlock(x, y, z, block);
     }
     public void setBiome(int x, int y, int z, Biome biome)
     {
-        Vector3i chunkPosition = new Vector3i(x >> 4, y >> 4, z >> 4);
-        if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new WorldHistoryChunk(chunkPosition, world));
-        chunks.get(chunkPosition).setBiome(x, y, z, biome);
+        getOrAddChunk(x, y, z).setBiome(x, y, z, biome);
     }
     public void setEntity(Entity entity)
     {
-        Vector3i chunkPosition = new Vector3i((int)entity.x() >> 4, (int)entity.y() >> 4, (int)entity.z() >> 4);
-        if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new WorldHistoryChunk(chunkPosition, world));
-        chunks.get(chunkPosition).setEntity(entity);
+        int x = (int)entity.x() >> 4;
+        int y = (int)entity.y() >> 4;
+        int z = (int)entity.z() >> 4;
+        getOrAddChunk(x, y, z).setEntity(entity);
     }
 
     public WorldHistoryChunk getChunk(int x, int y, int z)
     {
         Vector3i chunkPosition = new Vector3i(x >> 4, y >> 4, z >> 4);
-        if (chunks.containsKey(chunkPosition)) return chunks.get(chunkPosition);
-        else return null;
+        return chunks.getOrDefault(chunkPosition, null);
     }
     public WorldHistoryChunk getOrAddChunk(int x, int y, int z)
     {
         Vector3i chunkPosition = new Vector3i(x >> 4, y >> 4, z >> 4);
+        WorldHistoryChunk chunk = chunks.getOrDefault(chunkPosition, null);
+        if (chunk == null)
+        {
+            chunk = new WorldHistoryChunk(chunkPosition, world);
+            chunks.put(chunkPosition, chunk);
+        }
+        return chunk;
+    }
+    public void preloadChunk(int chunkX, int chunkY, int chunkZ)
+    {
+        Vector3i chunkPosition = new Vector3i(chunkX, chunkY, chunkZ);
         if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new WorldHistoryChunk(chunkPosition, world));
-        return chunks.get(chunkPosition);
     }
     public void swapBlockBuffers(boolean copy)
     {

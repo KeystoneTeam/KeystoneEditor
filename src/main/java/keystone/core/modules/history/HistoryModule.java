@@ -21,8 +21,8 @@ import java.util.Map;
 public class HistoryModule implements IKeystoneModule
 {
     private Map<String, KeystoneEvent.RegisterHistoryEntryTypes.HistoryEntryDeserializer> deserializers = new HashMap<>();
-    private List<HistoryStackFrame> history = new ArrayList<>();
     private HistoryStackFrame currentStackFrame;
+    private int historyStackSize = 0;
     private int tryBeginHooksOpen = 0;
     private int currentHistoryIndex = -1;
     private int unsavedChanges = 0;
@@ -45,6 +45,15 @@ public class HistoryModule implements IKeystoneModule
     public boolean isEnabled()
     {
         return true;
+    }
+
+    @Override
+    public void resetModule()
+    {
+        historyStackSize = 0;
+        tryBeginHooksOpen = 0;
+        currentHistoryIndex = -1;
+        unsavedChanges = 0;
     }
 
     //region Deserializers
@@ -96,7 +105,7 @@ public class HistoryModule implements IKeystoneModule
             endHistoryEntry();
         }
 
-        currentStackFrame = new HistoryStackFrame();
+        currentStackFrame = new HistoryStackFrame(currentHistoryIndex + 1);
         if (tryBeginHooksOpen <= 0) tryBeginHooksOpen = 1;
     }
     public void endHistoryEntry()
@@ -107,8 +116,8 @@ public class HistoryModule implements IKeystoneModule
             return;
         }
 
-        if (currentHistoryIndex < history.size() - 1) for (int i = history.size() - 1; i > currentHistoryIndex; i--) history.remove(i);
-        history.add(currentStackFrame);
+        if (currentHistoryIndex < historyStackSize - 1) removeHistoryTail();
+        addHistoryEntry(currentStackFrame);
         currentHistoryIndex++;
 
         if (currentStackFrame.addToUnsavedChanges()) unsavedChanges++;
@@ -147,7 +156,7 @@ public class HistoryModule implements IKeystoneModule
     {
         if (currentHistoryIndex >= 0)
         {
-            HistoryStackFrame ret = history.get(currentHistoryIndex);
+            HistoryStackFrame ret = loadHistoryEntry(currentHistoryIndex);
             currentHistoryIndex--;
             return ret;
         }
@@ -155,7 +164,8 @@ public class HistoryModule implements IKeystoneModule
     }
     public void clearHistory()
     {
-        history.clear();
+        File historyDirectory = KeystoneDirectories.getHistoryDirectory();
+        for (File file : historyDirectory.listFiles()) file.delete();
         currentHistoryIndex = -1;
     }
 
@@ -204,6 +214,7 @@ public class HistoryModule implements IKeystoneModule
             if (historyStackFrame != null)
             {
                 historyStackFrame.undo();
+                addHistoryEntry(historyStackFrame);
                 if (historyStackFrame.addToUnsavedChanges()) unsavedChanges++;
             }
 
@@ -220,12 +231,13 @@ public class HistoryModule implements IKeystoneModule
 
         Keystone.runOnMainThread(() ->
         {
-            if (currentHistoryIndex < history.size() - 1)
+            if (currentHistoryIndex < historyStackSize - 1)
             {
                 currentHistoryIndex++;
-                HistoryStackFrame historyStackFrame = history.get(currentHistoryIndex);
+                HistoryStackFrame historyStackFrame = loadHistoryEntry(currentHistoryIndex);
 
                 historyStackFrame.redo();
+                addHistoryEntry(historyStackFrame);
                 if (historyStackFrame.addToUnsavedChanges()) unsavedChanges++;
             }
 
@@ -247,20 +259,36 @@ public class HistoryModule implements IKeystoneModule
         return currentStackFrame != null;
     }
 
-    public void serializeHistoryStack()
+    private void removeHistoryTail()
     {
-        File historyDirectory = KeystoneDirectories.getHistoryDirectory();
-        for (File file : historyDirectory.listFiles()) file.delete();
-        for (int i = 0; i < history.size(); i++)
+        for (int i = currentHistoryIndex + 1; i < historyStackSize; i++)
         {
-            File stackFrameFile = historyDirectory.toPath().resolve((i - currentHistoryIndex) + ".nbt").toFile();
-            NBTSerializer.serialize(stackFrameFile, history.get(i).serialize());
+            File entryFile = KeystoneDirectories.getHistoryDirectory().toPath().resolve(i + ".nbt").toFile();
+            if (entryFile.exists()) entryFile.delete();
         }
+        historyStackSize = currentHistoryIndex + 1;
     }
+    private void addHistoryEntry(HistoryStackFrame stackFrame)
+    {
+        File entryFile = KeystoneDirectories.getHistoryDirectory().toPath().resolve(stackFrame.index + ".nbt").toFile();
+        NBTSerializer.serialize(entryFile, stackFrame.serialize());
+        if (stackFrame.index > historyStackSize - 1) historyStackSize = stackFrame.index + 1;
+    }
+    private HistoryStackFrame loadHistoryEntry(int index)
+    {
+        File entryFile = KeystoneDirectories.getHistoryDirectory().toPath().resolve(index + ".nbt").toFile();
+        if (entryFile.exists())
+        {
+            CompoundNBT historyNBT = NBTSerializer.deserialize(entryFile);
+            return new HistoryStackFrame(index, historyNBT);
+        }
+        else return null;
+    }
+
     public void logHistoryStack()
     {
         Keystone.LOGGER.info("###########################################################################");
-        for(int i = history.size() - 1; i >= 0; i--) history.get(i).debugLog(i - currentHistoryIndex);
+        for(int i = historyStackSize - 1; i >= 0; i--) loadHistoryEntry(i).debugLog(i - currentHistoryIndex);
         Keystone.LOGGER.info("###########################################################################");
         Keystone.LOGGER.info("");
     }

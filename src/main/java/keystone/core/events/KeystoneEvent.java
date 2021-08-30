@@ -18,6 +18,7 @@ import net.minecraftforge.eventbus.api.Event;
 
 public class KeystoneEvent extends Event
 {
+    //region Registry Events
     public static class RegisterModules extends KeystoneEvent
     {
         public void register(IKeystoneModule module)
@@ -75,4 +76,15 @@ public class KeystoneEvent extends Event
             for (ISchematicExtension extension : extensions) register(extension);
         }
     }
+    //endregion
+    //region World Events
+    public static class JoinWorldEvent extends KeystoneEvent
+    {
+
+    }
+    public static class LeaveWorldEvent extends KeystoneEvent
+    {
+
+    }
+    //endregion
 }

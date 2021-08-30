@@ -74,6 +74,12 @@ public class ImportModule implements IKeystoneModule
         this.ghostBlocksModule = Keystone.getModule(GhostBlocksModule.class);
     }
     @Override
+    public void resetModule()
+    {
+        clearImportBoxes(false);
+    }
+
+    @Override
     public IBoundingBoxProvider[] getBoundingBoxProviders()
     {
         return new IBoundingBoxProvider[] { new ImportBoxProvider(this)};

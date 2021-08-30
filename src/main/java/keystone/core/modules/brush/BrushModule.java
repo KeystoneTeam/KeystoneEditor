@@ -75,6 +75,20 @@ public class BrushModule implements IKeystoneModule
         worldModifiers = new WorldModifierModules();
     }
     @Override
+    public void resetModule()
+    {
+        brushPositions.clear();
+        brushPositionBoxes.clear();
+        lastImmediateModeChanges.clear();
+
+        setMinSpacing(1);
+        setNoise(100);
+        setBrushShape(BrushShape.ROUND);
+        setBrushOperation(BrushOperation.FILL);
+        setBrushSize(9, 9, 9);
+        setImmediateMode(false);
+    }
+    @Override
     public boolean isEnabled() { return KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.BRUSH; }
 
     @Override

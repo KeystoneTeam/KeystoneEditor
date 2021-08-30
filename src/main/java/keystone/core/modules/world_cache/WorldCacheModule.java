@@ -27,6 +27,11 @@ public class WorldCacheModule implements IKeystoneModule
     {
         return true;
     }
+    @Override
+    public void resetModule()
+    {
+        loadedWorlds.clear();
+    }
 
     public boolean hasDimensionWorld(DimensionId dimensionId)
     {
