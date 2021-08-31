@@ -293,8 +293,16 @@ public class WorldHistoryChunk
 
     public void setBlock(int x, int y, int z, BlockType blockType)
     {
-        if (swappedBlocks) blockTypeBuffer2[getIndex(x, y, z)] = blockType;
-        else blockTypeBuffer1[getIndex(x, y, z)] = blockType;
+        if (swappedBlocks)
+        {
+            blockTypeBuffer2[getIndex(x, y, z)] = blockType;
+            tileEntityBuffer2.remove(new BlockPos(x, y, z));
+        }
+        else
+        {
+            blockTypeBuffer1[getIndex(x, y, z)] = blockType;
+            tileEntityBuffer1.remove(new BlockPos(x, y, z));
+        }
     }
     public void setBlock(int x, int y, int z, Block block)
     {

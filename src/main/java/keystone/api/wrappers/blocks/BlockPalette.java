@@ -132,6 +132,8 @@ public class BlockPalette
      */
     public BlockPalette with(IBlockProvider block, int weight)
     {
+        if (block == null) return this;
+
         if (weights.containsKey(block))
         {
             PaletteEntry old = weights.get(block);
