@@ -10,6 +10,7 @@ public class ShapeMask
     private Vector3i size;
     private MaskType[] contents;
     private BrushModule brushModule;
+    private int count;
 
     public ShapeMask(Vector3i size, byte[] contents)
     {
@@ -21,8 +22,8 @@ public class ShapeMask
             switch (contents[i])
             {
                 case 0: this.contents[i] = MaskType.OUTSIDE; break;
-                case 1: this.contents[i] = MaskType.INSIDE; break;
-                case 2: this.contents[i] = MaskType.EDGE; break;
+                case 1: this.contents[i] = MaskType.INSIDE; count++; break;
+                case 2: this.contents[i] = MaskType.EDGE; count++; break;
                 default: this.contents[i] = MaskType.ERROR; break;
             }
         }
@@ -37,4 +38,5 @@ public class ShapeMask
         MaskType mask = getMaskType(x, y, z);
         return mask == MaskType.INSIDE || mask == MaskType.EDGE && Keystone.RANDOM.nextInt(100) < brushModule.getNoise();
     }
+    public int getCount() { return count; }
 }

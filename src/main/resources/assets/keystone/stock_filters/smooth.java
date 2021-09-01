@@ -3,11 +3,8 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.blocks.BlockType;
-import keystone.api.wrappers.coordinates.BlockPos;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Smooth extends KeystoneFilter
 {

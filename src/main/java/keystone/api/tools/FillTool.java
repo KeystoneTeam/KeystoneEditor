@@ -17,7 +17,11 @@ public class FillTool extends KeystoneFilter
     /**
      * @param palette The block palette to fill
      */
-    public FillTool(BlockPalette palette) { this.palette = palette; }
+    public FillTool(BlockPalette palette)
+    {
+        this.palette = palette;
+        setName("Fill");
+    }
     /**
      * @param blockType The {@link BlockType} to fill
      */
@@ -29,6 +33,7 @@ public class FillTool extends KeystoneFilter
     {
         this(new BlockPalette().with(BlockTypeRegistry.fromMinecraftBlock(block)));
     }
+
 
     @Override
     public void processBlock(int x, int y, int z, WorldRegion region)

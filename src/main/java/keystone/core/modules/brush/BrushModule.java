@@ -14,6 +14,7 @@ import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.renderer.client.Player;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.Coords;
+import keystone.core.utils.ProgressBar;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -32,24 +33,25 @@ public class BrushModule implements IKeystoneModule
     private HistoryModule historyModule;
     private WorldModifierModules worldModifiers;
 
-    private IBoundingBoxProvider[] providers;
+    private final IBoundingBoxProvider[] providers;
     private BrushOperation brushOperation;
     private BrushShape brushShape;
     private int[] brushSize;
     private int minSpacing;
     private float minSpacingSqr;
     private int noise;
-    private List<Coords> brushPositions = new ArrayList<>();
-    private List<BrushPositionBox> brushPositionBoxes = Collections.synchronizedList(new ArrayList<>());
+    private final List<Coords> brushPositions = Collections.synchronizedList(new ArrayList<>());
+    private final List<BrushPositionBox> brushPositionBoxes = Collections.synchronizedList(new ArrayList<>());
 
     private boolean immediateMode;
     private Coords immediateModePosition;
     private Coords lastImmediateModePosition;
     private int immediateModeCooldown;
     private ShapeMask immediateModeShapeMask;
-    private List<Coords> lastImmediateModeChanges = new ArrayList<>();
+    private final List<Coords> lastImmediateModeChanges = new ArrayList<>();
 
     private boolean dragging = false;
+    private boolean executionCancelled = false;
     private Coords lastCheckedPosition;
 
     public BrushModule()
@@ -251,59 +253,81 @@ public class BrushModule implements IKeystoneModule
             {
                 immediateModeExecute();
                 historyModule.applyBlocksWithoutEnding();
+                if (ending) historyModule.endHistoryEntry();
             }
-            else deferredModeExecute();
-
-            if (ending) historyModule.endHistoryEntry();
+            else if (ending)
+            {
+                if (deferredModeExecute()) historyModule.endHistoryEntry();
+                else historyModule.abortHistoryEntry();
+            }
         });
+    }
+    public void cancel()
+    {
+        executionCancelled = true;
     }
 
     private void immediateModeExecute()
     {
+        executionCancelled = false;
         lastImmediateModeChanges.clear();
         List<BlockPos> processedBlocks = new ArrayList<>();
 
         int iterations = brushOperation.iterations();
         for (int iteration = 0; iteration < iterations; iteration++)
         {
-            Coords min = immediateModePosition.sub(brushSize[0] / 2, brushSize[1] / 2, brushSize[2] / 2);
+            Coords min = immediateModePosition.sub(brushSize[0] >> 1, brushSize[1] >> 1, brushSize[2] >> 1);
             Coords max = min.add(brushSize[0] - 1, brushSize[1] - 1, brushSize[2] - 1);
-            executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, immediateModeShapeMask, iteration);
+            executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, immediateModeShapeMask, iteration, false);
             if (iteration < iterations - 1) worldModifiers.blocks.swapBuffers(true);
         }
 
         lastImmediateModePosition = immediateModePosition;
         immediateModeCooldown = IMMEDIATE_MODE_COOLDOWN_TICKS;
     }
-    private void deferredModeExecute()
+    private boolean deferredModeExecute()
     {
+        executionCancelled = false;
         ShapeMask shapeMask = this.brushShape.getShapeMask(brushSize[0], brushSize[1], brushSize[2]);
         List<BlockPos> processedBlocks = new ArrayList<>();
 
+        int progressBarIterations = brushOperation.iterations() * brushPositions.size();
+        boolean progressBarGrouped = progressBarIterations > 16384;
+        ProgressBar.start(brushOperation.getName().getString(), progressBarGrouped ? progressBarIterations : 1, this::cancel);
         int iterations = brushOperation.iterations();
+
+        mainLoop:
         for (int iteration = 0; iteration < iterations; iteration++)
         {
-            for (Coords position : brushPositions)
+            Coords[] positions = new Coords[brushPositions.size()];
+            brushPositions.toArray(positions);
+            for (Coords position : positions)
             {
-                Coords min = position.sub(brushSize[0] / 2, brushSize[1] / 2, brushSize[2] / 2);
+                if (executionCancelled) break mainLoop;
+                Coords min = position.sub(brushSize[0] >> 1, brushSize[1] >> 1, brushSize[2] >> 1);
                 Coords max = min.add(brushSize[0] - 1, brushSize[1] - 1, brushSize[2] - 1);
-                executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, shapeMask, iteration);
+                executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, shapeMask, iteration, progressBarGrouped);
             }
+
             processedBlocks.clear();
             if (iteration < iterations - 1) worldModifiers.blocks.swapBuffers(true);
         }
 
+        ProgressBar.finish();
         brushPositions.clear();
         brushPositionBoxes.clear();
+        return !executionCancelled;
     }
-    private void executeBrush(BlockPos min, BlockPos max, List<BlockPos> processedBlocks, ShapeMask shapeMask, int iteration)
+    private void executeBrush(BlockPos min, BlockPos max, List<BlockPos> processedBlocks, ShapeMask shapeMask, int iteration, boolean progressBarGrouped)
     {
+        if (!progressBarGrouped) ProgressBar.beginIteration((max.getX() - min.getX()) * (max.getY() - min.getY()) * (max.getZ() - min.getZ()));
         for (int y = min.getY(); y <= max.getY(); y++)
         {
             for (int x = min.getX(); x <= max.getX(); x++)
             {
                 for (int z = min.getZ(); z <= max.getZ(); z++)
                 {
+                    if (executionCancelled) return;
                     BlockPos pos = new BlockPos(x, y, z);
                     BlockPos nPos = pos.subtract(min);
 
@@ -311,9 +335,11 @@ public class BrushModule implements IKeystoneModule
                     {
                         if (brushOperation.process(x, y, z, worldModifiers, iteration)) processedBlocks.add(pos);
                     }
+                    ProgressBar.completeStep();
                 }
             }
         }
+        if (!progressBarGrouped) ProgressBar.completeIteration();
     }
     //endregion
     //region Helpers

@@ -47,8 +47,13 @@ public class AnalyzeTool extends KeystoneFilter
     private Map<String, Entry> blockCounts;
     private Map<String, Integer> entityCounts;
 
+    public AnalyzeTool()
+    {
+        setName("Analyze");
+    }
+
     @Override
-    public void prepare()
+    public void preparePass()
     {
         this.blockCounts = new HashMap<>();
         this.entityCounts = new HashMap<>();

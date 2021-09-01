@@ -9,10 +9,9 @@ import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.Axis;
 import keystone.api.wrappers.coordinates.Vector2f;
+import keystone.core.utils.ProgressBar;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class AdvancedForester extends KeystoneFilter
 {
@@ -141,7 +140,7 @@ public class AdvancedForester extends KeystoneFilter
     /**
      * Base tree class used for large tree types. Has roots, branches, and many
      * foliage clusters. Define shape by overriding {@link ProceduralTree#getFoliageRadius(int)},
-     * {@link ProceduralTree#prepare()}, and the foliageShape passed into the constructor
+     * {@link ProceduralTree#preparePass()}, and the foliageShape passed into the constructor
      */
     public abstract class ProceduralTree extends Tree
     {
@@ -660,27 +659,35 @@ public class AdvancedForester extends KeystoneFilter
     public BlockMask airMask = whitelist("minecraft:air");
     public BlockType air = block("minecraft:air").blockType();
     public Random random;
+
+    private Map regionTreePositions = new HashMap();
     //endregion
 
     @Override
     public boolean allowBlocksOutsideRegion() { return true; }
 
     @Override
-    public void prepare()
+    public void initialize()
     {
         this.random = seed == 0 ? new Random() : new Random(seed);
     }
-
+    @Override
+    public void prepareRegion(WorldRegion region)
+    {
+        List treePositions = DiscSampler.sample2D(random, treeDistance, region.size.x, region.size.z);
+        regionTreePositions.put(region, treePositions);
+    }
+    @Override
+    public int getRegionSteps(WorldRegion region)
+    {
+        List treePositions = (List)regionTreePositions.get(region);
+        return treePositions.size() * 3;
+    }
     @Override
     public void processRegion(WorldRegion region)
     {
+        List treePositions = (List)regionTreePositions.get(region);
         List trees = new ArrayList();
-        //trees.add(getTreeInstance(region.min.x + region.size.x * 0.5f, region.min.y, region.min.z + region.size.z * 0.5f));
-
-        long startTime = System.currentTimeMillis();
-        List treePositions = DiscSampler.sample2D(random, treeDistance, region.size.x, region.size.z);
-        print(System.currentTimeMillis() - startTime);
-        startTime = System.currentTimeMillis();
 
         for (Object obj : treePositions)
         {
@@ -688,24 +695,24 @@ public class AdvancedForester extends KeystoneFilter
             int y = region.getTopBlock((int)Math.floor(treePosition.x), (int)Math.floor(treePosition.y));
             trees.add(getTreeInstance(treePosition.x + region.min.x, y, treePosition.y + region.min.z));
         }
-        print(System.currentTimeMillis() - startTime);
-        startTime = System.currentTimeMillis();
 
         for (Object obj : trees)
         {
             Tree tree = (Tree)obj;
+
             tree.prepare(region);
+            ProgressBar.completeStep();
+
             tree.makeFoliage(region);
+            ProgressBar.completeStep();
         }
-        print(System.currentTimeMillis() - startTime);
-        startTime = System.currentTimeMillis();
 
         for (Object obj : trees)
         {
             Tree tree = (Tree)obj;
             tree.makeTrunk(region);
+            ProgressBar.completeStep();
         }
-        print(System.currentTimeMillis() - startTime);
     }
 
     public int distanceToBlock(float startX, float startY, float startZ, float dirX, float dirY, float dirZ, BlockMask mask, WorldRegion region, float limit)

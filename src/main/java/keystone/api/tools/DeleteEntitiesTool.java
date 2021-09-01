@@ -6,6 +6,11 @@ import keystone.api.wrappers.entities.Entity;
 
 public class DeleteEntitiesTool extends KeystoneFilter
 {
+    public DeleteEntitiesTool()
+    {
+        setName("Delete Entities");
+    }
+
     @Override
     public void processEntity(Entity entity, WorldRegion region)
     {

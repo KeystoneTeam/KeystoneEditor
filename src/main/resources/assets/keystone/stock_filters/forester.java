@@ -32,7 +32,7 @@ public class Forester extends KeystoneFilter
     {
         return true;
     }
-    public void prepare()
+    public void initialize()
     {
         treeChance = 1.0f / treeRarity;
 

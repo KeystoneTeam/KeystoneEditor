@@ -100,7 +100,6 @@ public class KeystoneFilter extends EditableObject
      * @return Whether to ignore entities that have already been processed in another {@link WorldRegion}
      */
     public boolean ignoreRepeatEntities() { return false; }
-
     /**
      * @return Whether to allow placing blocks outside the current {@link WorldRegion} the filter is
      * modifying. You should only enable this if the filter is meant for population, such as foresting
@@ -108,23 +107,35 @@ public class KeystoneFilter extends EditableObject
     public boolean allowBlocksOutsideRegion() { return false; }
 
     /**
+     * Ran at the very beginning of filter execution, before calculating iterations or processing region content. Use
+     * this to do any initialization that cannot be done in the constructor
+     */
+    public void initialize() {}
+    /**
      * @return The number of times to run this filter on the selection
      */
     public int iterations() { return 1; }
-
     /**
-     * Ran before {@link keystone.api.filters.KeystoneFilter#processRegion(WorldRegion)}. Use this to do any initialization that cannot
-     * be done in the constructor
+     * Ran at the very beginning of a filter iteration. Use this to do any initialization for the current filter pass
      */
-    public void prepare() {}
-
+    public void preparePass() {}
+    /**
+     * Ran before {@link KeystoneFilter#getRegionSteps(WorldRegion)}. Use this to do calculations before counting the region's progress
+     * bar steps
+     * @param region The region to prepare
+     */
+    public void prepareRegion(WorldRegion region) {}
+    /**
+     * @param region The region to check
+     * @return The number of Progress Bar steps to process a region
+     */
+    public int getRegionSteps(WorldRegion region) { return 0; }
     /**
      * Ran for every {@link WorldRegion} the filter is modifying. Use this for any modifications that
      * cannot be done on a per-block basis
      * @param region The {@link WorldRegion} that is being modified
      */
     public void processRegion(WorldRegion region) {}
-
     /**
      * Ran for every block the filter is modifying after {@link keystone.api.filters.KeystoneFilter#processRegion(WorldRegion)}. Use this
      * for modifications that can be done on a per-block basis. Be sure that this code is self-contained, as this will be ran on
@@ -135,7 +146,6 @@ public class KeystoneFilter extends EditableObject
      * @param region The {@link WorldRegion} that the block is in
      */
     public void processBlock(int x, int y, int z, WorldRegion region)  {}
-
     /**
      * Ran for every entity the filter is modifying after {@link KeystoneFilter#processRegion(WorldRegion)}. Use this for modifications
      * that can be done on a per-entity basis. Be sure that this code is self-contained, as this will be ran on multiple threads
@@ -144,7 +154,11 @@ public class KeystoneFilter extends EditableObject
      * @param region The {@link WorldRegion} that the entity is in
      */
     public void processEntity(Entity entity, WorldRegion region) {}
-
+    /**
+     * Ran after a filter iteration has finished execution. Use this for any modifications that need to be done at the
+     * very end of each filter pass
+     */
+    public void finishPass() {}
     /**
      * Ran after the filter has finished execution. Use this for any modifications that need to be done at the very end
      */

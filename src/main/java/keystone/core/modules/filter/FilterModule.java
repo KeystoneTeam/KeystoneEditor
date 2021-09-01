@@ -7,6 +7,7 @@ import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
+import keystone.core.utils.ProgressBar;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
@@ -18,10 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class FilterModule implements IKeystoneModule
 {
@@ -77,86 +75,154 @@ public class FilterModule implements IKeystoneModule
                 WorldRegion[] regions = selectionModule.buildRegions(filter.allowBlocksOutsideRegion());
                 filter.setBlockRegions(regions);
 
-                long start = System.currentTimeMillis();
+                long startTime = System.currentTimeMillis();
                 try
                 {
+                    filter.initialize();
+                    if (testAborted()) return;
+
                     int iterations = filter.iterations();
+                    ProgressBar.start(filter.getName(), iterations, () -> abortFilter("Filter cancelled"));
                     for (int iteration = 0; iteration < iterations; iteration++)
                     {
                         filter.setIteration(iteration);
-                        filter.prepare();
-                        if (abortFilter != null)
-                        {
-                            for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
-                            historyModule.abortHistoryEntry();
-                            return;
-                        }
+                        filter.preparePass();
+                        if (testAborted()) return;
 
-                        Set<BlockPos> processedBlocks = new HashSet<>();
-                        Set<UUID> processedEntities = new HashSet<>();
                         Class<? extends KeystoneFilter> filterClass = filter.getClass();
                         boolean processRegions = filterClass.getMethod("processRegion", WorldRegion.class).getDeclaringClass().equals(filterClass);
                         boolean processBlocks = filterClass.getMethod("processBlock", int.class, int.class, int.class, WorldRegion.class).getDeclaringClass().equals(filterClass);
                         boolean processEntities = filterClass.getMethod("processEntity", Entity.class, WorldRegion.class).getDeclaringClass().equals(filterClass);
 
-                        for (WorldRegion box : regions)
+                        Set<BlockPos> blocks = new HashSet<>();
+                        Map<WorldRegion, Set<BlockPos>> regionBlocks = new HashMap<>();
+                        Set<UUID> entities = new HashSet<>();
+                        Map<WorldRegion, Set<Entity>> regionEntities = new HashMap<>();
+
+                        // Calculate Block Positions
+                        if (processBlocks)
                         {
-                            if (processRegions)
+                            if (filter.ignoreRepeatBlocks())
                             {
-                                filter.processRegion(box);
-                                if (abortFilter != null)
+                                for (WorldRegion region : regions)
                                 {
-                                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
-                                    historyModule.abortHistoryEntry();
-                                    return;
+                                    Set<BlockPos> regionBlockSet = new HashSet<>();
+                                    region.forEachBlock((x, y, z, blockType) ->
+                                    {
+                                        BlockPos pos = new BlockPos(x, y, z);
+                                        if (!blocks.contains(pos))
+                                        {
+                                            blocks.add(pos);
+                                            regionBlockSet.add(pos);
+                                        }
+                                    });
+                                    regionBlocks.put(region, regionBlockSet);
                                 }
                             }
-
-                            if (processBlocks)
+                            else for (WorldRegion region : regions)
                             {
-                                box.forEachBlock((x, y, z, blockType) ->
+                                Set<BlockPos> regionBlockSet = new HashSet<>();
+                                region.forEachBlock((x, y, z, blockType) ->
                                 {
                                     BlockPos pos = new BlockPos(x, y, z);
-                                    if (!filter.ignoreRepeatBlocks() || !processedBlocks.contains(pos))
-                                    {
-                                        filter.processBlock(x, y, z, box);
-                                        processedBlocks.add(pos);
-                                    }
-
-                                    if (abortFilter != null)
-                                    {
-                                        for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
-                                        historyModule.abortHistoryEntry();
-                                        return;
-                                    }
+                                    blocks.add(pos);
+                                    regionBlockSet.add(pos);
                                 });
-                            }
-
-                            if (processEntities)
-                            {
-                                box.forEachEntity(entity ->
-                                {
-                                    if (!filter.ignoreRepeatEntities() || !processedEntities.contains(entity.keystoneUUID()))
-                                    {
-                                        filter.processEntity(entity, box);
-                                        processedEntities.add(entity.keystoneUUID());
-                                    }
-
-                                    if (abortFilter != null)
-                                    {
-                                        for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
-                                        historyModule.abortHistoryEntry();
-                                        return;
-                                    }
-                                });
+                                regionBlocks.put(region, regionBlockSet);
                             }
                         }
+
+                        // Calculate Entities
+                        if (processEntities)
+                        {
+                            if (filter.ignoreRepeatEntities())
+                            {
+                                for (WorldRegion region : regions)
+                                {
+                                    Set<Entity> regionEntitySet = new HashSet<>();
+                                    region.forEachEntity(entity ->
+                                    {
+                                        if (!entities.contains(entity.keystoneUUID()))
+                                        {
+                                            entities.add(entity.keystoneUUID());
+                                            regionEntitySet.add(entity);
+                                        }
+                                    });
+                                    regionEntities.put(region, regionEntitySet);
+                                }
+                            }
+                            else for (WorldRegion region : regions)
+                            {
+                                Set<Entity> regionEntitySet = new HashSet<>();
+                                region.forEachEntity(entity ->
+                                {
+                                    entities.add(entity.keystoneUUID());
+                                    regionEntitySet.add(entity);
+                                });
+                                regionEntities.put(region, regionEntitySet);
+                            }
+                        }
+
+                        // Prepare Regions
+                        for (WorldRegion region : regions)
+                        {
+                            filter.prepareRegion(region);
+                            if (testAborted()) return;
+                        }
+
+                        // Configure Progress Bar
+                        int progressBarSteps = blocks.size() + entities.size();
+                        for (WorldRegion region : regions) progressBarSteps += filter.getRegionSteps(region);
+                        ProgressBar.beginIteration(progressBarSteps);
+
+                        // Process Regions
+                        if (processRegions)
+                        {
+                            for (WorldRegion region : regions)
+                            {
+                                filter.processRegion(region);
+                                if (testAborted()) return;
+                            }
+                        }
+
+                        // Process Blocks
+                        if (processBlocks)
+                        {
+                            for (Map.Entry<WorldRegion, Set<BlockPos>> entry : regionBlocks.entrySet())
+                            {
+                                for (BlockPos pos : entry.getValue())
+                                {
+                                    filter.processBlock(pos.getX(), pos.getY(), pos.getZ(), entry.getKey());
+                                    if (testAborted()) return;
+                                    else ProgressBar.completeStep();
+                                }
+                            }
+                        }
+
+                        // Process Entities
+                        if (processEntities)
+                        {
+                            for (Map.Entry<WorldRegion, Set<Entity>> entry : regionEntities.entrySet())
+                            {
+                                for (Entity entity : entry.getValue())
+                                {
+                                    filter.processEntity(entity, entry.getKey());
+                                    if (testAborted()) return;
+                                    else ProgressBar.completeStep();
+                                }
+                            }
+                        }
+
+                        // Complete Iteration
+                        filter.finishPass();
+                        if (testAborted()) return;
 
                         if (iteration < iterations - 1)
                         {
                             historyModule.swapBlockBuffers(true);
                             historyModule.swapEntityBuffers(true);
                         }
+                        ProgressBar.completeIteration();
                     }
                 }
                 catch (Exception e)
@@ -164,25 +230,27 @@ public class FilterModule implements IKeystoneModule
                     filterException(filter, e);
                 }
 
-                if (abortFilter != null)
-                {
-                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
-                    historyModule.abortHistoryEntry();
-                    return;
-                }
+                if (testAborted()) return;
 
                 filter.finished();
-                if (abortFilter != null)
-                {
-                    for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
-                    historyModule.abortHistoryEntry();
-                    return;
-                }
+                if (testAborted()) return;
 
-                filter.print("Filter finished in " + (System.currentTimeMillis() - start) + "ms");
                 historyModule.endHistoryEntry();
+                ProgressBar.finish();
+                filter.print("Filter completed in " + (System.currentTimeMillis() - startTime) + "ms");
             }
         });
+    }
+    private boolean testAborted()
+    {
+        if (abortFilter != null)
+        {
+            for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
+            historyModule.abortHistoryEntry();
+            ProgressBar.finish();
+            return true;
+        }
+        else return false;
     }
 
     /**
