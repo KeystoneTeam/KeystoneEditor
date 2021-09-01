@@ -7,6 +7,7 @@ import keystone.core.modules.selection.boxes.HighlightBoundingBox;
 import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.DimensionId;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,7 +15,7 @@ public class HighlightBoxProvider implements IBoundingBoxProvider<HighlightBound
 {
     private SelectionModule selectionModule;
     private MouseModule mouseModule;
-    private Set<HighlightBoundingBox> box = new HashSet<>();
+    private Set<HighlightBoundingBox> box = Collections.synchronizedSet(new HashSet<>());
 
     public HighlightBoxProvider()
     {

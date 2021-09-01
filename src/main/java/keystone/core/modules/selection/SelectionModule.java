@@ -30,6 +30,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SelectionModule implements IKeystoneModule
@@ -46,7 +47,7 @@ public class SelectionModule implements IKeystoneModule
     {
         MinecraftForge.EVENT_BUS.register(this);
 
-        selectionBoxes = new ArrayList<>();
+        selectionBoxes = Collections.synchronizedList(new ArrayList<>());
         renderProviders = new IBoundingBoxProvider[]
         {
                 new SelectionBoxProvider(this),

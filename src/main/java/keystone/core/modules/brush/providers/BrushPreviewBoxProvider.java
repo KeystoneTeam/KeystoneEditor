@@ -7,6 +7,7 @@ import keystone.core.renderer.client.providers.IBoundingBoxProvider;
 import keystone.core.renderer.common.models.DimensionId;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class BrushPreviewBoxProvider implements IBoundingBoxProvider<BrushPreviewBox>
@@ -22,7 +23,7 @@ public class BrushPreviewBoxProvider implements IBoundingBoxProvider<BrushPrevie
             brushModule = Keystone.getModule(BrushModule.class);
             if (brushModule != null)
             {
-                box = new ArrayList<>();
+                box = Collections.synchronizedList(new ArrayList<>());
                 box.add(new BrushPreviewBox(brushModule));
             }
         }

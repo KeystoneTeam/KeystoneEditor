@@ -22,6 +22,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class BrushModule implements IKeystoneModule
@@ -39,7 +40,7 @@ public class BrushModule implements IKeystoneModule
     private float minSpacingSqr;
     private int noise;
     private List<Coords> brushPositions = new ArrayList<>();
-    private List<BrushPositionBox> brushPositionBoxes = new ArrayList<>();
+    private List<BrushPositionBox> brushPositionBoxes = Collections.synchronizedList(new ArrayList<>());
 
     private boolean immediateMode;
     private Coords immediateModePosition;

@@ -24,8 +24,8 @@ import java.util.function.Consumer;
 
 /**
  * Base Keystone API class, used to retrieve {@link keystone.core.modules.IKeystoneModule Modules},
- * retrieve global state, and toggle whether Keystone is active. Also contains
- * {@link org.apache.logging.log4j.Logger} and {@link java.util.Random} instance
+ * global state, and toggle whether Keystone is active. Also contains
+ * {@link org.apache.logging.log4j.Logger} and {@link java.util.Random} instances
  */
 public final class Keystone
 {
