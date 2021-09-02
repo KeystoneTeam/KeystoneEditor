@@ -80,8 +80,10 @@ public class WorldHistoryChunk
                 {
                     BlockPos pos = new BlockPos(x, y, z);
                     oldBlockTypes[i] = BlockTypeRegistry.fromMinecraftBlock(world.getBlockState(pos));
+                    blockTypeBuffer1[i] = oldBlockTypes[i];
                     blockTypeBuffer2[i] = oldBlockTypes[i];
                     oldBiomes[i] = new Biome(world.getBiome(pos));
+                    biomeBuffer1[i] = oldBiomes[i];
                     biomeBuffer2[i] = oldBiomes[i];
                     i++;
 
@@ -90,6 +92,7 @@ public class WorldHistoryChunk
                     {
                         CompoundNBT nbt = tileEntity.serializeNBT();
                         oldTileEntities.put(pos, new NBTCompound(nbt.copy()));
+                        tileEntityBuffer1.put(pos, new NBTCompound(nbt.copy()));
                         tileEntityBuffer2.put(pos, new NBTCompound(nbt.copy()));
                     }
                 }
