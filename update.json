@@ -9,7 +9,7 @@
 	},
 	"1.16.5":
 	{
-		"0.7.0": "Added Clone tool, Schematic scaling and extensions, and Biome support",
+		"0.7.0": "Added Clone tool, Schematic improvements, Biome reading, new stock filters, and reworked Block API",
 		"0.6.0": "Added Analyze tool and Entity support for existing features",
 		"0.5.0": "Added Import tool and improved Ghost Block rendering"
 	},
