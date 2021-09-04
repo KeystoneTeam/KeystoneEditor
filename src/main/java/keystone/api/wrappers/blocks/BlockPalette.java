@@ -269,17 +269,13 @@ public class BlockPalette
         return this.weights.containsKey(provider);
     }
     //endregion
-
+    //region Resolving
     /**
-     * @return A random {@link BlockType} from the palette
+     * @return A random {@link BlockType} from the palette, or air if empty
      */
     public BlockType randomBlock()
     {
-        if (palette.size() == 0)
-        {
-            Keystone.abortFilter("Cannot get block from empty BlockPalette!");
-            return BlockTypeRegistry.AIR;
-        }
+        if (palette.size() == 0) return BlockTypeRegistry.AIR;
         return WeightedRandom.getRandomItem(Keystone.RANDOM, palette, totalWeight).blockProvider.get();
     }
     /**
@@ -317,4 +313,5 @@ public class BlockPalette
      * @param consumer The function to run
      */
     public void forEach(BiConsumer<IBlockProvider, Integer> consumer) { palette.forEach(entry -> consumer.accept(entry.blockProvider, entry.weight)); }
+    //endregion
 }

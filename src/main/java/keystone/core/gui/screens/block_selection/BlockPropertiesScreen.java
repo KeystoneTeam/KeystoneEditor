@@ -8,6 +8,7 @@ import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.properties.BlockPropertiesWidgetList;
 import net.minecraft.util.text.TranslationTextComponent;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
 
@@ -52,28 +53,27 @@ public class BlockPropertiesScreen extends KeystoneOverlay
     protected void init()
     {
         // Calculate panel size
-        panelWidth = minecraft.getWindow().getGuiScaledWidth() / 4;
-        panelX = (minecraft.getWindow().getGuiScaledWidth() - panelWidth) / 2;
-        int maxPanelHeight = minecraft.getWindow().getGuiScaledHeight() - 60 - 3 * PADDING;
+        panelWidth = width / 4;
+        panelX = (width - panelWidth) / 2;
+        int maxPanelHeight = height - 60 - 3 * PADDING;
         propertiesList = new BlockPropertiesWidgetList(block, 0, 0, panelWidth, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
         propertiesList.bake();
         panelHeight = PADDING + propertiesList.getHeight() + PADDING + 20 + PADDING;
-        panelY = (minecraft.getWindow().getGuiScaledHeight() - panelHeight) / 2;
-
-        // Done Button
-        addButton(new ButtonNoHotkey(panelX + PADDING, panelY + PADDING + propertiesList.getHeight() + PADDING, panelWidth - 2 * PADDING, 20, new TranslationTextComponent("keystone.done"), button ->
-        {
-            if (!ranCallback)
-            {
-                callback.accept(block.blockType());
-                ranCallback = true;
-            }
-            onClose();
-        }));
+        panelY = (height - panelHeight) / 2;
 
         // Block Properties
-        propertiesList.offset(panelX, panelY);
+        propertiesList.offset(panelX, panelY + PADDING);
         addButton(propertiesList);
+
+        // Done Button
+        int buttonWidth = (panelWidth - 3 * PADDING) >> 1;
+        addButton(new ButtonNoHotkey(panelX + PADDING, panelY + PADDING + propertiesList.getHeight() + PADDING, buttonWidth, 20, new TranslationTextComponent("keystone.done"), button -> onClose()));
+        addButton(new ButtonNoHotkey(panelX + panelWidth - PADDING - buttonWidth, panelY + PADDING + propertiesList.getHeight() + PADDING, buttonWidth, 20, new TranslationTextComponent("keystone.cancel"), button ->
+        {
+            callback.accept(null);
+            ranCallback = true;
+            onClose();
+        }));
     }
 
     @Override
@@ -82,5 +82,18 @@ public class BlockPropertiesScreen extends KeystoneOverlay
         fill(matrixStack, panelX, panelY, panelX + panelWidth, panelY + panelHeight, 0xFF808080);
         fill(matrixStack, panelX + 1, panelY + 1, panelX + panelWidth - 1, panelY + panelHeight - 1, 0xFF404040);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
+    {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE)
+        {
+            callback.accept(null);
+            ranCallback = true;
+            onClose();
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 }

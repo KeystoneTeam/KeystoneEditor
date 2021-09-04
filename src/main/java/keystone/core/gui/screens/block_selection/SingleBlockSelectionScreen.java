@@ -18,9 +18,11 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
         super("keystone.screen.blockSelection");
         this.callback = callback;
     }
-    public static void promptBlockStateChoice(Consumer<BlockState> callback)
+    public static SingleBlockSelectionScreen promptBlockStateChoice(Consumer<BlockState> callback)
     {
-        KeystoneOverlayHandler.addOverlay(new SingleBlockSelectionScreen(callback));
+        SingleBlockSelectionScreen prompt = new SingleBlockSelectionScreen(callback);
+        KeystoneOverlayHandler.addOverlay(prompt);
+        return prompt;
     }
 
     @Override

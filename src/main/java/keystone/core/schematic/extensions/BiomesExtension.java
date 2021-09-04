@@ -127,4 +127,7 @@ public class BiomesExtension implements ISchematicExtension
         extension.biomes = biomes;
         return extension;
     }
+
+    @Override
+    public boolean canPlace() { return false; }
 }

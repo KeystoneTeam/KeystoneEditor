@@ -196,9 +196,9 @@ public class ImportBoundingBox extends SelectableBoundingBox
         super.move(newMin);
     }
 
-    public void place(Map<ResourceLocation, Boolean> extensionsToPlace)
+    public void place(Map<ResourceLocation, Boolean> extensionsToPlace, boolean copyAir)
     {
-        schematic.place(new WorldModifierModules(), getMinCoords().toBlockPos(), rotation, mirror, scale, extensionsToPlace);
+        schematic.place(new WorldModifierModules(), getMinCoords().toBlockPos(), rotation, mirror, scale, extensionsToPlace, copyAir);
     }
 
     private void updateBounds()

@@ -215,7 +215,8 @@ public class ImportModule implements IKeystoneModule
 
         for (ImportBoundingBox importBox : importBoxes) importBox.setScale(scale);
     }
-    public void placeAll(Map<ResourceLocation, Boolean> extensionsToPlace)
+    public void placeAll(Map<ResourceLocation, Boolean> extensionsToPlace) { placeAll(extensionsToPlace, true); }
+    public void placeAll(Map<ResourceLocation, Boolean> extensionsToPlace, boolean copyAir)
     {
         if (importBoxes.size() == 0) return;
 
@@ -224,7 +225,7 @@ public class ImportModule implements IKeystoneModule
             SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
 
             historyModule.tryBeginHistoryEntry();
-            importBoxes.forEach(importBox -> importBox.place(extensionsToPlace));
+            importBoxes.forEach(importBox -> importBox.place(extensionsToPlace, copyAir));
 
             List<BoundingBox> boxes = new ArrayList<>(importBoxes.size());
             importBoxes.forEach(box -> boxes.add(box.getBoundingBox()));

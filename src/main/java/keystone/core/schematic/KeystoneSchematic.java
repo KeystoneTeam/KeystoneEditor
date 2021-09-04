@@ -271,7 +271,7 @@ public class KeystoneSchematic
      */
     public void place(WorldModifierModules worldModifiers, BlockPos anchor)
     {
-        place(worldModifiers, anchor, Rotation.NONE, Mirror.NONE, 1, new HashMap<>());
+        place(worldModifiers, anchor, Rotation.NONE, Mirror.NONE, 1, new HashMap<>(), true);
     }
     /**
      * Place the schematic at a given {@link BlockPos}
@@ -281,8 +281,9 @@ public class KeystoneSchematic
      * @param mirror The {@link Mirror} of the schematic
      * @param scale The scale of the schematic
      * @param extensionsToPlace A Map containing which extensions should be placed in the world and which should be ignored
+     * @param placeAir If false, air will not be placed
      */
-    public void place(WorldModifierModules worldModifiers, BlockPos anchor, Rotation rotation, Mirror mirror, int scale, Map<ResourceLocation, Boolean> extensionsToPlace)
+    public void place(WorldModifierModules worldModifiers, BlockPos anchor, Rotation rotation, Mirror mirror, int scale, Map<ResourceLocation, Boolean> extensionsToPlace, boolean placeAir)
     {
         int clampedScale = Math.max(scale, 1);
 
@@ -299,13 +300,13 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    if (blocks[i] == null)
+                    Block block = blocks[i];
+                    if (block == null || (block.blockType().getMinecraftBlock().isAir() && !placeAir))
                     {
                         i++;
                         continue;
                     }
 
-                    Block block = blocks[i];
                     SchematicEvent.ScaleBlock scaleEvent = new SchematicEvent.ScaleBlock(block.blockType(), clampedScale);
                     MinecraftForge.EVENT_BUS.post(scaleEvent);
 

@@ -14,6 +14,7 @@
   "keystone.screen.import": "Import schematic panel",
   "keystone.screen.clone": "Clone selection panel",
   "keystone.screen.hotbar": "Keystone hotbar",
+  "keystone.screen.fill": "Fill and replace",
 
   "keystone.done": "Done",
   "keystone.cancel": "Cancel",
@@ -86,6 +87,10 @@
   "keystone.schematic_import.scale.tooltip": "Scale all import boxes",
   "keystone.schematic_import.import.tooltip": "Place all imported schematics. Shortcut: Enter",
 
+  "keystone.fill.mask": "Mask",
+  "keystone.fill.palette": "Palette",
+  "keystone.fill.fill": "Fill",
+
   "keystone.biomes.shouldPlace": "Place Biomes",
   "keystone.structure_voids.shouldPlace": "Place Structure Voids",
 
@@ -93,6 +98,7 @@
   "keystone.clone.offsetY": "Y Offset",
   "keystone.clone.offsetZ": "Z Offset",
   "keystone.clone.repeat": "Repeat",
+  "keystone.clone.copyAir": "Copy Air",
   "keystone.clone.clone": "Clone",
   "keystone.clone.clone.tooltip": "Perform the clone operation. Shortcut: Enter",
 

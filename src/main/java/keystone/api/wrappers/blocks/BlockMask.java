@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 public class BlockMask
 {
     private static final Map<BlockType, BlockType[]> forcedBlockAdditions = new HashMap<>();
-    static
+    public static void buildForcedAdditionsList()
     {
         forcedBlockAdditions.put(BlockTypeRegistry.AIR, new BlockType[]
         {
@@ -155,14 +155,14 @@ public class BlockMask
      * @param blockType The {@link BlockType} to check
      * @return Whether the {@link BlockType} is matched by this mask
      */
-    public boolean valid(@Nonnull BlockType blockType) { return mask.contains(blockType) != blacklist; }
+    public boolean valid(@Nonnull BlockType blockType) { return mask.isEmpty() || mask.contains(blockType) != blacklist; }
 
     /**
      * Check if a {@link Block} is matched by this mask
      * @param block The {@link Block} to check
      * @return Whether the {@link Block} is matched by this mask
      */
-    public boolean valid(@Nonnull Block block) { return mask.contains(block.blockType()) != blacklist; }
+    public boolean valid(@Nonnull Block block) { return valid(block.blockType()); }
 
     /**
      * Run a function on every {@link BlockType} in the mask contents

@@ -6,11 +6,13 @@ import keystone.api.tools.FillTool;
 import keystone.core.events.KeystoneHotbarEvent;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.block_selection.SingleBlockSelectionScreen;
+import keystone.core.gui.screens.fill.FillAndReplaceScreen;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.renderer.client.Player;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -47,13 +49,6 @@ public class KeystoneHotbar extends KeystoneOverlay
         {
             case CLONE:
                 Keystone.getModule(ClipboardModule.class).copy();
-                break;
-            case FILL:
-                SingleBlockSelectionScreen.promptBlockStateChoice(blockType ->
-                {
-                    Keystone.runInternalFilter(new FillTool(blockType));
-                    setSelectedSlot(KeystoneHotbarSlot.SELECTION);
-                });
                 break;
         }
     }

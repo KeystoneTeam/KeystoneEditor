@@ -1,6 +1,7 @@
 package keystone.api;
 
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.wrappers.blocks.BlockMask;
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.gui.KeystoneOverlayHandler;
@@ -231,6 +232,8 @@ public final class Keystone
         MinecraftForge.EVENT_BUS.addListener(Keystone::onGamemodeChanged);
 
         BlockTypeRegistry.buildRegistry();
+
+        BlockMask.buildForcedAdditionsList();
     }
 
     /**

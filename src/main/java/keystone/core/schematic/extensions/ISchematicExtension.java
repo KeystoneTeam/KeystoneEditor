@@ -21,6 +21,7 @@ public interface ISchematicExtension
     void serialize(KeystoneSchematic schematic, CompoundNBT nbt);
     ISchematicExtension deserialize(Vector3i size, Block[] blocks, Entity[] entities, CompoundNBT nbt);
 
+    default boolean canPlace() { return true; }
     default boolean placeByDefault() { return false; }
     default void place(KeystoneSchematic schematic, GhostBlocksWorld ghostWorld) {}
     default void place(KeystoneSchematic schematic, WorldModifierModules worldModifiers, BlockPos anchor, Rotation rotation, Mirror mirror, int scale) {}

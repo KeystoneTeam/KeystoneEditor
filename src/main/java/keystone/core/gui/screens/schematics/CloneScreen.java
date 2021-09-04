@@ -20,6 +20,7 @@ import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.renderer.common.models.Coords;
 import keystone.core.schematic.KeystoneSchematic;
+import keystone.core.schematic.extensions.ISchematicExtension;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.CheckboxButton;
 import net.minecraft.util.Direction;
@@ -70,6 +71,7 @@ public class CloneScreen extends KeystoneOverlay
     private IntegerWidget offsetZ;
     private IntegerWidget repeatField;
     private IntegerWidget scaleField;
+    private CheckboxButton copyAir;
 
     protected CloneScreen(BoundingBox selectionBounds, KeystoneSchematic schematic, Coords anchor, Rotation rotation, Mirror mirror, Vector3i offset, int repeat, int scale, boolean addHistoryEntry)
     {
@@ -87,7 +89,8 @@ public class CloneScreen extends KeystoneOverlay
         extensionsToPlace = new HashMap<>();
         for (ResourceLocation extension : schematic.getExtensionIDs())
         {
-            if (!extensionsToPlace.containsKey(extension)) extensionsToPlace.put(extension, schematic.getExtension(extension).placeByDefault());
+            ISchematicExtension extensionImplementation = schematic.getExtension(extension);
+            if (!extensionsToPlace.containsKey(extension) && extensionImplementation.canPlace()) extensionsToPlace.put(extension, extensionImplementation.placeByDefault());
         }
 
         if (addHistoryEntry)
@@ -160,7 +163,7 @@ public class CloneScreen extends KeystoneOverlay
     {
         int widgetsHeight = (3 * (BUTTON_HEIGHT + PADDING)) + OPTIONS_PADDING + IntegerWidget.getFinalHeight() + OPTIONS_PADDING;
         widgetsHeight += 2 * (IntegerWidget.getFinalHeight() + PADDING);
-        widgetsHeight += extensionsToPlace.size() * (20 + PADDING);
+        widgetsHeight += (extensionsToPlace.size() + 1) * (20 + PADDING);
         int y = (height - widgetsHeight) / 2;
         panelMinY = y - MARGINS;
         panelMaxY = panelMinY + widgetsHeight + MARGINS + MARGINS;
@@ -246,6 +249,11 @@ public class CloneScreen extends KeystoneOverlay
         };;
         y += scaleField.getHeight() + PADDING;
         addButton(scaleField);
+
+        // Copy Air Field
+        copyAir = new CheckboxButton(MARGINS, y, panelWidth - 2 * MARGINS, 20, new TranslationTextComponent("keystone.clone.copyAir"), true, true);
+        y += copyAir.getHeight() + PADDING;
+        addButton(copyAir);
 
         for (ResourceLocation extension : extensionsToPlace.keySet())
         {
@@ -390,7 +398,7 @@ public class CloneScreen extends KeystoneOverlay
     }
     private void cloneButton(Button button)
     {
-        importModule.placeAll(extensionsToPlace);
+        importModule.placeAll(extensionsToPlace, copyAir.selected());
     }
     //endregion
 }
