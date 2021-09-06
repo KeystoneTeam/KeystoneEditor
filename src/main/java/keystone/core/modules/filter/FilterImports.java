@@ -35,10 +35,11 @@ public class FilterImports
         imports.add("keystone.api.wrappers.coordinates");
         imports.add("keystone.api.wrappers.entities");
         imports.add("keystone.api.wrappers.nbt");
-        imports.add("keystone.core.utils.ProgressBar;");
 
         imports.add("java.util");
         imports.add("java.lang");
+
+        imports.add("static keystone.core.utils.ProgressBar.nextStep;");
     }
 
     public static Result getImports(String code)

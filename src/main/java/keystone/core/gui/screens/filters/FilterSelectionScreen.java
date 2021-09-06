@@ -11,7 +11,7 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.Dropdown;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
-import keystone.core.modules.filter.FilterCompiler;
+import keystone.core.modules.filter.FilterDirectoryManager;
 import keystone.core.modules.filter.FilterModule;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.Widget;
@@ -31,22 +31,24 @@ public class FilterSelectionScreen extends KeystoneOverlay
 {
     private static final int PADDING = 5;
     private static FilterSelectionScreen open;
-    private static KeystoneFilter selectedFilter;
-    private static KeystoneFilter filterInstance;
+    private static File selectedFilterFile;
+    private static boolean dirtied;
 
+    private FilterModule filterModule;
+    private FilterDirectoryManager filterManager;
     private int panelMinY;
     private int panelMaxX;
     private int panelMaxY;
 
-    private KeystoneFilter[] compiledFilters;
-
     private Button selectFilterButton;
-    private Dropdown<KeystoneFilter> dropdown;
+    private Dropdown<File> dropdown;
     private FieldWidgetList filterVariablesList;
 
     protected FilterSelectionScreen()
     {
         super(new TranslationTextComponent("keystone.screen.filterPanel"));
+        this.filterModule = Keystone.getModule(FilterModule.class);
+        this.filterManager = filterModule.getFilterDirectoryManager();
     }
     public static void open()
     {
@@ -55,6 +57,10 @@ public class FilterSelectionScreen extends KeystoneOverlay
             open = new FilterSelectionScreen();
             KeystoneOverlayHandler.addOverlay(open);
         }
+    }
+    public static void dirty()
+    {
+        dirtied = true;
     }
 
     //region Static Event Handlers
@@ -73,42 +79,16 @@ public class FilterSelectionScreen extends KeystoneOverlay
     public void removed()
     {
         open = null;
-        compiledFilters = null;
     }
     @Override
     public void init()
     {
-        // Compile filters
-        boolean recompiled = false;
-        if (compiledFilters == null)
-        {
-            recompiled = true;
-            File[] filterFiles = FilterCompiler.getInstalledFilters();
-            compiledFilters = new KeystoneFilter[filterFiles.length];
-            for (int i = 0; i < filterFiles.length; i++) compiledFilters[i] = FilterCompiler.compileFilter(filterFiles[i].getPath());
-        }
+        if (selectedFilterFile == null) selectedFilterFile = filterManager.getInstalledFilters()[0];
 
         // Calculate panel size
-        if (filterInstance == null)
-        {
-            selectedFilter = compiledFilters[0];
-            recreateFilterInstance();
-        }
-        else if (recompiled)
-        {
-            for (KeystoneFilter filter : compiledFilters)
-            {
-                if (filter.getName().equals(selectedFilter.getName()))
-                {
-                    selectedFilter = filter;
-                    break;
-                }
-            }
-            recreateFilterInstance();
-        }
         panelMaxX = Math.min(KeystoneHotbar.getX() - 5, 280);
         int maxPanelHeight = minecraft.getWindow().getGuiScaledHeight() - 50 - 2 * PADDING;
-        filterVariablesList = new FieldWidgetList(new TranslationTextComponent("keystone.filter_panel.filterVariables"), this::getFilterInstance, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
+        filterVariablesList = new FieldWidgetList(new TranslationTextComponent("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
         filterVariablesList.bake();
         int centerHeight = height / 2;
         int halfPanelHeight = 25 + PADDING + filterVariablesList.getHeight() / 2;
@@ -125,28 +105,28 @@ public class FilterSelectionScreen extends KeystoneOverlay
 
         // Filter selection dropdown
         this.dropdown = new Dropdown<>(selectFilterButton.x, selectFilterButton.y, selectFilterButton.getWidth(), new TranslationTextComponent("keystone.tool.filter.dropdown"),
-                filter ->
+                filterFile ->
                 {
+                    KeystoneFilter filter = filterManager.getFilter(filterFile);
                     if (filter.isCompiledSuccessfully()) return new StringTextComponent(filter.getName());
                     else return new StringTextComponent(filter.getName()).withStyle(TextFormatting.RED);
                 },
-                (filter, title) ->
+                (filterFile, title) ->
                 {
                     restoreWidgets();
-                    selectedFilter = filter;
+                    selectedFilterFile = filterFile;
                     this.selectFilterButton.setMessage(title);
-                    recreateFilterInstance();
-
                     this.init(minecraft, width, height);
-                }, compiledFilters);
-        if (selectedFilter != null)
+                }, filterManager.getInstalledFilters());
+
+        if (selectedFilterFile != null)
         {
             for (int i = 0; i < dropdown.size(); i++)
             {
-                KeystoneFilter filter = dropdown.getEntry(i);
-                if (filter.getName().equals(selectedFilter.getName()))
+                File filterFile = dropdown.getEntry(i);
+                if (filterFile.equals(selectedFilterFile))
                 {
-                    dropdown.setSelectedEntry(filter, false);
+                    dropdown.setSelectedEntry(filterFile, false);
                     break;
                 }
             }
@@ -167,12 +147,24 @@ public class FilterSelectionScreen extends KeystoneOverlay
         filterVariablesList.offset(0, panelMinY + ((panelMaxY - panelMinY) / 2) - (filterVariablesList.getHeight() / 2));
         addButton(filterVariablesList);
 
-        filterInstance.undirtyEditor();
+        filterManager.getFilter(selectedFilterFile).undirtyEditor();
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
-        if (filterInstance != null && filterInstance.isEditorDirtied()) init(minecraft, width, height);
+        if (selectedFilterFile != null)
+        {
+            if (filterManager.getFilter(selectedFilterFile) == null)
+            {
+                selectedFilterFile = filterManager.getInstalledFilters()[0];
+                init(minecraft, width, height);
+            }
+        }
+        if (dirtied)
+        {
+            init(minecraft, width, height);
+            dirtied = false;
+        }
 
         fill(stack, 0, panelMinY, panelMaxX, panelMaxY, 0x80000000);
 
@@ -182,33 +174,13 @@ public class FilterSelectionScreen extends KeystoneOverlay
     }
     //endregion
     //region Getters
-    public KeystoneFilter getFilterInstance() { return filterInstance; }
+    public KeystoneFilter getFilter() { return filterManager.getFilter(selectedFilterFile); }
     //endregion
     //region Helpers
-    private void recreateFilterInstance()
-    {
-        if (selectedFilter == null) filterInstance = null;
-        else
-        {
-            try
-            {
-                filterInstance = selectedFilter.getClass().newInstance().setName(selectedFilter.getName());
-                if (selectedFilter.isCompiledSuccessfully()) filterInstance.compiledSuccessfully();
-            }
-            catch (InstantiationException | IllegalAccessException e) { e.printStackTrace(); }
-        }
-    }
     private void runFilter()
     {
         for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).setFocus(false);
-
-        if (filterInstance != null) Keystone.getModule(FilterModule.class).runFilter(filterInstance);
-        else
-        {
-            String error = "Could not create instance of filter '" + selectedFilter.getName() + "'!";
-            Keystone.LOGGER.error(error);
-            minecraft.player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
-        }
+        if (selectedFilterFile != null) filterModule.runFilter(filterManager.getFilter(selectedFilterFile));
     }
     //endregion
 }

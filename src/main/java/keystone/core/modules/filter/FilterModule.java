@@ -1,9 +1,11 @@
 package keystone.core.modules.filter;
 
 import keystone.api.Keystone;
+import keystone.api.KeystoneDirectories;
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.entities.Entity;
+import keystone.core.KeystoneConfig;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
@@ -16,15 +18,19 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class FilterModule implements IKeystoneModule
 {
     private HistoryModule historyModule;
     private SelectionModule selectionModule;
+    private FilterDirectoryManager filterDirectoryManager;
     private ITextComponent[] abortFilter;
 
     @Override
@@ -35,7 +41,10 @@ public class FilterModule implements IKeystoneModule
     {
         historyModule = Keystone.getModule(HistoryModule.class);
         selectionModule = Keystone.getModule(SelectionModule.class);
+        filterDirectoryManager = FilterDirectoryManager.create(KeystoneDirectories.getStockFilterCache(), KeystoneDirectories.getFilterDirectory());
     }
+
+    public FilterDirectoryManager getFilterDirectoryManager() { return this.filterDirectoryManager; }
 
     /**
      * Compile and run a {@link keystone.api.filters.KeystoneFilter} on the current selection boxes
@@ -44,14 +53,16 @@ public class FilterModule implements IKeystoneModule
     public void runFilter(String filterPath)
     {
         abortFilter = null;
-
-        KeystoneFilter filter = FilterCompiler.compileFilter(filterPath);
-        if (abortFilter != null)
+        File filterFile = Paths.get(filterPath).toFile();
+        if (!filterFile.exists())
         {
-            for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
+            abortFilter("Invalid Filter Path: '" + filterPath + "'!");
+            testAborted();
             return;
         }
-        else runFilter(filter);
+
+        KeystoneFilter filter = FilterCompiler.compileFilter(Paths.get(filterPath).toFile());
+        if (!testAborted()) runFilter(filter);
     }
     /**
      * Run a {@link keystone.api.filters.KeystoneFilter} on the current selection boxes
@@ -194,7 +205,7 @@ public class FilterModule implements IKeystoneModule
                                 {
                                     filter.processBlock(pos.getX(), pos.getY(), pos.getZ(), entry.getKey());
                                     if (testAborted()) return;
-                                    else ProgressBar.completeStep();
+                                    else ProgressBar.nextStep();
                                 }
                             }
                         }
@@ -208,7 +219,7 @@ public class FilterModule implements IKeystoneModule
                                 {
                                     filter.processEntity(entity, entry.getKey());
                                     if (testAborted()) return;
-                                    else ProgressBar.completeStep();
+                                    else ProgressBar.nextStep();
                                 }
                             }
                         }
@@ -222,7 +233,7 @@ public class FilterModule implements IKeystoneModule
                             historyModule.swapBlockBuffers(true);
                             historyModule.swapEntityBuffers(true);
                         }
-                        ProgressBar.completeIteration();
+                        ProgressBar.nextIteration();
                     }
                 }
                 catch (Exception e)

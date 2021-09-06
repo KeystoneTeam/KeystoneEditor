@@ -26,6 +26,8 @@ import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.io.File;
+
 /**
  * A filter compilable by Keystone. All filters must contain a class which extends {@link keystone.api.filters.KeystoneFilter}.
  * Contains information relating to which {@link WorldRegion FilterBoxes} the filter is modifying, as well
@@ -37,6 +39,14 @@ public class KeystoneFilter extends EditableObject
     private boolean compiledSuccessfully;
     private WorldRegion[] regions;
     private int iteration;
+
+    //region Static
+    public static String getFilterName(File filterFile, boolean removeSpaces)
+    {
+        if (removeSpaces) return filterFile.getName().replaceAll(" ", "").replaceFirst("[.][^.]+$", "");
+        else return filterFile.getName().replaceFirst("[.][^.]+$", "");
+    }
+    //endregion
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**

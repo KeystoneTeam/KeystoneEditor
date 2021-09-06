@@ -335,11 +335,11 @@ public class BrushModule implements IKeystoneModule
                     {
                         if (brushOperation.process(x, y, z, worldModifiers, iteration)) processedBlocks.add(pos);
                     }
-                    ProgressBar.completeStep();
+                    ProgressBar.nextStep();
                 }
             }
         }
-        if (!progressBarGrouped) ProgressBar.completeIteration();
+        if (!progressBarGrouped) ProgressBar.nextIteration();
     }
     //endregion
     //region Helpers
