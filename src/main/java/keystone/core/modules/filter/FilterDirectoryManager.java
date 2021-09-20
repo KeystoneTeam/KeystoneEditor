@@ -111,6 +111,7 @@ public class FilterDirectoryManager
     {
         stockFilters = new ArrayList<>();
         File stockFilterCache = KeystoneDirectories.getStockFilterCache();
+        for (File file : stockFilterCache.listFiles()) file.delete();
 
         try
         {

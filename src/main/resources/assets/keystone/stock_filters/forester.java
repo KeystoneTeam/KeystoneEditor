@@ -35,7 +35,7 @@ public class Forester extends KeystoneFilter
         HANGING,
         NONE;
 
-        public BlockMask getMaterialCheck(AdvancedForester forester)
+        public BlockMask getMaterialCheck(Forester forester)
         {
             switch (this)
             {
@@ -52,7 +52,7 @@ public class Forester extends KeystoneFilter
      */
     public abstract class Tree
     {
-        protected final AdvancedForester forester;
+        protected final Forester forester;
         protected final BlockType log;
         protected final BlockType foliage;
         protected final int x;
@@ -60,7 +60,7 @@ public class Forester extends KeystoneFilter
         protected final int z;
         protected final int height;
 
-        public Tree(AdvancedForester forester, int x, int y, int z)
+        public Tree(Forester forester, int x, int y, int z)
         {
             this.forester = forester;
             BlockType[] palette = forester.resolvePalettes(forester.logPalette, forester.leavesPalette);
@@ -83,7 +83,7 @@ public class Forester extends KeystoneFilter
      */
     public abstract class StickTree extends Tree
     {
-        public StickTree(AdvancedForester forester, int x, int y, int z) { super(forester, x, y, z); }
+        public StickTree(Forester forester, int x, int y, int z) { super(forester, x, y, z); }
 
         @Override
         public void makeTrunk(WorldRegion region)
@@ -93,7 +93,7 @@ public class Forester extends KeystoneFilter
     }
     public class NormalTree extends StickTree
     {
-        public NormalTree(AdvancedForester forester, int x, int y, int z) { super(forester, x, y, z); }
+        public NormalTree(Forester forester, int x, int y, int z) { super(forester, x, y, z); }
 
         @Override
         public void makeFoliage(WorldRegion region)
@@ -119,7 +119,7 @@ public class Forester extends KeystoneFilter
     }
     public class BambooTree extends StickTree
     {
-        public BambooTree(AdvancedForester forester, int x, int y, int z) { super(forester, x, y, z); }
+        public BambooTree(Forester forester, int x, int y, int z) { super(forester, x, y, z); }
 
         @Override
         public void makeFoliage(WorldRegion region)
@@ -150,7 +150,7 @@ public class Forester extends KeystoneFilter
         protected float[] foliageLayerRadii;
         protected List foliageCenters;
 
-        public ProceduralTree(AdvancedForester forester, int x, int y, int z, float branchSlope, float[] foliageLayerRadii)
+        public ProceduralTree(Forester forester, int x, int y, int z, float branchSlope, float[] foliageLayerRadii)
         {
             super(forester, x, y, z);
             this.branchSlope = branchSlope;
@@ -522,7 +522,7 @@ public class Forester extends KeystoneFilter
     }
     public class RoundTree extends ProceduralTree
     {
-        public RoundTree(AdvancedForester forester, int x, int y, int z)
+        public RoundTree(Forester forester, int x, int y, int z)
         {
             super(forester, x, y, z, 0.382f, new float[] { 2, 3, 3, 2.5f, 1.6f });
         }
@@ -555,7 +555,7 @@ public class Forester extends KeystoneFilter
     }
     public class ConeTree extends ProceduralTree
     {
-        public ConeTree(AdvancedForester forester, int x, int y, int z)
+        public ConeTree(Forester forester, int x, int y, int z)
         {
             super(forester, x, y, z, 0.15f, new float[] { 3, 2.6f, 2, 1 });
         }
@@ -582,7 +582,7 @@ public class Forester extends KeystoneFilter
     }
     public class RainforestTree extends ProceduralTree
     {
-        public RainforestTree(AdvancedForester forester, int x, int y, int z)
+        public RainforestTree(Forester forester, int x, int y, int z)
         {
             super(forester, x, y, z, 1.0f, new float[] { 3.4f, 2.6f });
         }
@@ -618,7 +618,7 @@ public class Forester extends KeystoneFilter
     }
     public class MangroveTree extends RoundTree
     {
-        public MangroveTree(AdvancedForester forester, int x, int y, int z) { super(forester, x, y, z); }
+        public MangroveTree(Forester forester, int x, int y, int z) { super(forester, x, y, z); }
 
         @Override
         public void prepare(WorldRegion region)

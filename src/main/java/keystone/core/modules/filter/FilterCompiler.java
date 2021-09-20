@@ -59,14 +59,14 @@ public class FilterCompiler
                         String error = "Class '" + oldClassName + "' does not extend KeystoneFilter!";
                         Keystone.LOGGER.error(error);
                         sendErrorMessage(error);
-                        return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false));
+                        return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false)).setCompilerException(e);
                     }
                     catch (IllegalAccessException e)
                     {
                         String error = "Cannot access filter constructor! Ensure the filter has a public zero-argument constructor.";
                         Keystone.LOGGER.error(error);
                         sendErrorMessage(error);
-                        return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false));
+                        return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false)).setCompilerException(e);
                     }
                     catch (InstantiationException e)
                     {
@@ -74,7 +74,7 @@ public class FilterCompiler
                         Keystone.LOGGER.error(error);
                         e.printStackTrace();
                         sendErrorMessage(error);
-                        return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false));
+                        return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false)).setCompilerException(e);
                     }
                 }
                 catch (ClassNotFoundException e)
@@ -82,7 +82,7 @@ public class FilterCompiler
                     String error = "Unable to find class '" + oldClassName + "'! Make sure your filter class and file share the same name.";
                     Keystone.LOGGER.error(error);
                     sendErrorMessage(error);
-                    return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false));
+                    return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false)).setCompilerException(e);
                 }
             }
             catch (CompileException | InternalCompilerException e)
@@ -99,7 +99,7 @@ public class FilterCompiler
 
                 Keystone.LOGGER.error(fixedError);
                 sendErrorMessage(fixedError);
-                return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false));
+                return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false)).setCompilerException(e);
             }
         }
         catch (FileNotFoundException e)
@@ -115,7 +115,7 @@ public class FilterCompiler
             Keystone.LOGGER.error(error);
             e.printStackTrace();
             sendErrorMessage(error);
-            return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false));
+            return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false)).setCompilerException(e);
         }
     }
 

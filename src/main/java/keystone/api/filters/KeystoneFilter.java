@@ -37,6 +37,7 @@ public class KeystoneFilter extends EditableObject
 {
     private String name;
     private boolean compiledSuccessfully;
+    private Throwable compilerException;
     private WorldRegion[] regions;
     private int iteration;
 
@@ -62,6 +63,18 @@ public class KeystoneFilter extends EditableObject
      * @return The modified filter instance
      */
     public final KeystoneFilter compiledSuccessfully() { this.compiledSuccessfully = true; return this; }
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Set the exception thrown when compiling the filter
+     * @param exception The compiler exception
+     * @return The modified filter instance
+     */
+    public final KeystoneFilter setCompilerException(Throwable exception) { this.compilerException = exception; return this; }
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * @return The exception thrown when compiling the filter
+     */
+    public final Throwable getCompilerException() { return this.compilerException; }
 
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>

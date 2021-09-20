@@ -27,6 +27,8 @@ public class FieldWidgetList extends WidgetList
     protected final Runnable restoreWidgets;
     protected final BiConsumer<Widget, Boolean> addDropdown;
 
+    protected int nextWidgetY;
+
     public FieldWidgetList(ITextComponent label, Supplier<Object> instance, int x, int y, int width, int maxHeight, int padding, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
     {
         super(x, y, width, maxHeight, padding, label);
@@ -36,8 +38,8 @@ public class FieldWidgetList extends WidgetList
         this.disableWidgets = disableWidgets;
         this.restoreWidgets = restoreWidgets;
         this.addDropdown = this::add;
+        this.nextWidgetY = 0;
 
-        int fieldY = 0;
         Field[] fields = instance.get().getClass().getDeclaredFields();
         for (Field field : fields)
         {
@@ -49,7 +51,7 @@ public class FieldWidgetList extends WidgetList
             try
             {
                 field.setAccessible(true);
-                fieldY += createVariableEditor(field.getType(), field, hook, variableName, fieldY) + padding;
+                nextWidgetY += createVariableEditor(field.getType(), field, hook, variableName, nextWidgetY) + padding;
             }
             catch (SecurityException e)
             {
@@ -67,6 +69,8 @@ public class FieldWidgetList extends WidgetList
             }
         }
     }
+
+    public int getNextWidgetY() { return this.nextWidgetY; }
 
     private int createVariableEditor(Class<?> type, Field field, Hook hook, String name, int y) throws IllegalAccessException
     {

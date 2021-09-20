@@ -246,9 +246,9 @@ public class FilterModule implements IKeystoneModule
                 filter.finished();
                 if (testAborted()) return;
 
+                filter.print("Filter completed in " + (System.currentTimeMillis() - startTime) + "ms");
                 historyModule.endHistoryEntry();
                 ProgressBar.finish();
-                filter.print("Filter completed in " + (System.currentTimeMillis() - startTime) + "ms");
             }
         });
     }

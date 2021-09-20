@@ -8,11 +8,13 @@ import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
+import keystone.core.gui.widgets.TextDisplayWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.Dropdown;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
 import keystone.core.modules.filter.FilterDirectoryManager;
 import keystone.core.modules.filter.FilterModule;
+import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
@@ -25,6 +27,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class FilterSelectionScreen extends KeystoneOverlay
@@ -85,10 +89,37 @@ public class FilterSelectionScreen extends KeystoneOverlay
     {
         if (selectedFilterFile == null) selectedFilterFile = filterManager.getInstalledFilters()[0];
 
-        // Calculate panel size
+        // Build Filter Variable Widgets
         panelMaxX = Math.min(KeystoneHotbar.getX() - 5, 280);
         int maxPanelHeight = minecraft.getWindow().getGuiScaledHeight() - 50 - 2 * PADDING;
         filterVariablesList = new FieldWidgetList(new TranslationTextComponent("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
+
+        // Error Display
+        KeystoneFilter selectedFilter = filterManager.getFilter(selectedFilterFile);
+        if (!selectedFilter.isCompiledSuccessfully())
+        {
+            TextDisplayWidget compileErrorDisplay = new TextDisplayWidget(0, filterVariablesList.getNextWidgetY(), filterVariablesList.getWidth() - 2 * PADDING, font)
+                    .setPadding(0);
+
+            String error = selectedFilter.getCompilerException().getLocalizedMessage();
+            String splitRegex = "Line [0-9]+, Column [0-9]+:";
+            String[] tokens = error.split(splitRegex, 2);
+            if (tokens.length == 1) compileErrorDisplay.addText(TextFormatting.RED, error);
+            else
+            {
+                Pattern pattern = Pattern.compile(splitRegex);
+                Matcher matcher = pattern.matcher(error);
+                if (matcher.find())
+                {
+                    compileErrorDisplay.addText(TextFormatting.RED, (tokens[0] + matcher.group()).trim());
+                    compileErrorDisplay.addText(TextFormatting.RED, "  " + tokens[1].trim());
+                }
+                else compileErrorDisplay.addText(TextFormatting.RED, error);
+            }
+            filterVariablesList.add(compileErrorDisplay);
+        }
+
+        // Calculate Panel Size
         filterVariablesList.bake();
         int centerHeight = height / 2;
         int halfPanelHeight = 25 + PADDING + filterVariablesList.getHeight() / 2;
@@ -115,6 +146,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
                 {
                     restoreWidgets();
                     selectedFilterFile = filterFile;
+
                     this.selectFilterButton.setMessage(title);
                     this.init(minecraft, width, height);
                 }, filterManager.getInstalledFilters());
@@ -146,7 +178,6 @@ public class FilterSelectionScreen extends KeystoneOverlay
         // Create Filter Variables
         filterVariablesList.offset(0, panelMinY + ((panelMaxY - panelMinY) / 2) - (filterVariablesList.getHeight() / 2));
         addButton(filterVariablesList);
-
         filterManager.getFilter(selectedFilterFile).undirtyEditor();
     }
     @Override
