@@ -15,7 +15,7 @@ public class VariableContainer
         variableMap = new HashMap<>();
         try
         {
-            Field[] fields = instance.getClass().getDeclaredFields();
+            Field[] fields = instance.getClass().getFields();
             for (Field field : fields)
             {
                 Variable variable = field.getAnnotation(Variable.class);

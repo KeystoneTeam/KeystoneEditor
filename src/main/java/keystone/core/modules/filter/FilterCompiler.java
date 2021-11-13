@@ -128,10 +128,9 @@ public class FilterCompiler
     {
         StringBuilder sb = new StringBuilder();
         char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-        Random rand = new Random();
 
         sb.append("Filter_");
-        for (int i = 0; i < 32; i++) sb.append(chars[rand.nextInt(chars.length)]);
+        for (int i = 0; i < 32; i++) sb.append(chars[Keystone.RANDOM.nextInt(chars.length)]);
 
         return sb.toString();
     }

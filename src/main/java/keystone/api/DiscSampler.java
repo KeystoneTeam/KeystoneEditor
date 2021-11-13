@@ -8,13 +8,11 @@ import java.util.Random;
 
 public class DiscSampler
 {
-    public static final Random RANDOM = new Random();
-
     private static int ceil(double a) { return (int)Math.ceil(a); }
 
-    public static List<Vector2f> sample2D(float radius, int regionWidth, int regionHeight) { return sample2D(RANDOM, radius, regionWidth, regionHeight, 30); }
-    public static List<Vector2f> sample2D(Random random, float radius, int regionWidth, int regionHeight) { return sample2D(random, radius, regionWidth, regionHeight, 30); }
-    public static List<Vector2f> sample2D(Random random, float radius, int regionWidth, int regionHeight, int samplesBeforeRejection)
+    public static List<Vector2f> sample2D(float radius, int minX, int minZ, int regionWidth, int regionHeight) { return sample2D(Keystone.RANDOM, radius, minX, minZ, regionWidth, regionHeight, 30); }
+    public static List<Vector2f> sample2D(Random random, float radius, int minX, int minZ, int regionWidth, int regionHeight) { return sample2D(random, radius, minX, minZ, regionWidth, regionHeight, 30); }
+    public static List<Vector2f> sample2D(Random random, float radius, int minX, int minZ, int regionWidth, int regionHeight, int samplesBeforeRejection)
     {
         float cellSize = radius / (float)Math.sqrt(2);
         int[][] grid = new int[ceil(regionWidth / cellSize)][];
@@ -38,7 +36,7 @@ public class DiscSampler
                 Vector2f candidate = new Vector2f((float)(spawnCenter.x + dx * distance), (float)(spawnCenter.y + dz * distance));
                 if (valid2D(candidate, regionWidth, regionHeight, cellSize, radius, points, grid))
                 {
-                    points.add(candidate);
+                    points.add(new Vector2f(minX + candidate.x, minZ + candidate.y));
                     spawnPoints.add(candidate);
                     grid[(int)(candidate.x / cellSize)][(int)(candidate.y / cellSize)] = points.size();
                     accepted = true;

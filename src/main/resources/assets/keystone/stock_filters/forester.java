@@ -1,6 +1,7 @@
 import keystone.api.DiscSampler;
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.filters.StructureFilter;
 import keystone.api.variables.FloatRange;
 import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
@@ -12,7 +13,7 @@ import keystone.api.wrappers.coordinates.Vector2f;
 
 import java.util.*;
 
-public class Forester extends KeystoneFilter
+public class Forester extends StructureFilter
 {
     //region Enums
     public enum TreeType
@@ -653,48 +654,26 @@ public class Forester extends KeystoneFilter
     @Variable @FloatRange(min = 0.0f, max = 10.0f, scrollStep = 0.1f) public float foliageDensity = 1.0f;
     @Variable public boolean hollowTrunk = false;
     @Variable public boolean rootButtresses = false;
-    @Variable public int seed = 0;
 
     public BlockMask airMask = whitelist("minecraft:air");
     public BlockType air = block("minecraft:air").blockType();
-    public Random random;
 
-    private Map regionTreePositions = new HashMap();
+    private List trees = new ArrayList();
     //endregion
 
-    @Override
-    public boolean allowBlocksOutsideRegion() { return true; }
+    @Override public int getStructureSeparation() { return treeDistance; }
+    @Override public int getStructureSteps() { return 4; }
+    @Override public void preparePass() { trees.clear(); }
 
     @Override
-    public void initialize()
+    public void processStructure(Vector2f coordinate, WorldRegion region)
     {
-        this.random = seed == 0 ? new Random() : new Random(seed);
+        int y = region.getTopBlock((int)Math.floor(coordinate.x), (int)Math.floor(coordinate.y));
+        trees.add(getTreeInstance(coordinate.x, y, coordinate.y));
     }
     @Override
-    public void prepareRegion(WorldRegion region)
+    public void postProcessStructures(WorldRegion region)
     {
-        List treePositions = DiscSampler.sample2D(random, treeDistance, region.size.x, region.size.z);
-        regionTreePositions.put(region, treePositions);
-    }
-    @Override
-    public int getRegionSteps(WorldRegion region)
-    {
-        List treePositions = (List)regionTreePositions.get(region);
-        return treePositions.size() * 3;
-    }
-    @Override
-    public void processRegion(WorldRegion region)
-    {
-        List treePositions = (List)regionTreePositions.get(region);
-        List trees = new ArrayList();
-
-        for (Object obj : treePositions)
-        {
-            Vector2f treePosition = (Vector2f) obj;
-            int y = region.getTopBlock((int)Math.floor(treePosition.x), (int)Math.floor(treePosition.y));
-            trees.add(getTreeInstance(treePosition.x + region.min.x, y, treePosition.y + region.min.z));
-        }
-
         for (Object obj : trees)
         {
             Tree tree = (Tree)obj;

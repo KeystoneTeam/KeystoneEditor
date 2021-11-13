@@ -40,7 +40,7 @@ public class FieldWidgetList extends WidgetList
         this.addDropdown = this::add;
         this.nextWidgetY = 0;
 
-        Field[] fields = instance.get().getClass().getDeclaredFields();
+        Field[] fields = instance.get().getClass().getFields();
         for (Field field : fields)
         {
             Variable variable = field.getAnnotation(Variable.class);
