@@ -5,11 +5,10 @@ import keystone.api.variables.Hook;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.core.gui.widgets.inputs.BlockPaletteWidget;
 import keystone.core.utils.AnnotationUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 
 import java.lang.reflect.Field;
 import java.util.function.Consumer;
@@ -21,9 +20,9 @@ public class BlockPaletteFieldWidget extends BlockPaletteWidget
     private final Field field;
     private final Hook hook;
 
-    public BlockPaletteFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets) throws IllegalAccessException
+    public BlockPaletteFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets) throws IllegalAccessException
     {
-        super(new StringTextComponent(name), x, y, width, (BlockPalette)field.get(instance.get()), disableWidgets, restoreWidgets);
+        super(new LiteralText(name), x, y, width, (BlockPalette)field.get(instance.get()), disableWidgets, restoreWidgets);
 
         this.instance = instance;
         this.field = field;
@@ -43,7 +42,7 @@ public class BlockPaletteFieldWidget extends BlockPaletteWidget
         {
             String error = "Could not set BlockPalette field '" + getMessage().getString() + "'!";
             Keystone.LOGGER.error(error);
-            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
+            MinecraftClient.getInstance().player.sendMessage(new LiteralText(error).styled(style -> style.withColor(Formatting.RED)), false);
             e.printStackTrace();
         }
     }

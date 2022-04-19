@@ -3,8 +3,8 @@ package keystone.api.wrappers.blocks;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.nbt.NbtCompound;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -26,15 +26,15 @@ public class Block
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
      * @param state The Minecraft BlockState
-     * @param tileEntity The Minecraft TileEntity
+     * @param tileEntity The Minecraft BlockEntity
      */
-    public Block(@Nonnull BlockState state, TileEntity tileEntity) { this(BlockTypeRegistry.fromMinecraftBlock(state), tileEntity == null ? null : new NBTCompound(tileEntity.serializeNBT())); }
+    public Block(@Nonnull BlockState state, BlockEntity tileEntity) { this(BlockTypeRegistry.fromMinecraftBlock(state), tileEntity == null ? null : new NBTCompound(tileEntity.createNbt())); }
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
      * @param state The Minecraft BlockState
-     * @param tileEntity The Minecraft CompoundNBT representing the tile entity
+     * @param tileEntity The Minecraft NbtCompound representing the tile entity
      */
-    public Block(@Nonnull BlockState state, CompoundNBT tileEntity) { this(BlockTypeRegistry.fromMinecraftBlock(state), tileEntity == null ? null : new NBTCompound(tileEntity)); }
+    public Block(@Nonnull BlockState state, NbtCompound tileEntity) { this(BlockTypeRegistry.fromMinecraftBlock(state), tileEntity == null ? null : new NBTCompound(tileEntity)); }
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
      * @param blockType The {@link BlockType}
@@ -76,7 +76,7 @@ public class Block
      * Set this block's tile entity data
      * @param tileEntity The {@link NBTCompound} representing this tile entity
      */
-    public void setTileEntity(NBTCompound tileEntity) { this.tileEntity = tileEntity; }
+    public void setBlockEntity(NBTCompound tileEntity) { this.tileEntity = tileEntity; }
     //endregion
 
     @Override

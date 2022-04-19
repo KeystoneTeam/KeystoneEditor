@@ -1,8 +1,7 @@
 package keystone.core.gui.screens.schematics;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
-import keystone.core.events.KeystoneHotbarEvent;
+import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
@@ -10,18 +9,15 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.NudgeButton;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
+import keystone.core.modules.schematic_import.ImportBoundingBox;
 import keystone.core.modules.schematic_import.ImportModule;
-import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.button.CheckboxButton;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.client.gui.GuiUtils;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.CheckboxWidget;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Direction;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -29,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ImportScreen extends KeystoneOverlay
 {
     private static final int MARGINS = 2;
@@ -46,17 +41,17 @@ public class ImportScreen extends KeystoneOverlay
     private int panelWidth;
 
     private NudgeButton nudgeImports;
-    private Map<ResourceLocation, Boolean> extensionsToPlace;
+    private Map<Identifier, Boolean> extensionsToPlace;
 
     protected ImportScreen()
     {
-        super(new TranslationTextComponent("keystone.screen.import"));
+        super(new TranslatableText("keystone.screen.import"));
         importModule = Keystone.getModule(ImportModule.class);
 
         extensionsToPlace = new HashMap<>();
         for (ImportBoundingBox importBox : importModule.getImportBoxes())
         {
-            for (ResourceLocation extension : importBox.getSchematic().getExtensionIDs())
+            for (Identifier extension : importBox.getSchematic().getExtensionIDs())
             {
                 if (!extensionsToPlace.containsKey(extension)) extensionsToPlace.put(extension, importBox.getSchematic().getExtension(extension).placeByDefault());
             }
@@ -70,15 +65,17 @@ public class ImportScreen extends KeystoneOverlay
             KeystoneOverlayHandler.addOverlay(open);
         }
     }
+    public static void registerEvents()
+    {
+        KeystoneHotbarEvents.CHANGED.register(ImportScreen::onHotbarChanged);
+    }
 
     //region Static Event Handlers
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public static void onHotbarChanged(final KeystoneHotbarEvent event)
+    public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
-        if (event.isCanceled()) return;
-
-        if (event.slot == KeystoneHotbarSlot.IMPORT && Keystone.getModule(ImportModule.class).getImportBoxes().size() > 0) open();
-        else if (open != null) open.onClose();
+        if (slot == KeystoneHotbarSlot.IMPORT && Keystone.getModule(ImportModule.class).getImportBoxes().size() > 0) open();
+        // TODO: Check if this needs to be changed from removed() to close()
+        else if (open != null) open.removed();
     }
     //endregion
     //region Screen Overrides
@@ -109,11 +106,11 @@ public class ImportScreen extends KeystoneOverlay
         nudgeImports.x = (panelWidth - nudgeImports.getWidth()) / 2;
         y += BUTTON_HEIGHT + PADDING + OPTIONS_PADDING;
 
-        addButton(rotateButton);
-        addButton(mirrorButton);
-        addButton(nudgeImports);
+        addDrawableChild(rotateButton);
+        addDrawableChild(mirrorButton);
+        addDrawableChild(nudgeImports);
 
-        TranslationTextComponent scaleLabel = new TranslationTextComponent("keystone.schematic_import.scale");
+        TranslatableText scaleLabel = new TranslatableText("keystone.schematic_import.scale");
         IntegerWidget scale = new IntegerWidget(scaleLabel, MARGINS, y, panelWidth - 2 * MARGINS, 1, 1, 8)
         {
             @Override
@@ -124,14 +121,14 @@ public class ImportScreen extends KeystoneOverlay
             }
         };
         y += scale.getHeight() + PADDING;
-        addButton(scale);
+        addDrawableChild(scale);
 
-        List<CheckboxButton> extensionOptions = new ArrayList<>();
+        List<CheckboxWidget> extensionOptions = new ArrayList<>();
         int defaultPanelWidth = panelWidth;
-        for (ResourceLocation extension : extensionsToPlace.keySet())
+        for (Identifier extension : extensionsToPlace.keySet())
         {
-            CheckboxButton extensionOption = createExtensionOption(y, extension);
-            int width = 2 * MARGINS + 24 + font.width(extensionOption.getMessage());
+            CheckboxWidget extensionOption = createExtensionOption(y, extension);
+            int width = 2 * MARGINS + 24 + textRenderer.getWidth(extensionOption.getMessage());
             if (width > panelWidth) panelWidth = width;
             y += extensionOption.getHeight() + PADDING;
             extensionOptions.add(extensionOption);
@@ -141,16 +138,16 @@ public class ImportScreen extends KeystoneOverlay
         mirrorButton.x += (panelWidth - defaultPanelWidth) / 2;
         nudgeImports.x += (panelWidth - defaultPanelWidth) / 2;
         scale.x += (panelWidth - defaultPanelWidth) / 2;
-        for (CheckboxButton extensionOption : extensionOptions)
+        for (CheckboxWidget extensionOption : extensionOptions)
         {
             extensionOption.setWidth(panelWidth - 2);
-            addButton(extensionOption);
+            addDrawableChild(extensionOption);
         }
 
         y += OPTIONS_PADDING;
         SimpleButton importButton = createButton(y, "keystone.schematic_import.import", this::importButton);
         importButton.x = (panelWidth - importButton.getWidth()) / 2;
-        addButton(importButton);
+        addDrawableChild(importButton);
     }
 
     @Override
@@ -196,7 +193,7 @@ public class ImportScreen extends KeystoneOverlay
     //region Helpers
     private NudgeButton createNudgeButton(int y, NudgeButton.NudgeConsumer consumer)
     {
-        int buttonWidth = 2 * PADDING + font.width(NudgeButton.NUDGE.getString());
+        int buttonWidth = 2 * PADDING + textRenderer.getWidth(NudgeButton.NUDGE.getString());
         return (NudgeButton) new NudgeButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, consumer, NudgeButton.IMPORT_HISTORY_SUPPLIER)
         {
             @Override
@@ -208,35 +205,35 @@ public class ImportScreen extends KeystoneOverlay
             }
         }.setColors(0x80008000, 0x80008000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
     }
-    private SimpleButton createButton(int y, String translationKey, Button.IPressable pressable)
+    private SimpleButton createButton(int y, String translationKey, ButtonWidget.PressAction pressable)
     {
-        TranslationTextComponent label = new TranslationTextComponent(translationKey);
-        List<ITextComponent> tooltip = new ArrayList<>();
-        tooltip.add(new TranslationTextComponent(translationKey + ".tooltip"));
+        TranslatableText label = new TranslatableText(translationKey);
+        List<Text> tooltip = new ArrayList<>();
+        tooltip.add(new TranslatableText(translationKey + ".tooltip"));
 
-        int buttonWidth = 2 * PADDING + font.width(label.getString());
-        return new SimpleButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, (stack, mouseX, mouseY, partialTicks) -> GuiUtils.drawHoveringText(stack, tooltip, mouseX, mouseY, width, height, (int)(tooltipWidth * width), font));
+        int buttonWidth = 2 * PADDING + textRenderer.getWidth(label.getString());
+        return new SimpleButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, (stack, mouseX, mouseY, partialTicks) -> renderTooltip(stack, tooltip, mouseX, mouseY));
     }
-    private CheckboxButton createExtensionOption(int y, ResourceLocation extensionID)
+    private CheckboxWidget createExtensionOption(int y, Identifier extensionID)
     {
-        TranslationTextComponent label = new TranslationTextComponent(extensionID.getNamespace() + "." + extensionID.getPath() + ".shouldPlace");
-        return new CheckboxButton(MARGINS, y, panelWidth - 2 * MARGINS, 20, label, extensionsToPlace.get(extensionID), true)
+        TranslatableText label = new TranslatableText(extensionID.getNamespace() + "." + extensionID.getPath() + ".shouldPlace");
+        return new CheckboxWidget(MARGINS, y, panelWidth - 2 * MARGINS, 20, label, extensionsToPlace.get(extensionID), true)
         {
             @Override
             public void onPress()
             {
                 super.onPress();
-                extensionsToPlace.put(extensionID, selected());
+                extensionsToPlace.put(extensionID, isChecked());
             }
         };
     }
     //endregion
     //region Button Callbacks
-    private void rotateButton(Button button)
+    private void rotateButton(ButtonWidget button)
     {
         importModule.rotateAll();
     }
-    private void mirrorButton(Button button)
+    private void mirrorButton(ButtonWidget button)
     {
         importModule.mirrorAll();
     }
@@ -244,7 +241,7 @@ public class ImportScreen extends KeystoneOverlay
     {
         importModule.nudgeAll(direction, amount);
     }
-    private void importButton(Button button)
+    private void importButton(ButtonWidget button)
     {
         importModule.placeAll(extensionsToPlace);
     }

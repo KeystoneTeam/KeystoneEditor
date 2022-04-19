@@ -1,229 +1,150 @@
 package keystone.core.renderer.blocks.world;
 
-import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.item.crafting.RecipeManager;
+import net.minecraft.item.map.MapState;
+import net.minecraft.recipe.RecipeManager;
 import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.tags.ITagCollectionSupplier;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.annotation.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.DynamicRegistries;
-import net.minecraft.world.ITickList;
+import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.registry.DynamicRegistryManager;
+import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.world.MutableWorldProperties;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.AbstractChunkProvider;
-import net.minecraft.world.lighting.WorldLightManager;
-import net.minecraft.world.storage.ISpawnWorldInfo;
-import net.minecraft.world.storage.MapData;
+import net.minecraft.world.chunk.ChunkManager;
+import net.minecraft.world.chunk.light.LightingProvider;
+import net.minecraft.world.entity.EntityLookup;
+import net.minecraft.world.event.GameEvent;
+import net.minecraft.world.tick.QueryableTickScheduler;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class WrappedWorld extends World
 {
     protected World world;
-    private AbstractChunkProvider provider;
-
-    public WrappedWorld(World world, AbstractChunkProvider provider)
-    {
-        super((ISpawnWorldInfo) world.getLevelData(), world.dimension(), world.dimensionType(), world::getProfiler,
-                world.isClientSide, world.isDebug(), 0);
-        this.world = world;
-        this.provider = provider;
-    }
+    protected ChunkManager chunkManager;
+    protected DummyEntityLookup<Entity> entityLookup = new DummyEntityLookup<>();
 
     public WrappedWorld(World world)
     {
-        this(world, null);
+        super((MutableWorldProperties) world.getLevelProperties(), world.getRegistryKey(), world.method_40134(), world::getProfiler, world.isClient, world.isDebugWorld(), 0);
+        this.world = world;
     }
 
+    public void setChunkManager(ChunkManager chunkManager)
+    {
+        this.chunkManager = chunkManager;
+    }
     public World getWorld()
     {
-        return world;
+        return this.world;
     }
 
+    @Override protected EntityLookup<Entity> getEntityLookup() { return this.entityLookup; }
+    @Override public ChunkManager getChunkManager() { return chunkManager != null ? chunkManager : world.getChunkManager(); }
     @Override
-    public WorldLightManager getLightEngine()
+    public boolean spawnEntity(Entity entity)
     {
-        return world.getLightEngine();
+        entity.world = world;
+        return world.spawnEntity(entity);
     }
 
-    @Override
-    public BlockState getBlockState(@Nullable BlockPos pos)
+    @Override public DynamicRegistryManager getRegistryManager() { return world.getRegistryManager(); }
+    @Override public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) { return world.getGeneratorStoredBiome(biomeX, biomeY, biomeZ); }
+    @Override public void updateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags) { world.updateListeners(pos, oldState, newState, flags); }
+    @Override public float getBrightness(Direction direction, boolean shaded) { return world.getBrightness(direction, shaded); }
+    @Override public QueryableTickScheduler<Block> getBlockTickScheduler() { return world.getBlockTickScheduler(); }
+    @Override public QueryableTickScheduler<Fluid> getFluidTickScheduler() { return world.getFluidTickScheduler(); }
+    @Override public Scoreboard getScoreboard() { return world.getScoreboard(); }
+    @Override public int getNextMapId() { return world.getNextMapId(); }
+    @Override public LightingProvider getLightingProvider() { return world.getLightingProvider(); }
+    @Override public BlockState getBlockState(@Nullable BlockPos pos)
     {
         return world.getBlockState(pos);
     }
+    @Override public RecipeManager getRecipeManager() { return world.getRecipeManager(); }
+    @Override public String asString() { return world.asString(); }
+
+    @Override public List<? extends PlayerEntity> getPlayers() { return Collections.emptyList(); }
+    @Override public void syncWorldEvent(@org.jetbrains.annotations.Nullable PlayerEntity player, int eventId, BlockPos pos, int data) { }
+    @Override public void playSound(@org.jetbrains.annotations.Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
+    @Override public void playSoundFromEntity(@org.jetbrains.annotations.Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
+    @Override public void emitGameEvent(@org.jetbrains.annotations.Nullable Entity entity, GameEvent event, BlockPos pos) { }
+    @Override @org.jetbrains.annotations.Nullable public MapState getMapState(String id) { return null; }
+    @Override public void putMapState(String id, MapState state) { }
+    @Override @org.jetbrains.annotations.Nullable public Entity getEntityById(int id) { return null; }
+    @Override public void setBlockBreakingInfo(int entityId, BlockPos pos, int progress) { }
+    @Override public int getMaxLightLevel() { return 15; }
+
+    // TODO: Check if this is the correct override
+    @Override public void updateNeighborsAlways(BlockPos pos, Block block) { }
+    //@Override public void updateNeighbourForOutputSignal(BlockPos p_175666_1_, Block p_175666_2_) {}
+
 
     @Override
-    public boolean isStateAtPosition(@Nullable BlockPos p_217375_1_, @Nullable Predicate<BlockState> p_217375_2_)
+    public int getTopY()
     {
-        return world.isStateAtPosition(p_217375_1_, p_217375_2_);
+        return this.getBottomY() + this.getHeight();
     }
 
     @Override
-    public TileEntity getBlockEntity(@Nullable BlockPos pos)
+    public int countVerticalSections()
     {
-        return world.getBlockEntity(pos);
+        return this.getTopSectionCoord() - this.getBottomSectionCoord();
     }
 
     @Override
-    public boolean setBlock(@Nullable BlockPos pos, @Nullable BlockState newState, int flags)
+    public int getBottomSectionCoord()
     {
-        return world.setBlock(pos, newState, flags);
+        return ChunkSectionPos.getSectionCoord(this.getBottomY());
     }
 
     @Override
-    public int getMaxLocalRawBrightness(BlockPos pos)
+    public int getTopSectionCoord()
     {
-        return 15;
+        return ChunkSectionPos.getSectionCoord(this.getTopY() - 1) + 1;
     }
 
     @Override
-    public void sendBlockUpdated(BlockPos pos, BlockState oldState, BlockState newState, int flags)
+    public boolean isOutOfHeightLimit(BlockPos pos)
     {
-        world.sendBlockUpdated(pos, oldState, newState, flags);
+        return this.isOutOfHeightLimit(pos.getY());
     }
 
     @Override
-    public ITickList<Block> getBlockTicks()
+    public boolean isOutOfHeightLimit(int y)
     {
-        return world.getBlockTicks();
+        return y < this.getBottomY() || y >= this.getTopY();
     }
 
     @Override
-    public ITickList<Fluid> getLiquidTicks()
+    public int getSectionIndex(int y)
     {
-        return world.getLiquidTicks();
+        return this.sectionCoordToIndex(ChunkSectionPos.getSectionCoord(y));
     }
 
     @Override
-    public AbstractChunkProvider getChunkSource()
+    public int sectionCoordToIndex(int coord)
     {
-        return provider;
+        return coord - this.getBottomSectionCoord();
     }
 
     @Override
-    public void levelEvent(@Nullable PlayerEntity player, int type, BlockPos pos, int data)
+    public int sectionIndexToCoord(int index)
     {
-    }
-
-    @Override
-    public List<? extends PlayerEntity> players()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public void playSound(@Nullable PlayerEntity player, double x, double y, double z, SoundEvent soundIn,
-                          SoundCategory category, float volume, float pitch)
-    {
-    }
-
-    @Override
-    public void playSound(@Nullable PlayerEntity p_217384_1_, Entity p_217384_2_, SoundEvent p_217384_3_,
-                          SoundCategory p_217384_4_, float p_217384_5_, float p_217384_6_)
-    {
-    }
-
-    @Override
-    public Entity getEntity(int id)
-    {
-        return null;
-    }
-
-    @Override
-    public MapData getMapData(String mapName)
-    {
-        return null;
-    }
-
-    @Override
-    public boolean addFreshEntity(@Nullable Entity entityIn)
-    {
-        if (entityIn == null)
-            return false;
-        entityIn.setLevel(world);
-        return world.addFreshEntity(entityIn);
-    }
-
-    @Override
-    public void setMapData(MapData mapDataIn)
-    {
-    }
-
-    @Override
-    public int getFreeMapId()
-    {
-        return world.getFreeMapId();
-    }
-
-    @Override
-    public void destroyBlockProgress(int breakerId, BlockPos pos, int progress)
-    {
-    }
-
-    @Override
-    public Scoreboard getScoreboard()
-    {
-        return world.getScoreboard();
-    }
-
-    @Override
-    public RecipeManager getRecipeManager()
-    {
-        return world.getRecipeManager();
-    }
-
-    @Override
-    public ITagCollectionSupplier getTagManager()
-    {
-        return world.getTagManager();
-    }
-
-    @Override
-    public Biome getUncachedNoiseBiome(int p_225604_1_, int p_225604_2_, int p_225604_3_)
-    {
-        return world.getUncachedNoiseBiome(p_225604_1_, p_225604_2_, p_225604_3_);
-    }
-
-    @Override
-    public DynamicRegistries registryAccess()
-    {
-        return world.registryAccess();
-    }
-
-    @Override
-    public float getShade(Direction p_230487_1_, boolean p_230487_2_)
-    {
-        return world.getShade(p_230487_1_, p_230487_2_);
-    }
-
-    @Override
-    public void blockEntityChanged(BlockPos p_175646_1_, TileEntity p_175646_2_)
-    {
-    }
-
-    @Override
-    public boolean isLoaded(BlockPos p_175667_1_)
-    {
-        return true;
-    }
-
-    @Override
-    public void updateNeighbourForOutputSignal(BlockPos p_175666_1_, Block p_175666_2_)
-    {
-
+        return index + this.getBottomSectionCoord();
     }
 }

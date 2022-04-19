@@ -19,4 +19,7 @@ public class KeystoneConfig
     public static int maxBrushSize = 512;
 
     public static float flySpeed = 0.1f;
+
+    public static boolean translucentGhostBlocks = false;
+    public static float translucentGhostBlocksAlpha = 0.5f;
 }

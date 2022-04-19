@@ -5,24 +5,21 @@ import keystone.api.KeystoneDirectories;
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.entities.Entity;
-import keystone.core.KeystoneConfig;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.utils.ProgressBar;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.Util;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -31,7 +28,7 @@ public class FilterModule implements IKeystoneModule
     private HistoryModule historyModule;
     private SelectionModule selectionModule;
     private FilterDirectoryManager filterDirectoryManager;
-    private ITextComponent[] abortFilter;
+    private Text[] abortFilter;
 
     @Override
     public boolean isEnabled() { return true; }
@@ -256,7 +253,7 @@ public class FilterModule implements IKeystoneModule
     {
         if (abortFilter != null)
         {
-            for (ITextComponent reasonPart : abortFilter) Minecraft.getInstance().player.sendMessage(reasonPart, Util.NIL_UUID);
+            for (Text reasonPart : abortFilter) MinecraftClient.getInstance().player.sendMessage(reasonPart, false);
             historyModule.abortHistoryEntry();
             ProgressBar.finish();
             return true;
@@ -270,8 +267,8 @@ public class FilterModule implements IKeystoneModule
      */
     public void abortFilter(String... reason)
     {
-        abortFilter = new ITextComponent[reason.length];
-        for (int i = 0; i < reason.length; i++) abortFilter[i] = new StringTextComponent(reason[i]).withStyle(TextFormatting.RED);
+        abortFilter = new Text[reason.length];
+        for (int i = 0; i < reason.length; i++) abortFilter[i] = new LiteralText(reason[i]).styled(style -> style.withColor(Formatting.RED));
     }
     public void filterException(KeystoneFilter filter, Throwable throwable)
     {

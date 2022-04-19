@@ -2,11 +2,10 @@ package keystone.core.modules.filter;
 
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.janino.Scanner;
@@ -17,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -121,8 +119,8 @@ public class FilterCompiler
 
     private static void sendErrorMessage(String message)
     {
-        PlayerEntity player = Minecraft.getInstance().player;
-        if (player != null) player.sendMessage(new StringTextComponent(message).withStyle(TextFormatting.RED), Util.NIL_UUID);
+        PlayerEntity player = MinecraftClient.getInstance().player;
+        if (player != null) player.sendMessage(new LiteralText(message).styled(style -> style.withColor(Formatting.RED)), false);
     }
     private static String createRandomClassName()
     {

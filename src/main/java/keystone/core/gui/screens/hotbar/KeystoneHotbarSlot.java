@@ -1,7 +1,7 @@
 package keystone.core.gui.screens.hotbar;
 
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.TranslatableText;
 
 public enum KeystoneHotbarSlot
 {
@@ -13,14 +13,14 @@ public enum KeystoneHotbarSlot
     IMPORT("keystone.hotbar.import"),
     SPAWN("keystone.hotbar.spawn");
 
-    private final IFormattableTextComponent title;
+    private final MutableText title;
 
     KeystoneHotbarSlot(String titleTranslationKey)
     {
-        this.title = new TranslationTextComponent(titleTranslationKey);
+        this.title = new TranslatableText(titleTranslationKey);
     }
 
-    public IFormattableTextComponent getTitle()
+    public MutableText getTitle()
     {
         return this.title;
     }

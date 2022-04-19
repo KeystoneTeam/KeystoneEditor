@@ -1,20 +1,20 @@
 package keystone.core.gui.widgets.buttons;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.Text;
 
-public class ButtonNoHotkey extends Button
+public class ButtonNoHotkey extends ButtonWidget
 {
     private IKeystoneTooltip tooltip;
 
-    public ButtonNoHotkey(int x, int y, int width, int height, ITextComponent title, IPressable pressedAction)
+    public ButtonNoHotkey(int x, int y, int width, int height, Text title, PressAction pressedAction)
     {
         super(x, y, width, height, title, pressedAction);
     }
-    public ButtonNoHotkey(int x, int y, int width, int height, ITextComponent title, IPressable pressedAction, IKeystoneTooltip tooltip)
+    public ButtonNoHotkey(int x, int y, int width, int height, Text title, PressAction pressedAction, IKeystoneTooltip tooltip)
     {
         super(x, y, width, height, title, pressedAction);
         this.tooltip = tooltip;
@@ -30,8 +30,9 @@ public class ButtonNoHotkey extends Button
     {
         return false;
     }
+
     @Override
-    public void renderToolTip(MatrixStack matrixStack, int mouseX, int mouseY)
+    public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY)
     {
         if (this.tooltip != null) KeystoneOverlayHandler.addTooltip(this.tooltip);
     }

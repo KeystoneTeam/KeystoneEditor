@@ -1,25 +1,23 @@
 package keystone.core.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.core.KeystoneGlobalState;
-import keystone.core.events.KeystoneInputEvent;
+import keystone.core.events.keystone.KeystoneInputEvents;
+import keystone.core.events.minecraft.InputEvents;
 import keystone.core.gui.screens.KeystoneOverlay;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.IGuiEventListener;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class KeystoneOverlayHandler
 {
     private static boolean worldFinishedLoading = false;
@@ -29,13 +27,13 @@ public class KeystoneOverlayHandler
     private static List<Screen> removeList = Collections.synchronizedList(new ArrayList<>());
 
     private static boolean rendering;
-
+    
     public static void addOverlay(Screen overlay)
     {
         if (!(overlay instanceof KeystoneOverlay)) Keystone.LOGGER.warn("Adding non-KeystoneOverlay screen to Keystone Overlay Handler! This is not recommended.");
 
-        Minecraft mc = Minecraft.getInstance();
-        overlay.init(mc, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight());
+        MinecraftClient mc = MinecraftClient.getInstance();
+        overlay.init(mc, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
         addList.add(overlay);
     }
     public static void removeOverlay(Screen overlay)
@@ -52,83 +50,70 @@ public class KeystoneOverlayHandler
         return rendering;
     }
 
-    @SubscribeEvent
-    public static void onPreRenderGui(final RenderGameOverlayEvent.Pre event)
+    public static void registerEvents()
     {
-        if (Keystone.isActive())
-        {
-            if (event.getType() == RenderGameOverlayEvent.ElementType.VIGNETTE)
-            {
-                if (!worldFinishedLoading)
-                {
-                    addList.forEach(add -> overlays.add(add));
-                    addList.clear();
-
-                    Minecraft mc = Minecraft.getInstance();
-                    resize(mc, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight());
-                    worldFinishedLoading = true;
-                }
-                event.setCanceled(true);
-            }
-        }
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(KeystoneOverlayHandler::onWorldUnload);
+        ClientTickEvents.START_CLIENT_TICK.register(client -> tick());
+        InputEvents.MOUSE_CLICKED.register(KeystoneOverlayHandler::mouseClicked);
+        InputEvents.MOUSE_SCROLLED.register(KeystoneOverlayHandler::mouseScrolled);
+        InputEvents.MOUSE_MOVED.register(KeystoneOverlayHandler::mouseMoved);
+        KeystoneInputEvents.MOUSE_DRAG.register(KeystoneOverlayHandler::mouseDragged);
     }
 
     //region Event Subscribers
-    @SubscribeEvent
-    public static void onWorldUnload(final WorldEvent.Unload event)
+    public static void onPreRenderGui()
+    {
+        if (!worldFinishedLoading)
+        {
+            addList.forEach(add -> overlays.add(add));
+            addList.clear();
+
+            MinecraftClient mc = MinecraftClient.getInstance();
+            resize(mc, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
+            worldFinishedLoading = true;
+        }
+    }
+    public static void onWorldUnload(ServerPlayerEntity player, ServerWorld origin, ServerWorld destination)
     {
         worldFinishedLoading = false;
     }
-    @SubscribeEvent
-    public static void tick(final TickEvent.ClientTickEvent event)
-    {
-        if (event.phase == TickEvent.Phase.START) tick();
-    }
-    @SubscribeEvent
-    public static void mouseClicked(final InputEvent.MouseInputEvent event)
+    public static void mouseClicked(int button, int action, int modifiers)
     {
         if (Keystone.isActive())
         {
-            Minecraft mc = Minecraft.getInstance();
-            double mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getWidth();
-            double mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getHeight();
+            MinecraftClient mc = MinecraftClient.getInstance();
+            double mouseX = mc.mouse.getX() * mc.getWindow().getScaledWidth() / mc.getWindow().getWidth();
+            double mouseY = mc.mouse.getY() * mc.getWindow().getScaledHeight() / mc.getWindow().getHeight();
 
-            if (event.getAction() == GLFW.GLFW_PRESS) mouseClicked(mouseX, mouseY, event.getButton());
-            if (event.getAction() == GLFW.GLFW_RELEASE) mouseReleased(mouseX, mouseY, event.getButton());
+            if (action == GLFW.GLFW_PRESS) mouseClicked(mouseX, mouseY, button);
+            if (action == GLFW.GLFW_RELEASE) mouseReleased(mouseX, mouseY, button);
         }
     }
-    @SubscribeEvent
-    public static void mouseScrolled(final InputEvent.MouseScrollEvent event)
+    public static void mouseScrolled(double offsetX, double offsetY)
     {
         if (Keystone.isActive())
         {
-            Minecraft mc = Minecraft.getInstance();
-            double mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getWidth();
-            double mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getHeight();
-            mouseScrolled(mouseX, mouseY, event.getScrollDelta());
+            MinecraftClient mc = MinecraftClient.getInstance();
+            double mouseX = mc.mouse.getX() * mc.getWindow().getScaledWidth() / mc.getWindow().getWidth();
+            double mouseY = mc.mouse.getY() * mc.getWindow().getScaledHeight() / mc.getWindow().getHeight();
+            mouseScrolled(mouseX, mouseY, offsetY);
         }
     }
-    @SubscribeEvent
-    public static void mouseDragged(final KeystoneInputEvent.MouseDragEvent event)
+    public static void mouseDragged(int button, double mouseX, double mouseY, double dragX, double dragY, boolean gui)
     {
-        if (Keystone.isActive()) mouseDragged(event.mouseX, event.mouseY, event.button, event.dragX, event.dragY);
-    }
-    @SubscribeEvent
-    public static void mouseMoved(final KeystoneInputEvent.MouseMoveEvent event)
-    {
-        if (Keystone.isActive()) mouseMoved(event.mouseX, event.mouseY);
+        if (Keystone.isActive()) mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
     //endregion
     //region Event Forwarding
     private static void tick()
     {
-        KeystoneGlobalState.BlockingKeys = Minecraft.getInstance().screen != null;
-        if (Minecraft.getInstance().screen != null) return;
+        KeystoneGlobalState.BlockingKeys = MinecraftClient.getInstance().currentScreen != null;
+        if (MinecraftClient.getInstance().currentScreen != null) return;
 
         overlays.forEach(screen ->
         {
             screen.tick();
-            for (IGuiEventListener listener : screen.children())
+            for (Element listener : screen.children())
             {
                 if (listener instanceof TextFieldWidget)
                 {
@@ -137,19 +122,19 @@ public class KeystoneOverlayHandler
             }
         });
     }
-    public static void resize(Minecraft minecraft, int width, int height)
+    public static void resize(MinecraftClient minecraft, int width, int height)
     {
-        if (Minecraft.getInstance().screen != null) return;
+        if (MinecraftClient.getInstance().currentScreen != null) return;
         addList.forEach(screen -> screen.resize(minecraft, width, height));
         overlays.forEach(screen -> screen.resize(minecraft, width, height));
     }
     public static void render(MatrixStack matrixStack, float partialTicks)
     {
-        Minecraft mc = Minecraft.getInstance();
-        int mouseX = (int)(mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getWidth());
-        int mouseY = (int)(mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getHeight());
+        MinecraftClient mc = MinecraftClient.getInstance();
+        int mouseX = (int)(mc.mouse.getX() * mc.getWindow().getScaledWidth() / mc.getWindow().getWidth());
+        int mouseY = (int)(mc.mouse.getY() * mc.getWindow().getScaledHeight() / mc.getWindow().getHeight());
 
-        KeystoneGlobalState.MouseOverGUI = mc.screen != null;
+        KeystoneGlobalState.MouseOverGUI = mc.currentScreen != null;
         if (Keystone.isActive())
         {
             rendering = true;
@@ -159,16 +144,16 @@ public class KeystoneOverlayHandler
             // Render overlays
             for (int i = 0; i < overlays.size(); i++)
             {
-                if (Minecraft.getInstance().screen != null && i > 0) continue;
+                if (MinecraftClient.getInstance().currentScreen != null && i > 0) continue;
 
-                matrixStack.pushPose();
+                matrixStack.push();
                 matrixStack.translate(0, 0, i * 200);
 
                 Screen screen = overlays.get(i);
                 screen.render(matrixStack, mouseX, mouseY, partialTicks);
                 if (!KeystoneGlobalState.MouseOverGUI && screen instanceof KeystoneOverlay) ((KeystoneOverlay) screen).checkMouseOverGui();
 
-                matrixStack.popPose();
+                matrixStack.pop();
             }
 
             // Render tooltips
@@ -187,7 +172,7 @@ public class KeystoneOverlayHandler
 
     public static boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {
-        if (Minecraft.getInstance().screen != null) return false;
+        if (MinecraftClient.getInstance().currentScreen != null) return false;
 
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
@@ -198,7 +183,7 @@ public class KeystoneOverlayHandler
     }
     public static boolean keyReleased(int keyCode, int scanCode, int modifiers)
     {
-        if (Minecraft.getInstance().screen != null) return false;
+        if (MinecraftClient.getInstance().currentScreen != null) return false;
 
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
@@ -209,7 +194,7 @@ public class KeystoneOverlayHandler
     }
     private static boolean mouseClicked(double mouseX, double mouseY, int button)
     {
-        if (Minecraft.getInstance().screen != null) return false;
+        if (MinecraftClient.getInstance().currentScreen != null) return false;
 
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
@@ -220,7 +205,7 @@ public class KeystoneOverlayHandler
     }
     private static boolean mouseReleased(double mouseX, double mouseY, int button)
     {
-        if (Minecraft.getInstance().screen != null) return false;
+        if (MinecraftClient.getInstance().currentScreen != null) return false;
 
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
@@ -231,7 +216,7 @@ public class KeystoneOverlayHandler
     }
     private static boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY)
     {
-        if (Minecraft.getInstance().screen != null) return false;
+        if (MinecraftClient.getInstance().currentScreen != null) return false;
 
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
@@ -242,7 +227,7 @@ public class KeystoneOverlayHandler
     }
     private static boolean mouseScrolled(double mouseX, double mouseY, double delta)
     {
-        if (Minecraft.getInstance().screen != null) return false;
+        if (MinecraftClient.getInstance().currentScreen != null) return false;
 
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
@@ -253,7 +238,7 @@ public class KeystoneOverlayHandler
     }
     public static boolean charTyped(char codePoint, int modifiers)
     {
-        if (Minecraft.getInstance().screen != null) return false;
+        if (MinecraftClient.getInstance().currentScreen != null) return false;
 
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
@@ -264,7 +249,7 @@ public class KeystoneOverlayHandler
     }
     private static void mouseMoved(double xPos, double mouseY)
     {
-        if (Minecraft.getInstance().screen != null) return;
+        if (MinecraftClient.getInstance().currentScreen != null) return;
 
         overlays.forEach(screen -> screen.mouseMoved(xPos, mouseY));
     }

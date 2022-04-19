@@ -6,8 +6,8 @@ import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 
 public class StackFillBrushOperation extends BrushOperation
 {
@@ -16,9 +16,9 @@ public class StackFillBrushOperation extends BrushOperation
     @Variable boolean gravity = true;
 
     @Override
-    public ITextComponent getName()
+    public Text getName()
     {
-        return new TranslationTextComponent("keystone.brush.stackFill");
+        return new TranslatableText("keystone.brush.stackFill");
     }
     @Override
     public boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration)

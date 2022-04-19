@@ -1,13 +1,13 @@
 package keystone.core.gui.screens.file_browser;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
@@ -22,7 +22,7 @@ public abstract class FileBrowserScreen extends Screen
     protected static final int MARGINS = 2;
     protected static final int PADDING = 5;
     protected static final int BUTTON_HEIGHT = 20;
-    protected static TranslationTextComponent CANCEL_LABEL = new TranslationTextComponent("keystone.cancel");
+    protected static TranslatableText CANCEL_LABEL = new TranslatableText("keystone.cancel");
 
     //region Data Types
     protected class FileStructure
@@ -61,7 +61,7 @@ public abstract class FileBrowserScreen extends Screen
     {
         protected int index;
 
-        public IndexedButton(int index, int width, ITextComponent label, Button.IPressable pressable)
+        public IndexedButton(int index, int width, Text label, ButtonWidget.PressAction pressable)
         {
             super(MARGINS, MARGINS + index * (BUTTON_HEIGHT + PADDING), width, BUTTON_HEIGHT, label, pressable);
             this.index = index;
@@ -88,15 +88,15 @@ public abstract class FileBrowserScreen extends Screen
     {
         public File file;
         public boolean selected;
-        public ITextComponent path;
+        public Text path;
 
         public FileButton(FileBrowserScreen screen, int index, int width, File file, FileStructure parent, boolean selected)
         {
-            super(index, width, new StringTextComponent(file.getName()), (button) -> screen.selectFile((FileButton) button));
+            super(index, width, new LiteralText(file.getName()), (button) -> screen.selectFile((FileButton) button));
 
             this.file = file;
             this.selected = selected;
-            this.path = new StringTextComponent(parent.path + "/" + file.getName());
+            this.path = new LiteralText(parent.path + "/" + file.getName());
         }
 
         @Override
@@ -112,13 +112,13 @@ public abstract class FileBrowserScreen extends Screen
 
         public DirectoryButton(FileBrowserScreen screen, int index, int width, FileStructure fileStructure, boolean parent)
         {
-            super(index, width, new StringTextComponent(parent ? "../" : fileStructure.getThisDirectory().getName() + "/"), (button) -> screen.moveToDirectory((DirectoryButton)button));
+            super(index, width, new LiteralText(parent ? "../" : fileStructure.getThisDirectory().getName() + "/"), (button) -> screen.moveToDirectory((DirectoryButton)button));
             this.fileStructure = fileStructure;
         }
     }
     //endregion
 
-    protected ITextComponent currentPath;
+    protected Text currentPath;
     protected FileStructure currentFileStructure;
     protected Consumer<File[]> callback;
 
@@ -132,7 +132,7 @@ public abstract class FileBrowserScreen extends Screen
     protected List<IndexedButton> allButtons;
     protected List<FileButton> selectedFiles;
 
-    protected FileBrowserScreen(ITextComponent prompt, Set<String> fileExtensions, File root, boolean recursive, Consumer<File[]> callback)
+    protected FileBrowserScreen(Text prompt, Set<String> fileExtensions, File root, boolean recursive, Consumer<File[]> callback)
     {
         super(prompt);
 
@@ -146,23 +146,23 @@ public abstract class FileBrowserScreen extends Screen
     protected boolean allowMultipleFiles() { return true; }
     protected int getBottomMargin() { return 100 + 20; }
     protected int getPanelHeightExtension() { return 20 + MARGINS; }
-    protected abstract ITextComponent getDoneButtonLabel();
-    protected ITextComponent getPromptLabel() { return title; }
+    protected abstract Text getDoneButtonLabel();
+    protected Text getPromptLabel() { return title; }
     protected void runCallback(File[] files) { callback.accept(files); }
 
     @Override
     protected void init()
     {
-        this.panelWidth = minecraft.getWindow().getGuiScaledWidth() / 2;
-        int idealPanelHeight = minecraft.getWindow().getGuiScaledHeight() - PADDING - getBottomMargin();
+        this.panelWidth = client.getWindow().getScaledWidth() / 2;
+        int idealPanelHeight = client.getWindow().getScaledHeight() - PADDING - getBottomMargin();
         this.maxFilesOnScreen = idealPanelHeight / (BUTTON_HEIGHT + PADDING);
         this.filePanelHeight = this.maxFilesOnScreen * (BUTTON_HEIGHT + PADDING) - PADDING + 2 * MARGINS;
         this.panelHeight = this.filePanelHeight + getPanelHeightExtension();
-        this.panelX = (minecraft.getWindow().getGuiScaledWidth() - this.panelWidth) / 2;
+        this.panelX = (client.getWindow().getScaledWidth() - this.panelWidth) / 2;
         this.panelY = 50;
         int buttonWidth = this.panelWidth - 2 * MARGINS;
 
-        this.currentPath = new StringTextComponent(this.currentFileStructure.path);
+        this.currentPath = new LiteralText(this.currentFileStructure.path);
 
         this.allButtons.clear();
         int i = 0;
@@ -171,22 +171,24 @@ public abstract class FileBrowserScreen extends Screen
         for (File file : currentFileStructure.files) allButtons.add(new FileButton(this, i++, buttonWidth, file, currentFileStructure, selectedFiles.contains(file)));
 
         int panelCenterX = panelX + (panelWidth / 2);
-        Button cancel = new ButtonNoHotkey(this.panelX, this.panelY + this.panelHeight - 20, panelCenterX - panelX - PADDING / 2, 20, CANCEL_LABEL, (button) ->
+        ButtonWidget cancel = new ButtonNoHotkey(this.panelX, this.panelY + this.panelHeight - 20, panelCenterX - panelX - PADDING / 2, 20, CANCEL_LABEL, (button) ->
         {
             this.callback.accept(new File[0]);
-            onClose();
+            // TODO: Check if this needs to be changed from removed() to close()
+            removed();
         });
-        Button open = new ButtonNoHotkey(this.panelX + cancel.getWidth() + PADDING, this.panelY + this.panelHeight - 20, panelCenterX - panelX - PADDING / 2, 20, getDoneButtonLabel(), (button) ->
+        ButtonWidget open = new ButtonNoHotkey(this.panelX + cancel.getWidth() + PADDING, this.panelY + this.panelHeight - 20, panelCenterX - panelX - PADDING / 2, 20, getDoneButtonLabel(), (button) ->
         {
             File[] files = new File[selectedFiles.size()];
             for (int j = 0; j < files.length; j++) files[j] = selectedFiles.get(j).file;
             runCallback(files);
-            onClose();
+            // TODO: Check if this needs to be changed from removed() to close()
+            removed();
         });
 
-        for (IndexedButton button : allButtons) addButton(button);
-        addButton(cancel);
-        addButton(open);
+        for (IndexedButton button : allButtons) addDrawableChild(button);
+        addDrawableChild(cancel);
+        addDrawableChild(open);
 
         updateScroll();
     }
@@ -194,7 +196,7 @@ public abstract class FileBrowserScreen extends Screen
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
-        drawCenteredString(stack, font, getPromptLabel(), panelX + panelWidth / 2, panelY - 14, 0xFFFFFFFF);
+        drawCenteredText(stack, textRenderer, getPromptLabel(), panelX + panelWidth / 2, panelY - 14, 0xFFFFFFFF);
 
         fill(stack, panelX, panelY, panelX + panelWidth, panelY + filePanelHeight, 0x80000000);
         if (maxFilesOnScreen < allButtons.size())
@@ -225,13 +227,13 @@ public abstract class FileBrowserScreen extends Screen
         fileButton.selected = !fileButton.selected;
         if (fileButton.selected)
         {
-            fileButton.setTextColor(0xFF00FF00);
+            fileButton.setFormatting(0xFF00FF00);
             if (!allowMultipleFiles())
             {
                 for (FileButton selected : selectedFiles)
                 {
                     selected.selected = false;
-                    selected.setTextColor(0xFFFFFF00);
+                    selected.setFormatting(0xFFFFFF00);
                 }
                 selectedFiles.clear();
             }
@@ -239,7 +241,7 @@ public abstract class FileBrowserScreen extends Screen
         }
         else
         {
-            fileButton.setTextColor(0xFFFFFF00);
+            fileButton.setFormatting(0xFFFFFF00);
             this.selectedFiles.remove(fileButton);
         }
     }
@@ -247,11 +249,11 @@ public abstract class FileBrowserScreen extends Screen
     {
         this.scroll = 0;
         this.currentFileStructure = directory.fileStructure;
-        init(minecraft, width, height);
+        init(client, width, height);
     }
     protected void updateScroll()
     {
-        if (maxFilesOnScreen < buttons.size())
+        if (maxFilesOnScreen < children().size())
         {
             int maxScrollSteps = allButtons.size() - maxFilesOnScreen;
             scroll = Math.min(maxScrollSteps, Math.max(0, scroll));

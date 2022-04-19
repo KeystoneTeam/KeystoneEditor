@@ -5,15 +5,15 @@ import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.registries.BlockTypeRegistry;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 
 public class GravityBrushOperation extends BrushOperation
 {
     @Override
-    public ITextComponent getName()
+    public Text getName()
     {
-        return new TranslationTextComponent("keystone.brush.gravity");
+        return new TranslatableText("keystone.brush.gravity");
     }
     @Override
     public boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration)

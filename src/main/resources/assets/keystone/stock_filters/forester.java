@@ -1,6 +1,4 @@
-import keystone.api.DiscSampler;
 import keystone.api.WorldRegion;
-import keystone.api.filters.KeystoneFilter;
 import keystone.api.filters.StructureFilter;
 import keystone.api.variables.FloatRange;
 import keystone.api.variables.IntRange;
@@ -11,7 +9,8 @@ import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.Axis;
 import keystone.api.wrappers.coordinates.Vector2f;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Forester extends StructureFilter
 {

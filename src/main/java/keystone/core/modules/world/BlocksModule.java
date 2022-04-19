@@ -5,13 +5,13 @@ import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.nbt.NBTCompound;
+import keystone.core.client.Player;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.WorldHistoryChunk;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
-import keystone.core.renderer.client.Player;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -34,12 +34,12 @@ public class BlocksModule implements IKeystoneModule
     @Override
     public boolean isEnabled()
     {
-        return worldCacheModule.getDimensionWorld(Player.getDimensionId()) != null;
+        return worldCacheModule.getDimensionWorld(Player.getDimension()) != null;
     }
 
     public World getWorld()
     {
-        return worldCacheModule.getDimensionWorld(Player.getDimensionId());
+        return worldCacheModule.getDimensionWorld(Player.getDimension());
     }
 
     /**
@@ -64,7 +64,7 @@ public class BlocksModule implements IKeystoneModule
     {
         if (!historyModule.isEntryOpen())
         {
-            World world = worldCacheModule.getDimensionWorld(Player.getDimensionId());
+            World world = worldCacheModule.getDimensionWorld(Player.getDimension());
             BlockPos pos = new BlockPos(x, y, z);
             return BlockTypeRegistry.fromMinecraftBlock(world.getBlockState(pos));
         }
@@ -76,25 +76,25 @@ public class BlocksModule implements IKeystoneModule
     {
         if (!historyModule.isEntryOpen())
         {
-            World world = worldCacheModule.getDimensionWorld(Player.getDimensionId());
+            World world = worldCacheModule.getDimensionWorld(Player.getDimension());
             BlockPos pos = new BlockPos(x, y, z);
-            TileEntity tileEntity = world.getBlockEntity(pos);
+            BlockEntity tileEntity = world.getBlockEntity(pos);
             if (tileEntity == null) return null;
-            else return new NBTCompound(tileEntity.serializeNBT());
+            else return new NBTCompound(tileEntity.createNbtWithIdentifyingData());
         }
 
         WorldHistoryChunk chunk = historyModule.getOpenEntry().getOrAddChunk(x, y, z);
-        return chunk.getTileEntity(x, y, z, retrievalMode);
+        return chunk.getBlockEntity(x, y, z, retrievalMode);
     }
     public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
     {
         if (!historyModule.isEntryOpen())
         {
-            World world = worldCacheModule.getDimensionWorld(Player.getDimensionId());
+            World world = worldCacheModule.getDimensionWorld(Player.getDimension());
             BlockPos pos = new BlockPos(x, y, z);
-            TileEntity tileEntity = world.getBlockEntity(pos);
+            BlockEntity tileEntity = world.getBlockEntity(pos);
             if (tileEntity == null) return new Block(BlockTypeRegistry.fromMinecraftBlock(world.getBlockState(pos)));
-            else return new Block(BlockTypeRegistry.fromMinecraftBlock(world.getBlockState(pos)), new NBTCompound(tileEntity.serializeNBT()));
+            else return new Block(BlockTypeRegistry.fromMinecraftBlock(world.getBlockState(pos)), new NBTCompound(tileEntity.createNbtWithIdentifyingData()));
         }
 
         WorldHistoryChunk chunk = historyModule.getOpenEntry().getOrAddChunk(x, y, z);

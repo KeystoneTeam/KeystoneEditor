@@ -1,13 +1,13 @@
 package keystone.core.gui.widgets.inputs;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.utils.AnnotationUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,29 +16,29 @@ import java.util.function.Consumer;
 
 public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
 {
-    private final Minecraft mc;
-    private final FontRenderer font;
+    private final MinecraftClient mc;
+    private final TextRenderer font;
     private final Runnable restoreWidgets;
-    private final BiConsumer<Widget, Boolean> addDropdown;
-    private final ITextComponent name;
+    private final BiConsumer<ClickableWidget, Boolean> addDropdown;
+    private final Text name;
 
     private boolean built;
     private T value;
     private Dropdown<T> dropdown;
 
-    public EnumWidget(ITextComponent name, int x, int y, int width, T value, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets, BiConsumer<Widget, Boolean> addDropdown)
+    public EnumWidget(Text name, int x, int y, int width, T value, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BiConsumer<ClickableWidget, Boolean> addDropdown)
     {
         super(x, y, width, getFinalHeight(), name, (button) ->
         {
             EnumWidget enumWidget = (EnumWidget)button;
 
-            disableWidgets.accept(new Widget[] { enumWidget.dropdown });
+            disableWidgets.accept(new ClickableWidget[] { enumWidget.dropdown });
             enumWidget.dropdown.y = enumWidget.y + getEnumOffset() + 20;
             enumWidget.dropdown.visible = true;
         });
 
-        this.mc = Minecraft.getInstance();
-        this.font = mc.font;
+        this.mc = MinecraftClient.getInstance();
+        this.font = mc.textRenderer;
         this.value = value;
         this.restoreWidgets = restoreWidgets;
         this.addDropdown = addDropdown;
@@ -63,7 +63,7 @@ public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
             for (Enum test : enumClass.getEnumConstants()) if (isValueAllowed((T)test)) valuesList.add((T)test);
 
             this.dropdown = null;
-            this.dropdown = new Dropdown<>(x, y + getEnumOffset() + 20, width, getMessage(), entry -> new StringTextComponent(AnnotationUtils.getEnumValueName(entry)), (entry, title) ->
+            this.dropdown = new Dropdown<>(x, y + getEnumOffset() + 20, width, getMessage(), entry -> new LiteralText(AnnotationUtils.getEnumValueName(entry)), (entry, title) ->
             {
                 setMessage(title);
                 onSetValue(entry);
@@ -90,14 +90,14 @@ public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        drawCenteredString(matrixStack, font, name, x + width / 2, y, 0xFFFFFF);
-        matrixStack.pushPose();
+        drawCenteredText(matrixStack, font, name, x + width / 2, y, 0xFFFFFF);
+        matrixStack.push();
         y += getEnumOffset();
         height -= getEnumOffset();
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
         height += getEnumOffset();
         y -= getEnumOffset();
-        matrixStack.popPose();
+        matrixStack.pop();
     }
 
     public T getValue() { return value; }

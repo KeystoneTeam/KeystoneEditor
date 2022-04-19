@@ -6,9 +6,10 @@ import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.FlowingFluidBlock;
-import net.minecraft.command.arguments.BlockStateParser;
-import net.minecraft.state.Property;
+import net.minecraft.block.FluidBlock;
+import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.state.property.Property;
+import net.minecraft.util.registry.Registry;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -33,11 +34,11 @@ public class BlockType
             }
         }
 
-        private <T extends Comparable<T>> String getName(Property<T> property, Comparable<?> comparable) { return property.getName((T)comparable); }
+        private <T extends Comparable<T>> String getName(Property<T> property, Comparable<?> comparable) { return property.name((T)comparable); }
     };
     protected static final BiPredicate<BlockState, Map.Entry<Property<?>, Comparable<?>>> PROPERTY_VALUE_DIFFERENT_PREDICATE = (defaultState, entry) ->
     {
-        Comparable<?> defaultValue = defaultState.getValue(entry.getKey());
+        Comparable<?> defaultValue = defaultState.get(entry.getKey());
         return entry.getValue().equals(defaultValue);
     };
 
@@ -72,7 +73,7 @@ public class BlockType
     /**
      * @return The ID of the base block. [e.g. "minecraft:stone_slab"]
      */
-    public String block() { return state.getBlock().getRegistryName().toString(); }
+    public String block() { return Registry.BLOCK.getId(state.getBlock()).toString(); }
     /**
      * @return This block's property set. [e.g. "type=top,waterlogged=true"]
      */
@@ -112,7 +113,7 @@ public class BlockType
     {
         try
         {
-            String blockStr = BlockStateParser.serialize(this.state);
+            String blockStr = BlockArgumentParser.stringifyBlockState(this.state);
             String[] tokens = properties.split(",");
 
             for (String token : tokens)
@@ -133,8 +134,8 @@ public class BlockType
                 else blockStr = blockStr + "[" + token + "]";
             }
 
-            BlockStateParser parser = new BlockStateParser(new StringReader(blockStr), false).parse(false);
-            return BlockTypeRegistry.fromMinecraftBlock(parser.getState());
+            BlockArgumentParser parser = new BlockArgumentParser(new StringReader(blockStr), false).parse(false);
+            return BlockTypeRegistry.fromMinecraftBlock(parser.getBlockState());
         }
         catch (ArrayIndexOutOfBoundsException e)
         {
@@ -157,7 +158,7 @@ public class BlockType
     {
         try
         {
-            String blockStr = BlockStateParser.serialize(this.state);
+            String blockStr = BlockArgumentParser.stringifyBlockState(this.state);
             if (blockStr.contains(property)) blockStr = blockStr.replaceFirst("(" + property + ")=([^,\\]]*)", "$1=" + value);
             else if (blockStr.contains("["))
             {
@@ -171,8 +172,8 @@ public class BlockType
             }
             else blockStr = blockStr + "[" + property + "=" + value + "]";
 
-            BlockStateParser parser = new BlockStateParser(new StringReader(blockStr), false).parse(false);
-            return BlockTypeRegistry.fromMinecraftBlock(parser.getState());
+            BlockArgumentParser parser = new BlockArgumentParser(new StringReader(blockStr), false).parse(false);
+            return BlockTypeRegistry.fromMinecraftBlock(parser.getBlockState());
         }
         catch (CommandSyntaxException e)
         {
@@ -189,7 +190,7 @@ public class BlockType
     /**
      * @return Whether this block is a liquid
      */
-    public boolean isLiquid() { return this.state.getBlock() instanceof FlowingFluidBlock; }
+    public boolean isLiquid() { return this.state.getBlock() instanceof FluidBlock; }
 
     /**
      * @return Whether this block is an air block or a liquid
@@ -229,27 +230,27 @@ public class BlockType
     private void buildStrings()
     {
         // Full String
-        StringBuilder stringbuilder = new StringBuilder(this.state.getBlock().getRegistryName().toString());
-        if (!this.state.getValues().isEmpty())
+        StringBuilder stringbuilder = new StringBuilder(Registry.BLOCK.getId(this.state.getBlock()).toString());
+        if (!this.state.getEntries().isEmpty())
         {
             stringbuilder.append('[');
-            stringbuilder.append(this.state.getValues().entrySet().stream().map(PROPERTY_ENTRY_TO_STRING_FUNCTION).collect(Collectors.joining(",")));
+            stringbuilder.append(this.state.getEntries().entrySet().stream().map(PROPERTY_ENTRY_TO_STRING_FUNCTION).collect(Collectors.joining(",")));
             stringbuilder.append(']');
         }
         this.string = stringbuilder.toString();
         
         // Block ID
-        this.block = this.state.getBlock().getRegistryName().toString();
+        this.block = Registry.BLOCK.getId(this.state.getBlock()).toString();
         
         // Modified Properties
-        BlockState defaultState = this.state.getBlock().defaultBlockState();
-        this.properties = this.state.getValues().entrySet().stream()
+        BlockState defaultState = this.state.getBlock().getDefaultState();
+        this.properties = this.state.getEntries().entrySet().stream()
                 .filter(entry -> PROPERTY_VALUE_DIFFERENT_PREDICATE.test(defaultState, entry))
                 .map(PROPERTY_ENTRY_TO_STRING_FUNCTION)
                 .collect(Collectors.joining(","));
         
         // All Properties
-        this.allProperties = this.state.getValues().entrySet().stream().map(PROPERTY_ENTRY_TO_STRING_FUNCTION).collect(Collectors.joining(","));
+        this.allProperties = this.state.getEntries().entrySet().stream().map(PROPERTY_ENTRY_TO_STRING_FUNCTION).collect(Collectors.joining(","));
     }
     //endregion
 }

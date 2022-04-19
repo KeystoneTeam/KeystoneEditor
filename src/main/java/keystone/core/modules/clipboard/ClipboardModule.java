@@ -2,19 +2,17 @@ package keystone.core.modules.clipboard;
 
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
+import keystone.core.client.Player;
+import keystone.core.events.minecraft.InputEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.schematic_import.ImportModule;
+import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.world.WorldModifierModules;
-import keystone.core.renderer.client.Player;
-import keystone.core.renderer.client.providers.IBoundingBoxProvider;
-import keystone.core.renderer.common.models.Coords;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.block.Blocks;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraft.util.math.Vec3i;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -30,37 +28,32 @@ public class ClipboardModule implements IKeystoneModule
     public ClipboardModule()
     {
         this.clipboard = new ArrayList<>();
-        MinecraftForge.EVENT_BUS.addListener(this::onKeyPressed);
+        InputEvents.KEY_PRESSED.register(this::onKeyPressed);
     }
 
     //region Module Implementation
-    @Override
-    public void postInit()
-    {
-        this.worldModifiers = new WorldModifierModules();
-        this.importModule = Keystone.getModule(ImportModule.class);
-    }
     @Override
     public boolean isEnabled()
     {
         return true;
     }
     @Override
-    public IBoundingBoxProvider[] getBoundingBoxProviders()
+    public void postInit()
     {
-        return new IBoundingBoxProvider[0];
+        this.worldModifiers = new WorldModifierModules();
+        this.importModule = Keystone.getModule(ImportModule.class);
     }
     //endregion
     //region Event Handlers
-    private void onKeyPressed(final InputEvent.KeyInputEvent event)
+    private void onKeyPressed(int key, int action, int scancode, int modifiers)
     {
-        if (event.getAction() == GLFW.GLFW_PRESS)
+        if (action == GLFW.GLFW_PRESS)
         {
-            if (event.getModifiers() == GLFW.GLFW_MOD_CONTROL)
+            if (modifiers == GLFW.GLFW_MOD_CONTROL)
             {
-                if (event.getKey() == GLFW.GLFW_KEY_X) cut();
-                else if (event.getKey() == GLFW.GLFW_KEY_C) copy();
-                else if (event.getKey() == GLFW.GLFW_KEY_V) paste();
+                if (key == GLFW.GLFW_KEY_X) cut();
+                else if (key == GLFW.GLFW_KEY_C) copy();
+                else if (key == GLFW.GLFW_KEY_V) paste();
             }
         }
     }
@@ -93,7 +86,7 @@ public class ClipboardModule implements IKeystoneModule
             HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
             historyModule.tryBeginHistoryEntry();
             copy();
-            Keystone.runInternalFilter(new FillTool(Blocks.AIR.defaultBlockState()));
+            Keystone.runInternalFilter(new FillTool(Blocks.AIR.getDefaultState()));
             historyModule.tryEndHistoryEntry();
         });
     }
@@ -114,7 +107,7 @@ public class ClipboardModule implements IKeystoneModule
         {
             for (KeystoneSchematic schematic : clipboard)
             {
-                Coords minPosition = Player.getHighlightedBlock();
+                Vec3i minPosition = Player.getHighlightedBlock();
                 this.importModule.importSchematic(schematic, minPosition);
             }
         }

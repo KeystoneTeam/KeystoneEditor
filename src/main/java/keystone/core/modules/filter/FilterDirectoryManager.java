@@ -4,10 +4,10 @@ import keystone.api.KeystoneDirectories;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.utils.StringUtils;
 import keystone.core.gui.screens.filters.FilterSelectionScreen;
-import net.minecraft.client.Minecraft;
-import net.minecraft.resources.IResource;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.resource.Resource;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.util.Identifier;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -115,12 +115,12 @@ public class FilterDirectoryManager
 
         try
         {
-            IResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
-            Collection<ResourceLocation> filterResources = resourceManager.listResources("stock_filters", path -> path.endsWith(".java") || path.endsWith(".filter"));
+            ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
+            Collection<Identifier> filterResources = resourceManager.findResources("stock_filters", path -> path.endsWith(".java") || path.endsWith(".filter"));
 
-            for (ResourceLocation filterResourceLocation : filterResources)
+            for (Identifier filterIdentifier : filterResources)
             {
-                Matcher matcher = Pattern.compile("[0-9a-z_\\.]+$").matcher(filterResourceLocation.getPath());
+                Matcher matcher = Pattern.compile("[0-9a-z_\\.]+$").matcher(filterIdentifier.getPath());
                 matcher.find();
                 String fileName = matcher.group();
                 fileName = StringUtils.titleCase(fileName.replace('_', ' '));
@@ -128,7 +128,7 @@ public class FilterDirectoryManager
                 File cacheFile = stockFilterCache.toPath().resolve(fileName).toFile();
                 if (!cacheFile.exists()) cacheFile.createNewFile();
 
-                try (IResource filterResource = resourceManager.getResource(filterResourceLocation);
+                try (Resource filterResource = resourceManager.getResource(filterIdentifier);
                      InputStream filterStream = filterResource.getInputStream();
                      FileOutputStream fileOutputStream = new FileOutputStream(cacheFile))
                 {

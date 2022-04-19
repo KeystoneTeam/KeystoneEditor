@@ -12,7 +12,7 @@ import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.modules.world_cache.WorldCacheModule;
-import keystone.core.renderer.common.models.Coords;
+import net.minecraft.util.math.Vec3i;
 
 public class WorldRegion
 {
@@ -37,14 +37,18 @@ public class WorldRegion
     public final Vector3i size;
     public final BoundingBox bounds;
 
-    public WorldRegion(Coords min, Coords max)
+    public WorldRegion(Vec3i min, Vec3i max)
+    {
+        this(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()));
+    }
+    public WorldRegion(BlockPos min, BlockPos max)
     {
         this.worldCache = Keystone.getModule(WorldCacheModule.class);
         this.worldModifiers = new WorldModifierModules();
 
-        this.min = new BlockPos(min.getX(), min.getY(), min.getZ());
-        this.max = new BlockPos(max.getX(), max.getY(), max.getZ());
-        this.size = new Vector3i(max.getX() - min.getX() + 1, max.getY() - min.getY() + 1, max.getZ() - min.getZ() + 1);
+        this.min = new BlockPos(min.x, min.y, min.z);
+        this.max = new BlockPos(max.x, max.y, max.z);
+        this.size = new Vector3i(max.x - min.x + 1, max.y - min.y + 1, max.z - min.z + 1);
         this.bounds = new BoundingBox(this.min, this.max);
     }
 

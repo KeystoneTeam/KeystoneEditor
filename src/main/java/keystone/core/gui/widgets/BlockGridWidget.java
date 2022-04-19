@@ -1,22 +1,23 @@
 package keystone.core.gui.widgets;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.utils.StringUtils;
 import keystone.core.KeystoneMod;
 import keystone.core.gui.screens.block_selection.AbstractBlockButton;
 import keystone.core.gui.screens.block_selection.BlockGridButton;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.MainWindow;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.item.Item;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.sound.SoundManager;
+import net.minecraft.client.util.Window;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.registry.Registry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class BlockGridWidget extends Widget
+public class BlockGridWidget extends ClickableWidget
 {
     public static final AbstractBlockButton.IBlockTooltipBuilder NAME_TOOLTIP = (block, count, tooltip) -> tooltip.add(block.getBlock().getName());
     public static final AbstractBlockButton.IBlockTooltipBuilder NAME_AND_PROPERTIES_TOOLTIP = (block, count, tooltip) ->
@@ -36,18 +37,18 @@ public class BlockGridWidget extends Widget
             if (property instanceof BooleanProperty)
             {
                 BooleanProperty booleanProperty = (BooleanProperty)property;
-                if (block.getValue(booleanProperty)) tooltip.add(new StringTextComponent(StringUtils.snakeCaseToTitleCase(property.getName())).withStyle(TextFormatting.GRAY));
+                if (block.get(booleanProperty)) tooltip.addAll(new LiteralText(StringUtils.snakeCaseToTitleCase(property.getName())).getWithStyle(Style.EMPTY.withColor(Formatting.GRAY)));
             }
-            else tooltip.add(new StringTextComponent(StringUtils.snakeCaseToTitleCase(property.getName()) + ": " + StringUtils.snakeCaseToTitleCase(block.getValue(property).toString())).withStyle(TextFormatting.GRAY));
+            else tooltip.addAll(new LiteralText(StringUtils.snakeCaseToTitleCase(property.getName()) + ": " + StringUtils.snakeCaseToTitleCase(block.get(property).toString())).getWithStyle(Style.EMPTY.withColor(Formatting.GRAY)));
         });
     };
 
     private final boolean allowMultiples;
     private final Consumer<BlockState> callback;
-    private final IForgeRegistry<Item> itemRegistry;
-    private final Consumer<Widget[]> disableWidgets;
+    private final Consumer<ClickableWidget[]> disableWidgets;
     private final Runnable restoreWidgets;
     private final AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder;
+    private final Screen screen;
 
     private int blockCount;
 
@@ -62,15 +63,15 @@ public class BlockGridWidget extends Widget
     private Predicate<BlockState> filter;
 
     //region Creation
-    private BlockGridWidget(int x, int y, int width, int height, boolean allowMultiples, ITextComponent title, Consumer<BlockState> callback, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
+    private BlockGridWidget(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, Consumer<BlockState> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
     {
         super(x, y, width, height, title);
         this.allowMultiples = allowMultiples;
         this.callback = callback;
-        this.itemRegistry = GameRegistry.findRegistry(Item.class);
         this.disableWidgets = disableWidgets;
         this.restoreWidgets = restoreWidgets;
         this.tooltipBuilder = tooltipBuilder;
+        this.screen = screen;
 
         buttonsPerRow = (width - BlockGridButton.SIZE) / BlockGridButton.SIZE;
         buttonsPerColumn = (height - BlockGridButton.SIZE) / BlockGridButton.SIZE;
@@ -81,25 +82,25 @@ public class BlockGridWidget extends Widget
         blockCounts = new HashMap<>();
         buttons = new ArrayList<>();
     }
-    public static BlockGridWidget createWithMargins(int idealLeftMargin, int idealRightMargin, int idealTopMargin, int idealBottomMargin, boolean allowMultiples, ITextComponent title, Consumer<BlockState> callback, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
+    public static BlockGridWidget createWithMargins(Screen screen, int idealLeftMargin, int idealRightMargin, int idealTopMargin, int idealBottomMargin, boolean allowMultiples, Text title, Consumer<BlockState> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
     {
-        MainWindow window = Minecraft.getInstance().getWindow();
+        Window window = MinecraftClient.getInstance().getWindow();
 
-        int panelWidth = window.getGuiScaledWidth() - idealLeftMargin - idealRightMargin;
+        int panelWidth = window.getScaledWidth() - idealLeftMargin - idealRightMargin;
         panelWidth -= panelWidth % BlockGridButton.SIZE;
-        int panelHeight = window.getGuiScaledHeight() - idealTopMargin - idealBottomMargin;
+        int panelHeight = window.getScaledHeight() - idealTopMargin - idealBottomMargin;
         panelHeight -= panelHeight % BlockGridButton.SIZE;
 
-        int panelOffsetX = (int)Math.floor((window.getGuiScaledWidth() - panelWidth) * (idealLeftMargin / (float)(idealLeftMargin + idealRightMargin)));
-        int panelOffsetY = (int)Math.floor((window.getGuiScaledHeight() - panelHeight) * (idealTopMargin / (float)(idealTopMargin + idealBottomMargin)));
+        int panelOffsetX = (int)Math.floor((window.getScaledWidth() - panelWidth) * (idealLeftMargin / (float)(idealLeftMargin + idealRightMargin)));
+        int panelOffsetY = (int)Math.floor((window.getScaledHeight() - panelHeight) * (idealTopMargin / (float)(idealTopMargin + idealBottomMargin)));
 
-        return new BlockGridWidget(panelOffsetX, panelOffsetY, panelWidth, panelHeight, allowMultiples, title, callback, disableWidgets, restoreWidgets, tooltipBuilder);
+        return new BlockGridWidget(screen, panelOffsetX, panelOffsetY, panelWidth, panelHeight, allowMultiples, title, callback, disableWidgets, restoreWidgets, tooltipBuilder);
     }
-    public static BlockGridWidget create(int x, int y, int width, int height, boolean allowMultiples, ITextComponent title, Consumer<BlockState> callback, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
+    public static BlockGridWidget create(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, Consumer<BlockState> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
     {
         width -= width % BlockGridButton.SIZE;
         height -= height % BlockGridButton.SIZE;
-        return new BlockGridWidget(x, y, width, height, allowMultiples, title, callback, disableWidgets, restoreWidgets, tooltipBuilder);
+        return new BlockGridWidget(screen, x, y, width, height, allowMultiples, title, callback, disableWidgets, restoreWidgets, tooltipBuilder);
     }
     //endregion
 
@@ -127,7 +128,7 @@ public class BlockGridWidget extends Widget
 
         // Draw button panel
         fill(stack, x, y, x + width, y + height, 0x80000000);
-        for (Widget button : this.buttons) button.render(stack, mouseX, mouseY, partialTicks);
+        for (ClickableWidget button : this.buttons) button.render(stack, mouseX, mouseY, partialTicks);
     }
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button)
@@ -158,7 +159,12 @@ public class BlockGridWidget extends Widget
         else return false;
     }
     @Override
-    public void playDownSound(SoundHandler handler) {}
+    public void playDownSound(SoundManager manager) {}
+    @Override
+    public void appendNarrations(NarrationMessageBuilder builder)
+    {
+
+    }
     //endregion
     //region Editing
     public void addBlock(BlockState block) { addBlock(block, true); }
@@ -210,7 +216,7 @@ public class BlockGridWidget extends Widget
     }
     //endregion
     //region Helpers
-    public void disableWidgets(Widget... widgets)
+    public void disableWidgets(ClickableWidget... widgets)
     {
         disableWidgets.accept(widgets);
     }
@@ -232,11 +238,11 @@ public class BlockGridWidget extends Widget
             Integer count = blockCounts.get(block);
 
             // Check if block isn't from Keystone and matches filter
-            if (block.getBlock().getRegistryName().getNamespace().equals(KeystoneMod.MODID)) continue;
+            if (Registry.BLOCK.getId(block.getBlock()).getNamespace().equals(KeystoneMod.MODID)) continue;
             if (filter != null && !filter.test(block)) continue;
 
             // Create button instance
-            BlockGridButton button = BlockGridButton.create(this, block, count, x, y, tooltipBuilder);
+            BlockGridButton button = BlockGridButton.create(screen, this, block, count, x, y, tooltipBuilder);
             if (button == null) continue;
             else blockCount++;
 
@@ -274,10 +280,6 @@ public class BlockGridWidget extends Widget
     public int getButtonsInPanel()
     {
         return buttonsInPanel;
-    }
-    public IForgeRegistry<Item> getItemRegistry()
-    {
-        return itemRegistry;
     }
     //endregion
 }

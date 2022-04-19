@@ -1,23 +1,18 @@
 package keystone.core.modules.ghost_blocks;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
+import keystone.core.client.Player;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.blocks.buffer.SuperRenderTypeBuffer;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
-import keystone.core.renderer.client.Camera;
-import keystone.core.renderer.client.Player;
-import keystone.core.renderer.client.renderers.RenderQueue;
 import keystone.core.schematic.KeystoneSchematic;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,7 +25,7 @@ public class GhostBlocksModule implements IKeystoneModule
 
     public GhostBlocksModule()
     {
-        MinecraftForge.EVENT_BUS.register(this);
+        ClientTickEvents.START_CLIENT_TICK.register(this::onTick);
     }
 
     @Override
@@ -48,34 +43,28 @@ public class GhostBlocksModule implements IKeystoneModule
     {
         ghostWorlds.clear();
     }
+    @Override
+    public void render(WorldRenderContext context)
+    {
+        //Vec3d cameraPos = Camera.getPosition();
+        //MatrixStack stack = event.getMatrixStack();
+        //stack.push();
+        //stack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+        SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();
+        ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().render(context.matrixStack(), buffer, context.tickDelta()));
+        buffer.draw();
+        RenderSystem.enableCull();
+        //stack.pop();
+    }
 
-    @SubscribeEvent
-    public void onTick(final TickEvent.ClientTickEvent event)
+    private void onTick(MinecraftClient client)
     {
         ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().tick());
     }
-    @SubscribeEvent
-    public void onRenderWorld(final RenderWorldLastEvent event)
+
+    public GhostBlocksWorld createWorld(BlockRotation rotation, BlockMirror mirror)
     {
-        RenderQueue.render(() ->
-        {
-            Vector3d cameraPos = Camera.getPosition();
-            MatrixStack stack = event.getMatrixStack();
-            stack.pushPose();
-            stack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-            SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();
-
-            ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().render(stack, buffer, event.getPartialTicks()));
-
-            buffer.endBatch();
-            RenderSystem.enableCull();
-            stack.popPose();
-        });
-    }
-
-    public GhostBlocksWorld createWorld(Rotation rotation, Mirror mirror)
-    {
-        GhostBlocksWorld world = new GhostBlocksWorld(worldCache.getDimensionWorld(Player.getDimensionId()), rotation, mirror);
+        GhostBlocksWorld world = new GhostBlocksWorld(worldCache.getDimensionWorld(Player.getDimension()), rotation, mirror);
         ghostWorlds.add(world);
         return world;
     }
@@ -83,7 +72,7 @@ public class GhostBlocksModule implements IKeystoneModule
     {
         if (!ghostWorlds.contains(ghostBlocks)) ghostWorlds.add(ghostBlocks);
     }
-    public GhostBlocksWorld createWorldFromSchematic(KeystoneSchematic schematic, Rotation rotation, Mirror mirror, int scale)
+    public GhostBlocksWorld createWorldFromSchematic(KeystoneSchematic schematic, BlockRotation rotation, BlockMirror mirror, int scale)
     {
         GhostBlocksWorld world = createWorld(rotation, mirror);
         schematic.place(world, scale);

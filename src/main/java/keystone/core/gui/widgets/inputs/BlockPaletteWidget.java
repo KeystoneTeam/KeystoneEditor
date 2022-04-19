@@ -1,19 +1,16 @@
 package keystone.core.gui.widgets.inputs;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.block_selection.BlockPaletteEditScreen;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.utils.BlockUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.item.Item;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,17 +18,16 @@ import java.util.function.Consumer;
 
 public class BlockPaletteWidget extends ButtonNoHotkey
 {
-    protected final Minecraft mc;
-    protected final FontRenderer font;
-    protected final Consumer<Widget[]> disableWidgets;
+    protected final MinecraftClient mc;
+    protected final TextRenderer font;
+    protected final Consumer<ClickableWidget[]> disableWidgets;
     protected final Runnable restoreWidgets;
 
     private BlockPalette palette;
 
-    private final IForgeRegistry<Item> itemRegistry;
     private final List<ItemStack> stacks;
 
-    public BlockPaletteWidget(ITextComponent name, int x, int y, int width, BlockPalette value, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
+    public BlockPaletteWidget(Text name, int x, int y, int width, BlockPalette value, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets)
     {
         super(x, y, width, getFinalHeight(), name, (button) ->
         {
@@ -53,11 +49,10 @@ public class BlockPaletteWidget extends ButtonNoHotkey
         this.disableWidgets = disableWidgets;
         this.restoreWidgets = restoreWidgets;
 
-        this.mc = Minecraft.getInstance();
-        this.font = mc.font;
+        this.mc = MinecraftClient.getInstance();
+        this.font = mc.textRenderer;
         this.palette = value;
 
-        this.itemRegistry = GameRegistry.findRegistry(Item.class);
         this.stacks = new ArrayList<>();
         rebuildStacks();
     }
@@ -72,7 +67,7 @@ public class BlockPaletteWidget extends ButtonNoHotkey
     private void rebuildStacks()
     {
         this.stacks.clear();
-        this.palette.forEach((block, weight) -> this.stacks.add(new ItemStack(BlockUtils.getBlockItem(block.getFirst().getMinecraftBlock().getBlock(), itemRegistry))));
+        this.palette.forEach((block, weight) -> this.stacks.add(new ItemStack(BlockUtils.getBlockItem(block.getFirst().getMinecraftBlock().getBlock()))));
     }
 
     @Override
@@ -85,7 +80,7 @@ public class BlockPaletteWidget extends ButtonNoHotkey
     {
         int y = this.y + getPaletteOffset();
 
-        drawCenteredString(matrixStack, font, getMessage(), x + width / 2, y - getPaletteOffset(), 0xFFFFFF);
+        drawCenteredText(matrixStack, font, getMessage(), x + width / 2, y - getPaletteOffset(), 0xFFFFFF);
         fill(matrixStack, x, y, x + width, y + height - getPaletteOffset(), 0x80FFFFFF);
 
         int x = this.x + 1;

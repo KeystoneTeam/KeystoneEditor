@@ -5,21 +5,20 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.nbt.NBTCompound;
+import keystone.core.client.Player;
 import keystone.core.math.BlockPosMath;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
-import keystone.core.renderer.client.Player;
-import net.minecraft.command.arguments.NBTPathArgument;
-import net.minecraft.command.arguments.NBTTagArgument;
+import net.minecraft.command.argument.NbtElementArgumentType;
+import net.minecraft.command.argument.NbtPathArgumentType;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.*;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.IServerWorld;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -29,10 +28,10 @@ import java.util.UUID;
  */
 public class Entity
 {
-    private CompoundNBT entityData;
+    private NbtCompound entityData;
     private UUID keystoneUUID;
     private UUID minecraftUUID;
-    private Vector3d position;
+    private Vec3d position;
     private float pitch;
     private float yaw;
     private boolean killed;
@@ -46,11 +45,11 @@ public class Entity
      */
     public Entity(String id)
     {
-        this.entityData = new CompoundNBT();
+        this.entityData = new NbtCompound();
         this.entityData.putString("id", id);
         this.keystoneUUID = UUID.randomUUID();
         this.minecraftUUID = null;
-        this.position = Vector3d.ZERO;
+        this.position = Vec3d.ZERO;
         this.pitch = 0;
         this.yaw = 0;
         this.killed = false;
@@ -63,7 +62,7 @@ public class Entity
      */
     public Entity(net.minecraft.entity.Entity minecraftEntity)
     {
-        this(minecraftEntity.serializeNBT(), true);
+        this(minecraftEntity.writeNbt(new NbtCompound()), true);
     }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
@@ -71,7 +70,7 @@ public class Entity
      * @param nbt The Minecraft entity data
      * @param copyMinecraftUUID If true, the UUID stored in the NBT will be copied to the wrapper
      */
-    public Entity(CompoundNBT nbt, boolean copyMinecraftUUID)
+    public Entity(NbtCompound nbt, boolean copyMinecraftUUID)
     {
         this(nbt, copyMinecraftUUID, UUID.randomUUID());
     }
@@ -82,25 +81,25 @@ public class Entity
      * @param copyMinecraftUUID If true, the UUID stored in the NBT will be copied to the wrapper
      * @param keystoneUUID The Keystone UUID
      */
-    public Entity(CompoundNBT nbt, boolean copyMinecraftUUID, UUID keystoneUUID)
+    public Entity(NbtCompound nbt, boolean copyMinecraftUUID, UUID keystoneUUID)
     {
         this.entityData = nbt.copy();
         this.keystoneUUID = keystoneUUID;
 
         if (copyMinecraftUUID)
         {
-            if (this.entityData.hasUUID("UUID")) this.minecraftUUID = this.entityData.getUUID("UUID");
+            if (this.entityData.containsUuid("UUID")) this.minecraftUUID = this.entityData.getUuid("UUID");
         }
         else this.entityData.remove("UUID");
 
         if (this.entityData.contains("Pos"))
         {
-            ListNBT posNBT = this.entityData.getList("Pos", Constants.NBT.TAG_DOUBLE);
-            this.position = new Vector3d(posNBT.getDouble(0), posNBT.getDouble(1), posNBT.getDouble(2));
+            NbtList posNBT = this.entityData.getList("Pos", NbtElement.DOUBLE_TYPE);
+            this.position = new Vec3d(posNBT.getDouble(0), posNBT.getDouble(1), posNBT.getDouble(2));
         }
         if (this.entityData.contains("Rotation"))
         {
-            ListNBT rotationNBT = this.entityData.getList("Rotation", Constants.NBT.TAG_FLOAT);
+            NbtList rotationNBT = this.entityData.getList("Rotation", NbtElement.FLOAT_TYPE);
             this.yaw = rotationNBT.getFloat(0);
             this.pitch = rotationNBT.getFloat(1);
         }
@@ -112,31 +111,31 @@ public class Entity
 
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @return The serialized CompoundNBT
+     * @return The serialized NbtCompound
      */
-    public CompoundNBT serialize()
+    public NbtCompound serialize()
     {
-        CompoundNBT nbt = new CompoundNBT();
-        nbt.putUUID("keystone_uuid", keystoneUUID);
-        if (minecraftUUID != null) nbt.putUUID("minecraft_uuid", minecraftUUID);
+        NbtCompound nbt = new NbtCompound();
+        nbt.putUuid("keystone_uuid", keystoneUUID);
+        if (minecraftUUID != null) nbt.putUuid("minecraft_uuid", minecraftUUID);
 
-        ListNBT posNBT = new ListNBT();
-        posNBT.add(DoubleNBT.valueOf(position.x));
-        posNBT.add(DoubleNBT.valueOf(position.y));
-        posNBT.add(DoubleNBT.valueOf(position.z));
+        NbtList posNBT = new NbtList();
+        posNBT.add(NbtDouble.of(position.x));
+        posNBT.add(NbtDouble.of(position.y));
+        posNBT.add(NbtDouble.of(position.z));
         nbt.put("pos", posNBT);
 
         nbt.putFloat("pitch", pitch);
         nbt.putFloat("yaw", yaw);
         nbt.putBoolean("killed", killed);
 
-        ListNBT boundingBoxNBT = new ListNBT();
-        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.minX));
-        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.minY));
-        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.minZ));
-        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.maxX));
-        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.maxY));
-        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.maxZ));
+        NbtList boundingBoxNBT = new NbtList();
+        boundingBoxNBT.add(NbtDouble.of(boundingBox.minX));
+        boundingBoxNBT.add(NbtDouble.of(boundingBox.minY));
+        boundingBoxNBT.add(NbtDouble.of(boundingBox.minZ));
+        boundingBoxNBT.add(NbtDouble.of(boundingBox.maxX));
+        boundingBoxNBT.add(NbtDouble.of(boundingBox.maxY));
+        boundingBoxNBT.add(NbtDouble.of(boundingBox.maxZ));
         nbt.put("bounding_box", boundingBoxNBT);
 
         nbt.put("nbt", entityData);
@@ -145,24 +144,24 @@ public class Entity
 
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @param nbt The serialized CompoundNBT
+     * @param nbt The serialized NbtCompound
      * @return The deserialized Entity
      */
-    public static Entity deserialize(CompoundNBT nbt)
+    public static Entity deserialize(NbtCompound nbt)
     {
         Entity entity = new Entity();
         entity.entityData = nbt.getCompound("nbt");
-        entity.keystoneUUID = nbt.getUUID("keystone_uuid");
-        if (nbt.contains("minecraft_uuid")) entity.minecraftUUID = nbt.getUUID("minecraft_uuid");
+        entity.keystoneUUID = nbt.getUuid("keystone_uuid");
+        if (nbt.contains("minecraft_uuid")) entity.minecraftUUID = nbt.getUuid("minecraft_uuid");
 
-        ListNBT posNBT = nbt.getList("pos", Constants.NBT.TAG_DOUBLE);
-        entity.position = new Vector3d(posNBT.getDouble(0), posNBT.getDouble(1), posNBT.getDouble(2));
+        NbtList posNBT = nbt.getList("pos", NbtElement.DOUBLE_TYPE);
+        entity.position = new Vec3d(posNBT.getDouble(0), posNBT.getDouble(1), posNBT.getDouble(2));
 
         entity.pitch = nbt.getFloat("pitch");
         entity.yaw = nbt.getFloat("yaw");
         entity.killed = nbt.getBoolean("killed");
 
-        ListNBT bb = nbt.getList("bounding_box", Constants.NBT.TAG_DOUBLE);
+        NbtList bb = nbt.getList("bounding_box", NbtElement.DOUBLE_TYPE);
         entity.boundingBox = new BoundingBox(bb.getDouble(0), bb.getDouble(1), bb.getDouble(2), bb.getDouble(3), bb.getDouble(4), bb.getDouble(5));
 
         return entity;
@@ -170,9 +169,9 @@ public class Entity
 
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
-     * @return The Minecraft CompoundNBT that represents this entity
+     * @return The Minecraft NbtCompound that represents this entity
      */
-    public CompoundNBT getMinecraftEntityData() { return this.entityData; }
+    public NbtCompound getMinecraftEntityData() { return this.entityData; }
 
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
@@ -186,21 +185,23 @@ public class Entity
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Spawn a new instance of this entity into a server world
-     * @param world The IServerWorld to spawn the entity in
+     * @param world The ServerWorldAccess to spawn the entity in
      * @return The Minecraft entity that was spawned into the server world
      */
-    public net.minecraft.entity.Entity spawnInWorld(IServerWorld world)
+    public net.minecraft.entity.Entity spawnInWorld(ServerWorldAccess world)
     {
-        CompoundNBT entityNBT = this.entityData.copy();
+        NbtCompound entityNBT = this.entityData.copy();
 
         // Spawning
-        Optional<net.minecraft.entity.Entity> entityOptional = EntityType.create(entityNBT, world.getLevel());
+        Optional<net.minecraft.entity.Entity> entityOptional = EntityType.getEntityFromNbt(entityNBT, world.toServerWorld());
         if (entityOptional.isPresent())
         {
             net.minecraft.entity.Entity minecraftEntity = entityOptional.get();
-            if (!(world instanceof GhostBlocksWorld)) this.minecraftUUID = minecraftEntity.getUUID();
-            minecraftEntity.moveTo(position.x, position.y, position.z, yaw, pitch);
-            world.addFreshEntityWithPassengers(minecraftEntity);
+            if (!(world instanceof GhostBlocksWorld)) this.minecraftUUID = minecraftEntity.getUuid();
+            minecraftEntity.setPos(position.x, position.y, position.z);
+            minecraftEntity.setYaw(yaw);
+            minecraftEntity.setPitch(pitch);
+            world.spawnEntityAndPassengers(minecraftEntity);
             return minecraftEntity;
         }
         else return null;
@@ -208,27 +209,27 @@ public class Entity
 
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @param anchor The Vector3d to use as an anchor for rotation
+     * @param anchor The Vec3d to use as an anchor for rotation
      * @param rotation The Rotation
      * @param mirror The Mirror
      * @param size The size of the region that is being oriented
      * @param scale The scale
      * @return A copy of this entity with an applied orientation
      */
-    public Entity getOrientedEntity(Vector3d anchor, Rotation rotation, Mirror mirror, Vector3i size, int scale)
+    public Entity getOrientedEntity(Vec3d anchor, BlockRotation rotation, BlockMirror mirror, Vec3i size, int scale)
     {
-        if (anchor == null) anchor = Vector3d.ZERO;
-        CompoundNBT entityNBT = this.entityData.copy();
+        if (anchor == null) anchor = Vec3d.ZERO;
+        NbtCompound entityNBT = this.entityData.copy();
 
-        Vector3d oriented = BlockPosMath.getOrientedVector3d(this.position, size, rotation, mirror, scale);
+        Vec3d oriented = BlockPosMath.getOrientedVec3d(this.position, size, rotation, mirror, scale);
         double x = anchor.x + oriented.x;
         double y = anchor.y + oriented.y;
         double z = anchor.z + oriented.z;
 
         float yaw = 0;
-        if (entityNBT.contains("Rotation", Constants.NBT.TAG_LIST))
+        if (entityNBT.contains("Rotation", NbtElement.LIST_TYPE))
         {
-            ListNBT rotationNBT = entityNBT.getList("Rotation", Constants.NBT.TAG_FLOAT);
+            NbtList rotationNBT = entityNBT.getList("Rotation", NbtElement.FLOAT_TYPE);
             yaw = rotationNBT.getFloat(0);
         }
         switch (mirror)
@@ -254,20 +255,20 @@ public class Entity
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Update this wrapper's Minecraft entity with all modifications made to the wrapper,
      * or spawn the entity if none exist
-     * @param world The IServerWorld to search for the entity in
+     * @param world The ServerWorldAccess to search for the entity in
      */
-    public void updateMinecraftEntity(IServerWorld world)
+    public void updateMinecraftEntity(ServerWorldAccess world)
     {
         if (this.minecraftUUID != null)
         {
-            net.minecraft.entity.Entity mcEntity = world.getLevel().getEntity(this.minecraftUUID);
+            net.minecraft.entity.Entity mcEntity = world.toServerWorld().getEntity(this.minecraftUUID);
 
             try
             {
-                if (!this.killed) mcEntity.deserializeNBT(this.entityData);
+                if (!this.killed) mcEntity.readNbt(this.entityData);
                 else
                 {
-                    mcEntity.remove();
+                    mcEntity.discard();
                     breakMinecraftEntityConnection();
                 }
             }
@@ -282,8 +283,8 @@ public class Entity
 
     public void updateBoundingBox()
     {
-        World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimensionId());
-        net.minecraft.entity.Entity mcEntity = EntityType.create(this.entityData.copy(), world).orElse(null);
+        World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
+        net.minecraft.entity.Entity mcEntity = EntityType.getEntityFromNbt(this.entityData.copy(), world).orElse(null);
         if (mcEntity == null) Keystone.LOGGER.error("Cannot update bounding box of Entity " + this);
         else boundingBox = new BoundingBox(mcEntity.getBoundingBox());
     }
@@ -363,12 +364,12 @@ public class Entity
      */
     public Entity position(double x, double y, double z)
     {
-        ListNBT posNBT = new ListNBT();
-        posNBT.add(DoubleNBT.valueOf(x));
-        posNBT.add(DoubleNBT.valueOf(y));
-        posNBT.add(DoubleNBT.valueOf(z));
+        NbtList posNBT = new NbtList();
+        posNBT.add(NbtDouble.of(x));
+        posNBT.add(NbtDouble.of(y));
+        posNBT.add(NbtDouble.of(z));
         this.entityData.put("Pos", posNBT);
-        this.position = new Vector3d(x, y, z);
+        this.position = new Vec3d(x, y, z);
 
         return this;
     }
@@ -385,12 +386,12 @@ public class Entity
         if (this.position == null) return position(x, y, z);
         else
         {
-            this.position = new Vector3d(this.position.x + x, this.position.y + y, this.position.z + z);
+            this.position = new Vec3d(this.position.x + x, this.position.y + y, this.position.z + z);
 
-            ListNBT posNBT = new ListNBT();
-            posNBT.add(DoubleNBT.valueOf(this.position.x));
-            posNBT.add(DoubleNBT.valueOf(this.position.y));
-            posNBT.add(DoubleNBT.valueOf(this.position.z));
+            NbtList posNBT = new NbtList();
+            posNBT.add(NbtDouble.of(this.position.x));
+            posNBT.add(NbtDouble.of(this.position.y));
+            posNBT.add(NbtDouble.of(this.position.z));
             this.entityData.put("Pos", posNBT);
 
             return this;
@@ -403,10 +404,10 @@ public class Entity
      */
     public Entity yaw(float yaw)
     {
-        ListNBT rotationNBT = new ListNBT();
-        rotationNBT.add(FloatNBT.valueOf(yaw));
-        if (this.entityData.contains("Rotation")) rotationNBT.add(this.entityData.getList("Rotation", Constants.NBT.TAG_FLOAT).get(1));
-        else rotationNBT.add(FloatNBT.ZERO);
+        NbtList rotationNBT = new NbtList();
+        rotationNBT.add(NbtFloat.of(yaw));
+        if (this.entityData.contains("Rotation")) rotationNBT.add(this.entityData.getList("Rotation", NbtElement.FLOAT_TYPE).get(1));
+        else rotationNBT.add(NbtFloat.ZERO);
         this.entityData.put("Rotation", rotationNBT);
         this.yaw = yaw;
 
@@ -419,10 +420,10 @@ public class Entity
      */
     public Entity pitch(float pitch)
     {
-        ListNBT rotationNBT = new ListNBT();
-        if (this.entityData.contains("Rotation")) rotationNBT.add(this.entityData.getList("Rotation", Constants.NBT.TAG_FLOAT).get(0));
-        else rotationNBT.add(FloatNBT.ZERO);
-        rotationNBT.add(FloatNBT.valueOf(pitch));
+        NbtList rotationNBT = new NbtList();
+        if (this.entityData.contains("Rotation")) rotationNBT.add(this.entityData.getList("Rotation", NbtElement.FLOAT_TYPE).get(0));
+        else rotationNBT.add(NbtFloat.ZERO);
+        rotationNBT.add(NbtFloat.of(pitch));
         this.entityData.put("Rotation", rotationNBT);
         this.pitch = pitch;
 
@@ -456,9 +457,9 @@ public class Entity
 
         try
         {
-            NBTPathArgument.NBTPath nbtPath = NBTPathArgument.nbtPath().parse(new StringReader(path));
-            INBT nbt = NBTTagArgument.nbtTag().parse(new StringReader(data));
-            nbtPath.set(this.entityData, () -> nbt);
+            NbtPathArgumentType.NbtPath nbtPath = NbtPathArgumentType.nbtPath().parse(new StringReader(path));
+            NbtElement nbt = NbtElementArgumentType.nbtElement().parse(new StringReader(data));
+            nbtPath.put(this.entityData, () -> nbt);
             updateBoundingBox();
             return this;
         }
@@ -482,18 +483,18 @@ public class Entity
             return this;
         }
 
-        CompoundNBT newEntityData = data.getMinecraftNBT().copy();
+        NbtCompound newEntityData = data.getMinecraftNBT().copy();
         newEntityData.remove("UUID");
         this.entityData = newEntityData;
 
         if (this.entityData.contains("Pos"))
         {
-            ListNBT posNBT = this.entityData.getList("Pos", Constants.NBT.TAG_DOUBLE);
-            this.position = new Vector3d(posNBT.getDouble(0), posNBT.getDouble(1), posNBT.getDouble(2));
+            NbtList posNBT = this.entityData.getList("Pos", NbtElement.DOUBLE_TYPE);
+            this.position = new Vec3d(posNBT.getDouble(0), posNBT.getDouble(1), posNBT.getDouble(2));
         }
         if (this.entityData.contains("Rotation"))
         {
-            ListNBT rotationNBT = this.entityData.getList("Rotation", Constants.NBT.TAG_FLOAT);
+            NbtList rotationNBT = this.entityData.getList("Rotation", NbtElement.FLOAT_TYPE);
             this.yaw = rotationNBT.getFloat(0);
             this.pitch = rotationNBT.getFloat(1);
         }

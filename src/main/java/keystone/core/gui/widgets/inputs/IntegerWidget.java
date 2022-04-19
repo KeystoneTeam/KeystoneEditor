@@ -1,6 +1,6 @@
 package keystone.core.gui.widgets.inputs;
 
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.text.Text;
 
 public class IntegerWidget extends ParsableTextWidget<Integer>
 {
@@ -8,9 +8,9 @@ public class IntegerWidget extends ParsableTextWidget<Integer>
     protected int max;
     protected int step;
 
-    public IntegerWidget(ITextComponent name, int x, int y, int width, int value) { this(name, x, y, width, value, Integer.MIN_VALUE, Integer.MAX_VALUE, 1); }
-    public IntegerWidget(ITextComponent name, int x, int y, int width, int value, int min, int max) { this(name, x, y, width, value, min, max, 1); }
-    public IntegerWidget(ITextComponent name, int x, int y, int width, int value, int min, int max, int step)
+    public IntegerWidget(Text name, int x, int y, int width, int value) { this(name, x, y, width, value, Integer.MIN_VALUE, Integer.MAX_VALUE, 1); }
+    public IntegerWidget(Text name, int x, int y, int width, int value, int min, int max) { this(name, x, y, width, value, min, max, 1); }
+    public IntegerWidget(Text name, int x, int y, int width, int value, int min, int max, int step)
     {
         super(name, x, y, width, value);
         this.min = min;

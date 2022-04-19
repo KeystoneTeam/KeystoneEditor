@@ -1,33 +1,32 @@
 package keystone.core.gui.widgets.inputs;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
 public abstract class ParsableTextWidget<T> extends TextFieldWidget
 {
-    protected final Minecraft mc;
-    protected final FontRenderer font;
+    protected final MinecraftClient mc;
+    protected final TextRenderer textRenderer;
     private T value;
 
-    public ParsableTextWidget(ITextComponent name, int x, int y, int width, T value)
+    public ParsableTextWidget(Text name, int x, int y, int width, T value)
     {
-        super(Minecraft.getInstance().font, x, y, width, getFinalHeight(), name);
+        super(MinecraftClient.getInstance().textRenderer, x, y, width, getFinalHeight(), name);
 
-        this.mc = Minecraft.getInstance();
-        this.font = mc.font;
+        this.mc = MinecraftClient.getInstance();
+        this.textRenderer = mc.textRenderer;
         this.value = postProcess(value);
 
         setMaxLength(256);
-        setBordered(true);
-        setValue(this.value.toString());
+        setDrawsBackground(true);
+        setText(this.value.toString());
     }
     public static int getFieldOffset() { return 11; }
     public static int getFinalHeight() { return 23; }
@@ -45,14 +44,14 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        drawCenteredString(matrixStack, font, getMessage(), x + width / 2, y, 0xFFFFFF);
-        matrixStack.pushPose();
+        drawCenteredText(matrixStack, textRenderer, getMessage(), x + width / 2, y, 0xFFFFFF);
+        matrixStack.push();
         y += getFieldOffset();
         height -= getFieldOffset();
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
         height += getFieldOffset();
         y -= getFieldOffset();
-        matrixStack.popPose();
+        matrixStack.pop();
     }
 
     @Override
@@ -63,10 +62,10 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     }
 
     @Override
-    public void setFocus(boolean focus)
+    protected void setFocused(boolean focus)
     {
         onFocusedChanged(focus);
-        super.setFocus(focus);
+        super.setFocused(focus);
     }
 
     @Override
@@ -76,18 +75,18 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
         {
             try
             {
-                T parsed = parse(getValue());
+                T parsed = parse(getText());
                 setTypedValue(parsed);
             }
             catch (Exception e)
             {
-                String error = "Invalid value '" + getValue() + "' for filter variable '" + getMessage().getString() + "'!";
+                String error = "Invalid value '" + getText() + "' for filter variable '" + getMessage().getString() + "'!";
                 Keystone.LOGGER.error(error);
-                mc.player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
+                mc.player.sendMessage(new LiteralText(error).styled(style -> style.withColor(Formatting.RED)), false);
             }
             finally
             {
-                setValue(value.toString());
+                setText(value.toString());
             }
         }
         super.onFocusedChanged(focused);
@@ -100,7 +99,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
 
         if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
         {
-            setFocus(false);
+            setFocused(false);
             return true;
         }
         else return super.keyPressed(keyCode, scanCode, modifiers);
@@ -110,6 +109,6 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     public final void setTypedValue(T newValue)
     {
         value = postProcess(newValue);
-        if (onSetValue(newValue)) setValue(value.toString());
+        if (onSetValue(newValue)) setText(value.toString());
     }
 }

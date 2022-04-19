@@ -1,22 +1,22 @@
 package keystone.core.modules.selection;
 
-import keystone.core.renderer.common.models.Coords;
-import keystone.core.renderer.common.models.SelectableBoundingBox;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Vector3d;
+import keystone.core.renderer.shapes.SelectableBoundingBox;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 
 public class SelectedFace
 {
     private Direction faceDirection;
     private SelectableBoundingBox box;
-    private Coords relativeSelectedBlock;
+    private Vec3i relativeSelectedBlock;
     private double distance;
 
     private double selectionU;
     private double selectionV;
     private boolean isDraggingFace;
 
-    public SelectedFace(SelectableBoundingBox box, Direction faceDirection, Vector3d selectionPoint, double distance)
+    public SelectedFace(SelectableBoundingBox box, Direction faceDirection, Vec3d selectionPoint, double distance)
     {
         this.faceDirection = faceDirection;
         this.box = box;
@@ -39,7 +39,7 @@ public class SelectedFace
         }
 
         isDraggingFace = false;
-        relativeSelectedBlock = new Coords(selectionPoint.x - box.getMinCoords().getX(), selectionPoint.y - box.getMinCoords().getY(), selectionPoint.z - box.getMinCoords().getZ());
+        relativeSelectedBlock = new Vec3i(selectionPoint.x - box.getMin().getX(), selectionPoint.y - box.getMin().getY(), selectionPoint.z - box.getMin().getZ());
     }
 
     public void startDrag() { this.isDraggingFace = true; }
@@ -47,16 +47,16 @@ public class SelectedFace
 
     public Direction getFaceDirection() { return faceDirection; }
     public SelectableBoundingBox getBox() { return box; }
-    public Coords getRelativeSelectedBlock() { return relativeSelectedBlock; }
+    public Vec3i getRelativeSelectedBlock() { return relativeSelectedBlock; }
     public double getDistance() { return distance; }
-    public Vector3d getSelectionPoint()
+    public Vec3d getSelectionPoint()
     {
-        if (faceDirection == Direction.UP) return new Vector3d(selectionU, box.getMaxCoords().getY() + 1, selectionV);
-        if (faceDirection == Direction.DOWN) return new Vector3d(selectionU, box.getMinCoords().getY(), selectionV);
-        if (faceDirection == Direction.SOUTH) return new Vector3d(selectionU, selectionV, box.getMaxCoords().getZ() + 1);
-        if (faceDirection == Direction.NORTH) return new Vector3d(selectionU, selectionV, box.getMinCoords().getZ());
-        if (faceDirection == Direction.EAST) return new Vector3d(box.getMaxCoords().getX() + 1, selectionU, selectionV);
-        if (faceDirection == Direction.WEST) return new Vector3d(box.getMinCoords().getX(), selectionU, selectionV);
+        if (faceDirection == Direction.UP) return new Vec3d(selectionU, box.getMax().getY() + 1, selectionV);
+        if (faceDirection == Direction.DOWN) return new Vec3d(selectionU, box.getMin().getY(), selectionV);
+        if (faceDirection == Direction.SOUTH) return new Vec3d(selectionU, selectionV, box.getMax().getZ() + 1);
+        if (faceDirection == Direction.NORTH) return new Vec3d(selectionU, selectionV, box.getMin().getZ());
+        if (faceDirection == Direction.EAST) return new Vec3d(box.getMax().getX() + 1, selectionU, selectionV);
+        if (faceDirection == Direction.WEST) return new Vec3d(box.getMin().getX(), selectionU, selectionV);
 
         return null;
     }

@@ -5,7 +5,7 @@ package keystone.api.wrappers.coordinates;
  */
 public class Vector2f
 {
-    private final net.minecraft.util.math.vector.Vector2f vec;
+    private final net.minecraft.client.util.math.Vector2f vec;
     public final float x;
     public final float y;
 
@@ -14,15 +14,15 @@ public class Vector2f
      * @param x The x value
      * @param y The y value
      */
-    public Vector2f(float x, float y) { this(new net.minecraft.util.math.vector.Vector2f(x, y)); }
+    public Vector2f(float x, float y) { this(new net.minecraft.client.util.math.Vector2f(x, y)); }
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
      * @param vec The Minecraft Vector2f
      */
-    public Vector2f(net.minecraft.util.math.vector.Vector2f vec)
+    public Vector2f(net.minecraft.client.util.math.Vector2f vec)
     {
         this.vec = vec;
-        this.x = vec.x;
-        this.y = vec.y;
+        this.x = vec.getX();
+        this.y = vec.getY();
     }
 }

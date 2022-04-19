@@ -1,16 +1,17 @@
 package keystone.api.wrappers.blocks;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.modules.filter.providers.BlockTypeProvider;
 import keystone.core.modules.filter.providers.IBlockProvider;
 import keystone.core.modules.filter.providers.TagBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ITag;
-import net.minecraft.tags.ITagCollection;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.WeightedRandom;
+import keystone.core.utils.WeightedRandom;
+import net.minecraft.block.Block;
+import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.tag.TagKey;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -96,9 +97,17 @@ public class BlockPalette
     {
         if (block.startsWith("#"))
         {
-            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getAllTags();
-            ITag<net.minecraft.block.Block> tag = tags.getTag(new ResourceLocation(block.substring(1)));
-            if (tag != null && tag instanceof ITag.INamedTag) with(new TagBlockProvider((ITag.INamedTag<net.minecraft.block.Block>)tag), weight);
+            try
+            {
+                BlockArgumentParser parser = new BlockArgumentParser(new StringReader(block), true).parse(false);
+                TagKey<Block> tag = parser.getTagId();
+                if (tag != null) with(new TagBlockProvider(tag), weight);
+            }
+            catch (CommandSyntaxException e)
+            {
+                e.printStackTrace();
+            }
+
             return this;
         }
         else return with(KeystoneFilter.block(block).blockType(), weight);
@@ -191,9 +200,17 @@ public class BlockPalette
     {
         if (block.startsWith("#"))
         {
-            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getAllTags();
-            ITag<net.minecraft.block.Block> tag = tags.getTag(new ResourceLocation(block.substring(1)));
-            if (tag != null && tag instanceof ITag.INamedTag) without(new TagBlockProvider((ITag.INamedTag<net.minecraft.block.Block>)tag), weight);
+            try
+            {
+                BlockArgumentParser parser = new BlockArgumentParser(new StringReader(block), true).parse(false);
+                TagKey<Block> tag = parser.getTagId();
+                if (tag != null) without(new TagBlockProvider(tag), weight);
+            }
+            catch (CommandSyntaxException e)
+            {
+                e.printStackTrace();
+            }
+
             return this;
         }
         else return without(KeystoneFilter.block(block).blockType(), weight);

@@ -3,27 +3,27 @@ package keystone.api.wrappers.nbt;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
-import net.minecraft.command.arguments.NBTPathArgument;
-import net.minecraft.command.arguments.NBTTagArgument;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
+import net.minecraft.command.argument.NbtElementArgumentType;
+import net.minecraft.command.argument.NbtPathArgumentType;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class NBTCompound extends NBTWrapper<CompoundNBT>
+public class NBTCompound extends NBTWrapper<NbtCompound>
 {
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @param nbt The Minecraft INBT
+     * @param nbt The Minecraft NbtElement
      */
-    public NBTCompound(CompoundNBT nbt) { super(nbt); }
-    public NBTCompound() { super(new CompoundNBT()); }
+    public NBTCompound(NbtCompound nbt) { super(nbt); }
+    public NBTCompound() { super(new NbtCompound()); }
 
     public NBTCompound clone() { return new NBTCompound(nbt.copy()); }
 
-    public Set<String> getAllKeys() { return nbt.getAllKeys(); }
+    public Set<String> getKeys() { return nbt.getKeys(); }
 
     public boolean contains(String key) { return this.nbt.contains(key); }
     public boolean contains(String key, NBTType tagType) { return this.nbt.contains(key, tagType.minecraftID); }
@@ -38,9 +38,9 @@ public class NBTCompound extends NBTWrapper<CompoundNBT>
     {
         try
         {
-            NBTPathArgument.NBTPath nbtPath = NBTPathArgument.nbtPath().parse(new StringReader(path));
-            INBT nbt = NBTTagArgument.nbtTag().parse(new StringReader(data));
-            nbtPath.set(this.nbt, () -> nbt);
+            NbtPathArgumentType.NbtPath nbtPath = NbtPathArgumentType.nbtPath().parse(new StringReader(path));
+            NbtElement nbt = NbtElementArgumentType.nbtElement().parse(new StringReader(data));
+            nbtPath.put(this.nbt, () -> nbt);
         }
         catch (CommandSyntaxException e)
         {
@@ -53,7 +53,7 @@ public class NBTCompound extends NBTWrapper<CompoundNBT>
     public void putShort(String key, short value) { nbt.putShort(key, value); }
     public void putInt(String key, int value) { nbt.putInt(key, value); }
     public void putLong(String key, long value) { nbt.putLong(key, value); }
-    public void putUUID(String key, UUID value) { nbt.putUUID(key, value); }
+    public void putUuid(String key, UUID value) { nbt.putUuid(key, value); }
     public void putFloat(String key, float value) { nbt.putFloat(key, value); }
     public void putDouble(String key, double value) { nbt.putDouble(key, value); }
     public void putString(String key, String value) { nbt.putString(key, value); }
@@ -70,7 +70,7 @@ public class NBTCompound extends NBTWrapper<CompoundNBT>
     public short getShort(String key) { return nbt.getShort(key); }
     public int getInt(String key) { return nbt.getInt(key); }
     public long getLong(String key) { return nbt.getLong(key); }
-    public UUID getUUID(String key) { return nbt.getUUID(key); }
+    public UUID getUuid(String key) { return nbt.getUuid(key); }
     public float getFloat(String key) { return nbt.getFloat(key); }
     public double getDouble(String key) { return nbt.getDouble(key); }
     public String getString(String key) { return nbt.getString(key); }

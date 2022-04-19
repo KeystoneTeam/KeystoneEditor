@@ -7,10 +7,10 @@ import keystone.api.variables.Variable;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
-import net.minecraft.util.Direction;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.math.Direction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,9 +49,9 @@ public class ErodeBrushOperation extends BrushOperation
     @Variable boolean fill;
 
     @Override
-    public ITextComponent getName()
+    public Text getName()
     {
-        return new TranslationTextComponent("keystone.brush.erode");
+        return new TranslatableText("keystone.brush.erode");
     }
     @Override
     public int iterations()
@@ -79,7 +79,7 @@ public class ErodeBrushOperation extends BrushOperation
 
         for (Direction direction : Direction.values())
         {
-            BlockPos neighborPos = new BlockPos(x, y, z).relative(direction);
+            BlockPos neighborPos = new BlockPos(x, y, z).offset(direction);
             BlockType neighbor = worldModifiers.blocks.getBlockType(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
             if (!neighbor.isAirOrLiquid()) continue;
 
@@ -111,7 +111,7 @@ public class ErodeBrushOperation extends BrushOperation
 
         for (Direction direction : Direction.values())
         {
-            BlockPos neighborPos = new BlockPos(x, y, z).relative(direction);
+            BlockPos neighborPos = new BlockPos(x, y, z).offset(direction);
             BlockType neighbor = worldModifiers.blocks.getBlockType(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
             if (neighbor.isAirOrLiquid()) continue;
 

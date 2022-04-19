@@ -6,10 +6,10 @@ import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.api.wrappers.entities.Entity;
+import keystone.core.client.Player;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
-import keystone.core.renderer.client.Player;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -41,12 +41,12 @@ public class EntitiesModule implements IKeystoneModule
     @Override
     public boolean isEnabled()
     {
-        return worldCacheModule.hasDimensionWorld(Player.getDimensionId());
+        return worldCacheModule.hasDimensionWorld(Player.getDimension());
     }
 
     public World getWorld()
     {
-        return worldCacheModule.getDimensionWorld(Player.getDimensionId());
+        return worldCacheModule.getDimensionWorld(Player.getDimension());
     }
     public List<Entity> getEntities(BlockPos min, BlockPos max, RetrievalMode retrievalMode)
     {
@@ -79,8 +79,8 @@ public class EntitiesModule implements IKeystoneModule
         }
         else
         {
-            World world = worldCacheModule.getDimensionWorld(Player.getDimensionId());
-            List<net.minecraft.entity.Entity> mcEntities = world.getEntitiesOfClass(net.minecraft.entity.Entity.class, boundingBox.getMinecraftBoundingBox());
+            World world = worldCacheModule.getDimensionWorld(Player.getDimension());
+            List<net.minecraft.entity.Entity> mcEntities = world.getNonSpectatingEntities(net.minecraft.entity.Entity.class, boundingBox.getMinecraftBoundingBox());
             for (net.minecraft.entity.Entity mcEntity : mcEntities) entities.add(new Entity(mcEntity));
         }
         return entities;

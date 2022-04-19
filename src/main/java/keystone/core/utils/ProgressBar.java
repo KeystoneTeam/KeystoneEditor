@@ -43,7 +43,7 @@ public class ProgressBar
         completedIterations = 0;
         completedSteps = 0;
 
-        ProgressBarOverlay.close();
+        ProgressBarOverlay.closeOverlay();
     }
     public static void cancel()
     {

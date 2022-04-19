@@ -5,8 +5,8 @@ import keystone.core.gui.screens.block_selection.AbstractBlockSelectionScreen;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,14 +21,15 @@ public class BlockUtils
         blockToItemMap.put("minecraft:lava", "minecraft:lava_bucket");
     }
 
-    public static final Item getBlockItem(Block block, IForgeRegistry<Item> itemRegistry)
+    public static final Item getBlockItem(Block block)
     {
         Item item = block.asItem();
-        if (blockToItemMap.containsKey(block.getRegistryName().toString())) item = itemRegistry.getValue(new ResourceLocation(blockToItemMap.get(block.getRegistryName().toString())));
+        String blockIdentifier = Registry.BLOCK.getId(block).toString();
+        if (blockToItemMap.containsKey(blockIdentifier)) item = Registry.ITEM.get(new Identifier(blockToItemMap.get(blockIdentifier)));
 
         if (item == null || item == Items.AIR)
         {
-            if (AbstractBlockSelectionScreen.DEBUG_LOG) Keystone.LOGGER.info("No item for block " + block.getRegistryName().toString());
+            if (AbstractBlockSelectionScreen.DEBUG_LOG) Keystone.LOGGER.info("No item for block " + blockIdentifier);
             return null;
         }
         else return item;

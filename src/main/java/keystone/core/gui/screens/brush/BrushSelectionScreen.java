@@ -1,9 +1,8 @@
 package keystone.core.gui.screens.brush;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.core.KeystoneConfig;
-import keystone.core.events.KeystoneHotbarEvent;
+import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
@@ -12,14 +11,11 @@ import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
 import keystone.core.modules.brush.BrushModule;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class BrushSelectionScreen extends KeystoneOverlay
 {
     public static final int PADDING = 5;
@@ -30,16 +26,16 @@ public class BrushSelectionScreen extends KeystoneOverlay
     private int panelMaxX;
     private int panelMaxY;
 
-    private ITextComponent immediateMode;
-    private ITextComponent deferredMode;
+    private Text immediateMode;
+    private Text deferredMode;
 
     private FieldWidgetList brushVariablesList;
 
     protected BrushSelectionScreen()
     {
-        super(new TranslationTextComponent("keystone.screen.brushPanel"));
-        immediateMode = new StringTextComponent("I");
-        deferredMode = new StringTextComponent("D");
+        super(new TranslatableText("keystone.screen.brushPanel"));
+        immediateMode = new LiteralText("I");
+        deferredMode = new LiteralText("D");
     }
     public static void open()
     {
@@ -49,13 +45,17 @@ public class BrushSelectionScreen extends KeystoneOverlay
             KeystoneOverlayHandler.addOverlay(open);
         }
     }
+    public static void registerEvents()
+    {
+        KeystoneHotbarEvents.CHANGED.register(BrushSelectionScreen::onHotbarChanged);
+    }
 
     //region Event Handlers
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public static void onHotbarChanged(final KeystoneHotbarEvent event)
+    public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
-        if (event.slot == KeystoneHotbarSlot.BRUSH) open();
-        else if (open != null) open.onClose();
+        if (slot == KeystoneHotbarSlot.BRUSH) open();
+        // TODO: Check if this needs to be changed from removed() to close()
+        else if (open != null) open.removed();
     }
     //endregion
     //region Screen Overrides
@@ -72,8 +72,8 @@ public class BrushSelectionScreen extends KeystoneOverlay
 
         // Calculate panel size
         panelMaxX = Math.min(KeystoneHotbar.getX() - 5, 280);
-        int maxPanelHeight = minecraft.getWindow().getGuiScaledHeight() - (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getFinalHeight() + PADDING) + PADDING);
-        brushVariablesList = new FieldWidgetList(new TranslationTextComponent("keystone.brush.brushVariables"), brushModule::getBrushOperation, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
+        int maxPanelHeight = client.getWindow().getScaledHeight() - (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getFinalHeight() + PADDING) + PADDING);
+        brushVariablesList = new FieldWidgetList(new TranslatableText("keystone.brush.brushVariables"), brushModule::getBrushOperation, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
         brushVariablesList.bake();
         int centerHeight = height / 2;
         int halfPanelHeight = (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getFinalHeight() + PADDING) + PADDING + brushVariablesList.getHeight()) / 2;
@@ -83,29 +83,29 @@ public class BrushSelectionScreen extends KeystoneOverlay
         int y = panelMinY + PADDING;
 
         // Change Operation Button and Toggle Immediate Mode Button
-        addButton(new ButtonNoHotkey(PADDING, y, panelMaxX - 2 * PADDING - 20, 20, brushModule.getBrushOperation().getName(), (button) ->
+        addDrawableChild(new ButtonNoHotkey(PADDING, y, panelMaxX - 2 * PADDING - 20, 20, brushModule.getBrushOperation().getName(), (button) ->
         {
             brushModule.setBrushOperation(brushModule.getBrushOperation().getNextOperation());
-            init(minecraft, width, height);
+            init(client, width, height);
         }));
-        addButton(new ButtonNoHotkey(panelMaxX - 20 - PADDING, y, 20, 20, brushModule.isImmediateMode() ? immediateMode : deferredMode, (button) ->
+        addDrawableChild(new ButtonNoHotkey(panelMaxX - 20 - PADDING, y, 20, 20, brushModule.isImmediateMode() ? immediateMode : deferredMode, (button) ->
         {
             brushModule.setImmediateMode(!brushModule.isImmediateMode());
-            init(minecraft, width, height);
+            init(client, width, height);
         }));
         y += 20 + PADDING;
 
         // Change Shape Button
-        addButton(new ButtonNoHotkey(PADDING, y, panelMaxX - 2 * PADDING, 20, brushModule.getBrushShape().getName(), (button) ->
+        addDrawableChild(new ButtonNoHotkey(PADDING, y, panelMaxX - 2 * PADDING, 20, brushModule.getBrushShape().getName(), (button) ->
         {
             brushModule.setBrushShape(brushModule.getBrushShape().getNextShape());
-            init(minecraft, width, height);
+            init(client, width, height);
         }));
         y += 20 + PADDING;
 
         // Size Fields
         int sizeDimensionWidth = (panelMaxX - PADDING) / 3 - PADDING;
-        addButton(new IntegerWidget(new TranslationTextComponent("keystone.width"), PADDING, y, sizeDimensionWidth, brushModule.getBrushSize()[0], 1, KeystoneConfig.maxBrushSize)
+        addDrawableChild(new IntegerWidget(new TranslatableText("keystone.width"), PADDING, y, sizeDimensionWidth, brushModule.getBrushSize()[0], 1, KeystoneConfig.maxBrushSize)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -115,7 +115,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
                 return true;
             }
         });
-        addButton(new IntegerWidget(new TranslationTextComponent("keystone.length"), PADDING + sizeDimensionWidth + PADDING, y, sizeDimensionWidth, brushModule.getBrushSize()[2], 1, KeystoneConfig.maxBrushSize)
+        addDrawableChild(new IntegerWidget(new TranslatableText("keystone.length"), PADDING + sizeDimensionWidth + PADDING, y, sizeDimensionWidth, brushModule.getBrushSize()[2], 1, KeystoneConfig.maxBrushSize)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -125,7 +125,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
                 return true;
             }
         });
-        addButton(new IntegerWidget(new TranslationTextComponent("keystone.height"), PADDING + 2 * (sizeDimensionWidth + PADDING), y, sizeDimensionWidth, brushModule.getBrushSize()[1], 1, KeystoneConfig.maxBrushSize)
+        addDrawableChild(new IntegerWidget(new TranslatableText("keystone.height"), PADDING + 2 * (sizeDimensionWidth + PADDING), y, sizeDimensionWidth, brushModule.getBrushSize()[1], 1, KeystoneConfig.maxBrushSize)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -139,7 +139,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
 
         // Spacing and Noise
         int spacingNoiseWidth = (panelMaxX - PADDING) / 2 - PADDING;
-        addButton(new IntegerWidget(new TranslationTextComponent("keystone.brush.minimumSpacing"), PADDING, y, spacingNoiseWidth, brushModule.getMinSpacing(), 1, Integer.MAX_VALUE)
+        addDrawableChild(new IntegerWidget(new TranslatableText("keystone.brush.minimumSpacing"), PADDING, y, spacingNoiseWidth, brushModule.getMinSpacing(), 1, Integer.MAX_VALUE)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -148,7 +148,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
                 return true;
             }
         });
-        addButton(new IntegerWidget(new TranslationTextComponent("keystone.brush.noise"), PADDING + spacingNoiseWidth + PADDING, y, spacingNoiseWidth, brushModule.getNoise(), 1, 100)
+        addDrawableChild(new IntegerWidget(new TranslatableText("keystone.brush.noise"), PADDING + spacingNoiseWidth + PADDING, y, spacingNoiseWidth, brushModule.getNoise(), 1, 100)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -161,14 +161,14 @@ public class BrushSelectionScreen extends KeystoneOverlay
 
         // Brush variables
         brushVariablesList.offset(0, y);
-        addButton(brushVariablesList);
+        addDrawableChild(brushVariablesList);
 
         brushModule.getBrushOperation().undirtyEditor();
     }
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        if (brushModule.getBrushOperation().isEditorDirtied()) init(minecraft, width, height);
+        if (brushModule.getBrushOperation().isEditorDirtied()) init(client, width, height);
 
         fill(matrixStack, 0, panelMinY, panelMaxX, panelMaxY, 0x80000000);
         super.render(matrixStack, mouseX, mouseY, partialTicks);

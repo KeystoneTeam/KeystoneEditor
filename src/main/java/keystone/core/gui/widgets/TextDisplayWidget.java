@@ -1,13 +1,14 @@
 package keystone.core.gui.widgets;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.RenderComponentsUtil;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.IReorderingProcessor;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.util.ChatMessages;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.OrderedText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -15,19 +16,19 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TextDisplayWidget extends Widget
+public class TextDisplayWidget extends ClickableWidget
 {
-    private final List<ITextComponent> lines;
-    private final List<IReorderingProcessor> trimmedLines;
-    private final FontRenderer font;
+    private final List<Text> lines;
+    private final List<OrderedText> trimmedLines;
+    private final TextRenderer font;
     private int background;
     private int padding;
     private int spacing;
     private float scale;
 
-    public TextDisplayWidget(int x, int y, int width, FontRenderer font)
+    public TextDisplayWidget(int x, int y, int width, TextRenderer font)
     {
-        super(x, y, width, 0, new StringTextComponent("Text Display"));
+        super(x, y, width, 0, new LiteralText("Text Display"));
         this.lines = new ArrayList<>();
         this.trimmedLines = new ArrayList<>();
         this.font = font;
@@ -64,10 +65,10 @@ public class TextDisplayWidget extends Widget
         trimmedLines.clear();
         height = 0;
     }
-    public void addText(TextFormatting color, String... lines)
+    public void addText(Formatting color, String... lines)
     {
-        ITextComponent[] components = new ITextComponent[lines.length];
-        for (int i = 0; i < lines.length; i++) components[i] = new StringTextComponent(lines[i]).withStyle(color);
+        Text[] components = new Text[lines.length];
+        for (int i = 0; i < lines.length; i++) components[i] = new LiteralText(lines[i]).styled(style -> style.withColor(color));
         addText(components);
     }
     public void addException(Throwable throwable)
@@ -82,8 +83,8 @@ public class TextDisplayWidget extends Widget
             }
 
             String[] strings = stringWriter.toString().split(System.lineSeparator());
-            ITextComponent[] lines = new ITextComponent[strings.length];
-            for (int i = 0; i < strings.length; i++) lines[i] = new StringTextComponent(strings[i].replace("\t", "  ")).withStyle(TextFormatting.RED);
+            Text[] lines = new Text[strings.length];
+            for (int i = 0; i < strings.length; i++) lines[i] = new LiteralText(strings[i].replace("\t", "  ")).styled(style -> style.withColor(Formatting.RED));
             addText(lines);
         }
         catch (IOException e)
@@ -91,11 +92,11 @@ public class TextDisplayWidget extends Widget
             e.printStackTrace();
         }
     }
-    public void addText(ITextComponent... lines)
+    public void addText(Text... lines)
     {
-        for (ITextComponent line : lines)
+        for (Text line : lines)
         {
-            List<IReorderingProcessor> trimmedLines = RenderComponentsUtil.wrapComponents(line, (int)((width - 2 * padding / scale) / scale), font);
+            List<OrderedText> trimmedLines = ChatMessages.breakRenderedChatMessageLines(line, (int)((width - 2 * padding / scale) / scale), font);
             this.trimmedLines.addAll(trimmedLines);
             this.lines.add(line);
         }
@@ -105,18 +106,24 @@ public class TextDisplayWidget extends Widget
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        matrixStack.pushPose();
+        matrixStack.push();
         matrixStack.scale(scale, scale, scale);
 
         fill(matrixStack, (int)(x / scale), (int)(y / scale), (int)((x + width) / scale), (int)((y + height) / scale), background);
 
         float y = this.y + padding / scale;
-        for (IReorderingProcessor line : trimmedLines)
+        for (OrderedText line : trimmedLines)
         {
-            font.drawShadow(matrixStack, line, (x + padding / scale) / scale, y / scale, 0xFFFFFFFF);
+            font.drawWithShadow(matrixStack, line, (x + padding / scale) / scale, y / scale, 0xFFFFFFFF);
             y += 10 * scale + spacing / scale;
         }
 
-        matrixStack.popPose();
+        matrixStack.pop();
+    }
+
+    @Override
+    public void appendNarrations(NarrationMessageBuilder builder)
+    {
+
     }
 }

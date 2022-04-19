@@ -1,23 +1,23 @@
 package keystone.api.wrappers.nbt;
 
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.NbtElement;
 
 public enum NBTType
 {
-    TAG_END(Constants.NBT.TAG_END),
-    TAG_BYTE(Constants.NBT.TAG_BYTE),
-    TAG_SHORT(Constants.NBT.TAG_SHORT),
-    TAG_INT(Constants.NBT.TAG_INT),
-    TAG_LONG(Constants.NBT.TAG_LONG),
-    TAG_FLOAT(Constants.NBT.TAG_FLOAT),
-    TAG_DOUBLE(Constants.NBT.TAG_DOUBLE),
-    TAG_BYTE_ARRAY(Constants.NBT.TAG_BYTE_ARRAY),
-    TAG_STRING(Constants.NBT.TAG_STRING),
-    TAG_LIST(Constants.NBT.TAG_LIST),
-    TAG_COMPOUND(Constants.NBT.TAG_COMPOUND),
-    TAG_INT_ARRAY(Constants.NBT.TAG_INT_ARRAY),
-    TAG_LONG_ARRAY(Constants.NBT.TAG_LONG_ARRAY),
-    TAG_ANY_NUMERIC(Constants.NBT.TAG_ANY_NUMERIC);
+    END(NbtElement.END_TYPE),
+    BYTE(NbtElement.BYTE_TYPE),
+    SHORT(NbtElement.SHORT_TYPE),
+    INT(NbtElement.INT_TYPE),
+    LONG(NbtElement.LONG_TYPE),
+    FLOAT(NbtElement.FLOAT_TYPE),
+    DOUBLE(NbtElement.DOUBLE_TYPE),
+    BYTE_ARRAY(NbtElement.BYTE_ARRAY_TYPE),
+    STRING(NbtElement.STRING_TYPE),
+    LIST(NbtElement.LIST_TYPE),
+    COMPOUND(NbtElement.COMPOUND_TYPE),
+    INT_ARRAY(NbtElement.INT_ARRAY_TYPE),
+    LONG_ARRAY(NbtElement.LONG_ARRAY_TYPE),
+    ANY_NUMBER(NbtElement.NUMBER_TYPE);
 
     public final int minecraftID;
 
@@ -32,20 +32,20 @@ public enum NBTType
     {
         switch (minecraftID)
         {
-            case Constants.NBT.TAG_BYTE: return TAG_BYTE;
-            case Constants.NBT.TAG_SHORT: return TAG_SHORT;
-            case Constants.NBT.TAG_INT: return TAG_INT;
-            case Constants.NBT.TAG_LONG: return TAG_LONG;
-            case Constants.NBT.TAG_FLOAT: return TAG_FLOAT;
-            case Constants.NBT.TAG_DOUBLE: return TAG_DOUBLE;
-            case Constants.NBT.TAG_BYTE_ARRAY: return TAG_BYTE_ARRAY;
-            case Constants.NBT.TAG_STRING: return TAG_STRING;
-            case Constants.NBT.TAG_LIST: return TAG_LIST;
-            case Constants.NBT.TAG_COMPOUND: return TAG_COMPOUND;
-            case Constants.NBT.TAG_INT_ARRAY: return TAG_INT_ARRAY;
-            case Constants.NBT.TAG_LONG_ARRAY: return TAG_LONG_ARRAY;
-            case Constants.NBT.TAG_ANY_NUMERIC: return TAG_ANY_NUMERIC;
-            default: return TAG_END;
+            case NbtElement.BYTE_TYPE: return BYTE;
+            case NbtElement.SHORT_TYPE: return SHORT;
+            case NbtElement.INT_TYPE: return INT;
+            case NbtElement.LONG_TYPE: return LONG;
+            case NbtElement.FLOAT_TYPE: return FLOAT;
+            case NbtElement.DOUBLE_TYPE: return DOUBLE;
+            case NbtElement.BYTE_ARRAY_TYPE: return BYTE_ARRAY;
+            case NbtElement.STRING_TYPE: return STRING;
+            case NbtElement.LIST_TYPE: return LIST;
+            case NbtElement.COMPOUND_TYPE: return COMPOUND;
+            case NbtElement.INT_ARRAY_TYPE: return INT_ARRAY;
+            case NbtElement.LONG_ARRAY_TYPE: return LONG_ARRAY;
+            case NbtElement.NUMBER_TYPE: return ANY_NUMBER;
+            default: return END;
         }
     }
 }

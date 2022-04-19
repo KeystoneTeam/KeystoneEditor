@@ -7,12 +7,11 @@ import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.core.gui.widgets.WidgetList;
 import keystone.core.utils.AnnotationUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 import java.lang.reflect.Field;
 import java.util.function.BiConsumer;
@@ -23,13 +22,13 @@ public class FieldWidgetList extends WidgetList
 {
     protected final Supplier<Object> instance;
     protected final int intendedWidth;
-    protected final Consumer<Widget[]> disableWidgets;
+    protected final Consumer<ClickableWidget[]> disableWidgets;
     protected final Runnable restoreWidgets;
-    protected final BiConsumer<Widget, Boolean> addDropdown;
+    protected final BiConsumer<ClickableWidget, Boolean> addDropdown;
 
     protected int nextWidgetY;
 
-    public FieldWidgetList(ITextComponent label, Supplier<Object> instance, int x, int y, int width, int maxHeight, int padding, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
+    public FieldWidgetList(Text label, Supplier<Object> instance, int x, int y, int width, int maxHeight, int padding, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets)
     {
         super(x, y, width, maxHeight, padding, label);
 
@@ -57,14 +56,14 @@ public class FieldWidgetList extends WidgetList
             {
                 String error = "Could not create editor for field '" + variableName + "'!";
                 Keystone.LOGGER.error(error);
-                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
+                MinecraftClient.getInstance().player.sendMessage(new LiteralText(error).styled(style -> style.withColor(Formatting.RED)), false);
                 e.printStackTrace();
             }
             catch (IllegalAccessException e)
             {
                 String error = "Could not access field '" + variableName + "'!";
                 Keystone.LOGGER.error(error);
-                Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
+                MinecraftClient.getInstance().player.sendMessage(new LiteralText(error).styled(style -> style.withColor(Formatting.RED)), false);
                 e.printStackTrace();
             }
         }

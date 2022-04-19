@@ -1,9 +1,9 @@
 package keystone.core.gui.screens.file_browser;
 
 import keystone.core.gui.widgets.inputs.ParsableTextWidget;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 
 import java.io.File;
 import java.util.HashSet;
@@ -12,15 +12,15 @@ import java.util.function.Consumer;
 
 public class SaveFileScreen extends FileBrowserScreen
 {
-    protected static TranslationTextComponent SAVE_FILE_LABEL = new TranslationTextComponent("keystone.file_browser.saveFile");
-    protected static TranslationTextComponent FILE_NAME_LABEL = new TranslationTextComponent("keystone.file_browser.fileName");
-    protected static TranslationTextComponent SAVE_LABEL = new TranslationTextComponent("keystone.file_browser.save");
+    protected static TranslatableText SAVE_FILE_LABEL = new TranslatableText("keystone.file_browser.saveFile");
+    protected static TranslatableText FILE_NAME_LABEL = new TranslatableText("keystone.file_browser.fileName");
+    protected static TranslatableText SAVE_LABEL = new TranslatableText("keystone.file_browser.save");
 
     private String extension;
     private ParsableTextWidget<String> fileName;
     private Consumer<File> callback;
 
-    protected SaveFileScreen(ITextComponent prompt, String extension, Set<String> fileExtensions, File root, boolean recursive, Consumer<File> callback)
+    protected SaveFileScreen(Text prompt, String extension, Set<String> fileExtensions, File root, boolean recursive, Consumer<File> callback)
     {
         super(prompt, fileExtensions, root, recursive, (files) -> {});
         this.extension = extension;
@@ -30,7 +30,7 @@ public class SaveFileScreen extends FileBrowserScreen
     {
         Set<String> extensionSet = new HashSet<>();
         extensionSet.add(fileExtension);
-        Minecraft.getInstance().setScreen(new SaveFileScreen(SAVE_FILE_LABEL, fileExtension, extensionSet, root, recursive, callback));
+        MinecraftClient.getInstance().setScreen(new SaveFileScreen(SAVE_FILE_LABEL, fileExtension, extensionSet, root, recursive, callback));
     }
 
     @Override
@@ -46,12 +46,12 @@ public class SaveFileScreen extends FileBrowserScreen
     }
 
     @Override
-    protected ITextComponent getDoneButtonLabel()
+    protected Text getDoneButtonLabel()
     {
         return SAVE_LABEL;
     }
     @Override
-    protected ITextComponent getPromptLabel()
+    protected Text getPromptLabel()
     {
         return selectedFiles.size() > 0 ? selectedFiles.get(0).path : currentPath;
     }
@@ -63,7 +63,7 @@ public class SaveFileScreen extends FileBrowserScreen
         if (files.length > 0) callback.accept(files[0]);
         else
         {
-            String name = fileName.getValue().trim();
+            String name = fileName.getText().trim();
             if (name.equals("")) name = "New File";
             File file = currentFileStructure.resolveFile(name + "." + extension);
             callback.accept(file);
@@ -82,6 +82,6 @@ public class SaveFileScreen extends FileBrowserScreen
                 return str;
             }
         };
-        addButton(fileName);
+        addDrawableChild(fileName);
     }
 }

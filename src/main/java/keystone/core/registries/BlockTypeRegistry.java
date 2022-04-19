@@ -4,7 +4,7 @@ import keystone.api.wrappers.blocks.BlockType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.util.registry.Registry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,9 +24,9 @@ public class BlockTypeRegistry
         List<BlockType> registryList = new ArrayList<>();
         registryList.add(null);
 
-        for (Block block : ForgeRegistries.BLOCKS)
+        for (Block block : Registry.BLOCK)
         {
-            for (BlockState state : block.getStateDefinition().getPossibleStates())
+            for (BlockState state : block.getStateManager().getStates())
             {
                 idMap.put(state, nextID);
                 registryList.add(new BlockType(nextID, state));
@@ -37,7 +37,7 @@ public class BlockTypeRegistry
         registry = new BlockType[registryList.size()];
         registryList.toArray(registry);
 
-        AIR = BlockTypeRegistry.fromMinecraftBlock(Blocks.AIR.defaultBlockState());
+        AIR = BlockTypeRegistry.fromMinecraftBlock(Blocks.AIR.getDefaultState());
     }
 
     public static BlockType fromKeystoneID(short keystoneID)

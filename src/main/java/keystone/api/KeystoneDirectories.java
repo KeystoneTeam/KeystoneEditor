@@ -1,7 +1,7 @@
 package keystone.api;
 
 import keystone.core.KeystoneConfig;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 
 import java.io.File;
 
@@ -17,7 +17,7 @@ public class KeystoneDirectories
 
     public static void init()
     {
-        keystoneDirectory = Minecraft.getInstance().gameDirectory.toPath().resolve(KeystoneConfig.keystoneDirectory).toFile();
+        keystoneDirectory = MinecraftClient.getInstance().runDirectory.toPath().resolve(KeystoneConfig.keystoneDirectory).toFile();
         if (!keystoneDirectory.exists()) keystoneDirectory.mkdirs();
 
         analysesDirectory = getKeystoneSubdirectory(KeystoneConfig.analysesDirectory);
@@ -46,7 +46,7 @@ public class KeystoneDirectories
 
     public static File getWorldCacheDirectory()
     {
-        File file = Minecraft.getInstance().getLevelSource().getBaseDir().resolve(currentLevelID).resolve("##KEYSTONE.TEMP##").toFile();
+        File file = MinecraftClient.getInstance().getLevelStorage().getSavesDirectory().resolve(currentLevelID).resolve("##KEYSTONE.TEMP##").toFile();
         if (!file.exists()) file.mkdirs();
         return file;
     }

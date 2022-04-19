@@ -6,7 +6,7 @@ import keystone.core.modules.brush.operations.FillBrushOperation;
 import keystone.core.modules.brush.operations.GravityBrushOperation;
 import keystone.core.modules.brush.operations.StackFillBrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public abstract class BrushOperation extends EditableObject
         VALUES.add(this);
     }
 
-    public abstract ITextComponent getName();
+    public abstract Text getName();
     public int iterations() { return 1; }
     public abstract boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration);
 

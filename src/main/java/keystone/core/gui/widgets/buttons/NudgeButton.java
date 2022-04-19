@@ -1,19 +1,19 @@
 package keystone.core.gui.widgets.buttons;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.core.KeystoneGlobalState;
+import keystone.core.client.Player;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.renderer.client.Player;
-import net.minecraft.client.GameSettings;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.Direction;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.GameOptions;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.math.Direction;
 import org.lwjgl.glfw.GLFW;
 
 public class NudgeButton extends SimpleButton
@@ -21,7 +21,7 @@ public class NudgeButton extends SimpleButton
     public interface NudgeConsumer { void nudge(Direction direction, int amount); }
     public interface NudgeHistorySupplier { IHistoryEntry get(); }
 
-    public static final TranslationTextComponent NUDGE = new TranslationTextComponent("keystone.nudge");
+    public static final TranslatableText NUDGE = new TranslatableText("keystone.nudge");
     public static final NudgeHistorySupplier SELECTION_HISTORY_SUPPLIER = () ->
     {
         SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
@@ -36,7 +36,7 @@ public class NudgeButton extends SimpleButton
     private static final int HOLD_DELAY = 10;
     private static final int HOLD_TICKS_BETWEEN = 5;
 
-    private final GameSettings gameSettings;
+    private final GameOptions gameSettings;
     private final NudgeConsumer nudge;
     private final NudgeHistorySupplier historySupplier;
     private int nudgeButton;
@@ -59,7 +59,7 @@ public class NudgeButton extends SimpleButton
     public NudgeButton(int x, int y, int width, int height, NudgeConsumer nudge, NudgeHistorySupplier historySupplier)
     {
         super(x, y, width, height, NUDGE, null);
-        this.gameSettings = Minecraft.getInstance().options;
+        this.gameSettings = MinecraftClient.getInstance().options;
         this.nudge = nudge;
         this.historySupplier = historySupplier;
     }
@@ -82,11 +82,11 @@ public class NudgeButton extends SimpleButton
         if (!nudgeButtonDown) return;
 
         boolean blockKeys = true;
-        Direction forward = Direction.fromYRot(Player.getYaw());
-        int forwardIndex = forward.get2DDataValue();
-        Direction right = Direction.from2DDataValue(forwardIndex + 1);
-        Direction back = Direction.from2DDataValue(forwardIndex + 2);
-        Direction left = Direction.from2DDataValue(forwardIndex + 3);
+        Direction forward = Direction.fromRotation(Player.getYaw());
+        int forwardIndex = forward.getHorizontal();
+        Direction right = Direction.fromHorizontal(forwardIndex + 1);
+        Direction back = Direction.fromHorizontal(forwardIndex + 2);
+        Direction left = Direction.fromHorizontal(forwardIndex + 3);
 
         if (forwardPressed)
         {
@@ -198,37 +198,37 @@ public class NudgeButton extends SimpleButton
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {
-        if (keyCode == gameSettings.keyUp.getKey().getValue())
+        if (keyCode == gameSettings.forwardKey.getDefaultKey().getCode())
         {
             forwardPressed = true;
             forwardTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyDown.getKey().getValue())
+        if (keyCode == gameSettings.backKey.getDefaultKey().getCode())
         {
             backPressed = true;
             backTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyLeft.getKey().getValue())
+        if (keyCode == gameSettings.leftKey.getDefaultKey().getCode())
         {
             leftPressed = true;
             leftTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyRight.getKey().getValue())
+        if (keyCode == gameSettings.rightKey.getDefaultKey().getCode())
         {
             rightPressed = true;
             rightTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyJump.getKey().getValue())
+        if (keyCode == gameSettings.jumpKey.getDefaultKey().getCode())
         {
             upPressed = true;
             upTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyShift.getKey().getValue())
+        if (keyCode == gameSettings.sneakKey.getDefaultKey().getCode())
         {
             downPressed = true;
             downTime = 0;
@@ -240,37 +240,37 @@ public class NudgeButton extends SimpleButton
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers)
     {
-        if (keyCode == gameSettings.keyUp.getKey().getValue())
+        if (keyCode == gameSettings.forwardKey.getDefaultKey().getCode())
         {
             forwardPressed = false;
             forwardTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyDown.getKey().getValue())
+        if (keyCode == gameSettings.backKey.getDefaultKey().getCode())
         {
             backPressed = false;
             backTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyLeft.getKey().getValue())
+        if (keyCode == gameSettings.leftKey.getDefaultKey().getCode())
         {
             leftPressed = false;
             leftTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyRight.getKey().getValue())
+        if (keyCode == gameSettings.rightKey.getDefaultKey().getCode())
         {
             rightPressed = false;
             rightTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyJump.getKey().getValue())
+        if (keyCode == gameSettings.jumpKey.getDefaultKey().getCode())
         {
             upPressed = false;
             upTime = 0;
             return true;
         }
-        if (keyCode == gameSettings.keyShift.getKey().getValue())
+        if (keyCode == gameSettings.sneakKey.getDefaultKey().getCode())
         {
             downPressed = false;
             downTime = 0;

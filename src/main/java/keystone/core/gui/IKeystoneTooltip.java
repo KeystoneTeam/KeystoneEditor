@@ -1,6 +1,6 @@
 package keystone.core.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.util.math.MatrixStack;
 
 public interface IKeystoneTooltip
 {

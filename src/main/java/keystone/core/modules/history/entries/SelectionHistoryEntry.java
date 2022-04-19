@@ -2,10 +2,10 @@ package keystone.core.modules.history.entries;
 
 import keystone.api.Keystone;
 import keystone.core.modules.history.IHistoryEntry;
+import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.modules.selection.boxes.SelectionBoundingBox;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public class SelectionHistoryEntry implements IHistoryEntry
     private List<SelectionBoundingBox> buffer;
     private List<SelectionBoundingBox> restore;
 
-    public SelectionHistoryEntry(CompoundNBT nbt)
+    public SelectionHistoryEntry(NbtCompound nbt)
     {
         deserialize(nbt);
     }
@@ -45,7 +45,7 @@ public class SelectionHistoryEntry implements IHistoryEntry
     public String id() { return "selection_boxes"; }
 
     @Override
-    public void serialize(CompoundNBT nbt)
+    public void serialize(NbtCompound nbt)
     {
         List<Integer> bufferNBT = new ArrayList<>(buffer.size() * 6);
         for (SelectionBoundingBox box : buffer)
@@ -75,7 +75,7 @@ public class SelectionHistoryEntry implements IHistoryEntry
         }
     }
     @Override
-    public void deserialize(CompoundNBT nbt)
+    public void deserialize(NbtCompound nbt)
     {
         int[] bufferNBT = nbt.getIntArray("buffer");
         buffer = new ArrayList<>(bufferNBT.length / 6);
@@ -84,7 +84,7 @@ public class SelectionHistoryEntry implements IHistoryEntry
             buffer.add(SelectionBoundingBox.create(bufferNBT[i], bufferNBT[i + 1], bufferNBT[i + 2], bufferNBT[i + 3], bufferNBT[i + 4], bufferNBT[i + 5]));
         }
 
-        if (nbt.contains("restore", Constants.NBT.TAG_INT_ARRAY))
+        if (nbt.contains("restore", NbtElement.INT_ARRAY_TYPE))
         {
             int[] restoreNBT = nbt.getIntArray("restore");
             restore = new ArrayList<>(restoreNBT.length / 6);

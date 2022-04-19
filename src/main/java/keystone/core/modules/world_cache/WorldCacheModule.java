@@ -1,25 +1,28 @@
 package keystone.core.modules.world_cache;
 
+import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.modules.IKeystoneModule;
-import keystone.core.renderer.common.models.DimensionId;
-import net.minecraft.world.IServerWorld;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.world.WorldEvent;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class WorldCacheModule implements IKeystoneModule
 {
-    private Map<DimensionId, IServerWorld> loadedWorlds;
+    private Map<RegistryKey<World>, ServerWorld> loadedWorlds;
 
     public WorldCacheModule()
     {
         loadedWorlds = new HashMap<>();
 
-        MinecraftForge.EVENT_BUS.addListener(this::onWorldLoaded);
-        MinecraftForge.EVENT_BUS.addListener(this::onWorldUnloaded);
+        ServerWorldEvents.LOAD.register(this::onWorldLoaded);
+        KeystoneLifecycleEvents.LEAVE.register(this::onSaveUnloaded);
     }
 
     @Override
@@ -33,43 +36,28 @@ public class WorldCacheModule implements IKeystoneModule
         loadedWorlds.clear();
     }
 
-    public boolean hasDimensionWorld(DimensionId dimensionId)
+    public static RegistryKey<World> getDimensionKey(Identifier dimension)
+    {
+        return RegistryKey.of(Registry.WORLD_KEY, dimension);
+    }
+
+    public boolean hasDimensionWorld(RegistryKey<World> dimensionId)
     {
         return loadedWorlds.containsKey(dimensionId);
     }
-    public IServerWorld getDimensionServerWorld(DimensionId dimension)
+    public ServerWorld getDimensionWorld(RegistryKey<World> dimension)
     {
         return loadedWorlds.getOrDefault(dimension, null);
     }
-    public World getDimensionWorld(DimensionId dimension)
-    {
-        if (loadedWorlds.containsKey(dimension)) return loadedWorlds.get(dimension).getLevel();
-        else return null;
-    }
 
-    private void onWorldLoaded(final WorldEvent.Load event)
+    private void onWorldLoaded(MinecraftServer server, ServerWorld world)
     {
-        if (event.getWorld() instanceof World)
-        {
-            World world = (World)event.getWorld();
-            if (!world.isClientSide && world instanceof IServerWorld)
-            {
-                DimensionId dimensionId = DimensionId.from(world.dimension());
-                if (loadedWorlds.containsKey(dimensionId)) loadedWorlds.clear();
-                loadedWorlds.put(dimensionId, (IServerWorld)world);
-            }
-        }
+        RegistryKey<World> dimensionId = world.getRegistryKey();
+        if (loadedWorlds.containsKey(dimensionId)) loadedWorlds.clear();
+        loadedWorlds.put(dimensionId, world);
     }
-    private void onWorldUnloaded(final WorldEvent.Unload event)
+    private void onSaveUnloaded()
     {
-        if (event.getWorld() instanceof World)
-        {
-            World world = (World)event.getWorld();
-            if (!world.isClientSide && world instanceof IServerWorld)
-            {
-                DimensionId dimensionId = DimensionId.from(world.dimension());
-                if (loadedWorlds.containsKey(dimensionId)) loadedWorlds.clear();
-            }
-        }
+        loadedWorlds.clear();
     }
 }

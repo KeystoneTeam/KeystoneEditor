@@ -1,20 +1,19 @@
 package keystone.api.wrappers.nbt;
 
 import net.minecraft.nbt.*;
-import net.minecraftforge.common.util.Constants;
 
 import java.util.List;
 
-public class NBTList<T> extends NBTWrapper<ListNBT>
+public class NBTList<T> extends NBTWrapper<NbtList>
 {
     /**
      * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @param nbt The Minecraft INBT
+     * @param nbt The Minecraft NbtElement
      */
-    public NBTList(ListNBT nbt) { super(nbt); }
-    public NBTList() { super(new ListNBT()); }
+    public NBTList(NbtList nbt) { super(nbt); }
+    public NBTList() { super(new NbtList()); }
 
-    public NBTType listType() { return NBTType.fromMinecraftID(nbt.getId()); }
+    public NBTType listType() { return NBTType.fromMinecraftID(nbt.getType()); }
     public int size() { return nbt.size(); }
     public void remove(int i) { this.nbt.remove(i); }
 
@@ -31,7 +30,7 @@ public class NBTList<T> extends NBTWrapper<ListNBT>
     //region Indexed Addition
     public boolean add(int i, NBTWrapper<?> nbt)
     {
-        if (this.nbt.getElementType() == nbt.getMinecraftNBT().getId() || this.nbt.getElementType() == 0)
+        if (this.nbt.getType() == nbt.getMinecraftNBT().getType() || this.nbt.getType() == 0)
         {
             this.nbt.add(i, nbt.getMinecraftNBT());
             return true;
@@ -40,63 +39,63 @@ public class NBTList<T> extends NBTWrapper<ListNBT>
     }
     public boolean add(int i, short value)
     {
-        if (this.nbt.getElementType() == Constants.NBT.TAG_SHORT || this.nbt.getElementType() == 0)
+        if (this.nbt.getType() == NbtElement.SHORT_TYPE || this.nbt.getType() == 0)
         {
-            this.nbt.add(i, ShortNBT.valueOf(value));
+            this.nbt.add(i, NbtShort.of(value));
             return true;
         }
         else return false;
     }
     public boolean add(int i, int value)
     {
-        if (this.nbt.getElementType() == Constants.NBT.TAG_INT || this.nbt.getElementType() == 0)
+        if (this.nbt.getType() == NbtElement.INT_TYPE || this.nbt.getType() == 0)
         {
-            this.nbt.add(i, IntNBT.valueOf(value));
+            this.nbt.add(i, NbtInt.of(value));
             return true;
         }
         else return false;
     }
     public boolean add(int i, int[] value)
     {
-        if (this.nbt.getElementType() == Constants.NBT.TAG_INT_ARRAY || this.nbt.getElementType() == 0)
+        if (this.nbt.getType() == NbtElement.INT_ARRAY_TYPE || this.nbt.getType() == 0)
         {
-            this.nbt.add(i, new IntArrayNBT(value));
+            this.nbt.add(i, new NbtIntArray(value));
             return true;
         }
         else return false;
     }
     public boolean add(int i, List<Integer> value)
     {
-        if (this.nbt.getElementType() == Constants.NBT.TAG_INT_ARRAY || this.nbt.getElementType() == 0)
+        if (this.nbt.getType() == NbtElement.INT_ARRAY_TYPE || this.nbt.getType() == 0)
         {
-            this.nbt.add(i, new IntArrayNBT(value));
+            this.nbt.add(i, new NbtIntArray(value));
             return true;
         }
         else return false;
     }
     public boolean add(int i, double value)
     {
-        if (this.nbt.getElementType() == Constants.NBT.TAG_DOUBLE || this.nbt.getElementType() == 0)
+        if (this.nbt.getType() == NbtElement.DOUBLE_TYPE || this.nbt.getType() == 0)
         {
-            this.nbt.add(i, DoubleNBT.valueOf(value));
+            this.nbt.add(i, NbtDouble.of(value));
             return true;
         }
         else return false;
     }
     public boolean add(int i, float value)
     {
-        if (this.nbt.getElementType() == Constants.NBT.TAG_FLOAT || this.nbt.getElementType() == 0)
+        if (this.nbt.getType() == NbtElement.FLOAT_TYPE || this.nbt.getType() == 0)
         {
-            this.nbt.add(i, FloatNBT.valueOf(value));
+            this.nbt.add(i, NbtFloat.of(value));
             return true;
         }
         else return false;
     }
     public boolean add(int i, String value)
     {
-        if (this.nbt.getElementType() == Constants.NBT.TAG_STRING || this.nbt.getElementType() == 0)
+        if (this.nbt.getType() == NbtElement.STRING_TYPE || this.nbt.getType() == 0)
         {
-            this.nbt.add(i, StringNBT.valueOf(value));
+            this.nbt.add(i, NbtString.of(value));
             return true;
         }
         else return false;

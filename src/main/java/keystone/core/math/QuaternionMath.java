@@ -1,6 +1,7 @@
 package keystone.core.math;
 
-import net.minecraft.util.math.vector.Quaternion;
+
+import net.minecraft.util.math.Quaternion;
 
 public class QuaternionMath
 {

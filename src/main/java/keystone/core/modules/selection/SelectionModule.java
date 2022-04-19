@@ -1,32 +1,30 @@
 package keystone.core.modules.selection;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.WorldRegion;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.core.KeystoneGlobalState;
-import keystone.core.events.KeystoneHotbarEvent;
-import keystone.core.events.KeystoneInputEvent;
-import keystone.core.events.KeystoneSelectionChangedEvent;
+import keystone.core.client.Player;
+import keystone.core.events.keystone.KeystoneHotbarEvents;
+import keystone.core.events.keystone.KeystoneInputEvents;
+import keystone.core.events.keystone.KeystoneLifecycleEvents;
+import keystone.core.events.minecraft.InputEvents;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.mouse.MouseModule;
-import keystone.core.modules.selection.boxes.SelectionBoundingBox;
-import keystone.core.modules.selection.providers.HighlightBoxProvider;
-import keystone.core.modules.selection.providers.SelectionBoxProvider;
-import keystone.core.renderer.client.Player;
-import keystone.core.renderer.client.providers.IBoundingBoxProvider;
-import keystone.core.renderer.common.models.Coords;
-import keystone.core.renderer.common.models.DimensionId;
-import net.minecraft.client.GameSettings;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import keystone.core.renderer.Color4f;
+import keystone.core.renderer.OverlayRenderer;
+import keystone.core.renderer.RenderBox;
+import keystone.core.renderer.RendererFactory;
+import keystone.core.renderer.color.ColorProviderFactory;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.GameOptions;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.util.math.Vec3i;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -38,27 +36,29 @@ public class SelectionModule implements IKeystoneModule
     private HistoryModule historyModule;
     private MouseModule mouseModule;
     private List<SelectionBoundingBox> selectionBoxes;
-    private IBoundingBoxProvider[] renderProviders;
+    private OverlayRenderer highlightRenderer;
+    private SelectionBoxRenderer selectionBoxRenderer;
 
-    private Coords firstSelectionPoint;
+    private Vec3i firstSelectionPoint;
     private boolean creatingSelection;
 
     public SelectionModule()
     {
-        MinecraftForge.EVENT_BUS.register(this);
-
         selectionBoxes = Collections.synchronizedList(new ArrayList<>());
-        renderProviders = new IBoundingBoxProvider[]
-        {
-                new SelectionBoxProvider(this),
-                new HighlightBoxProvider()
-        };
+
+        InputEvents.KEY_PRESSED.register(this::onKeyInput);
+        KeystoneInputEvents.MOUSE_CLICKED.register(this::onMouseClick);
+        KeystoneInputEvents.START_MOUSE_DRAG.register(this::onMouseDragStart);
+        KeystoneInputEvents.END_MOUSE_DRAG.register(this::onMouseDragEnd);
+        KeystoneHotbarEvents.ALLOW_CHANGE.register(this::allowHotbarChange);
     }
     @Override
     public void postInit()
     {
         historyModule = Keystone.getModule(HistoryModule.class);
         mouseModule = Keystone.getModule(MouseModule.class);
+        highlightRenderer = RendererFactory.createWorldspaceOverlay().wireframe().build();
+        selectionBoxRenderer = new SelectionBoxRenderer();
     }
     @Override
     public void resetModule()
@@ -68,6 +68,7 @@ public class SelectionModule implements IKeystoneModule
         creatingSelection = false;
     }
 
+    //region Selection Methods
     public void deselect()
     {
         if (selectionBoxes.size() > 0)
@@ -77,7 +78,7 @@ public class SelectionModule implements IKeystoneModule
             historyModule.endHistoryEntry();
 
             selectionBoxes.clear();
-            MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes, false));
+            KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, false);
         }
     }
     public List<SelectionBoundingBox> restoreSelectionBoxes(List<SelectionBoundingBox> boxes)
@@ -88,31 +89,29 @@ public class SelectionModule implements IKeystoneModule
         selectionBoxes.clear();
         boxes.forEach(box -> selectionBoxes.add(box.clone()));
 
-        MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes, false));
+        KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, false);
         return old;
     }
-
     public WorldRegion[] buildRegions(boolean allowBlocksOutside)
     {
         WorldRegion[] regions = new WorldRegion[selectionBoxes.size()];
         for (int i = 0; i < regions.length; i++)
         {
-            regions[i] = new WorldRegion(selectionBoxes.get(i).getMinCoords(), selectionBoxes.get(i).getMaxCoords());
+            regions[i] = new WorldRegion(selectionBoxes.get(i).getMin(), selectionBoxes.get(i).getMax());
             regions[i].allowBlocksOutside = allowBlocksOutside;
         }
         return regions;
     }
-
     public void setSelections(List<BoundingBox> boxes)
     {
         historyModule.tryBeginHistoryEntry();
         historyModule.pushToEntry(new SelectionHistoryEntry(selectionBoxes, true));
         selectionBoxes.clear();
         boxes.forEach(box -> selectionBoxes.add(SelectionBoundingBox.createFromBoundingBox(box)));
-        MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes, false));
+        KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, false);
         historyModule.tryEndHistoryEntry();
     }
-
+    //endregion
     //region Getters
     public boolean isCreatingSelection()
     {
@@ -136,12 +135,7 @@ public class SelectionModule implements IKeystoneModule
         return KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION;
     }
     @Override
-    public IBoundingBoxProvider[] getBoundingBoxProviders()
-    {
-        return renderProviders;
-    }
-    @Override
-    public void preRender(MatrixStack stack, float partialTicks, DimensionId dimensionId)
+    public void preRender(WorldRenderContext context)
     {
         if (creatingSelection)
         {
@@ -149,34 +143,51 @@ public class SelectionModule implements IKeystoneModule
             else selectionBoxes.get(selectionBoxes.size() - 1).setCorner2(Player.getHighlightedBlock());
         }
     }
+    @Override
+    public void render(WorldRenderContext context)
+    {
+        // Block Highlight
+        if (isEnabled() && !creatingSelection && mouseModule.getSelectedFace() == null)
+        {
+            RenderBox box = new RenderBox(Player.getHighlightedBlock(), Player.getHighlightedBlock());
+            highlightRenderer.drawCuboid(box, ColorProviderFactory.staticColor(Color4f.yellow));
+        }
+
+        // Selection Boxes
+        if (!KeystoneGlobalState.HideSelectionBoxes)
+        {
+            for (SelectionBoundingBox box : selectionBoxes)
+            {
+                selectionBoxRenderer.render(context, box);
+            }
+        }
+    }
     //endregion
     //region Events
-    @SubscribeEvent
-    public void onKeyInput(final InputEvent.KeyInputEvent event)
+    private void onKeyInput(int key, int action, int scancode, int modifiers)
     {
-        if (!Keystone.isActive() || Minecraft.getInstance().screen != null) return;
+        if (!Keystone.isActive() || MinecraftClient.getInstance().currentScreen != null) return;
 
-        if (event.getKey() == GLFW.GLFW_KEY_D && event.getModifiers() == GLFW.GLFW_MOD_CONTROL)
+        if (key == GLFW.GLFW_KEY_D && modifiers == GLFW.GLFW_MOD_CONTROL)
         {
-            GameSettings settings = Minecraft.getInstance().options;
-            for (KeyBinding keyBinding : settings.keyMappings)
+            GameOptions settings = MinecraftClient.getInstance().options;
+            for (KeyBinding keyBinding : settings.allKeys)
             {
-                if (keyBinding.isDown())
+                if (keyBinding.isPressed())
                 {
-                    if (keyBinding.getKey().getValue() != GLFW.GLFW_KEY_D &&
-                            keyBinding.getKey().getValue() != GLFW.GLFW_KEY_LEFT_CONTROL &&
-                            keyBinding.getKey().getValue() != GLFW.GLFW_KEY_RIGHT_CONTROL) return;
+                    if (keyBinding.getDefaultKey().getCode() != GLFW.GLFW_KEY_D &&
+                            keyBinding.getDefaultKey().getCode() != GLFW.GLFW_KEY_LEFT_CONTROL &&
+                            keyBinding.getDefaultKey().getCode() != GLFW.GLFW_KEY_RIGHT_CONTROL) return;
                 }
             }
             deselect();
         }
     }
-    @SubscribeEvent
-    public void onMouseClick(final KeystoneInputEvent.MouseClickEvent event)
+    private void onMouseClick(int button, int modifiers, double mouseX, double mouseY, boolean gui)
     {
-        if (!Keystone.isActive() || Minecraft.getInstance().screen != null || event.gui) return;
+        if (!Keystone.isActive() || MinecraftClient.getInstance().currentScreen != null || gui) return;
 
-        if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
             if (mouseModule.getSelectedFace() == null)
             {
@@ -185,30 +196,27 @@ public class SelectionModule implements IKeystoneModule
             }
         }
     }
-    @SubscribeEvent
-    public void onMouseDragStart(final KeystoneInputEvent.MouseDragStartEvent event)
+    private void onMouseDragStart(int button, double mouseX, double mouseY, boolean gui)
     {
-        if (!Keystone.isActive() || Minecraft.getInstance().screen != null || event.gui) return;
+        if (!Keystone.isActive() || MinecraftClient.getInstance().currentScreen != null || gui) return;
 
-        if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
             if (mouseModule.getSelectedFace() == null) startSelectionBox();
         }
     }
-    @SubscribeEvent
-    public void onMouseDragEnd(final KeystoneInputEvent.MouseDragEndEvent event)
+    public void onMouseDragEnd(int button, double mouseX, double mouseY, boolean gui)
     {
-        if (!Keystone.isActive() || Minecraft.getInstance().screen != null || event.gui) return;
+        if (!Keystone.isActive() || MinecraftClient.getInstance().currentScreen != null || gui) return;
 
-        if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
             if (mouseModule.getSelectedFace() == null) endSelectionBox();
         }
     }
-    @SubscribeEvent
-    public void onHotbarChanged(final KeystoneHotbarEvent event)
+    public boolean allowHotbarChange(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
-        if (creatingSelection) event.setCanceled(true);
+        return !creatingSelection;
     }
     //endregion
     //region Controls
@@ -235,7 +243,7 @@ public class SelectionModule implements IKeystoneModule
 
             firstSelectionPoint = null;
             creatingSelection = false;
-            MinecraftForge.EVENT_BUS.post(new KeystoneSelectionChangedEvent(selectionBoxes, true));
+            KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, true);
         }
     }
     //endregion

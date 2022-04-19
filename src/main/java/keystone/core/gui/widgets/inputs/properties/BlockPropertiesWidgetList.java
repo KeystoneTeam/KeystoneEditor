@@ -2,12 +2,12 @@ package keystone.core.gui.widgets.inputs.properties;
 
 import keystone.api.wrappers.blocks.Block;
 import keystone.core.gui.widgets.WidgetList;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.EnumProperty;
-import net.minecraft.state.IntegerProperty;
-import net.minecraft.state.Property;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.EnumProperty;
+import net.minecraft.state.property.IntProperty;
+import net.minecraft.state.property.Property;
+import net.minecraft.text.TranslatableText;
 
 import java.util.Collection;
 import java.util.function.BiConsumer;
@@ -16,13 +16,13 @@ import java.util.function.Consumer;
 public class BlockPropertiesWidgetList extends WidgetList
 {
     protected final int intendedWidth;
-    protected final Consumer<Widget[]> disableWidgets;
+    protected final Consumer<ClickableWidget[]> disableWidgets;
     protected final Runnable restoreWidgets;
-    protected final BiConsumer<Widget, Boolean> addDropdown;
+    protected final BiConsumer<ClickableWidget, Boolean> addDropdown;
 
-    public BlockPropertiesWidgetList(Block block, int x, int y, int width, int maxHeight, int padding, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
+    public BlockPropertiesWidgetList(Block block, int x, int y, int width, int maxHeight, int padding, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets)
     {
-        super(x, y, width, maxHeight, padding, new TranslationTextComponent("keystone.block_properties.propertiesPanel"));
+        super(x, y, width, maxHeight, padding, new TranslatableText("keystone.block_properties.propertiesPanel"));
 
         this.intendedWidth = width - 2 * padding;
         this.disableWidgets = disableWidgets;
@@ -44,10 +44,10 @@ public class BlockPropertiesWidgetList extends WidgetList
             add(new BooleanPropertyWidget(block, (BooleanProperty)property, 0, y, intendedWidth));
             return BooleanPropertyWidget.getFinalHeight();
         }
-        if (property instanceof IntegerProperty)
+        if (property instanceof IntProperty)
         {
-            add(new IntegerPropertyWidget(block, (IntegerProperty)property, 0, y, intendedWidth));
-            return IntegerPropertyWidget.getFinalHeight();
+            add(new IntPropertyWidget(block, (IntProperty)property, 0, y, intendedWidth));
+            return IntPropertyWidget.getFinalHeight();
         }
         if (property instanceof EnumProperty)
         {
