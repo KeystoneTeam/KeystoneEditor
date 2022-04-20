@@ -132,9 +132,9 @@ public class BrushModule implements IKeystoneModule
     {
         // Render Brush Positions
         this.outsideRenderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME);
-        for (Vec3i brushPosition : brushPositions)
+        for (int i = 0; i < brushPositions.size(); i++)
         {
-            RenderBox box = new RenderBox(brushPosition).nudge();
+            RenderBox box = new RenderBox(brushPositions.get(i)).nudge();
             this.outsideRenderer.drawCuboid(box, Color4f.yellow);
         }
 
@@ -149,18 +149,21 @@ public class BrushModule implements IKeystoneModule
 
         boolean outside = !brushShape.isPositionInShape(Player.getEyePosition(), centerBlock, brushSize[0], brushSize[1], brushSize[2]);
         ComplexOverlayRenderer renderer = outside ? outsideRenderer : insideRenderer;
+        float fillAlpha = 0.25f;
         if (brushShape == BrushShape.ROUND)
         {
-            //(outside ? outsideFillRenderer : insideFillRenderer).drawSphere(center, xRadius, yRadius, zRadius, blue, 128, false, false, outside);
+            //renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawSphere(center, xRadius, yRadius, zRadius, Color4f.blue.withAlpha(fillAlpha));
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawSphere(center, xRadius, yRadius, zRadius, Color4f.blue);
         }
         else if (brushShape == BrushShape.DIAMOND)
         {
-            //(outside ? outsideFillRenderer : insideFillRenderer).drawDiamond(center, xRadius, yRadius, zRadius, blue, 128, false, false, outside);
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawDiamond(center, xRadius, yRadius, zRadius, Color4f.blue.withAlpha(fillAlpha));
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawDiamond(center, xRadius, yRadius, zRadius, Color4f.blue);
         }
         else if (brushShape == BrushShape.SQUARE)
         {
             RenderBox box = new RenderBox(center.add(-xRadius, -yRadius, -zRadius), center.add(xRadius, yRadius, zRadius));
-            renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, Color4f.blue.withAlpha(0.5f));
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, Color4f.blue.withAlpha(fillAlpha));
             renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawCuboid(box, Color4f.blue);
         }
     }

@@ -9,12 +9,30 @@ import keystone.core.renderer.interfaces.IRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 
+import java.util.function.BiFunction;
+
 public class WireframeOverlayRenderer implements IOverlayRenderer
 {
+    private static final Vec2f[] UNIT_CIRCLE_VERTICES = createUnitCircleVertices(90);
+    private static Vec2f[] createUnitCircleVertices(int resolution)
+    {
+        double step = 6.283185307179586D / resolution;
+        Vec2f[] ret = new Vec2f[resolution];
+        for (int i = 0; i < resolution; i++)
+        {
+            double theta = step * resolution;
+            double localX = Math.cos(theta);
+            double localY = Math.sin(theta);
+            ret[i] = new Vec2f((float)localX, (float)localY);
+        }
+        return ret;
+    }
+
     private final IRenderer renderer;
     private final float lineWidth;
 
@@ -42,13 +60,11 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         double maxX = box.maxX;
         double maxY = box.maxY;
         double maxZ = box.maxZ;
-        
+
         Color4f color;
         if (minX != maxX && minZ != maxZ)
         {
             color = colorProvider.apply(Direction.DOWN).withAlpha(alphaProvider.apply(Direction.DOWN));
-            modifyRenderer(Direction.DOWN);
-
             renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
             renderer.vertex(minX, minY, minZ).color(color).next()
                     .vertex(maxX, minY, minZ).color(color).next()
@@ -60,8 +76,6 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
             if (minY != maxY)
             {
                 color = colorProvider.apply(Direction.UP).withAlpha(alphaProvider.apply(Direction.UP));
-                modifyRenderer(Direction.UP);
-
                 renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
                 renderer.vertex(minX, maxY, maxZ).color(color).next()
                         .vertex(maxX, maxY, maxZ).color(color).next()
@@ -75,8 +89,6 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         if (minX != maxX && minY != maxY)
         {
             color = colorProvider.apply(Direction.SOUTH).withAlpha(alphaProvider.apply(Direction.SOUTH));
-            modifyRenderer(Direction.SOUTH);
-
             renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
             renderer.vertex(maxX, minY, maxZ).color(color).next()
                     .vertex(maxX, maxY, maxZ).color(color).next()
@@ -88,8 +100,6 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
             if (minZ != maxZ)
             {
                 color = colorProvider.apply(Direction.NORTH).withAlpha(alphaProvider.apply(Direction.NORTH));
-                modifyRenderer(Direction.NORTH);
-
                 renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
                 renderer.vertex(minX, minY, minZ).color(color).next()
                         .vertex(minX, maxY, minZ).color(color).next()
@@ -102,8 +112,6 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         if (minY != maxY && minZ != maxZ)
         {
             color = colorProvider.apply(Direction.WEST).withAlpha(alphaProvider.apply(Direction.WEST));
-            modifyRenderer(Direction.WEST);
-
             renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
             renderer.vertex(minX, minY, minZ).color(color).next()
                     .vertex(minX, minY, maxZ).color(color).next()
@@ -115,8 +123,6 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
             if (minX != maxX)
             {
                 color = colorProvider.apply(Direction.EAST).withAlpha(alphaProvider.apply(Direction.EAST));
-                modifyRenderer(Direction.EAST);
-
                 renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
                 renderer.vertex(maxX, maxY, minZ).color(color).next()
                         .vertex(maxX, maxY, maxZ).color(color).next()
@@ -253,6 +259,51 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
 
         drawCuboid(new RenderBox(min, min.add(size.getX(), size.getY(), size.getZ())).nudge(), colorProvider, fillAlphaProvider);
         drawGrid(min, size, gridScale, colorProvider, lineAlphaProvider, lineWidth, true);
+    }
+    @Override
+    public void drawDiamond(Vec3d center, double xRadius, double yRadius, double zRadius, Color4f color)
+    {
+        Vec3d nX = center.add(-xRadius, 0, 0);
+        Vec3d pX = center.add(xRadius, 0, 0);
+        Vec3d nY = center.add(0, -yRadius, 0);
+        Vec3d pY = center.add(0, yRadius, 0);
+        Vec3d nZ = center.add(0, 0, -zRadius);
+        Vec3d pZ = center.add(0, 0, zRadius);
+
+        renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
+        renderer.vertex(pY).color(color).next()
+                .vertex(pX).color(color).next()
+                .vertex(nY).color(color).next()
+                .vertex(nX).color(color).next();
+        renderer.vertex(pY).color(color).next()
+                .vertex(pZ).color(color).next()
+                .vertex(nY).color(color).next()
+                .vertex(nZ).color(color).next()
+                .vertex(pY).color(color).next();
+        renderer.draw();
+
+        renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
+        renderer.vertex(pX).color(color).next()
+                .vertex(pZ).color(color).next()
+                .vertex(nX).color(color).next()
+                .vertex(nZ).color(color).next()
+                .vertex(pX).color(color).next();
+        renderer.draw();
+    }
+    @Override
+    public void drawSphere(Vec3d center, double xRadius, double yRadius, double zRadius, Color4f color)
+    {
+        drawCircle(center, (x, y) -> new Vec3d(0, x * yRadius, y * zRadius), color);
+        drawCircle(center, (x, y) -> new Vec3d(x * xRadius, 0, y * zRadius), color);
+        drawCircle(center, (x, y) -> new Vec3d(x * xRadius, y * yRadius, 0), color);
+    }
+    //endregion
+    //region Helpers
+    private void drawCircle(Vec3d center, BiFunction<Double, Double, Vec3d> pointTransformer, Color4f color)
+    {
+        renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
+        for (Vec2f vertex : UNIT_CIRCLE_VERTICES) renderer.vertex(center.add(pointTransformer.apply((double)vertex.x, (double)vertex.y))).color(color).next();
+        renderer.draw();
     }
     //endregion
 }

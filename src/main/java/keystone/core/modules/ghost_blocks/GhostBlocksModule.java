@@ -50,10 +50,12 @@ public class GhostBlocksModule implements IKeystoneModule
         //MatrixStack stack = event.getMatrixStack();
         //stack.push();
         //stack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+
         SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();
         ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().render(context.matrixStack(), buffer, context.tickDelta()));
         buffer.draw();
         RenderSystem.enableCull();
+
         //stack.pop();
     }
 

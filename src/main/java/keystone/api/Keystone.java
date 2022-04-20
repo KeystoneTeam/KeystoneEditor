@@ -261,7 +261,6 @@ public final class Keystone
     {
         filterModule = getModule(FilterModule.class);
         for (IKeystoneModule module : modules.values()) module.postInit();
-        KeystoneOverlayHandler.addOverlay(new KeystoneHotbar());
     }
     /**
      * Ran every server tick. Used to execute scheduled {@link keystone.api.Keystone.DelayedRunnable DelayedRunnables}

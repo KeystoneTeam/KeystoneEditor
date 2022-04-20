@@ -52,6 +52,18 @@ public class ComplexOverlayRenderer implements IOverlayRenderer
             {
                 Keystone.LOGGER.error("This ComplexOverlayRenderer does not support DrawMode." + drawMode + "!");
             }
+
+            @Override
+            public void drawDiamond(Vec3d center, double xRadius, double yRadius, double zRadius, Color4f color)
+            {
+                Keystone.LOGGER.error("This ComplexOverlayRenderer does not support DrawMode." + drawMode + "!");
+            }
+
+            @Override
+            public void drawSphere(Vec3d center, double xRadius, double yRadius, double zRadius, Color4f color)
+            {
+                Keystone.LOGGER.error("This ComplexOverlayRenderer does not support DrawMode." + drawMode + "!");
+            }
         };
         this.drawMode = startingDrawMode;
     }
@@ -65,12 +77,6 @@ public class ComplexOverlayRenderer implements IOverlayRenderer
     protected IOverlayRenderer getRenderer()
     {
         return this.renderers.getOrDefault(this.drawMode, this.fallbackRenderer);
-    }
-
-    @Override
-    public void modifyRenderer(Direction direction)
-    {
-        getRenderer().modifyRenderer(direction);
     }
 
     @Override
@@ -89,5 +95,17 @@ public class ComplexOverlayRenderer implements IOverlayRenderer
     public void drawPlane(Vec3d center, Direction planeNormal, double gridScale, IColorProvider colorProvider, IAlphaProvider fillAlphaProvider, IAlphaProvider lineAlphaProvider, float lineWidth)
     {
         getRenderer().drawPlane(center, planeNormal, gridScale, colorProvider, fillAlphaProvider, lineAlphaProvider, lineWidth);
+    }
+
+    @Override
+    public void drawDiamond(Vec3d center, double xRadius, double yRadius, double zRadius, Color4f color)
+    {
+        getRenderer().drawDiamond(center, xRadius, yRadius, zRadius, color);
+    }
+
+    @Override
+    public void drawSphere(Vec3d center, double xRadius, double yRadius, double zRadius, Color4f color)
+    {
+        getRenderer().drawSphere(center, xRadius, yRadius, zRadius, color);
     }
 }

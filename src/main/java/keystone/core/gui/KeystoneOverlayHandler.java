@@ -3,8 +3,10 @@ package keystone.core.gui;
 import keystone.api.Keystone;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.keystone.KeystoneInputEvents;
+import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.minecraft.InputEvents;
 import keystone.core.gui.screens.KeystoneOverlay;
+import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.minecraft.client.MinecraftClient;
@@ -52,6 +54,20 @@ public class KeystoneOverlayHandler
 
     public static void registerEvents()
     {
+        KeystoneLifecycleEvents.JOIN.register(world ->
+        {
+            overlays.clear();
+            addList.clear();
+            removeList.clear();
+            addOverlay(new KeystoneHotbar());
+        });
+        KeystoneLifecycleEvents.LEAVE.register(() ->
+        {
+            overlays.clear();
+            addList.clear();
+            removeList.clear();
+        });
+
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(KeystoneOverlayHandler::onWorldUnload);
         ClientTickEvents.START_CLIENT_TICK.register(client -> tick());
         InputEvents.MOUSE_CLICKED.register(KeystoneOverlayHandler::mouseClicked);

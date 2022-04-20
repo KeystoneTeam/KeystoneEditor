@@ -24,7 +24,7 @@ public class SphereMesh
         points = new Vec3d[triangles.size()];
         for (int i = 0; i < points.length; i++) points[i] = verticesList.get(triangles.get(i));
     }
-    public Vec3d[] getVec3ds()
+    public Vec3d[] getVertices()
     {
         return points;
     }

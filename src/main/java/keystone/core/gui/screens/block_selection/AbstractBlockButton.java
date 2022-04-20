@@ -54,8 +54,6 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
         {
             MinecraftClient mc = MinecraftClient.getInstance();
             fill(matrixStack, x, y, x + width, y + height, 0x80FFFFFF);
-
-            // TODO: Check how well this tooltip works
             KeystoneOverlayHandler.addTooltip((stack, mX, mY, pT) -> screen.renderTooltip(matrixStack, tooltip, mX, mY));
         }
         KeystoneOverlay.drawItem(this, mc, itemStack, x + (width - 18) / 2 + 1, y + (height - 18) / 2 + 1);
