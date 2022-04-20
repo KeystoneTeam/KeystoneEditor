@@ -228,7 +228,7 @@ public final class Keystone
      */
     public static void init()
     {
-        WorldRenderEvents.BEFORE_DEBUG_RENDER.register(context ->
+        WorldRenderEvents.LAST.register(context ->
         {
             Player.update(context.tickDelta(), MinecraftClient.getInstance().player);
 

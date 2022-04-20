@@ -20,7 +20,6 @@
   "mixins": [
     "keystone.mixins.json"
   ],
-  "accessWidener" : "keystone.accesswidener",
   "depends": {
     "fabricloader": ">=0.13.3",
     "fabric": "*",

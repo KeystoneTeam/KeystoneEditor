@@ -1,13 +1,16 @@
 package keystone.api;
 
 import keystone.core.KeystoneConfig;
+import keystone.core.mixins.PersistentStateManagerAccessor;
+import keystone.core.modules.world_cache.WorldCacheModule;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.world.World;
 
 import java.io.File;
 
 public class KeystoneDirectories
 {
-    private static String currentLevelID;
+    private static WorldCacheModule worldCache;
     private static File keystoneDirectory;
 
     private static File analysesDirectory;
@@ -26,11 +29,6 @@ public class KeystoneDirectories
         stockFilterCache = getKeystoneSubdirectory(KeystoneConfig.stockFilterCache);
     }
 
-    public static void setCurrentLevelID(String levelID)
-    {
-        currentLevelID = levelID;
-    }
-
     public static File getKeystoneDirectory() { return keystoneDirectory; }
     public static File getKeystoneSubdirectory(String subdirectory)
     {
@@ -46,7 +44,8 @@ public class KeystoneDirectories
 
     public static File getWorldCacheDirectory()
     {
-        File file = MinecraftClient.getInstance().getLevelStorage().getSavesDirectory().resolve(currentLevelID).resolve("##KEYSTONE.TEMP##").toFile();
+        if (worldCache == null) worldCache = Keystone.getModule(WorldCacheModule.class);
+        File file = ((PersistentStateManagerAccessor)worldCache.getDimensionWorld(World.OVERWORLD).getPersistentStateManager()).getDirectory().getParentFile().toPath().resolve("##KEYSTONE.TEMP##").toFile();
         if (!file.exists()) file.mkdirs();
         return file;
     }

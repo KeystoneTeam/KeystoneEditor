@@ -3,10 +3,12 @@ package keystone.core.modules.history;
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.core.KeystoneConfig;
+import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.keystone.KeystoneRegistryEvents;
 import keystone.core.events.minecraft.InputEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.utils.NBTSerializer;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.NbtCompound;
 import org.lwjgl.glfw.GLFW;
 
@@ -26,6 +28,7 @@ public class HistoryModule implements IKeystoneModule
     public HistoryModule()
     {
         InputEvents.KEY_PRESSED.register(this::onKeyboardInput);
+        KeystoneLifecycleEvents.JOIN.register(this::onJoinWorld);
     }
 
     private void onKeyboardInput(int key, int action, int scancode, int modifiers)
@@ -35,6 +38,10 @@ public class HistoryModule implements IKeystoneModule
             if (key == GLFW.GLFW_KEY_Z) undo();
             else if (key == GLFW.GLFW_KEY_Y) redo();
         }
+    }
+    private void onJoinWorld(ClientWorld world)
+    {
+        Keystone.getModule(HistoryModule.class).clearHistory();
     }
 
     @Override

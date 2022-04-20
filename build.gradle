@@ -53,11 +53,6 @@ tasks.withType(JavaCompile).configureEach {
     }
 }
 
-// Access Widener
-loom {
-    accessWidenerPath = file("src/main/resources/keystone.accesswidener")
-}
-
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     if (JavaVersion.current() < javaVersion) {
@@ -105,7 +100,6 @@ jar {
 javadoc {
     source = sourceSets.main.java
 }
-jar.finalizedBy(tasks.javadoc)
 
 // configure the maven publication
 publishing {
