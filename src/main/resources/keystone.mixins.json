@@ -15,6 +15,7 @@
     "GameRendererInvoker",
     "GameRendererMixin",
     "InGameHudMixin",
+    "KeyBindingMixin",
     "KeyboardMixin",
     "MinecraftClientMixin",
     "MixinDrawableHelper",

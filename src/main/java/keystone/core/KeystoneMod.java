@@ -10,12 +10,11 @@ import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.brush.BrushSelectionScreen;
 import keystone.core.gui.screens.fill.FillAndReplaceScreen;
 import keystone.core.gui.screens.filters.FilterSelectionScreen;
-import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.schematics.CloneScreen;
 import keystone.core.gui.screens.schematics.ImportScreen;
 import keystone.core.gui.screens.selection.SelectionNudgeScreen;
 import keystone.core.gui.screens.selection.SelectionScreen;
-import keystone.core.keybinds.KeystoneKeybinds;
+import keystone.core.keybinds.KeystoneKeyBindings;
 import keystone.core.modules.brush.BrushModule;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.filter.FilterModule;
@@ -124,7 +123,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         SelectionScreen.registerEvents();
         KeystoneOverlayHandler.registerEvents();
 
-        KeystoneKeybinds.register();
+        KeystoneKeyBindings.register();
     }
 
     private void gameLoaded(MinecraftClient client, Screen screen, int scaledWidth, int scaledHeight)
@@ -183,6 +182,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
                 //}
             }
 
+            KeystoneKeyBindings.configureKeyConditions();
             KeystoneLifecycleEvents.JOIN.invoker().join(world);
         }
     }
