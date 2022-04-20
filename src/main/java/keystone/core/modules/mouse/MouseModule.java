@@ -1,6 +1,7 @@
 package keystone.core.modules.mouse;
 
 import keystone.api.Keystone;
+import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.keystone.KeystoneInputEvents;
 import keystone.core.events.minecraft.InputEvents;
@@ -11,16 +12,23 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.TreeSet;
+
 public class MouseModule implements IKeystoneModule
 {
     private SelectionModule selectionModule;
     private SelectedFace selectedFace;
+    private List<SelectedFace> orderedSelectedFaces;
     private boolean draggingBox;
     
     public MouseModule()
     {
         selectedFace = null;
         draggingBox = false;
+        orderedSelectedFaces = new ArrayList<>();
         registerEvents();
     }
 
@@ -45,23 +53,35 @@ public class MouseModule implements IKeystoneModule
         {
             if (!draggingBox)
             {
-                selectedFace = null;
+                orderedSelectedFaces.clear();
                 Keystone.forEachModule(module ->
                 {
                     module.getSelectableBoxes().forEach(selectable ->
                     {
                         if (selectable.isEnabled())
                         {
-                            SelectedFace face = selectable.getSelectedFace();
-                            if (face != null)
-                            {
-                                if (selectedFace == null) selectedFace = face;
-                                else if (face.getDistance() < selectedFace.getDistance()) selectedFace = face;
-                                else if (face.getDistance() == selectedFace.getDistance() && face.getBox().getPriority() > selectedFace.getBox().getPriority()) selectedFace = face;
-                            }
+                            selectable.getSelectedFaces(orderedSelectedFaces);
+                            //if (face != null)
+                            //{
+                            //    if (selectedFace == null) selectedFace = face;
+                            //    else if (face.getDistance() < selectedFace.getDistance()) selectedFace = face;
+                            //    else if (face.getDistance() == selectedFace.getDistance() && face.getBox().getPriority() > selectedFace.getBox().getPriority()) selectedFace = face;
+                            //    else if (!skippedFace && selectedFace.getInternalDistance() < KeystoneConfig.selectFaceSkipThreshold)
+                            //    {
+                            //        selectedFace = face;
+                            //        skippedFace = true;
+                            //    }
+                            //}
                         }
                     });
                 });
+                if (orderedSelectedFaces.size() > 0)
+                {
+                    orderedSelectedFaces.sort(Comparator.comparingDouble(SelectedFace::getDistance));
+                    selectedFace = orderedSelectedFaces.get(0);
+                    if (selectedFace.getInternalDistance() < KeystoneConfig.selectFaceSkipThreshold && orderedSelectedFaces.size() > 1) selectedFace = orderedSelectedFaces.get(1);
+                }
+                else selectedFace = null;
             }
             else if (selectedFace != null) selectedFace.getBox().drag(selectedFace);
         }

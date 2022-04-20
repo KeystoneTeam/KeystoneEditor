@@ -17,6 +17,7 @@ import keystone.core.modules.history.entries.CloneImportBoxesHistoryEntry;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
 import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;
+import keystone.core.renderer.shapes.SelectableBoundingBox;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -29,10 +30,7 @@ import net.minecraft.util.math.Vec3i;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class ImportModule implements IKeystoneModule
@@ -77,7 +75,8 @@ public class ImportModule implements IKeystoneModule
     {
         clearImportBoxes(false);
     }
-
+    @Override
+    public Collection<? extends SelectableBoundingBox> getSelectableBoxes() { return this.importBoxes; }
     @Override
     public void renderWhenEnabled(WorldRenderContext context)
     {

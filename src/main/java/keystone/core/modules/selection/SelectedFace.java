@@ -14,6 +14,7 @@ public class SelectedFace
 
     private double selectionU;
     private double selectionV;
+    private double internalDistance;
     private boolean isDraggingFace;
 
     public SelectedFace(SelectableBoundingBox box, Direction faceDirection, Vec3d selectionPoint, double distance)
@@ -26,16 +27,34 @@ public class SelectedFace
         {
             selectionU = selectionPoint.x;
             selectionV = selectionPoint.z;
+
+            double distance1 = Math.abs(selectionU - box.getMin().getX());
+            double distance2 = Math.abs(box.getMax().getX() - selectionU);
+            double distance3 = Math.abs(selectionV - box.getMin().getZ());
+            double distance4 = Math.abs(box.getMax().getZ() - selectionV);
+            internalDistance = Math.min(Math.min(distance1, distance2), Math.min(distance3, distance4));
         }
         if (faceDirection == Direction.NORTH || faceDirection == Direction.SOUTH)
         {
             selectionU = selectionPoint.x;
             selectionV = selectionPoint.y;
+
+            double distance1 = Math.abs(selectionU - box.getMin().getX());
+            double distance2 = Math.abs(box.getMax().getX() - selectionU);
+            double distance3 = Math.abs(selectionV - box.getMin().getY());
+            double distance4 = Math.abs(box.getMax().getY() - selectionV);
+            internalDistance = Math.min(Math.min(distance1, distance2), Math.min(distance3, distance4));
         }
         if (faceDirection == Direction.EAST || faceDirection == Direction.WEST)
         {
             selectionU = selectionPoint.y;
             selectionV = selectionPoint.z;
+
+            double distance1 = Math.abs(selectionU - box.getMin().getY());
+            double distance2 = Math.abs(box.getMax().getY() - selectionU);
+            double distance3 = Math.abs(selectionV - box.getMin().getZ());
+            double distance4 = Math.abs(box.getMax().getZ() - selectionV);
+            internalDistance = Math.min(Math.min(distance1, distance2), Math.min(distance3, distance4));
         }
 
         isDraggingFace = false;
@@ -49,6 +68,7 @@ public class SelectedFace
     public SelectableBoundingBox getBox() { return box; }
     public Vec3i getRelativeSelectedBlock() { return relativeSelectedBlock; }
     public double getDistance() { return distance; }
+    public double getInternalDistance() { return internalDistance; }
     public Vec3d getSelectionPoint()
     {
         if (faceDirection == Direction.UP) return new Vec3d(selectionU, box.getMax().getY() + 1, selectionV);

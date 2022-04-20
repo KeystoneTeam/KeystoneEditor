@@ -7,6 +7,8 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
+import java.util.List;
+
 public abstract class SelectableBoundingBox extends Cuboid
 {
     private boolean selectable;
@@ -26,23 +28,21 @@ public abstract class SelectableBoundingBox extends Cuboid
     public abstract void drag(SelectedFace face);
     public void endDrag(SelectedFace face) {}
 
-    public SelectedFace getSelectedFace()
+    public void getSelectedFaces(List<SelectedFace> result)
     {
-        if (!selectable) return null;
+        if (!selectable) return;
 
         Vec3d origin = Player.getEyePosition();
         Vec3d heading = Player.getLookDirection();
 
-        SelectedFace closest = null;
         for (Direction direction : Direction.values())
         {
             Vec3d intersection = RayTracing.rayFaceIntersection(origin, heading, getMin(), getMax().add(1, 1, 1), direction);
             if (intersection != null)
             {
-                double distanceSqr = origin.distanceTo(intersection);
-                if (closest == null || closest.getDistance() > distanceSqr) closest = new SelectedFace(this, direction, intersection, distanceSqr);
+                double distance = origin.distanceTo(intersection);
+                result.add(new SelectedFace(this, direction, intersection, distance));
             }
         }
-        return closest;
     }
 }
