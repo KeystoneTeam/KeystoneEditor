@@ -38,7 +38,7 @@ public class KeystoneOverlay extends Screen
         return false;
     }
     @Override
-    public void removed()
+    public void close()
     {
         KeystoneOverlayHandler.removeOverlay(this);
     }

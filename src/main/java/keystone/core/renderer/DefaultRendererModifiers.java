@@ -2,6 +2,7 @@ package keystone.core.renderer;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import keystone.core.renderer.interfaces.IRendererModifier;
 import net.minecraft.client.render.GameRenderer;
 import org.lwjgl.opengl.GL11;
 
@@ -67,18 +68,20 @@ public class DefaultRendererModifiers
             RenderSystem.depthMask(true);
         }
     };
-    public static final IRendererModifier WIREFRAME = new IRendererModifier()
+    public static final IRendererModifier POLYGON_OFFSET = new IRendererModifier()
     {
         @Override
         public void enable()
         {
-            RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+            RenderSystem.enablePolygonOffset();
+            RenderSystem.polygonOffset(-0.2f, -0.4f);
         }
 
         @Override
         public void disable()
         {
-            RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+            RenderSystem.polygonOffset(0, 0);
+            RenderSystem.disablePolygonOffset();
         }
     };
 }

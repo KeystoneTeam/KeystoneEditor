@@ -1,4 +1,4 @@
-package keystone.core.renderer;
+package keystone.core.renderer.interfaces;
 
 public interface IRendererModifier
 {

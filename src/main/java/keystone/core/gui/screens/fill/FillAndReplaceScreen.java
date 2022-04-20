@@ -60,11 +60,10 @@ public class FillAndReplaceScreen extends KeystoneOverlay
     {
         if (slot != KeystoneHotbarSlot.FILL)
         {
-            // TODO: Check if this needs to be changed from removed() to close()
-            if (open) instance.removed();
+            if (open) instance.close();
             if (quickFill != null)
             {
-                quickFill.removed();
+                quickFill.close();
                 quickFill = null;
             }
         }
@@ -109,8 +108,7 @@ public class FillAndReplaceScreen extends KeystoneOverlay
 
         int buttonWidth = (panelMaxX - 3 * PADDING) >> 1;
         ButtonNoHotkey fillButton = new ButtonNoHotkey(PADDING, y, buttonWidth, 20, new TranslatableText("keystone.fill.fill"), this::fillButton);
-        // TODO: Check if this needs to be changed from removed() to close()
-        ButtonNoHotkey cancelButton = new ButtonNoHotkey(panelMaxX - PADDING - buttonWidth, y, buttonWidth, 20, new TranslatableText("keystone.cancel"), button -> removed());
+        ButtonNoHotkey cancelButton = new ButtonNoHotkey(panelMaxX - PADDING - buttonWidth, y, buttonWidth, 20, new TranslatableText("keystone.cancel"), button -> close());
 
         addDrawableChild(mask);
         addDrawableChild(palette);
@@ -128,8 +126,7 @@ public class FillAndReplaceScreen extends KeystoneOverlay
     {
         if (keyCode == GLFW.GLFW_KEY_ESCAPE)
         {
-            // TODO: Check if this needs to be changed from removed() to close()
-            removed();
+            close();
             return true;
         }
         else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
@@ -145,7 +142,6 @@ public class FillAndReplaceScreen extends KeystoneOverlay
     {
         FillTool fillTool = new FillTool(mask.getMask(), palette.getPalette());
         Keystone.runInternalFilter(fillTool);
-        // TODO: Check if this needs to be changed from removed() to close()
-        removed();
+        close();
     }
 }

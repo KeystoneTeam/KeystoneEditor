@@ -72,8 +72,12 @@ java {
 
 // Shadow Configuration
 shadowJar {
-    classifier = 'shadow'
+    archiveName = archivesBaseName + "_" + version + "_Fabric_${project.minecraft_version}.jar"
     configurations = [project.configurations.shade]
+
+    exclude 'org/codehaus/commons/compiler/samples/**'
+    exclude 'org/codehaus/janino/samples/**'
+    exclude 'META-INF/maven/**'
 }
 remapJar {
     dependsOn shadowJar
@@ -90,10 +94,18 @@ tasks.shadowJar.dependsOn tasks.relocateShadowJar
 shadowJar.finalizedBy(tasks.remapJar)
 
 jar {
+    archiveName = archivesBaseName + "_" + version + "_API.jar"
+
+    exclude 'keystone/core/**'
+
     from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}" }
     }
 }
+javadoc {
+    source = sourceSets.main.java
+}
+jar.finalizedBy(tasks.javadoc)
 
 // configure the maven publication
 publishing {

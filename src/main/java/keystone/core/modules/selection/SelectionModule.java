@@ -16,10 +16,9 @@ import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.renderer.Color4f;
-import keystone.core.renderer.OverlayRenderer;
 import keystone.core.renderer.RenderBox;
 import keystone.core.renderer.RendererFactory;
-import keystone.core.renderer.color.ColorProviderFactory;
+import keystone.core.renderer.overlay.ComplexOverlayRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
@@ -36,7 +35,7 @@ public class SelectionModule implements IKeystoneModule
     private HistoryModule historyModule;
     private MouseModule mouseModule;
     private List<SelectionBoundingBox> selectionBoxes;
-    private OverlayRenderer highlightRenderer;
+    private ComplexOverlayRenderer highlightRenderer;
     private SelectionBoxRenderer selectionBoxRenderer;
 
     private Vec3i firstSelectionPoint;
@@ -57,7 +56,10 @@ public class SelectionModule implements IKeystoneModule
     {
         historyModule = Keystone.getModule(HistoryModule.class);
         mouseModule = Keystone.getModule(MouseModule.class);
-        highlightRenderer = RendererFactory.createWorldspaceOverlay().wireframe().build();
+        highlightRenderer = RendererFactory.createComplexOverlay(
+                RendererFactory.createWorldspaceOverlay().buildFill(),
+                RendererFactory.createWorldspaceOverlay().ignoreDepth().buildWireframe()
+        );
         selectionBoxRenderer = new SelectionBoxRenderer();
     }
     @Override
@@ -144,15 +146,8 @@ public class SelectionModule implements IKeystoneModule
         }
     }
     @Override
-    public void render(WorldRenderContext context)
+    public void alwaysRender(WorldRenderContext context)
     {
-        // Block Highlight
-        if (isEnabled() && !creatingSelection && mouseModule.getSelectedFace() == null)
-        {
-            RenderBox box = new RenderBox(Player.getHighlightedBlock(), Player.getHighlightedBlock());
-            highlightRenderer.drawCuboid(box, ColorProviderFactory.staticColor(Color4f.yellow));
-        }
-
         // Selection Boxes
         if (!KeystoneGlobalState.HideSelectionBoxes)
         {
@@ -160,6 +155,17 @@ public class SelectionModule implements IKeystoneModule
             {
                 selectionBoxRenderer.render(context, box);
             }
+        }
+    }
+    @Override
+    public void renderWhenEnabled(WorldRenderContext context)
+    {
+        // Block Highlight
+        if (isEnabled() && !creatingSelection && mouseModule.getSelectedFace() == null)
+        {
+            RenderBox box = new RenderBox(Player.getHighlightedBlock(), Player.getHighlightedBlock());
+            highlightRenderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, Color4f.yellow.withAlpha(0.0625f));
+            highlightRenderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawCuboid(box, Color4f.yellow);
         }
     }
     //endregion

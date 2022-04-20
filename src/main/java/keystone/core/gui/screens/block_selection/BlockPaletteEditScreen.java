@@ -59,10 +59,9 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
                 callback.accept(palette);
                 ranCallback = true;
             }
-            removed();
+            close();
         }));
 
-        // TODO: Check if this needs to be changed from removed() to close()
         addDrawableChild(new ButtonNoHotkey(palettePanel.x, height - 20, palettePanel.getWidth(), 20, new TranslatableText("keystone.cancel"), button -> close()));
     }
     @Override

@@ -68,8 +68,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
         if (slot == KeystoneHotbarSlot.SELECTION && Keystone.getModule(SelectionModule.class).getSelectionBoxCount() > 0) open();
-        // TODO: Check if this needs to be changed from removed() to close()
-        else if (open != null) open.removed();
+        else if (open != null) open.close();
     }
     public static void onSelectionsChanged(List<SelectionBoundingBox> selections, boolean createdSelection)
     {
@@ -81,8 +80,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         }
         else
         {
-            // TODO: Check if this needs to be changed from removed() to close()
-            if (selections.size() == 0) open.removed();
+            if (selections.size() == 0) open.close();
             else if (createdSelection && open.selectionToNudge >= selections.size() - 2) open.setSelectionToNudge(selections.size() - 1);
             else open.setSelectionToNudge(Math.min(open.selectionToNudge, selections.size() - 1));
         }
@@ -169,8 +167,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     {
         selectionToNudge = value;
         selectedBox = resolveSelectionIndex();
-        // TODO: Check if this needs to be changed from removed() to close()
-        if (selectedBox == null) removed();
+        if (selectedBox == null) close();
         else updateSize();
     }
     private SelectionBoundingBox resolveSelectionIndex()

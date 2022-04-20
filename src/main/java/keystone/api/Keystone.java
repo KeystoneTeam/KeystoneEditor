@@ -12,15 +12,10 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.registries.BlockTypeRegistry;
-import keystone.core.renderer.Color4f;
-import keystone.core.renderer.IRenderer;
-import keystone.core.renderer.RendererFactory;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
@@ -240,7 +235,11 @@ public final class Keystone
             if (Keystone.isActive())
             {
                 for (IKeystoneModule module : modules.values()) if (module.isEnabled()) module.preRender(context);
-                for (IKeystoneModule module : modules.values()) if (module.isEnabled()) module.render(context);
+                for (IKeystoneModule module : modules.values())
+                {
+                    module.alwaysRender(context);
+                    if (module.isEnabled()) module.renderWhenEnabled(context);
+                }
             }
         });
 

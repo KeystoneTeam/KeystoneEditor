@@ -10,11 +10,9 @@ import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.renderer.Color4f;
-import keystone.core.renderer.OverlayRenderer;
 import keystone.core.renderer.RenderBox;
 import keystone.core.renderer.RendererFactory;
-import keystone.core.renderer.color.ColorProviderFactory;
-import keystone.core.renderer.color.IColorProvider;
+import keystone.core.renderer.overlay.ComplexOverlayRenderer;
 import keystone.core.utils.ProgressBar;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -35,9 +33,8 @@ public class BrushModule implements IKeystoneModule
     private HistoryModule historyModule;
     private WorldModifierModules worldModifiers;
 
-    private final OverlayRenderer edgeRenderer;
-    private final OverlayRenderer outsideFillRenderer;
-    private final OverlayRenderer insideFillRenderer;
+    private ComplexOverlayRenderer outsideRenderer;
+    private ComplexOverlayRenderer insideRenderer;
 
     private BrushOperation brushOperation;
     private BrushShape brushShape;
@@ -72,9 +69,14 @@ public class BrushModule implements IKeystoneModule
         ClientTickEvents.START_CLIENT_TICK.register(this::onTick);
         KeystoneInputEvents.END_MOUSE_DRAG.register(this::onMouseDragEnd);
 
-        this.edgeRenderer = RendererFactory.createWorldspaceOverlay().ignoreDepth().wireframe().build();
-        this.outsideFillRenderer = RendererFactory.createCullingOverlay().build();
-        this.insideFillRenderer = RendererFactory.createWorldspaceOverlay().build();
+        this.outsideRenderer = RendererFactory.createComplexOverlay(
+                RendererFactory.createWorldspaceOverlay().buildFill(),
+                RendererFactory.createWorldspaceOverlay().ignoreDepth().buildWireframe()
+        );
+        this.insideRenderer = RendererFactory.createComplexOverlay(
+                RendererFactory.createWorldspaceOverlay().ignoreCull().buildFill(),
+                RendererFactory.createWorldspaceOverlay().ignoreDepth().buildWireframe()
+        );
     }
 
     @Override
@@ -126,13 +128,14 @@ public class BrushModule implements IKeystoneModule
     }
 
     @Override
-    public void render(WorldRenderContext context)
+    public void renderWhenEnabled(WorldRenderContext context)
     {
         // Render Brush Positions
+        this.outsideRenderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME);
         for (Vec3i brushPosition : brushPositions)
         {
             RenderBox box = new RenderBox(brushPosition).nudge();
-            this.edgeRenderer.drawCuboid(box, direction -> Color4f.yellow);
+            this.outsideRenderer.drawCuboid(box, Color4f.yellow);
         }
 
         // Render Brush Preview
@@ -144,23 +147,21 @@ public class BrushModule implements IKeystoneModule
         double yRadius = brushSize[1] * 0.5;
         double zRadius = brushSize[2] * 0.5;
 
-        IColorProvider blue = ColorProviderFactory.staticColor(Color4f.blue);
+        boolean outside = !brushShape.isPositionInShape(Player.getEyePosition(), centerBlock, brushSize[0], brushSize[1], brushSize[2]);
+        ComplexOverlayRenderer renderer = outside ? outsideRenderer : insideRenderer;
         if (brushShape == BrushShape.ROUND)
         {
-            boolean outside = !brushShape.isPositionInShape(Player.getEyePosition(), centerBlock, brushSize[0], brushSize[1], brushSize[2]);
             //(outside ? outsideFillRenderer : insideFillRenderer).drawSphere(center, xRadius, yRadius, zRadius, blue, 128, false, false, outside);
         }
         else if (brushShape == BrushShape.DIAMOND)
         {
-            boolean outside = !brushShape.isPositionInShape(Player.getEyePosition(), centerBlock, brushSize[0], brushSize[1], brushSize[2]);
             //(outside ? outsideFillRenderer : insideFillRenderer).drawDiamond(center, xRadius, yRadius, zRadius, blue, 128, false, false, outside);
         }
         else if (brushShape == BrushShape.SQUARE)
         {
-            //OffsetBox bb = new OffsetBox(center.offset(-xRadius, -yRadius, -zRadius), center.offset(xRadius, yRadius, zRadius));
             RenderBox box = new RenderBox(center.add(-xRadius, -yRadius, -zRadius), center.add(xRadius, yRadius, zRadius));
-            outsideFillRenderer.drawCuboid(box, blue);
-            edgeRenderer.drawCuboid(box, blue);
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, Color4f.blue.withAlpha(0.5f));
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawCuboid(box, Color4f.blue);
         }
     }
 

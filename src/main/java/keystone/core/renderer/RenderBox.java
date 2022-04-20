@@ -41,10 +41,11 @@ public class RenderBox extends Box
     }
     public RenderBox nudge()
     {
-        if (minY == maxY)
-        {
-            return new RenderBox(minX - nudgeSize, minY + nudgeSize, minZ - nudgeSize, maxX + nudgeSize, maxY + nudgeSize, maxZ + nudgeSize);
-        }
-        return grow(nudgeSize, nudgeSize, nudgeSize);
+        return this;
+        //if (minY == maxY)
+        //{
+        //    return new RenderBox(minX - nudgeSize, minY + nudgeSize, minZ - nudgeSize, maxX + nudgeSize, maxY + nudgeSize, maxZ + nudgeSize);
+        //}
+        //return grow(nudgeSize, nudgeSize, nudgeSize);
     }
 }

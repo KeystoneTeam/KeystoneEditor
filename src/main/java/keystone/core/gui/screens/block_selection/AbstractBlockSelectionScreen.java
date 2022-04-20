@@ -55,7 +55,6 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
     public void removed()
     {
         this.client.keyboard.setRepeatEvents(false);
-        super.removed();
     }
 
     @Override

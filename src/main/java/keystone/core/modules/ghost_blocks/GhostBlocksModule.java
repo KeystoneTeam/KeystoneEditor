@@ -44,7 +44,7 @@ public class GhostBlocksModule implements IKeystoneModule
         ghostWorlds.clear();
     }
     @Override
-    public void render(WorldRenderContext context)
+    public void renderWhenEnabled(WorldRenderContext context)
     {
         //Vec3d cameraPos = Camera.getPosition();
         //MatrixStack stack = event.getMatrixStack();

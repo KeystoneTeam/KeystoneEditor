@@ -1,6 +1,12 @@
 package keystone.core.renderer;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import keystone.core.renderer.interfaces.IRenderer;
+import keystone.core.renderer.interfaces.IRendererModifier;
+import keystone.core.renderer.overlay.ComplexOverlayRenderer;
+import keystone.core.renderer.overlay.FillOverlayRenderer;
+import keystone.core.renderer.overlay.IOverlayRenderer;
+import keystone.core.renderer.overlay.WireframeOverlayRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
@@ -8,7 +14,9 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class RendererFactory
 {
@@ -24,7 +32,7 @@ public final class RendererFactory
 
         private RendererBuilder(IRendererModifier... modifiers)
         {
-            this.tessellator = Tessellator.getInstance();
+            this.tessellator = RenderSystem.renderThreadTesselator();
             this.buffer = this.tessellator.getBuffer();
 
             this.modifiers = new ArrayList<>(List.of(modifiers));
@@ -45,19 +53,23 @@ public final class RendererFactory
             this.modifiers.add(DefaultRendererModifiers.IGNORE_CULL);
             return this;
         }
-        public RendererBuilder wireframe()
-        {
-            this.modifiers.add(DefaultRendererModifiers.WIREFRAME);
-            return this;
-        }
         public RendererBuilder withModifier(IRendererModifier modifier)
         {
             this.modifiers.add(modifier);
             return this;
         }
-        public OverlayRenderer build()
+
+        public IOverlayRenderer buildFill()
         {
-            return new OverlayRenderer(this);
+            return new FillOverlayRenderer(this);
+        }
+        public IOverlayRenderer buildWireframe()
+        {
+            return buildWireframe(4.0f);
+        }
+        public IOverlayRenderer buildWireframe(float lineWidth)
+        {
+            return new WireframeOverlayRenderer(this, lineWidth);
         }
 
         @Override
@@ -165,6 +177,11 @@ public final class RendererFactory
     }
     public static RendererBuilder createWorldspaceOverlay()
     {
-        return new RendererBuilder(DefaultRendererModifiers.POSITION_COLOR, DefaultRendererModifiers.TRANSLUCENT, DefaultRendererModifiers.IGNORE_CULL);
+        return new RendererBuilder(DefaultRendererModifiers.POSITION_COLOR, DefaultRendererModifiers.TRANSLUCENT, DefaultRendererModifiers.IGNORE_CULL, DefaultRendererModifiers.POLYGON_OFFSET);
+    }
+
+    public static ComplexOverlayRenderer createComplexOverlay(IOverlayRenderer fillRenderer, IOverlayRenderer wireframeRenderer)
+    {
+        return new ComplexOverlayRenderer(ComplexOverlayRenderer.DrawMode.FILL, Map.of(ComplexOverlayRenderer.DrawMode.FILL, fillRenderer, ComplexOverlayRenderer.DrawMode.WIREFRAME, wireframeRenderer));
     }
 }

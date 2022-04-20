@@ -46,9 +46,10 @@ public class Color4f
         this.a = javaColor.getAlpha() / 255.0f;
     }
 
-    public Color4f withAlpha(float alpha)
+    public Color4f withAlpha(Float alpha)
     {
-        return new Color4f(this.r, this.g, this.b, alpha);
+        if (alpha == null) return this;
+        else return new Color4f(this.r, this.g, this.b, alpha);
     }
 
     @Override

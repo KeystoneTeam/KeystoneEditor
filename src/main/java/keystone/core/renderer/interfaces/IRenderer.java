@@ -1,6 +1,7 @@
-package keystone.core.renderer;
+package keystone.core.renderer.interfaces;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import keystone.core.renderer.Color4f;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.util.math.Vec3d;
@@ -17,13 +18,13 @@ public interface IRenderer
     }
     default void lines(float lineWidth, VertexFormat vertexFormat)
     {
-        begin(VertexFormat.DrawMode.DEBUG_LINES, vertexFormat);
         RenderSystem.lineWidth(lineWidth);
+        begin(VertexFormat.DrawMode.DEBUG_LINES, vertexFormat);
     }
     default void lineStrip(float lineWidth, VertexFormat vertexFormat)
     {
-        begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, vertexFormat);
         RenderSystem.lineWidth(lineWidth);
+        begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, vertexFormat);
     }
 
     void begin(VertexFormat.DrawMode drawMode, VertexFormat vertexFormat);

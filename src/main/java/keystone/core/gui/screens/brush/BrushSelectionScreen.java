@@ -54,8 +54,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
     public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
         if (slot == KeystoneHotbarSlot.BRUSH) open();
-        // TODO: Check if this needs to be changed from removed() to close()
-        else if (open != null) open.removed();
+        else if (open != null) open.close();
     }
     //endregion
     //region Screen Overrides

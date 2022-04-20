@@ -132,7 +132,7 @@ public class GhostWorldRenderer
         for (RenderLayer layer : RenderLayer.getBlockLayers())
         {
             SuperByteBuffer buffer = drawLayer(layer);
-            if (!buffer.isEmpty()) bufferCache.put(layer, buffer);
+            if (buffer != null && !buffer.isEmpty()) bufferCache.put(layer, buffer);
         }
     }
 
@@ -156,6 +156,7 @@ public class GhostWorldRenderer
         shadeSeparatingWrapper.prepare(builder, unshadedBuilder);
 
         BlockModelRenderer.enableBrightnessCache();
+        boolean usesLayer = false;
         for (BlockPos localPos : BlockPos.iterate(bounds.getMinX(), bounds.getMinY(), bounds.getMinZ(), bounds.getMaxX(), bounds.getMaxY(), bounds.getMaxZ()))
         {
             BlockPos pos = mutablePos.set(localPos);
@@ -181,12 +182,15 @@ public class GhostWorldRenderer
                 if (model != null)
                 {
                     dispatcher.getModelRenderer().render(renderWorld, model, state, pos, matrixStack, shadeSeparatingWrapper, true, random, state.getRenderingSeed(pos), OverlayTexture.DEFAULT_UV);
+                    usesLayer = true;
                 }
             }
 
             matrixStack.pop();
         }
         BlockModelRenderer.disableBrightnessCache();
+
+        if (!usesLayer) return null;
 
         shadeSeparatingWrapper.clear();
         unshadedBuilder.clear();

@@ -71,22 +71,15 @@ public class SelectionScreen extends KeystoneOverlay
     public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
         if (slot == KeystoneHotbarSlot.SELECTION && Keystone.getModule(SelectionModule.class).getSelectionBoxCount() > 0) open();
-        // TODO: Check if this needs to be changed from removed() to close()
-        else if (open != null) open.removed();
+        else if (open != null) open.close();
     }
     public static void onSelectionsChanged(List<SelectionBoundingBox> selections, boolean createdSelection)
     {
         if (selections.size() > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
-        // TODO: Check if this needs to be changed from removed() to close()
-        else if (open != null) open.removed();
+        else if (open != null) open.close();
     }
     //endregion
     //region Screen Overrides
-    @Override
-    public void close()
-    {
-        KeystoneOverlayHandler.removeOverlay(this);
-    }
     @Override
     public void removed()
     {

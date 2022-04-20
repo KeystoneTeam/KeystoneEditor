@@ -61,7 +61,7 @@ public class Cuboid
     public Vec3i getSize() { return size; }
     public RenderBox getRenderingBox()
     {
-        return new RenderBox(min.getX(), min.getY(), min.getZ(), max.getX(), max.getY(), max.getZ());
+        return new RenderBox(min, max);
     }
     public int getAxisSize(Direction.Axis axis)
     {

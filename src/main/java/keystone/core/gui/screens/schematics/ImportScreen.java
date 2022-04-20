@@ -74,8 +74,7 @@ public class ImportScreen extends KeystoneOverlay
     public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
         if (slot == KeystoneHotbarSlot.IMPORT && Keystone.getModule(ImportModule.class).getImportBoxes().size() > 0) open();
-        // TODO: Check if this needs to be changed from removed() to close()
-        else if (open != null) open.removed();
+        else if (open != null) open.close();
     }
     //endregion
     //region Screen Overrides

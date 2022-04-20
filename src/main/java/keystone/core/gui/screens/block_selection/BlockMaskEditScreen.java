@@ -65,9 +65,8 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
                 callback.accept(mask);
                 ranCallback = true;
             }
-            removed();
+            close();
         }));
-        // TODO: Check if this needs to be changed from removed() to close()
         addDrawableChild(new ButtonNoHotkey(maskPanel.x, height - 25, maskPanel.getWidth(), 20, new TranslatableText("keystone.cancel"), button -> close()));
     }
     @Override

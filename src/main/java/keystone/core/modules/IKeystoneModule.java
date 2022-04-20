@@ -13,6 +13,7 @@ public interface IKeystoneModule
     default void postInit() {  }
     default void resetModule() {  }
     default void preRender(WorldRenderContext context) {  }
-    default void render(WorldRenderContext context) {  }
+    default void alwaysRender(WorldRenderContext context) {  }
+    default void renderWhenEnabled(WorldRenderContext context) {  }
     default Collection<? extends SelectableBoundingBox> getSelectableBoxes() { return Collections.emptyList(); }
 }

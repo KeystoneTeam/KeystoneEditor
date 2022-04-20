@@ -79,7 +79,7 @@ public class ImportModule implements IKeystoneModule
     }
 
     @Override
-    public void render(WorldRenderContext context)
+    public void renderWhenEnabled(WorldRenderContext context)
     {
         this.importBoxes.forEach(box -> renderer.render(context, box));
     }

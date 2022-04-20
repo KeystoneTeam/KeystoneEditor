@@ -46,6 +46,6 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
     {
         callback.accept(block);
         ranCallback = true;
-        removed();
+        close();
     }
 }

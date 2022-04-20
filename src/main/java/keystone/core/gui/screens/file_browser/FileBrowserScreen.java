@@ -174,16 +174,14 @@ public abstract class FileBrowserScreen extends Screen
         ButtonWidget cancel = new ButtonNoHotkey(this.panelX, this.panelY + this.panelHeight - 20, panelCenterX - panelX - PADDING / 2, 20, CANCEL_LABEL, (button) ->
         {
             this.callback.accept(new File[0]);
-            // TODO: Check if this needs to be changed from removed() to close()
-            removed();
+            close();
         });
         ButtonWidget open = new ButtonNoHotkey(this.panelX + cancel.getWidth() + PADDING, this.panelY + this.panelHeight - 20, panelCenterX - panelX - PADDING / 2, 20, getDoneButtonLabel(), (button) ->
         {
             File[] files = new File[selectedFiles.size()];
             for (int j = 0; j < files.length; j++) files[j] = selectedFiles.get(j).file;
             runCallback(files);
-            // TODO: Check if this needs to be changed from removed() to close()
-            removed();
+            close();
         });
 
         for (IndexedButton button : allButtons) addDrawableChild(button);
