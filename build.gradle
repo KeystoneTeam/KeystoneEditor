@@ -7,7 +7,7 @@ plugins {
     id 'java'
 }
 
-version = project.mod_version
+version = project.mod_version + '.' + project.mod_patch + '-' + project.minecraft_version
 group = project.maven_group
 
 // Dependency Maven Repositories
@@ -57,7 +57,7 @@ java {
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
-    archivesBaseName = project.archives_base_name
+    archivesBaseName = project.archive_base_name
     // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
     // if it is present.
     // If you remove this line, sources will not be generated.
@@ -66,36 +66,34 @@ java {
 
 // Shadow Configuration
 shadowJar {
-    archiveName = archivesBaseName + "_" + version + "_Fabric_${project.minecraft_version}.jar"
+    classifier = 'shadow'
     configurations = [project.configurations.shade]
 
     exclude 'org/codehaus/commons/compiler/samples/**'
     exclude 'org/codehaus/janino/samples/**'
     exclude 'META-INF/maven/**'
 }
-remapJar {
-    dependsOn shadowJar
-}
 task relocateShadowJar(type: ConfigureShadowRelocation) {
     target = tasks.shadowJar
     prefix = "keystone.shadow"
+}
+remapJar {
+    classifier = 'fabric'
+
+    dependsOn shadowJar
+    input.set shadowJar.archiveFile.get()
+
+    exclude 'org/codehaus/commons/compiler/samples/**'
+    exclude 'org/codehaus/janino/samples/**'
+    exclude 'META-INF/maven/**'
 }
 artifacts {
     archives shadowJar
     shadow shadowJar
 }
 tasks.shadowJar.dependsOn tasks.relocateShadowJar
-shadowJar.finalizedBy(tasks.remapJar)
+tasks.shadowJar.finalizedBy tasks.remapJar
 
-jar {
-    archiveName = archivesBaseName + "_" + version + "_API.jar"
-
-    exclude 'keystone/core/**'
-
-    from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
-    }
-}
 javadoc {
     source = sourceSets.main.java
 }

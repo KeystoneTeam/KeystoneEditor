@@ -3,9 +3,13 @@
   "id": "keystone",
   "version": "${version}",
   "name": "Keystone",
-  "description": "",
-  "authors": [],
-  "contact": {},
+  "description": "Adds large scale world editing tools similar to the outdated program MCEdit.",
+  "authors": ["CodeCracked"],
+  "contact": {
+    "homepage": "https://github.com/KeystoneTeam/KeystoneEditor",
+    "issues": "https://github.com/KeystoneTeam/KeystoneEditor/issues",
+    "sources": "https://github.com/KeystoneTeam/KeystoneEditor"
+  },
   "license": "GPL-3.0",
   "icon": "assets/keystone/icon.png",
   "environment": "*",
