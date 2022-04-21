@@ -1,6 +1,6 @@
 package keystone.core.modules;
 
-import keystone.core.renderer.shapes.SelectableBoundingBox;
+import keystone.core.modules.selection.SelectableCuboid;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 
 import java.util.Collection;
@@ -15,5 +15,5 @@ public interface IKeystoneModule
     default void preRender(WorldRenderContext context) {  }
     default void alwaysRender(WorldRenderContext context) {  }
     default void renderWhenEnabled(WorldRenderContext context) {  }
-    default Collection<? extends SelectableBoundingBox> getSelectableBoxes() { return Collections.emptyList(); }
+    default Collection<? extends SelectableCuboid> getSelectableBoxes() { return Collections.emptyList(); }
 }

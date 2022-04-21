@@ -2,6 +2,7 @@ package keystone.core.modules.ghost_blocks;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
+import keystone.core.client.Camera;
 import keystone.core.client.Player;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
@@ -11,8 +12,14 @@ import keystone.core.schematic.KeystoneSchematic;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
+import net.minecraft.util.math.Quaternion;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,20 +50,27 @@ public class GhostBlocksModule implements IKeystoneModule
     {
         ghostWorlds.clear();
     }
-    @Override
-    public void renderWhenEnabled(WorldRenderContext context)
-    {
-        //Vec3d cameraPos = Camera.getPosition();
-        //MatrixStack stack = event.getMatrixStack();
-        //stack.push();
-        //stack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
+    public void renderGhostBlocks(WorldRenderContext context)
+    {
+        Vec3d cameraPos = Camera.getPosition();
+        MatrixStack stack = new MatrixStack();
+        stack.push();
+        stack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+
+        RenderSystem.enablePolygonOffset();
+        RenderSystem.polygonOffset(-0.1f, -0.3f);
+
+        RenderSystem.setShader(GameRenderer::getBlockShader);
         SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();
-        ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().render(context.matrixStack(), buffer, context.tickDelta()));
+        ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().render(stack, buffer, context.tickDelta()));
         buffer.draw();
+
+        RenderSystem.polygonOffset(0, 0);
+        RenderSystem.disablePolygonOffset();
         RenderSystem.enableCull();
 
-        //stack.pop();
+        stack.pop();
     }
 
     private void onTick(MinecraftClient client)

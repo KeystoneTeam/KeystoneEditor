@@ -48,15 +48,6 @@ public class GhostChunkManager extends ChunkManager
         fallbackWorld = world;
     }
 
-
-
-    //@Nullable
-    //@Override
-    //public BlockGetter getChunkForLighting(int x, int z)
-    //{
-    //    return getChunk(x, z);
-    //}
-
     @Override
     public World getWorld()
     {
@@ -89,7 +80,6 @@ public class GhostChunkManager extends ChunkManager
 
     @Override
     public void tick(BooleanSupplier p_202162_, boolean p_202163_) {}
-
 
     @Override
     public int getLoadedChunkCount()

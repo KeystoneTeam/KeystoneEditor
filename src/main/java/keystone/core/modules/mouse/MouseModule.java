@@ -15,7 +15,6 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.TreeSet;
 
 public class MouseModule implements IKeystoneModule
 {
@@ -61,17 +60,6 @@ public class MouseModule implements IKeystoneModule
                         if (selectable.isEnabled())
                         {
                             selectable.getSelectedFaces(orderedSelectedFaces);
-                            //if (face != null)
-                            //{
-                            //    if (selectedFace == null) selectedFace = face;
-                            //    else if (face.getDistance() < selectedFace.getDistance()) selectedFace = face;
-                            //    else if (face.getDistance() == selectedFace.getDistance() && face.getBox().getPriority() > selectedFace.getBox().getPriority()) selectedFace = face;
-                            //    else if (!skippedFace && selectedFace.getInternalDistance() < KeystoneConfig.selectFaceSkipThreshold)
-                            //    {
-                            //        selectedFace = face;
-                            //        skippedFace = true;
-                            //    }
-                            //}
                         }
                     });
                 });
@@ -79,7 +67,9 @@ public class MouseModule implements IKeystoneModule
                 {
                     orderedSelectedFaces.sort(Comparator.comparingDouble(SelectedFace::getDistance));
                     selectedFace = orderedSelectedFaces.get(0);
-                    if (selectedFace.getInternalDistance() < KeystoneConfig.selectFaceSkipThreshold && orderedSelectedFaces.size() > 1) selectedFace = orderedSelectedFaces.get(1);
+
+                    double threshold = Math.min(KeystoneConfig.selectFaceSkipThreshold, 0.125 * selectedFace.getClosestEdgeLength());
+                    if (selectedFace.getInternalDistance() < threshold && orderedSelectedFaces.size() > 1) selectedFace = orderedSelectedFaces.get(1);
                 }
                 else selectedFace = null;
             }

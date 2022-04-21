@@ -17,7 +17,7 @@ import keystone.core.modules.history.entries.CloneImportBoxesHistoryEntry;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
 import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.renderer.shapes.SelectableBoundingBox;
+import keystone.core.modules.selection.SelectableCuboid;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -76,11 +76,12 @@ public class ImportModule implements IKeystoneModule
         clearImportBoxes(false);
     }
     @Override
-    public Collection<? extends SelectableBoundingBox> getSelectableBoxes() { return this.importBoxes; }
+    public Collection<? extends SelectableCuboid> getSelectableBoxes() { return this.importBoxes; }
     @Override
-    public void renderWhenEnabled(WorldRenderContext context)
+    public void alwaysRender(WorldRenderContext context)
     {
-        this.importBoxes.forEach(box -> renderer.render(context, box));
+        KeystoneHotbarSlot slot = KeystoneHotbar.getSelectedSlot();
+        if (slot == KeystoneHotbarSlot.CLONE || slot == KeystoneHotbarSlot.IMPORT) this.importBoxes.forEach(box -> renderer.render(context, box));
     }
     //endregion
     //region Event Handlers

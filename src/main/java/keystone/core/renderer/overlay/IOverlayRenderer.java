@@ -4,7 +4,6 @@ import keystone.core.renderer.Color4f;
 import keystone.core.renderer.RenderBox;
 import keystone.core.renderer.interfaces.IAlphaProvider;
 import keystone.core.renderer.interfaces.IColorProvider;
-import keystone.core.renderer.shapes.SphereMesh;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;

@@ -51,7 +51,6 @@ public class SuperRenderTypeBuffer implements VertexConsumerProvider
     public void draw()
     {
         RenderSystem.disableCull();
-        // TODO: Check if this needs to be drawCurrentLayer()
         earlyBuffer.draw();
         defaultBuffer.draw();
         lateBuffer.draw();
@@ -69,7 +68,7 @@ public class SuperRenderTypeBuffer implements VertexConsumerProvider
     {
         static final BlockBufferBuilderStorage blockBuilders = new BlockBufferBuilderStorage();
 
-        static final SortedMap<RenderLayer, BufferBuilder> createEntityBuilders()
+        static SortedMap<RenderLayer, BufferBuilder> createEntityBuilders()
         {
             return Util.make(new Object2ObjectLinkedOpenHashMap<>(), (map) ->
             {
@@ -91,7 +90,7 @@ public class SuperRenderTypeBuffer implements VertexConsumerProvider
                 put(map, RenderLayer.getEntityGlint());
                 put(map, RenderLayer.getDirectEntityGlint());
                 put(map, RenderLayer.getWaterMask());
-                ModelLoader.BLOCK_DESTRUCTION_RENDER_LAYERS.forEach(layer -> put(map, layer));
+                ModelLoader.BLOCK_DESTRUCTION_RENDER_LAYERS.forEach((RenderLayer) -> put(map, RenderLayer));
             });
         }
 

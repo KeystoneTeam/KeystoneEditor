@@ -19,7 +19,6 @@ import keystone.core.renderer.Color4f;
 import keystone.core.renderer.RenderBox;
 import keystone.core.renderer.RendererFactory;
 import keystone.core.renderer.overlay.ComplexOverlayRenderer;
-import keystone.core.renderer.shapes.SelectableBoundingBox;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
@@ -72,7 +71,7 @@ public class SelectionModule implements IKeystoneModule
         creatingSelection = false;
     }
     @Override
-    public Collection<? extends SelectableBoundingBox> getSelectableBoxes() { return this.selectionBoxes; }
+    public Collection<? extends SelectableCuboid> getSelectableBoxes() { return this.selectionBoxes; }
     //region Selection Methods
     public void deselect()
     {
@@ -154,9 +153,9 @@ public class SelectionModule implements IKeystoneModule
         // Selection Boxes
         if (!KeystoneGlobalState.HideSelectionBoxes)
         {
-            for (SelectionBoundingBox box : selectionBoxes)
+            for (int i = 0; i < selectionBoxes.size(); i++)
             {
-                selectionBoxRenderer.render(context, box);
+                selectionBoxRenderer.render(context, selectionBoxes.get(i));
             }
         }
     }

@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.renderer.interfaces.IRendererModifier;
 import net.minecraft.client.render.GameRenderer;
-import org.lwjgl.opengl.GL11;
 
 public class DefaultRendererModifiers
 {

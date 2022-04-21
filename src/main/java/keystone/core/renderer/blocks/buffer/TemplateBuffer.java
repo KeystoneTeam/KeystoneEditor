@@ -1,5 +1,6 @@
 package keystone.core.renderer.blocks.buffer;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.render.BufferBuilder;
 
@@ -15,13 +16,15 @@ public class TemplateBuffer
     public TemplateBuffer(BufferBuilder buf)
     {
         Pair<BufferBuilder.DrawArrayParameters, ByteBuffer> state = buf.popData();
+        BufferBuilder.DrawArrayParameters parameters = state.getFirst();
         ByteBuffer rendered = state.getSecond();
+
+        formatSize = parameters.getVertexFormat().getVertexSize();
+        vertexCount = parameters.getVertexCount();
+
         rendered.order(ByteOrder.nativeOrder()); // Vanilla bug, endianness does not carry over into sliced buffers
 
-        formatSize = buf.getCurrentElement().getByteLength();
-        vertexCount = state.getFirst().getVertexCount();
         int size = vertexCount * formatSize;
-
         template = ByteBuffer.allocate(size);
         template.order(rendered.order());
         template.limit(rendered.limit());

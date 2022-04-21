@@ -1,19 +1,20 @@
-package keystone.core.renderer.shapes;
+package keystone.core.modules.selection;
 
 import keystone.core.client.Player;
 import keystone.core.math.RayTracing;
 import keystone.core.modules.selection.SelectedFace;
+import keystone.core.renderer.shapes.Cuboid;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
 import java.util.List;
 
-public abstract class SelectableBoundingBox extends Cuboid
+public abstract class SelectableCuboid extends Cuboid
 {
     private boolean selectable;
 
-    protected SelectableBoundingBox(Vec3i corner1, Vec3i corner2)
+    protected SelectableCuboid(Vec3i corner1, Vec3i corner2)
     {
         super(corner1, corner2);
         this.selectable = true;

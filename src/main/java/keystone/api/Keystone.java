@@ -8,9 +8,9 @@ import keystone.core.client.Player;
 import keystone.core.events.minecraft.ClientPlayerEvents;
 import keystone.core.events.minecraft.ServerPlayerEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
-import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
+import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.registries.BlockTypeRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -36,6 +36,7 @@ public final class Keystone
     public static final Random RANDOM = new Random();
 
     private static FilterModule filterModule;
+    private static GhostBlocksModule ghostBlocksModule;
     private static Thread serverThread;
 
     //region Active Toggle
@@ -231,7 +232,7 @@ public final class Keystone
         WorldRenderEvents.LAST.register(context ->
         {
             Player.update(context.tickDelta(), MinecraftClient.getInstance().player);
-
+            ghostBlocksModule.renderGhostBlocks(context);
             if (Keystone.isActive())
             {
                 for (IKeystoneModule module : modules.values()) if (module.isEnabled()) module.preRender(context);
@@ -260,6 +261,7 @@ public final class Keystone
     public static void postInit()
     {
         filterModule = getModule(FilterModule.class);
+        ghostBlocksModule = getModule(GhostBlocksModule.class);
         for (IKeystoneModule module : modules.values()) module.postInit();
     }
     /**

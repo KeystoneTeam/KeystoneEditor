@@ -1,6 +1,5 @@
 package keystone.core.modules.selection;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;

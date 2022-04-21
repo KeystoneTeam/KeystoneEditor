@@ -6,7 +6,6 @@ import keystone.core.renderer.RenderBox;
 import keystone.core.renderer.interfaces.IAlphaProvider;
 import keystone.core.renderer.interfaces.IColorProvider;
 import keystone.core.renderer.interfaces.IRenderer;
-import keystone.core.renderer.overlay.IOverlayRenderer;
 import keystone.core.renderer.shapes.SphereMesh;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexFormats;
@@ -14,8 +13,6 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-
-import java.awt.*;
 
 public class FillOverlayRenderer implements IOverlayRenderer
 {

@@ -1,33 +1,32 @@
 package keystone.core.renderer.blocks;
 
-import com.jozufozu.flywheel.core.model.ShadeSeparatedBufferBuilder;
-import com.jozufozu.flywheel.core.model.ShadeSeparatingVertexConsumer;
-import com.jozufozu.flywheel.fabric.model.CullingBakedModel;
-import com.jozufozu.flywheel.fabric.model.FabricModelUtil;
-import com.jozufozu.flywheel.fabric.model.LayerFilteringBakedModel;
 import keystone.core.renderer.blocks.buffer.SuperByteBuffer;
 import keystone.core.renderer.blocks.buffer.SuperRenderTypeBuffer;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
-import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
-import net.minecraft.client.render.block.BlockModelRenderer;
 import net.minecraft.client.render.block.BlockRenderManager;
+import net.minecraft.client.render.chunk.ChunkBuilder;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class GhostWorldRenderer
 {
-    private static final ThreadLocal<ThreadLocalObjects> THREAD_LOCAL_OBJECTS = ThreadLocal.withInitial(ThreadLocalObjects::new);
-
     private final MinecraftClient minecraft;
     private final Map<RenderLayer, SuperByteBuffer> bufferCache = new HashMap<>(getLayerCount());
     private final Set<RenderLayer> usedBlockRenderLayers = new HashSet<>(getLayerCount());
@@ -48,8 +47,31 @@ public class GhostWorldRenderer
         offset = Vec3d.ZERO;
     }
 
-    private void applyOrientation(MatrixStack ms)
+    public void display(GhostBlocksWorld world)
     {
+        this.ghostBlocks = world;
+        this.changed = true;
+    }
+    public void markDirty()
+    {
+        changed = true;
+    }
+
+    public void tick()
+    {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.world == null || mc.player == null || !changed)
+            return;
+
+        redraw(mc);
+        changed = false;
+    }
+
+    public void render(MatrixStack ms, SuperRenderTypeBuffer buffer, float partialTicks)
+    {
+        ms.push();
+        ms.translate(offset.x, offset.y, offset.z);
+
         // Apply Ghost World Orientation to MatrixStack
         int xAxisSize = ghostBlocks.getRotation() == BlockRotation.NONE || ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getBlockCountX() : ghostBlocks.getBounds().getBlockCountZ();
         int zAxisSize = ghostBlocks.getRotation() == BlockRotation.NONE || ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getBlockCountZ() : ghostBlocks.getBounds().getBlockCountX();
@@ -79,138 +101,122 @@ public class GhostWorldRenderer
             ms.scale(1.0f, 1.0f, -1.0f);
             ms.translate(0, 0, -ghostBlocks.getBounds().getBlockCountZ());
         }
-    }
 
-    public void display(GhostBlocksWorld world)
-    {
-        this.ghostBlocks = world;
-        this.changed = true;
-    }
-    public void markDirty()
-    {
-        changed = true;
-    }
-
-    public void tick()
-    {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        if (mc.world == null || mc.player == null || !changed) return;
-
-        redraw(mc);
-        changed = false;
-    }
-
-    public void render(MatrixStack ms, SuperRenderTypeBuffer buffers, float partialTicks)
-    {
-        ms.push();
-        ms.translate(offset.x, offset.y, offset.z);
-        applyOrientation(ms);
-
-        // TODO: See if I can remove this
-        //buffers.getBuffer(RenderLayer.getSolid());
+        buffer.getBuffer(RenderLayer.getSolid());
 
         // Dispatch Ghost World Entity Rendering
         EntityRenderDispatcher entityRenderer = minecraft.getEntityRenderDispatcher();
         ghostBlocks.getEntities().forEach(entity ->
         {
             int light = LightmapTextureManager.pack(15, 15);
-            entityRenderer.render(entity, entity.getX(), entity.getY(), entity.getZ(), entity.getYaw(partialTicks), entity.getPitch(partialTicks), ms, buffers, light);
+            // TODO: Check if this needs pitch somehow
+            entityRenderer.render(entity, entity.getX(), entity.getY(), entity.getZ(), entity.getYaw(partialTicks), partialTicks, ms, buffer, light);
         });
 
-        // Render Blocks
-        bufferCache.forEach((layer, buffer) -> buffer.renderInto(ms, buffers.getBuffer(layer)));
+        // Dispatch Ghost World Fluid Rendering
+        for (RenderLayer layer : RenderLayer.getBlockLayers())
+        {
+            if (!usedFluidRenderLayers.contains(layer)) continue;
+            Map<ChunkPos, SuperByteBuffer> fluidChunks = fluidBufferCache.get(layer);
+            for (Map.Entry<ChunkPos, SuperByteBuffer> entry : fluidChunks.entrySet())
+            {
+                ms.push();
+                ms.translate(entry.getKey().getStartX(), 0, entry.getKey().getStartZ());
+                entry.getValue().renderInto(ms, buffer.getBuffer(layer));
+                ms.pop();
+            }
+        }
 
-        // Render Tile Entities
-        TileEntityRenderHelper.renderTileEntities(ghostBlocks, ghostBlocks.getRenderedTileEntities(), ms, buffers);
+        // Dispatch Ghost World Block Rendering
+        for (RenderLayer layer : RenderLayer.getBlockLayers())
+        {
+            if (!usedBlockRenderLayers.contains(layer)) continue;
+            SuperByteBuffer superByteBuffer = bufferCache.get(layer);
+            superByteBuffer.renderInto(ms, buffer.getBuffer(layer));
+        }
+        TileEntityRenderHelper.renderTileEntities(ghostBlocks, ghostBlocks.getRenderedTileEntities(), ms, new MatrixStack(), buffer, partialTicks);
 
         ms.pop();
     }
 
+    // For vanilla implementation, see ChunkBuilder.BuiltChunk.RebuildTask.render()
     protected void redraw(MinecraftClient minecraft)
     {
-        bufferCache.clear();
-        for (RenderLayer layer : RenderLayer.getBlockLayers())
+        usedBlockRenderLayers.clear();
+        usedFluidRenderLayers.clear();
+        startedBufferBuilders.clear();
+        startedFluidBufferBuilders.clear();
+
+        final GhostBlocksWorld blockAccess = ghostBlocks;
+        final BlockRenderManager blockRendererDispatcher = minecraft.getBlockRenderManager();
+
+        Map<RenderLayer, BufferBuilder> blockBuffers = new HashMap<>();
+        Map<RenderLayer, Map<ChunkPos, BufferBuilder>> fluidBuffers = new HashMap<>();
+        MatrixStack ms = new MatrixStack();
+
+        BlockPos.stream(blockAccess.getBounds()).forEach(localPos ->
         {
-            SuperByteBuffer buffer = drawLayer(layer);
-            if (buffer != null && !buffer.isEmpty()) bufferCache.put(layer, buffer);
-        }
-    }
+            ms.push();
+            ms.translate(localPos.getX(), localPos.getY(), localPos.getZ());
 
-    protected SuperByteBuffer drawLayer(RenderLayer layer)
-    {
-        BlockRenderManager dispatcher = MinecraftClient.getInstance().getBlockRenderManager();
-        ThreadLocalObjects objects = THREAD_LOCAL_OBJECTS.get();
+            ChunkPos chunkPos = new ChunkPos(localPos);
+            BlockState blockState = blockAccess.getBlockState(localPos);
+            FluidState fluidState = blockState.getFluidState();
 
-        MatrixStack matrixStack = objects.matrixStack;
-        Random random = objects.random;
-        BlockPos.Mutable mutablePos = objects.mutablePos;
-        GhostBlocksWorld renderWorld = ghostBlocks;
-        BlockBox bounds = renderWorld.getBounds();
+            RenderLayer renderLayer;
+            BufferBuilder bufferBuilder;
 
-        ShadeSeparatingVertexConsumer shadeSeparatingWrapper = objects.shadeSeparatingWrapper;
-        ShadeSeparatedBufferBuilder builder = new ShadeSeparatedBufferBuilder(512);
-        BufferBuilder unshadedBuilder = objects.unshadedBuilder;
-
-        builder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
-        unshadedBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
-        shadeSeparatingWrapper.prepare(builder, unshadedBuilder);
-
-        BlockModelRenderer.enableBrightnessCache();
-        boolean usesLayer = false;
-        for (BlockPos localPos : BlockPos.iterate(bounds.getMinX(), bounds.getMinY(), bounds.getMinZ(), bounds.getMaxX(), bounds.getMaxY(), bounds.getMaxZ()))
-        {
-            BlockPos pos = mutablePos.set(localPos);
-            BlockState state = renderWorld.getBlockState(pos);
-
-            matrixStack.push();
-            matrixStack.translate(localPos.getX(), localPos.getY(), localPos.getZ());
-
-            if (state.getRenderType() == BlockRenderType.MODEL)
+            // Fluid Rendering
+            if (!fluidState.isEmpty())
             {
-                BakedModel model = dispatcher.getModel(state);
-                if (((FabricBakedModel)model).isVanillaAdapter())
-                {
-                    if (!FabricModelUtil.doesLayerMatch(state, layer)) model = null;
-                }
-                else
-                {
-                    model = CullingBakedModel.wrap(model);
-                    model = LayerFilteringBakedModel.wrap(model, layer);
-                    model = shadeSeparatingWrapper.wrapModel(model);
-                }
+                renderLayer = RenderLayers.getFluidLayer(fluidState);
+                if (!fluidBuffers.containsKey(renderLayer)) fluidBuffers.put(renderLayer, new HashMap<>());
+                if (!fluidBuffers.get(renderLayer).containsKey(chunkPos)) fluidBuffers.get(renderLayer).put(chunkPos, new BufferBuilder(VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL.getVertexSizeInteger()));
+                bufferBuilder = fluidBuffers.get(renderLayer).get(chunkPos);
 
-                if (model != null)
-                {
-                    dispatcher.getModelRenderer().render(renderWorld, model, state, pos, matrixStack, shadeSeparatingWrapper, true, random, state.getRenderingSeed(pos), OverlayTexture.DEFAULT_UV);
-                    usesLayer = true;
-                }
+                if (!startedFluidBufferBuilders.containsKey(renderLayer)) startedFluidBufferBuilders.put(renderLayer, new HashSet<>());
+                if (startedFluidBufferBuilders.get(renderLayer).add(chunkPos)) bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
+
+                if (blockRendererDispatcher.renderFluid(localPos, blockAccess, bufferBuilder, blockState, fluidState)) usedFluidRenderLayers.add(renderLayer);
             }
 
-            matrixStack.pop();
+            // Block Rendering
+            if (blockState.getRenderType() != BlockRenderType.INVISIBLE)
+            {
+                renderLayer = RenderLayers.getBlockLayer(blockState);
+                if (!blockBuffers.containsKey(renderLayer)) blockBuffers.put(renderLayer, new BufferBuilder(VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL.getVertexSizeInteger()));
+                bufferBuilder = blockBuffers.get(renderLayer);
+                if (startedBufferBuilders.add(renderLayer)) bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
+
+                if (blockRendererDispatcher.renderBlock(blockState, localPos, blockAccess, ms, bufferBuilder, true, minecraft.world.random)) usedBlockRenderLayers.add(renderLayer);
+            }
+
+            ms.pop();
+        });
+
+        // Finish Drawing Fluids
+        for (RenderLayer layer : startedFluidBufferBuilders.keySet())
+        {
+            Map<ChunkPos, BufferBuilder> chunkBuffers = fluidBuffers.get(layer);
+            Map<ChunkPos, SuperByteBuffer> byteBuffers = new HashMap<>();
+            for (BufferBuilder buf : chunkBuffers.values()) buf.end();
+
+            for (Map.Entry<ChunkPos, BufferBuilder> entry : chunkBuffers.entrySet()) byteBuffers.put(entry.getKey(), new SuperByteBuffer(entry.getValue()));
+            fluidBufferCache.put(layer, byteBuffers);
         }
-        BlockModelRenderer.disableBrightnessCache();
 
-        if (!usesLayer) return null;
-
-        shadeSeparatingWrapper.clear();
-        unshadedBuilder.clear();
-        builder.appendUnshadedVertices(unshadedBuilder);
-        builder.end();
-
-        return new SuperByteBuffer(builder);
+        // Finish Drawing Blocks
+        for (RenderLayer layer : startedBufferBuilders)
+        {
+            BufferBuilder buf = blockBuffers.get(layer);
+            buf.end();
+            bufferCache.put(layer, new SuperByteBuffer(buf));
+        }
     }
 
     private static int getLayerCount()
     {
-        return RenderLayer.getBlockLayers().size();
-    }
-
-    private static class ThreadLocalObjects
-    {
-        public final MatrixStack matrixStack = new MatrixStack();
-        public final Random random = new Random();
-        public final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
-        public final ShadeSeparatingVertexConsumer shadeSeparatingWrapper = new ShadeSeparatingVertexConsumer();
-        public final BufferBuilder unshadedBuilder = new BufferBuilder(512);
+        return RenderLayer.getBlockLayers()
+                .size();
     }
 }

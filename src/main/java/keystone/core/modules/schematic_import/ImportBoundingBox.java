@@ -9,7 +9,7 @@ import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.selection.SelectedFace;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
-import keystone.core.renderer.shapes.SelectableBoundingBox;
+import keystone.core.modules.selection.SelectableCuboid;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
@@ -21,7 +21,7 @@ import net.minecraft.util.math.Vec3i;
 
 import java.util.Map;
 
-public class ImportBoundingBox extends SelectableBoundingBox
+public class ImportBoundingBox extends SelectableCuboid
 {
     private GhostBlocksModule ghostBlocksModule;
     private KeystoneSchematic schematic;

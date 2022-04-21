@@ -10,7 +10,6 @@ import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.ingame.CraftingScreen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;

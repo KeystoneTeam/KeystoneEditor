@@ -10,7 +10,7 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
-// Dependency Mavem Repositories
+// Dependency Maven Repositories
 repositories {
     maven {
         name "tterrag maven"
@@ -30,7 +30,6 @@ dependencies {
 
     // Mod Dependencies
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "com.jozufozu.flywheel:Flywheel-Fabric:${project.flywheel_version}"
     shade "org.codehaus.janino:janino:${project.janino_version}"
 }
 
