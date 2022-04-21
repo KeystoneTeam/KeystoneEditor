@@ -20,7 +20,7 @@ public class Vector3i
      */
     public Vector3i(int x, int y, int z) { this(new Vec3i(x, y, z)); }
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param vec The Minecraft Vector3i
      */
     public Vector3i(Vec3i vec)

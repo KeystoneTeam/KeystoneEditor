@@ -8,14 +8,20 @@ import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.client.Player;
 import keystone.core.modules.IKeystoneModule;
+import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
+import keystone.core.renderer.blocks.world.GhostBlocksWorld;
+import net.minecraft.entity.EntityType;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.registry.BuiltinRegistries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class EntitiesModule implements IKeystoneModule
 {
@@ -37,6 +43,7 @@ public class EntitiesModule implements IKeystoneModule
     {
         this.historyModule = Keystone.getModule(HistoryModule.class);
         this.worldCacheModule = Keystone.getModule(WorldCacheModule.class);
+        Entity.setEntitiesModule(this);
     }
     @Override
     public boolean isEnabled()
@@ -48,6 +55,24 @@ public class EntitiesModule implements IKeystoneModule
     {
         return worldCacheModule.getDimensionWorld(Player.getDimension());
     }
+
+    public net.minecraft.entity.Entity getMinecraftEntity(NbtCompound nbt)
+    {
+        if (nbt.containsUuid(net.minecraft.entity.Entity.UUID_KEY))
+        {
+            UUID uuid = nbt.getUuid(net.minecraft.entity.Entity.UUID_KEY);
+            net.minecraft.entity.Entity entity = worldCacheModule.getDimensionWorld(Player.getDimension()).getEntity(uuid);
+            if (entity != null) return entity;
+        }
+        return null;
+    }
+    public net.minecraft.entity.Entity createPreviewEntity(EntityType<?> type, NbtCompound nbt)
+    {
+        net.minecraft.entity.Entity minecraftEntity = type.create(worldCacheModule.getGhostWorld(Player.getDimension()));
+        minecraftEntity.readNbt(nbt);
+        return minecraftEntity;
+    }
+
     public List<Entity> getEntities(BlockPos min, BlockPos max, RetrievalMode retrievalMode)
     {
         BoundingBox bb = new BoundingBox(min, max);

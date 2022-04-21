@@ -51,7 +51,7 @@ public class BlockType
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param keystoneID The Keystone Registry ID
      * @param state The Minecraft block state
      */
@@ -64,7 +64,7 @@ public class BlockType
 
     public short getKeystoneID() { return keystoneID; }
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @return This block's Minecraft block state
      */
     public BlockState getMinecraftBlock() { return state; }

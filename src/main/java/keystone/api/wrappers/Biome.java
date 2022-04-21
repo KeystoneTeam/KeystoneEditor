@@ -17,7 +17,7 @@ public class Biome
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param minecraftBiome The Minecraft Biome
      */
     public Biome(net.minecraft.util.registry.RegistryEntry<net.minecraft.world.biome.Biome> minecraftBiome)
@@ -27,7 +27,7 @@ public class Biome
         this.name = new TranslatableText("biome." + this.id.getNamespace() + "." + this.id.getPath());
     }
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @return The Minecraft biome
      */
     public RegistryEntry<net.minecraft.world.biome.Biome> getMinecraftBiome() { return this.biome; }

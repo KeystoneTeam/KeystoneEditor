@@ -207,7 +207,7 @@ public class KeystoneSchematic
         {
             Entity scaled = entityTemplate.clone();
             scaled.position(scaled.x() * scale, scaled.y() * scale, scaled.z() * scale);
-            scaled.spawnInWorld(ghostWorld);
+            scaled.spawn(ghostWorld);
         }
 
         int i = 0;

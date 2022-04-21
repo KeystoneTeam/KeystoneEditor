@@ -24,7 +24,7 @@ public enum NBTType
     NBTType(int minecraftID) { this.minecraftID = minecraftID; }
 
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param minecraftID The Minecraft ID, found in Constants.NBT
      * @return The NBTType representing the Minecraft ID
      */

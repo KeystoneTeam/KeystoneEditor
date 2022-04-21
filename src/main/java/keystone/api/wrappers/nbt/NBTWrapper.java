@@ -7,7 +7,7 @@ public class NBTWrapper<N extends NbtElement>
     protected final N nbt;
 
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param nbt The Minecraft NbtElement
      */
     protected NBTWrapper(N nbt)
@@ -16,7 +16,7 @@ public class NBTWrapper<N extends NbtElement>
     }
 
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @return The Minecraft NbtElement
      */
     public N getMinecraftNBT() { return this.nbt; }

@@ -11,6 +11,7 @@ import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
+import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.gui.widgets.inputs.fields.EditableObject;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
@@ -342,7 +343,7 @@ public class KeystoneFilter extends EditableObject
     }
 
     /**
-     * Create a {@link BlockType} from a block ID. Any ID that is a valid ID for the
+     * Create a {@link Block} from a block ID. Any ID that is a valid ID for the
      * /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param block The block ID
      * @return The generated {@link BlockType}
@@ -364,6 +365,17 @@ public class KeystoneFilter extends EditableObject
         }
 
         return new Block(state, tileEntity);
+    }
+
+    /**
+     * Create a {@link Block} from a block ID and tile entity. Any ID that is a valid ID
+     * for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
+     * @param block The block ID
+     * @return The generated {@link BlockType}
+     */
+    public static Block block(String block, NBTCompound tileEntity)
+    {
+        return block(block).setTileEntity(tileEntity);
     }
     /**
      * Create a {@link keystone.api.wrappers.Item} from an item ID. Any ID that is a valid ID for the

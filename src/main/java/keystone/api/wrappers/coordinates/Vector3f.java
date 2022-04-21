@@ -20,7 +20,7 @@ public class Vector3f
      */
     public Vector3f(float x, float y, float z) { this(new Vec3f(x, y, z)); }
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param vec The Minecraft Vector3f
      */
     public Vector3f(Vec3f vec)

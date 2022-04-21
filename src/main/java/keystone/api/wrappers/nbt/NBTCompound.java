@@ -15,7 +15,7 @@ import java.util.UUID;
 public class NBTCompound extends NBTWrapper<NbtCompound>
 {
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param nbt The Minecraft NbtElement
      */
     public NBTCompound(NbtCompound nbt) { super(nbt); }

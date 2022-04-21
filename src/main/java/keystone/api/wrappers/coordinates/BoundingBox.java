@@ -16,7 +16,7 @@ public class BoundingBox
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param minecraftBB The Minecraft Box for the wrapper
      */
     public BoundingBox(Box minecraftBB)
@@ -34,7 +34,7 @@ public class BoundingBox
     }
 
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param min The minimum Minecraft BlockPos contained within the bounding box
      * @param max The maximum Minecraft BlockPos contained within the bounding box
      */
@@ -43,7 +43,7 @@ public class BoundingBox
         this(new Box(min.getX(), min.getY(), min.getZ(), max.getX() + 1, max.getY() + 1, max.getZ() + 1));
     }
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @return The Minecraft Box
      */
     public Box getMinecraftBoundingBox()

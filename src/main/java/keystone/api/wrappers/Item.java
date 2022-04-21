@@ -13,7 +13,7 @@ public class Item
     private final ItemStack stack;
 
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param stack The Minecraft item stack
      */
     public Item(ItemStack stack)
@@ -88,7 +88,7 @@ public class Item
     }
 
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @return The Minecraft item stack
      */
     public ItemStack getMinecraftItem() { return stack; }

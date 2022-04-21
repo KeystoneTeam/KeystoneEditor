@@ -7,7 +7,7 @@ import java.util.List;
 public class NBTList<T> extends NBTWrapper<NbtList>
 {
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param nbt The Minecraft NbtElement
      */
     public NBTList(NbtList nbt) { super(nbt); }

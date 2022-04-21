@@ -16,7 +16,7 @@ public class Vector2f
      */
     public Vector2f(float x, float y) { this(new net.minecraft.client.util.math.Vector2f(x, y)); }
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param vec The Minecraft Vector2f
      */
     public Vector2f(net.minecraft.client.util.math.Vector2f vec)

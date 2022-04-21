@@ -124,7 +124,10 @@ public class KeystoneSchematicFormat implements ISchematicFormat
 
                 entityNBT.put("pos", positionNBT);
                 entityNBT.put("blockPos", blockPositionNBT);
-                entityNBT.put("nbt", entity.getMinecraftEntityData());
+
+                NbtCompound entityDataNBT = entity.getMinecraftEntity().writeNbt(new NbtCompound());
+                entityDataNBT.remove(net.minecraft.entity.Entity.UUID_KEY);
+                entityNBT.put("nbt", entityDataNBT);
                 entitiesNBT.add(entityNBT);
             });
             nbt.put("entities", entitiesNBT);
