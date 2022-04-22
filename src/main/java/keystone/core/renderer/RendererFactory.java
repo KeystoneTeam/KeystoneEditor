@@ -16,6 +16,7 @@ import net.minecraft.client.render.VertexFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public final class RendererFactory
 {
@@ -64,7 +65,7 @@ public final class RendererFactory
         }
         public IOverlayRenderer buildWireframe()
         {
-            return buildWireframe(4.0f);
+            return buildWireframe(2.0f);
         }
         public IOverlayRenderer buildWireframe(float lineWidth)
         {
@@ -165,18 +166,17 @@ public final class RendererFactory
         }
     }
 
-    public static RendererBuilder createPositionColor()
+    public static RendererBuilder createWireframeOverlay()
     {
-        RendererBuilder context = new RendererBuilder(DefaultRendererModifiers.POSITION_COLOR);
-        return context;
+        return new RendererBuilder(DefaultRendererModifiers.LINES_SHADER, DefaultRendererModifiers.TRANSLUCENT, DefaultRendererModifiers.IGNORE_CULL, new DefaultRendererModifiers.PolygonOffset(1));
     }
-    public static RendererBuilder createCullingOverlay()
+    public static RendererBuilder createSmartPolygonOverlay(Supplier<Boolean> cullingCondition)
     {
-        return new RendererBuilder(DefaultRendererModifiers.POSITION_COLOR, DefaultRendererModifiers.TRANSLUCENT);
+        return new RendererBuilder(DefaultRendererModifiers.POSITION_COLOR_SHADER, DefaultRendererModifiers.TRANSLUCENT, new DefaultRendererModifiers.ConditionalCull(cullingCondition), new DefaultRendererModifiers.PolygonOffset(1));
     }
-    public static RendererBuilder createWorldspaceOverlay()
+    public static RendererBuilder createPolygonOverlay()
     {
-        return new RendererBuilder(DefaultRendererModifiers.POSITION_COLOR, DefaultRendererModifiers.TRANSLUCENT, DefaultRendererModifiers.IGNORE_CULL, DefaultRendererModifiers.POLYGON_OFFSET);
+        return new RendererBuilder(DefaultRendererModifiers.POSITION_COLOR_SHADER, DefaultRendererModifiers.TRANSLUCENT, DefaultRendererModifiers.IGNORE_CULL, new DefaultRendererModifiers.PolygonOffset(1));
     }
 
     public static ComplexOverlayRenderer createComplexOverlay(IOverlayRenderer fillRenderer, IOverlayRenderer wireframeRenderer)

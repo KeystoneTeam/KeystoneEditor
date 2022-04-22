@@ -33,8 +33,7 @@ public class BrushModule implements IKeystoneModule
     private HistoryModule historyModule;
     private WorldModifierModules worldModifiers;
 
-    private ComplexOverlayRenderer outsideRenderer;
-    private ComplexOverlayRenderer insideRenderer;
+    private ComplexOverlayRenderer renderer;
 
     private BrushOperation brushOperation;
     private BrushShape brushShape;
@@ -69,13 +68,9 @@ public class BrushModule implements IKeystoneModule
         ClientTickEvents.START_CLIENT_TICK.register(this::onTick);
         KeystoneInputEvents.END_MOUSE_DRAG.register(this::onMouseDragEnd);
 
-        this.outsideRenderer = RendererFactory.createComplexOverlay(
-                RendererFactory.createWorldspaceOverlay().buildFill(),
-                RendererFactory.createWorldspaceOverlay().ignoreDepth().buildWireframe()
-        );
-        this.insideRenderer = RendererFactory.createComplexOverlay(
-                RendererFactory.createWorldspaceOverlay().ignoreCull().buildFill(),
-                RendererFactory.createWorldspaceOverlay().ignoreDepth().buildWireframe()
+        this.renderer = RendererFactory.createComplexOverlay(
+                RendererFactory.createSmartPolygonOverlay(this::isCameraInsideShape).buildFill(),
+                RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe()
         );
     }
 
@@ -127,32 +122,36 @@ public class BrushModule implements IKeystoneModule
         }
     }
 
+    private boolean isCameraInsideShape()
+    {
+        Vec3d center = Vec3d.of(Player.getHighlightedBlock());
+        center = center.add(brushSize[0] % 2 == 1 ? 0.5: 0, brushSize[1] % 2 == 1 ? 0.5: 0, brushSize[2] % 2 == 1 ? 0.5: 0);
+        Vec3i centerBlock = new Vec3i(center.x, center.y, center.z);
+        return brushShape.isPositionInShape(Player.getEyePosition(), centerBlock, brushSize[0], brushSize[1], brushSize[2]);
+    }
     @Override
     public void renderWhenEnabled(WorldRenderContext context)
     {
         // Render Brush Positions
-        this.outsideRenderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME);
+        this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME);
         for (int i = 0; i < brushPositions.size(); i++)
         {
             RenderBox box = new RenderBox(brushPositions.get(i)).nudge();
-            this.outsideRenderer.drawCuboid(box, Color4f.yellow);
+            this.renderer.drawCuboid(box, Color4f.yellow);
         }
 
         // Render Brush Preview
         Vec3d center = Vec3d.of(Player.getHighlightedBlock());
         center = center.add(brushSize[0] % 2 == 1 ? 0.5: 0, brushSize[1] % 2 == 1 ? 0.5: 0, brushSize[2] % 2 == 1 ? 0.5: 0);
-        Vec3i centerBlock = new Vec3i(center.x, center.y, center.z);
 
         double xRadius = brushSize[0] * 0.5;
         double yRadius = brushSize[1] * 0.5;
         double zRadius = brushSize[2] * 0.5;
 
-        boolean outside = !brushShape.isPositionInShape(Player.getEyePosition(), centerBlock, brushSize[0], brushSize[1], brushSize[2]);
-        ComplexOverlayRenderer renderer = outside ? outsideRenderer : insideRenderer;
         float fillAlpha = 0.25f;
         if (brushShape == BrushShape.ROUND)
         {
-            //renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawSphere(center, xRadius, yRadius, zRadius, Color4f.blue.withAlpha(fillAlpha));
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawSphere(center, xRadius, yRadius, zRadius, Color4f.blue.withAlpha(fillAlpha));
             renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawSphere(center, xRadius, yRadius, zRadius, Color4f.blue);
         }
         else if (brushShape == BrushShape.DIAMOND)

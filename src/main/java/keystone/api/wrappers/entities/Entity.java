@@ -165,7 +165,6 @@ public class Entity
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Spawn this entity into a ServerWorld
      * @param world The ServerWorldAccess to spawn the entity in
-     * @return The Minecraft entity that was spawned into the server world
      */
     public void spawn(ServerWorldAccess world)
     {

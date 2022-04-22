@@ -26,8 +26,8 @@ public class SelectionBoxRenderer
     public SelectionBoxRenderer()
     {
         this.renderer = RendererFactory.createComplexOverlay(
-                RendererFactory.createWorldspaceOverlay().buildFill(),
-                RendererFactory.createWorldspaceOverlay().ignoreDepth().buildWireframe()
+                RendererFactory.createPolygonOverlay().buildFill(),
+                RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe()
         );
         this.mouse = Keystone.getModule(MouseModule.class);
     }
@@ -58,12 +58,12 @@ public class SelectionBoxRenderer
         });
 
         // Render Box Grid
-        renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL);
-        renderer.drawGrid(Vec3d.of(box.getMin()), box.getSize(), 1.0, boxColor, direction ->
+        renderer.lineWidth(1.0f).drawGrid(Vec3d.of(box.getMin()), box.getSize(), 1.0, boxColor, direction ->
         {
             if (selectedFace != null && selectedFace.getBox().equals(box) && selectedFace.getFaceDirection() == direction) return 1.0f;
             else return 0.25f;
-        }, 4.0f, false);
+        }, false);
+        renderer.revertLineWidth();
 
         // Render Corners If Selected
         if (box.getMin() != box.getMax() && selectedForNudge)

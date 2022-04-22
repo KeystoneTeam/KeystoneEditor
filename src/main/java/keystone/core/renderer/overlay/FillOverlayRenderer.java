@@ -1,5 +1,6 @@
 package keystone.core.renderer.overlay;
 
+import keystone.api.Keystone;
 import keystone.core.client.Camera;
 import keystone.core.renderer.Color4f;
 import keystone.core.renderer.RenderBox;
@@ -102,103 +103,14 @@ public class FillOverlayRenderer implements IOverlayRenderer
         renderer.draw();
     }
     @Override
-    public void drawGrid(Vec3d min, Vec3i size, double scale, IColorProvider colorProvider, IAlphaProvider alphaProvider, float lineWidth, boolean drawEdges)
+    public void drawGrid(Vec3d min, Vec3i size, double scale, IColorProvider colorProvider, IAlphaProvider alphaProvider, boolean drawEdges)
     {
-        if (alphaProvider == null) alphaProvider = direction -> null;
-
-        int sizeX = size.getX();
-        int sizeY = size.getY();
-        int sizeZ = size.getZ();
-        
-        Color4f color;
-        renderer.lines(lineWidth, VertexFormats.POSITION_COLOR);
-
-        //region -X Face
-        color = colorProvider.apply(Direction.WEST).withAlpha(alphaProvider.apply(Direction.WEST));
-        for (int y = 1; y < sizeY; y++)
-        {
-            renderer.vertex(min.add(0, y * scale, 0)).color(color).next();
-            renderer.vertex(min.add(0, y * scale, sizeZ * scale)).color(color).next();
-        }
-        for (int z = 1; z < sizeZ; z++)
-        {
-            renderer.vertex(min.add(0, 0, z * scale)).color(color).next();
-            renderer.vertex(min.add(0, sizeY * scale, z * scale)).color(color).next();
-        }
-        //endregion
-        //region +X Face
-        color = colorProvider.apply(Direction.EAST).withAlpha(alphaProvider.apply(Direction.EAST));
-        for (int y = 1; y < sizeY; y++)
-        {
-            renderer.vertex(min.add(sizeX * scale, y * scale, 0)).color(color).next();
-            renderer.vertex(min.add(sizeX * scale, y * scale, sizeZ * scale)).color(color).next();
-        }
-        for (int z = 1; z < sizeZ; z++)
-        {
-            renderer.vertex(min.add(sizeX * scale, 0, z * scale)).color(color).next();
-            renderer.vertex(min.add(sizeX * scale, sizeY * scale, z * scale)).color(color).next();
-        }
-        //endregion
-        //region -Y Face
-        color = colorProvider.apply(Direction.DOWN).withAlpha(alphaProvider.apply(Direction.DOWN));
-        for (int x = 1; x < sizeX; x++)
-        {
-            renderer.vertex(min.add(x * scale, 0, 0)).color(color).next();
-            renderer.vertex(min.add(x * scale, 0, sizeZ * scale)).color(color).next();
-        }
-        for (int z = 1; z < sizeZ; z++)
-        {
-            renderer.vertex(min.add(0, 0, z * scale)).color(color).next();
-            renderer.vertex(min.add(sizeX * scale, 0, z * scale)).color(color).next();
-        }
-        //endregion
-        //region +Y Face
-        color = colorProvider.apply(Direction.UP).withAlpha(alphaProvider.apply(Direction.UP));
-        for (int x = 1; x < sizeX; x++)
-        {
-            renderer.vertex(min.add(x * scale, sizeY * scale, 0)).color(color).next();
-            renderer.vertex(min.add(x * scale, sizeY * scale, sizeZ * scale)).color(color).next();
-        }
-        for (int z = 1; z < sizeZ; z++)
-        {
-            renderer.vertex(min.add(0, sizeY * scale, z * scale)).color(color).next();
-            renderer.vertex(min.add(sizeX * scale, sizeY * scale, z * scale)).color(color).next();
-        }
-        //endregion
-        //region -Z Face
-        color = colorProvider.apply(Direction.NORTH).withAlpha(alphaProvider.apply(Direction.NORTH));
-        for (int y = 1; y < sizeY; y++)
-        {
-            renderer.vertex(min.add(0, y * scale, 0)).color(color).next();
-            renderer.vertex(min.add(sizeX * scale, y * scale, 0)).color(color).next();
-        }
-        for (int x = 1; x < sizeX; x++)
-        {
-            renderer.vertex(min.add(x * scale, 0, 0)).color(color).next();
-            renderer.vertex(min.add(x * scale, sizeY * scale, 0)).color(color).next();
-        }
-        //endregion
-        //region +Z Face
-        color = colorProvider.apply(Direction.SOUTH).withAlpha(alphaProvider.apply(Direction.SOUTH));
-        for (int y = 1; y < sizeY; y++)
-        {
-            renderer.vertex(min.add(0, y * scale, sizeZ * scale)).color(color).next();
-            renderer.vertex(min.add(sizeX * scale, y * scale, sizeZ * scale)).color(color).next();
-        }
-        for (int x = 1; x < sizeX; x++)
-        {
-            renderer.vertex(min.add(x * scale, 0, sizeZ * scale)).color(color).next();
-            renderer.vertex(min.add(x * scale, sizeY * scale, sizeZ * scale)).color(color).next();
-        }
-        //endregion
-
-        renderer.draw();
+        Keystone.LOGGER.error("FillOverlayRenderer does not support drawGrid!");
     }
     @Override
-    public void drawPlane(Vec3d center, Direction planeNormal, double gridScale, IColorProvider colorProvider, IAlphaProvider fillAlphaProvider, IAlphaProvider lineAlphaProvider, float lineWidth)
+    public void drawPlane(Vec3d center, Direction planeNormal, double gridScale, IColorProvider colorProvider, IAlphaProvider alphaProvider)
     {
-        if (fillAlphaProvider == null) fillAlphaProvider = direction -> null;
-        if (lineAlphaProvider == null) lineAlphaProvider = direction -> null;
+        if (alphaProvider == null) alphaProvider = direction -> null;
 
         World world = MinecraftClient.getInstance().world;
         int halfSize = Camera.getRenderDistanceBlocks();
@@ -225,8 +137,7 @@ public class FillOverlayRenderer implements IOverlayRenderer
                 break;
         }
 
-        drawCuboid(new RenderBox(min, min.add(size.getX(), size.getY(), size.getZ())).nudge(), colorProvider, fillAlphaProvider);
-        drawGrid(min, size, gridScale, colorProvider, lineAlphaProvider, lineWidth, true);
+        drawCuboid(new RenderBox(min, min.add(size.getX(), size.getY(), size.getZ())).nudge(), colorProvider, alphaProvider);
     }
     @Override
     public void drawDiamond(Vec3d center, double xRadius, double yRadius, double zRadius, Color4f color)

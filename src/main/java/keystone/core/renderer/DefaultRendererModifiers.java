@@ -2,17 +2,35 @@ package keystone.core.renderer;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import keystone.core.renderer.interfaces.IRenderer;
 import keystone.core.renderer.interfaces.IRendererModifier;
 import net.minecraft.client.render.GameRenderer;
 
+import java.util.function.Supplier;
+
 public class DefaultRendererModifiers
 {
-    public static final IRendererModifier POSITION_COLOR = new IRendererModifier()
+    public static final IRendererModifier POSITION_COLOR_SHADER = new IRendererModifier()
     {
         @Override
         public void enable()
         {
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            RenderSystem.disableTexture();
+        }
+
+        @Override
+        public void disable()
+        {
+            RenderSystem.enableTexture();
+        }
+    };
+    public static final IRendererModifier LINES_SHADER = new IRendererModifier()
+    {
+        @Override
+        public void enable()
+        {
+            RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
             RenderSystem.disableTexture();
         }
 
@@ -67,13 +85,20 @@ public class DefaultRendererModifiers
             RenderSystem.depthMask(true);
         }
     };
-    public static final IRendererModifier POLYGON_OFFSET = new IRendererModifier()
+    public static class PolygonOffset implements IRendererModifier
     {
+        private int scale;
+
+        public PolygonOffset(int scale)
+        {
+            this.scale = scale;
+        }
+
         @Override
         public void enable()
         {
             RenderSystem.enablePolygonOffset();
-            RenderSystem.polygonOffset(-0.2f, -0.4f);
+            RenderSystem.polygonOffset(-0.1f * scale, -0.2f * scale);
         }
 
         @Override
@@ -83,4 +108,25 @@ public class DefaultRendererModifiers
             RenderSystem.disablePolygonOffset();
         }
     };
+
+    public static class ConditionalCull implements IRendererModifier
+    {
+        private Supplier<Boolean> shouldCull;
+
+        public ConditionalCull(Supplier<Boolean> shouldCull)
+        {
+            this.shouldCull = shouldCull;
+        }
+
+        @Override
+        public void enable()
+        {
+            if (!this.shouldCull.get()) RenderSystem.disableCull();
+        }
+        @Override
+        public void disable()
+        {
+            RenderSystem.enableCull();
+        }
+    }
 }

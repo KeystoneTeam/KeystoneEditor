@@ -58,8 +58,8 @@ public class SelectionModule implements IKeystoneModule
         historyModule = Keystone.getModule(HistoryModule.class);
         mouseModule = Keystone.getModule(MouseModule.class);
         highlightRenderer = RendererFactory.createComplexOverlay(
-                RendererFactory.createWorldspaceOverlay().buildFill(),
-                RendererFactory.createWorldspaceOverlay().ignoreDepth().buildWireframe()
+                RendererFactory.createPolygonOverlay().buildFill(),
+                RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe()
         );
         selectionBoxRenderer = new SelectionBoxRenderer();
     }

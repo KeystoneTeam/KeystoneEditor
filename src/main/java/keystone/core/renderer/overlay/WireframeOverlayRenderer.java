@@ -1,17 +1,17 @@
 package keystone.core.renderer.overlay;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.client.Camera;
 import keystone.core.renderer.Color4f;
 import keystone.core.renderer.RenderBox;
 import keystone.core.renderer.interfaces.IAlphaProvider;
 import keystone.core.renderer.interfaces.IColorProvider;
 import keystone.core.renderer.interfaces.IRenderer;
+import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 
 import java.util.function.BiFunction;
@@ -25,7 +25,7 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         Vec2f[] ret = new Vec2f[resolution];
         for (int i = 0; i < resolution; i++)
         {
-            double theta = step * resolution;
+            double theta = step * i;
             double localX = Math.cos(theta);
             double localY = Math.sin(theta);
             ret[i] = new Vec2f((float)localX, (float)localY);
@@ -34,20 +34,41 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
     }
 
     private final IRenderer renderer;
-    private final float lineWidth;
+    private final float defaultLineWidth;
+    private float lineWidth;
 
     public WireframeOverlayRenderer(IRenderer renderer, float lineWidth)
     {
         this.renderer = renderer;
+        this.defaultLineWidth = lineWidth;
         this.lineWidth = lineWidth;
     }
 
     public IRenderer getRenderer() { return this.renderer; }
+    public void lineWidth(float lineWidth)
+    {
+        this.lineWidth = lineWidth;
+    }
+    public void revertLineWidth()
+    {
+        this.lineWidth = defaultLineWidth;
+    }
 
-    //region Helpers
-
-    //endregion
     //region Draw Calls
+    private void drawLineLoop(Color4f color, Vec3d[] vertices)
+    {
+        renderer.lines(lineWidth, VertexFormats.LINES);
+        for (int i = 0; i < vertices.length; i++)
+        {
+            Vec3d a = vertices[i];
+            Vec3d b = vertices[(i + 1) % vertices.length];
+            Vec3d normal = b.subtract(a).normalize();
+            renderer.vertex(a).color(color).normal(normal).next();
+            renderer.vertex(b).color(color).normal(normal).next();
+        }
+        renderer.draw();
+    }
+
     @Override
     public void drawCuboid(RenderBox box, IColorProvider colorProvider, IAlphaProvider alphaProvider)
     {
@@ -62,79 +83,77 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         double maxZ = box.maxZ;
 
         Color4f color;
-        if (minX != maxX && minZ != maxZ)
+        Vec3d[] vertices;
+
+        //region WEST
+        color = colorProvider.apply(Direction.WEST);
+        vertices = new Vec3d[]
         {
-            color = colorProvider.apply(Direction.DOWN).withAlpha(alphaProvider.apply(Direction.DOWN));
-            renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
-            renderer.vertex(minX, minY, minZ).color(color).next()
-                    .vertex(maxX, minY, minZ).color(color).next()
-                    .vertex(maxX, minY, maxZ).color(color).next()
-                    .vertex(minX, minY, maxZ).color(color).next()
-                    .vertex(minX, minY, minZ).color(color).next();
-            renderer.draw();
-
-            if (minY != maxY)
-            {
-                color = colorProvider.apply(Direction.UP).withAlpha(alphaProvider.apply(Direction.UP));
-                renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
-                renderer.vertex(minX, maxY, maxZ).color(color).next()
-                        .vertex(maxX, maxY, maxZ).color(color).next()
-                        .vertex(maxX, maxY, minZ).color(color).next()
-                        .vertex(minX, maxY, minZ).color(color).next()
-                        .vertex(minX, maxY, maxZ).color(color).next();
-                renderer.draw();
-            }
-        }
-
-        if (minX != maxX && minY != maxY)
+                new Vec3d(minX, minY, minZ),
+                new Vec3d(minX, maxY, minZ),
+                new Vec3d(minX, maxY, maxZ),
+                new Vec3d(minX, minY, maxZ)
+        };
+        drawLineLoop(color, vertices);
+        //endregion
+        //region EAST
+        color = colorProvider.apply(Direction.EAST);
+        vertices = new Vec3d[]
         {
-            color = colorProvider.apply(Direction.SOUTH).withAlpha(alphaProvider.apply(Direction.SOUTH));
-            renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
-            renderer.vertex(maxX, minY, maxZ).color(color).next()
-                    .vertex(maxX, maxY, maxZ).color(color).next()
-                    .vertex(minX, maxY, maxZ).color(color).next()
-                    .vertex(minX, minY, maxZ).color(color).next()
-                    .vertex(maxX, minY, maxZ).color(color).next();
-            renderer.draw();
-
-            if (minZ != maxZ)
-            {
-                color = colorProvider.apply(Direction.NORTH).withAlpha(alphaProvider.apply(Direction.NORTH));
-                renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
-                renderer.vertex(minX, minY, minZ).color(color).next()
-                        .vertex(minX, maxY, minZ).color(color).next()
-                        .vertex(maxX, maxY, minZ).color(color).next()
-                        .vertex(maxX, minY, minZ).color(color).next()
-                        .vertex(minX, minY, minZ).color(color).next();
-                renderer.draw();
-            }
-        }
-        if (minY != maxY && minZ != maxZ)
+                new Vec3d(maxX, minY, minZ),
+                new Vec3d(maxX, maxY, minZ),
+                new Vec3d(maxX, maxY, maxZ),
+                new Vec3d(maxX, minY, maxZ)
+        };
+        drawLineLoop(color, vertices);
+        //endregion
+        //region DOWN
+        color = colorProvider.apply(Direction.DOWN);
+        vertices = new Vec3d[]
         {
-            color = colorProvider.apply(Direction.WEST).withAlpha(alphaProvider.apply(Direction.WEST));
-            renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
-            renderer.vertex(minX, minY, minZ).color(color).next()
-                    .vertex(minX, minY, maxZ).color(color).next()
-                    .vertex(minX, maxY, maxZ).color(color).next()
-                    .vertex(minX, maxY, minZ).color(color).next()
-                    .vertex(minX, minY, minZ).color(color).next();
-            renderer.draw();
-
-            if (minX != maxX)
-            {
-                color = colorProvider.apply(Direction.EAST).withAlpha(alphaProvider.apply(Direction.EAST));
-                renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
-                renderer.vertex(maxX, maxY, minZ).color(color).next()
-                        .vertex(maxX, maxY, maxZ).color(color).next()
-                        .vertex(maxX, minY, maxZ).color(color).next()
-                        .vertex(maxX, minY, minZ).color(color).next()
-                        .vertex(maxX, maxY, minZ).color(color).next();
-                renderer.draw();
-            }
-        }
+                new Vec3d(minX, minY, minZ),
+                new Vec3d(maxX, minY, minZ),
+                new Vec3d(maxX, minY, maxZ),
+                new Vec3d(minX, minY, maxZ)
+        };
+        drawLineLoop(color, vertices);
+        //endregion
+        //region UP
+        color = colorProvider.apply(Direction.UP);
+        vertices = new Vec3d[]
+        {
+                new Vec3d(minX, maxY, minZ),
+                new Vec3d(maxX, maxY, minZ),
+                new Vec3d(maxX, maxY, maxZ),
+                new Vec3d(minX, maxY, maxZ)
+        };
+        drawLineLoop(color, vertices);
+        //endregion
+        //region NORTH
+        color = colorProvider.apply(Direction.NORTH);
+        vertices = new Vec3d[]
+        {
+                new Vec3d(minX, minY, minZ),
+                new Vec3d(maxX, minY, minZ),
+                new Vec3d(maxX, maxY, minZ),
+                new Vec3d(minX, maxY, minZ)
+        };
+        drawLineLoop(color, vertices);
+        //endregion
+        //region SOUTH
+        color = colorProvider.apply(Direction.SOUTH);
+        vertices = new Vec3d[]
+        {
+                new Vec3d(minX, minY, maxZ),
+                new Vec3d(maxX, minY, maxZ),
+                new Vec3d(maxX, maxY, maxZ),
+                new Vec3d(minX, maxY, maxZ)
+        };
+        drawLineLoop(color, vertices);
+        //endregion
     }
     @Override
-    public void drawGrid(Vec3d min, Vec3i size, double scale, IColorProvider colorProvider, IAlphaProvider alphaProvider, float lineWidth, boolean drawEdges)
+    public void drawGrid(Vec3d min, Vec3i size, double scale, IColorProvider colorProvider, IAlphaProvider alphaProvider, boolean drawEdges)
     {
         if (alphaProvider == null) alphaProvider = direction -> null;
 
@@ -143,94 +162,130 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         int sizeZ = size.getZ();
         
         Color4f color;
-        renderer.lines(lineWidth, VertexFormats.POSITION_COLOR);
+        Vec3f normal;
+        renderer.lines(lineWidth, VertexFormats.LINES);
 
-        //region -X Face
-        color = colorProvider.apply(Direction.WEST).withAlpha(alphaProvider.apply(Direction.WEST));
-        for (int y = 1; y < sizeY; y++)
+        //region X
+        if (sizeY > 0 && sizeZ > 0)
         {
-            renderer.vertex(min.add(0, y * scale, 0)).color(color).next();
-            renderer.vertex(min.add(0, y * scale, sizeZ * scale)).color(color).next();
-        }
-        for (int z = 1; z < sizeZ; z++)
-        {
-            renderer.vertex(min.add(0, 0, z * scale)).color(color).next();
-            renderer.vertex(min.add(0, sizeY * scale, z * scale)).color(color).next();
-        }
-        //endregion
-        //region +X Face
-        color = colorProvider.apply(Direction.EAST).withAlpha(alphaProvider.apply(Direction.EAST));
-        for (int y = 1; y < sizeY; y++)
-        {
-            renderer.vertex(min.add(sizeX * scale, y * scale, 0)).color(color).next();
-            renderer.vertex(min.add(sizeX * scale, y * scale, sizeZ * scale)).color(color).next();
-        }
-        for (int z = 1; z < sizeZ; z++)
-        {
-            renderer.vertex(min.add(sizeX * scale, 0, z * scale)).color(color).next();
-            renderer.vertex(min.add(sizeX * scale, sizeY * scale, z * scale)).color(color).next();
-        }
-        //endregion
-        //region -Y Face
-        color = colorProvider.apply(Direction.DOWN).withAlpha(alphaProvider.apply(Direction.DOWN));
-        for (int x = 1; x < sizeX; x++)
-        {
-            renderer.vertex(min.add(x * scale, 0, 0)).color(color).next();
-            renderer.vertex(min.add(x * scale, 0, sizeZ * scale)).color(color).next();
-        }
-        for (int z = 1; z < sizeZ; z++)
-        {
-            renderer.vertex(min.add(0, 0, z * scale)).color(color).next();
-            renderer.vertex(min.add(sizeX * scale, 0, z * scale)).color(color).next();
-        }
-        //endregion
-        //region +Y Face
-        color = colorProvider.apply(Direction.UP).withAlpha(alphaProvider.apply(Direction.UP));
-        for (int x = 1; x < sizeX; x++)
-        {
-            renderer.vertex(min.add(x * scale, sizeY * scale, 0)).color(color).next();
-            renderer.vertex(min.add(x * scale, sizeY * scale, sizeZ * scale)).color(color).next();
-        }
-        for (int z = 1; z < sizeZ; z++)
-        {
-            renderer.vertex(min.add(0, sizeY * scale, z * scale)).color(color).next();
-            renderer.vertex(min.add(sizeX * scale, sizeY * scale, z * scale)).color(color).next();
+            //region -X Face
+            color = colorProvider.apply(Direction.WEST).withAlpha(alphaProvider.apply(Direction.WEST));
+            normal = new Vec3f(0, 0, 1);
+            for (int y = 1; y < sizeY; y++)
+            {
+                renderer.vertex(min.add(0, y * scale, 0)).color(color).normal(normal).next();
+                renderer.vertex(min.add(0, y * scale, sizeZ * scale)).color(color).normal(normal).next();
+            }
+            normal = new Vec3f(0, 1, 0);
+            for (int z = 1; z < sizeZ; z++)
+            {
+                renderer.vertex(min.add(0, 0, z * scale)).color(color).normal(normal).next();
+                renderer.vertex(min.add(0, sizeY * scale, z * scale)).color(color).normal(normal).next();
+            }
+            //endregion
+            if (sizeX > 0)
+            {
+                //region +X Face
+                color = colorProvider.apply(Direction.EAST).withAlpha(alphaProvider.apply(Direction.EAST));
+                normal = new Vec3f(0, 0, 0);
+                for (int y = 1; y < sizeY; y++)
+                {
+                    renderer.vertex(min.add(sizeX * scale, y * scale, 0)).color(color).normal(normal).next();
+                    renderer.vertex(min.add(sizeX * scale, y * scale, sizeZ * scale)).color(color).normal(normal).next();
+                }
+                normal = new Vec3f(0, 1, 0);
+                for (int z = 1; z < sizeZ; z++)
+                {
+                    renderer.vertex(min.add(sizeX * scale, 0, z * scale)).color(color).normal(normal).next();
+                    renderer.vertex(min.add(sizeX * scale, sizeY * scale, z * scale)).color(color).normal(normal).next();
+                }
+                //endregion
+            }
         }
         //endregion
-        //region -Z Face
-        color = colorProvider.apply(Direction.NORTH).withAlpha(alphaProvider.apply(Direction.NORTH));
-        for (int y = 1; y < sizeY; y++)
+        //region Y
+        if (sizeX > 0 && sizeZ > 0)
         {
-            renderer.vertex(min.add(0, y * scale, 0)).color(color).next();
-            renderer.vertex(min.add(sizeX * scale, y * scale, 0)).color(color).next();
-        }
-        for (int x = 1; x < sizeX; x++)
-        {
-            renderer.vertex(min.add(x * scale, 0, 0)).color(color).next();
-            renderer.vertex(min.add(x * scale, sizeY * scale, 0)).color(color).next();
+            //region -Y Face
+            color = colorProvider.apply(Direction.DOWN).withAlpha(alphaProvider.apply(Direction.DOWN));
+            normal = new Vec3f(0, 0, 1);
+            for (int x = 1; x < sizeX; x++)
+            {
+                renderer.vertex(min.add(x * scale, 0, 0)).color(color).normal(normal).next();
+                renderer.vertex(min.add(x * scale, 0, sizeZ * scale)).color(color).normal(normal).next();
+            }
+            normal = new Vec3f(1, 0, 0);
+            for (int z = 1; z < sizeZ; z++)
+            {
+                renderer.vertex(min.add(0, 0, z * scale)).color(color).normal(normal).next();
+                renderer.vertex(min.add(sizeX * scale, 0, z * scale)).color(color).normal(normal).next();
+            }
+            //endregion
+            if (sizeY > 0)
+            {
+                //region +Y Face
+                color = colorProvider.apply(Direction.UP).withAlpha(alphaProvider.apply(Direction.UP));
+                normal = new Vec3f(0, 0, 1);
+                for (int x = 1; x < sizeX; x++)
+                {
+                    renderer.vertex(min.add(x * scale, sizeY * scale, 0)).color(color).normal(normal).next();
+                    renderer.vertex(min.add(x * scale, sizeY * scale, sizeZ * scale)).color(color).normal(normal).next();
+                }
+                normal = new Vec3f(1, 0, 0);
+                for (int z = 1; z < sizeZ; z++)
+                {
+                    renderer.vertex(min.add(0, sizeY * scale, z * scale)).color(color).normal(normal).next();
+                    renderer.vertex(min.add(sizeX * scale, sizeY * scale, z * scale)).color(color).normal(normal).next();
+                }
+                //endregion
+            }
         }
         //endregion
-        //region +Z Face
-        color = colorProvider.apply(Direction.SOUTH).withAlpha(alphaProvider.apply(Direction.SOUTH));
-        for (int y = 1; y < sizeY; y++)
+        //region Z
+        if (sizeX > 0 && sizeY > 0)
         {
-            renderer.vertex(min.add(0, y * scale, sizeZ * scale)).color(color).next();
-            renderer.vertex(min.add(sizeX * scale, y * scale, sizeZ * scale)).color(color).next();
-        }
-        for (int x = 1; x < sizeX; x++)
-        {
-            renderer.vertex(min.add(x * scale, 0, sizeZ * scale)).color(color).next();
-            renderer.vertex(min.add(x * scale, sizeY * scale, sizeZ * scale)).color(color).next();
+            //region -Z Face
+            color = colorProvider.apply(Direction.NORTH).withAlpha(alphaProvider.apply(Direction.NORTH));
+            normal = new Vec3f(1, 0, 0);
+            for (int y = 1; y < sizeY; y++)
+            {
+                renderer.vertex(min.add(0, y * scale, 0)).color(color).normal(normal).next();
+                renderer.vertex(min.add(sizeX * scale, y * scale, 0)).color(color).normal(normal).next();
+            }
+            normal = new Vec3f(0, 1, 0);
+            for (int x = 1; x < sizeX; x++)
+            {
+                renderer.vertex(min.add(x * scale, 0, 0)).color(color).normal(normal).next();
+                renderer.vertex(min.add(x * scale, sizeY * scale, 0)).color(color).normal(normal).next();
+            }
+            //endregion
+            if (sizeZ > 0)
+            {
+                //region +Z Face
+                color = colorProvider.apply(Direction.SOUTH).withAlpha(alphaProvider.apply(Direction.SOUTH));
+                normal = new Vec3f(1, 0, 0);
+                for (int y = 1; y < sizeY; y++)
+                {
+                    renderer.vertex(min.add(0, y * scale, sizeZ * scale)).color(color).normal(normal).next();
+                    renderer.vertex(min.add(sizeX * scale, y * scale, sizeZ * scale)).color(color).normal(normal).next();
+                }
+                normal = new Vec3f(0, 1, 0);
+                for (int x = 1; x < sizeX; x++)
+                {
+                    renderer.vertex(min.add(x * scale, 0, sizeZ * scale)).color(color).normal(normal).next();
+                    renderer.vertex(min.add(x * scale, sizeY * scale, sizeZ * scale)).color(color).normal(normal).next();
+                }
+                //endregion
+            }
         }
         //endregion
 
         renderer.draw();
     }
     @Override
-    public void drawPlane(Vec3d center, Direction planeNormal, double gridScale, IColorProvider colorProvider, IAlphaProvider fillAlphaProvider, IAlphaProvider lineAlphaProvider, float lineWidth)
+    public void drawPlane(Vec3d center, Direction planeNormal, double gridScale, IColorProvider colorProvider, IAlphaProvider alphaProvider)
     {
-        if (fillAlphaProvider == null) fillAlphaProvider = direction -> null;
-        if (lineAlphaProvider == null) lineAlphaProvider = direction -> null;
+        if (alphaProvider == null) alphaProvider = direction -> null;
 
         World world = MinecraftClient.getInstance().world;
         int halfSize = Camera.getRenderDistanceBlocks();
@@ -257,8 +312,7 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                 break;
         }
 
-        drawCuboid(new RenderBox(min, min.add(size.getX(), size.getY(), size.getZ())).nudge(), colorProvider, fillAlphaProvider);
-        drawGrid(min, size, gridScale, colorProvider, lineAlphaProvider, lineWidth, true);
+        drawGrid(min, size, gridScale, colorProvider, alphaProvider, true);
     }
     @Override
     public void drawDiamond(Vec3d center, double xRadius, double yRadius, double zRadius, Color4f color)
@@ -270,25 +324,9 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         Vec3d nZ = center.add(0, 0, -zRadius);
         Vec3d pZ = center.add(0, 0, zRadius);
 
-        renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
-        renderer.vertex(pY).color(color).next()
-                .vertex(pX).color(color).next()
-                .vertex(nY).color(color).next()
-                .vertex(nX).color(color).next();
-        renderer.vertex(pY).color(color).next()
-                .vertex(pZ).color(color).next()
-                .vertex(nY).color(color).next()
-                .vertex(nZ).color(color).next()
-                .vertex(pY).color(color).next();
-        renderer.draw();
-
-        renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
-        renderer.vertex(pX).color(color).next()
-                .vertex(pZ).color(color).next()
-                .vertex(nX).color(color).next()
-                .vertex(nZ).color(color).next()
-                .vertex(pX).color(color).next();
-        renderer.draw();
+        drawLineLoop(color, new Vec3d[] { pY, pX, nY, nX });
+        drawLineLoop(color, new Vec3d[] { pY, pZ, nY, nZ });
+        drawLineLoop(color, new Vec3d[] { pX, pZ, nX, nZ });
     }
     @Override
     public void drawSphere(Vec3d center, double xRadius, double yRadius, double zRadius, Color4f color)
@@ -302,7 +340,16 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
     private void drawCircle(Vec3d center, BiFunction<Double, Double, Vec3d> pointTransformer, Color4f color)
     {
         renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
-        for (Vec2f vertex : UNIT_CIRCLE_VERTICES) renderer.vertex(center.add(pointTransformer.apply((double)vertex.x, (double)vertex.y))).color(color).next();
+        for (int i = 0; i < UNIT_CIRCLE_VERTICES.length; i++)
+        {
+            Vec2f normalA = UNIT_CIRCLE_VERTICES[i];
+            Vec2f normalB = UNIT_CIRCLE_VERTICES[(i + 1) % UNIT_CIRCLE_VERTICES.length];
+            Vec3d a = center.add(pointTransformer.apply((double)normalA.x, (double)normalA.y));
+            Vec3d b = center.add(pointTransformer.apply((double)normalB.x, (double)normalB.y));
+            Vec3d normal = b.subtract(a).normalize();
+            renderer.vertex(a).color(color).normal(normal).next();
+            renderer.vertex(b).color(color).normal(normal).next();
+        }
         renderer.draw();
     }
     //endregion

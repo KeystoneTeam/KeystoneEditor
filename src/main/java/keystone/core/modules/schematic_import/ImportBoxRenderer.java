@@ -9,20 +9,23 @@ import keystone.core.renderer.RendererFactory;
 import keystone.core.renderer.interfaces.IAlphaProvider;
 import keystone.core.renderer.interfaces.IColorProvider;
 import keystone.core.renderer.overlay.ComplexOverlayRenderer;
+import keystone.core.renderer.overlay.WireframeOverlayRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.util.math.Vec3d;
 
 public class ImportBoxRenderer
 {
     private final ComplexOverlayRenderer renderer;
+    private final WireframeOverlayRenderer planeGridRenderer;
     private final MouseModule mouse;
 
     public ImportBoxRenderer()
     {
         this.renderer = RendererFactory.createComplexOverlay(
-                RendererFactory.createWorldspaceOverlay().buildFill(),
-                RendererFactory.createWorldspaceOverlay().ignoreDepth().buildWireframe()
+                RendererFactory.createPolygonOverlay().buildFill(),
+                RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe()
         );
+        this.planeGridRenderer = (WireframeOverlayRenderer)RendererFactory.createWireframeOverlay().buildWireframe(1.0f);
         this.mouse = Keystone.getModule(MouseModule.class);
     }
 
@@ -52,7 +55,9 @@ public class ImportBoxRenderer
                     break;
             }
 
-            renderer.drawPlane(new Vec3d(centerX, centerY, centerZ), selectedFace.getFaceDirection(), 1.0, Color4f.white.withAlpha(0.25f), 0.5f, 5.0f);
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawPlane(new Vec3d(centerX, centerY, centerZ), selectedFace.getFaceDirection(), 1.0, Color4f.white.withAlpha(0.25f));
+            planeGridRenderer.drawPlane(new Vec3d(centerX, centerY, centerZ), selectedFace.getFaceDirection(), 1.0, Color4f.white.withAlpha(0.5f));
+            //renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawPlane(new Vec3d(centerX, centerY, centerZ), selectedFace.getFaceDirection(), 1.0, Color4f.white.withAlpha(0.5f));
         }
 
         IColorProvider colorProvider = direction -> box.isSelectable() ? Color4f.green : new Color4f(0.75f, 1.0f, 0.75f, 1.0f);

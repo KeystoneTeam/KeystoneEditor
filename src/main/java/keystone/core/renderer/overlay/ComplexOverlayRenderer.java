@@ -42,13 +42,13 @@ public class ComplexOverlayRenderer implements IOverlayRenderer
             }
 
             @Override
-            public void drawGrid(Vec3d min, Vec3i size, double scale, IColorProvider colorProvider, IAlphaProvider alphaProvider, float lineWidth, boolean drawEdges)
+            public void drawGrid(Vec3d min, Vec3i size, double scale, IColorProvider colorProvider, IAlphaProvider alphaProvider, boolean drawEdges)
             {
                 Keystone.LOGGER.error("This ComplexOverlayRenderer does not support DrawMode." + drawMode + "!");
             }
 
             @Override
-            public void drawPlane(Vec3d center, Direction planeNormal, double gridScale, IColorProvider colorProvider, IAlphaProvider fillAlphaProvider, IAlphaProvider lineAlphaProvider, float lineWidth)
+            public void drawPlane(Vec3d center, Direction planeNormal, double gridScale, IColorProvider colorProvider, IAlphaProvider alphaProvider)
             {
                 Keystone.LOGGER.error("This ComplexOverlayRenderer does not support DrawMode." + drawMode + "!");
             }
@@ -73,6 +73,18 @@ public class ComplexOverlayRenderer implements IOverlayRenderer
         this.drawMode = drawMode;
         return this;
     }
+    public ComplexOverlayRenderer lineWidth(float lineWidth)
+    {
+        IOverlayRenderer wireframeRenderer = this.renderers.get(DrawMode.WIREFRAME);
+        if (wireframeRenderer instanceof WireframeOverlayRenderer wireframe) wireframe.lineWidth(lineWidth);
+        return this;
+    }
+    public ComplexOverlayRenderer revertLineWidth()
+    {
+        IOverlayRenderer wireframeRenderer = this.renderers.get(DrawMode.WIREFRAME);
+        if (wireframeRenderer instanceof WireframeOverlayRenderer wireframe) wireframe.revertLineWidth();
+        return this;
+    }
 
     protected IOverlayRenderer getRenderer()
     {
@@ -86,15 +98,15 @@ public class ComplexOverlayRenderer implements IOverlayRenderer
     }
 
     @Override
-    public void drawGrid(Vec3d min, Vec3i size, double scale, IColorProvider colorProvider, IAlphaProvider alphaProvider, float lineWidth, boolean drawEdges)
+    public void drawGrid(Vec3d min, Vec3i size, double scale, IColorProvider colorProvider, IAlphaProvider alphaProvider, boolean drawEdges)
     {
-        getRenderer().drawGrid(min, size, scale, colorProvider, alphaProvider, lineWidth, drawEdges);
+        getRenderer().drawGrid(min, size, scale, colorProvider, alphaProvider, drawEdges);
     }
 
     @Override
-    public void drawPlane(Vec3d center, Direction planeNormal, double gridScale, IColorProvider colorProvider, IAlphaProvider fillAlphaProvider, IAlphaProvider lineAlphaProvider, float lineWidth)
+    public void drawPlane(Vec3d center, Direction planeNormal, double gridScale, IColorProvider colorProvider, IAlphaProvider alphaProvider)
     {
-        getRenderer().drawPlane(center, planeNormal, gridScale, colorProvider, fillAlphaProvider, lineAlphaProvider, lineWidth);
+        getRenderer().drawPlane(center, planeNormal, gridScale, colorProvider, alphaProvider);
     }
 
     @Override
