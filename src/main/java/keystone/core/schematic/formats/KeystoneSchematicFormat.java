@@ -9,6 +9,7 @@ import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.extensions.ISchematicExtension;
+import keystone.core.utils.EntityUtils;
 import keystone.core.utils.NBTSerializer;
 import net.minecraft.SharedConstants;
 import net.minecraft.block.BlockState;
@@ -125,9 +126,7 @@ public class KeystoneSchematicFormat implements ISchematicFormat
                 entityNBT.put("pos", positionNBT);
                 entityNBT.put("blockPos", blockPositionNBT);
 
-                NbtCompound entityDataNBT = entity.getMinecraftEntity().writeNbt(new NbtCompound());
-                entityDataNBT.remove(net.minecraft.entity.Entity.UUID_KEY);
-                entityNBT.put("nbt", entityDataNBT);
+                entityNBT.put("nbt", EntityUtils.getEntityDataNoUuid(entity.getPreviewEntity()));
                 entitiesNBT.add(entityNBT);
             });
             nbt.put("entities", entitiesNBT);

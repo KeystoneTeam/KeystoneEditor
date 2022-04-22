@@ -7,15 +7,15 @@ import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3d;
 import keystone.api.wrappers.nbt.NBTCompound;
-import keystone.core.client.Player;
 import keystone.core.math.BlockPosMath;
 import keystone.core.modules.world.EntitiesModule;
-import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.utils.EntityUtils;
 import net.minecraft.command.argument.NbtElementArgumentType;
 import net.minecraft.command.argument.NbtPathArgumentType;
 import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
@@ -23,7 +23,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.World;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -103,7 +102,7 @@ public class Entity
         }
         else
         {
-            this.previewEntity = entitiesModule.createPreviewEntity(type.get(), new NbtCompound());
+            this.previewEntity = entitiesModule.createPreviewEntity(type.get(), nbt);
             this.minecraftEntity = null;
         }
         this.entityType = id;

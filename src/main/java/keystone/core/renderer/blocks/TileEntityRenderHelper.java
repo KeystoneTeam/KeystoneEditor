@@ -3,7 +3,6 @@ package keystone.core.renderer.blocks;
 import keystone.api.Keystone;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.WorldRenderer;
@@ -13,7 +12,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vector4f;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 
 import java.util.Iterator;

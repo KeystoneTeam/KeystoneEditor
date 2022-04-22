@@ -232,9 +232,9 @@ public final class Keystone
         WorldRenderEvents.LAST.register(context ->
         {
             Player.update(context.tickDelta(), MinecraftClient.getInstance().player);
-            ghostBlocksModule.renderGhostBlocks(context);
             if (Keystone.isActive())
             {
+                ghostBlocksModule.renderGhostBlocks(context);
                 for (IKeystoneModule module : modules.values()) if (module.isEnabled()) module.preRender(context);
                 for (IKeystoneModule module : modules.values())
                 {

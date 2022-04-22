@@ -5,7 +5,6 @@ import keystone.api.KeystoneDirectories;
 import keystone.core.events.KeystoneInputHandler;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.keystone.KeystoneRegistryEvents;
-import keystone.core.events.minecraft.LivingEntityEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.brush.BrushSelectionScreen;
 import keystone.core.gui.screens.fill.FillAndReplaceScreen;
@@ -42,8 +41,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 
 public class KeystoneMod implements ModInitializer, ClientModInitializer
@@ -57,7 +54,6 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
     public void onInitialize()
     {
         KeystoneDirectories.init();
-        LivingEntityEvents.UPDATE.register(this::onLivingUpdate);
 
         KeystoneRegistryEvents.MODULES.register(registry ->
         {
@@ -196,18 +192,5 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
 
             KeystoneLifecycleEvents.LEAVE.invoker().leave();
         }
-    }
-    private boolean onLivingUpdate(LivingEntity entity)
-    {
-        if (Keystone.isActive() && !entity.getType().equals(EntityType.PLAYER))
-        {
-            entity.prevBodyYaw = entity.bodyYaw;
-            entity.prevHeadYaw = entity.headYaw;
-            entity.prevPitch = entity.getPitch();
-            entity.prevYaw = entity.getYaw();
-
-            return false;
-        }
-        return true;
     }
 }

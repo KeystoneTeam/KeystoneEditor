@@ -311,9 +311,9 @@ public class KeystoneSchematic
                                 BlockPos localPos = new BlockPos(x * clampedScale + sx, y * clampedScale + sy, z * clampedScale + sz);
                                 BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, clampedScale).add(anchor);
                                 BlockType blockType = block.blockType();
-
                                 blockType = BlockTypeRegistry.fromMinecraftBlock(blockType.getMinecraftBlock().rotate(rotation).mirror(mirror));
-                                worldModifiers.blocks.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), blockType);
+                                Block oriented = new Block(blockType, block.tileEntity());
+                                worldModifiers.blocks.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), oriented);
                             }
                         }
                     }

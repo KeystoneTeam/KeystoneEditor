@@ -1,6 +1,5 @@
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;

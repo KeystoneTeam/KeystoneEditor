@@ -5,11 +5,9 @@ import keystone.core.renderer.blocks.buffer.SuperRenderTypeBuffer;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.BlockRenderManager;
-import net.minecraft.client.render.chunk.ChunkBuilder;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.fluid.FluidState;
@@ -110,7 +108,7 @@ public class GhostWorldRenderer
         {
             int light = LightmapTextureManager.pack(15, 15);
             // TODO: Check if this needs pitch somehow
-            entityRenderer.render(entity, entity.getX(), entity.getY(), entity.getZ(), entity.getYaw(partialTicks), partialTicks, ms, buffer, light);
+            entityRenderer.render(entity, entity.getX(), entity.getY(), entity.getZ(), entity.getYaw(), 0, ms, buffer, light);
         });
 
         // Dispatch Ghost World Fluid Rendering
