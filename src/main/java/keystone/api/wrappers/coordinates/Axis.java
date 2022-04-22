@@ -1,6 +1,6 @@
 package keystone.api.wrappers.coordinates;
 
-import net.minecraft.util.Direction;
+import net.minecraft.util.math.Direction;
 
 public enum Axis
 {

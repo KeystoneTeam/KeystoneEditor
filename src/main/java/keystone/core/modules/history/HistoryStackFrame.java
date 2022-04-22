@@ -5,15 +5,14 @@ import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
+import keystone.core.client.Player;
 import keystone.core.modules.world_cache.WorldCacheModule;
-import keystone.core.renderer.client.Player;
-import keystone.core.renderer.common.models.DimensionId;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.IServerWorld;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.ServerWorldAccess;
 
 import java.util.*;
 
@@ -21,20 +20,20 @@ public class HistoryStackFrame
 {
     public final int index;
 
-    private IServerWorld world;
+    private ServerWorldAccess world;
     private final HistoryModule historyModule;
     private final List<IHistoryEntry> entries;
-    private final Map<Vector3i, WorldHistoryChunk> chunks;
+    private final Map<Vec3i, WorldHistoryChunk> chunks;
 
     public HistoryStackFrame(int index)
     {
         this.historyModule = Keystone.getModule(HistoryModule.class);
         this.index = index;
-        this.world = Keystone.getModule(WorldCacheModule.class).getDimensionServerWorld(Player.getDimensionId());
+        this.world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
         this.entries = Collections.synchronizedList(new ArrayList<>());
         this.chunks = Collections.synchronizedMap(new HashMap<>());
     }
-    public HistoryStackFrame(int index, CompoundNBT nbt)
+    public HistoryStackFrame(int index, NbtCompound nbt)
     {
         this.historyModule = Keystone.getModule(HistoryModule.class);
         this.index = index;
@@ -43,48 +42,48 @@ public class HistoryStackFrame
         deserialize(nbt);
     }
 
-    public CompoundNBT serialize()
+    public NbtCompound serialize()
     {
-        CompoundNBT nbt = new CompoundNBT();
+        NbtCompound nbt = new NbtCompound();
 
-        nbt.putString("world", world.getLevel().dimension().location().toString());
+        nbt.putString("world", world.toServerWorld().getRegistryKey().getValue().toString());
 
-        ListNBT entriesNBT = new ListNBT();
+        NbtList entriesNBT = new NbtList();
         for (IHistoryEntry entry : entries)
         {
-            CompoundNBT entryNBT = new CompoundNBT();
+            NbtCompound entryNBT = new NbtCompound();
             entryNBT.putString("id", entry.id());
             entry.serialize(entryNBT);
             entriesNBT.add(entryNBT);
         }
         nbt.put("entries", entriesNBT);
 
-        ListNBT chunksNBT = new ListNBT();
+        NbtList chunksNBT = new NbtList();
         for (WorldHistoryChunk chunk : chunks.values()) chunksNBT.add(chunk.serialize());
         nbt.put("chunks", chunksNBT);
 
         return nbt;
     }
-    public void deserialize(CompoundNBT nbt)
+    public void deserialize(NbtCompound nbt)
     {
         WorldCacheModule worldCacheModule = Keystone.getModule(WorldCacheModule.class);
-        world = worldCacheModule.getDimensionServerWorld(DimensionId.from(new ResourceLocation(nbt.getString("world"))));
+        world = worldCacheModule.getDimensionWorld(WorldCacheModule.getDimensionKey(new Identifier(nbt.getString("world"))));
 
-        ListNBT entriesNBT = nbt.getList("entries", Constants.NBT.TAG_COMPOUND);
+        NbtList entriesNBT = nbt.getList("entries", NbtElement.COMPOUND_TYPE);
         entries.clear();
         for (int i = 0; i < entriesNBT.size(); i++)
         {
-            CompoundNBT entryNBT = entriesNBT.getCompound(i);
+            NbtCompound entryNBT = entriesNBT.getCompound(i);
             IHistoryEntry entry = historyModule.deserializeHistoryEntry(entryNBT);
             entries.add(entry);
         }
 
-        ListNBT chunksNBT = nbt.getList("chunks", Constants.NBT.TAG_COMPOUND);
+        NbtList chunksNBT = nbt.getList("chunks", NbtElement.COMPOUND_TYPE);
         chunks.clear();
         for (int i = 0; i < chunksNBT.size(); i++)
         {
             WorldHistoryChunk chunk = new WorldHistoryChunk(chunksNBT.getCompound(i));
-            chunks.put(new Vector3i(chunk.chunkX, chunk.chunkY, chunk.chunkZ), chunk);
+            chunks.put(new Vec3i(chunk.chunkX, chunk.chunkY, chunk.chunkZ), chunk);
         }
     }
 
@@ -145,12 +144,12 @@ public class HistoryStackFrame
 
     public WorldHistoryChunk getChunk(int x, int y, int z)
     {
-        Vector3i chunkPosition = new Vector3i(x >> 4, y >> 4, z >> 4);
+        Vec3i chunkPosition = new Vec3i(x >> 4, y >> 4, z >> 4);
         return chunks.getOrDefault(chunkPosition, null);
     }
     public WorldHistoryChunk getOrAddChunk(int x, int y, int z)
     {
-        Vector3i chunkPosition = new Vector3i(x >> 4, y >> 4, z >> 4);
+        Vec3i chunkPosition = new Vec3i(x >> 4, y >> 4, z >> 4);
         WorldHistoryChunk chunk = chunks.getOrDefault(chunkPosition, null);
         if (chunk == null)
         {
@@ -161,7 +160,7 @@ public class HistoryStackFrame
     }
     public void preloadChunk(int chunkX, int chunkY, int chunkZ)
     {
-        Vector3i chunkPosition = new Vector3i(chunkX, chunkY, chunkZ);
+        Vec3i chunkPosition = new Vec3i(chunkX, chunkY, chunkZ);
         if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new WorldHistoryChunk(chunkPosition, world));
     }
     public void swapBlockBuffers(boolean copy)

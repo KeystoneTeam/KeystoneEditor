@@ -8,41 +8,41 @@ import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.world.BlocksModule;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.block.Blocks;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.IntNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.StringNBT;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.*;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.registry.BuiltinRegistries;
+import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 public class BiomesExtension implements ISchematicExtension
 {
-    private Biome[] biomes;
+    private RegistryEntry<Biome>[] biomes;
 
     @Override
     public BiomesExtension create(World world, BoundingBox bounds)
     {
         BlocksModule blocks = Keystone.getModule(BlocksModule.class);
 
-        List<Biome> biomesList = new ArrayList<>();
+        List<RegistryEntry<Biome>> biomesList = new ArrayList<>();
         bounds.forEachCoordinate((x, y, z) ->
         {
-            if (blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED).getMinecraftBlock().is(Blocks.STRUCTURE_VOID)) biomesList.add(null);
+            if (blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED).getMinecraftBlock().isOf(Blocks.STRUCTURE_VOID)) biomesList.add(null);
             else biomesList.add(world.getBiome(new BlockPos(x - bounds.minX, y - bounds.minY, z - bounds.minZ)));
         });
 
         if (biomesList.size() > 0)
         {
             BiomesExtension extension = new BiomesExtension();
-            extension.biomes = new Biome[biomesList.size()];
+            extension.biomes = new RegistryEntry[biomesList.size()];
             biomesList.toArray(extension.biomes);
             return extension;
         }
@@ -50,22 +50,22 @@ public class BiomesExtension implements ISchematicExtension
     }
 
     @Override
-    public ResourceLocation id()
+    public Identifier id()
     {
-        return new ResourceLocation("keystone:biomes");
+        return new Identifier("keystone:biomes");
     }
 
     @Override
-    public void serialize(KeystoneSchematic schematic, CompoundNBT nbt)
+    public void serialize(KeystoneSchematic schematic, NbtCompound nbt)
     {
-        List<Biome> palette = new ArrayList<>();
-        for (Biome biome : biomes) if (biome != null && !palette.contains(biome)) palette.add(biome);
-        palette.sort((a, b) -> a.getRegistryName().compareNamespaced(b.getRegistryName()));
-        ListNBT paletteNBT = new ListNBT();
-        for (Biome biome : palette) paletteNBT.add(StringNBT.valueOf(biome.getRegistryName().toString()));
+        List<RegistryEntry<Biome>> palette = new ArrayList<>();
+        for (RegistryEntry<Biome> biome : biomes) if (biome != null && !palette.contains(biome)) palette.add(biome);
+        palette.sort(Comparator.comparing(a -> a.getKey().get().getValue()));
+        NbtList paletteNBT = new NbtList();
+        for (RegistryEntry<Biome> biome : palette) paletteNBT.add(NbtString.of(biome.getKey().get().getValue().toString()));
         nbt.put("palette", paletteNBT);
 
-        ListNBT biomesNBT = new ListNBT();
+        NbtList biomesNBT = new NbtList();
         int i = 0;
         for (int x = 0; x < schematic.getSize().getX(); x++)
         {
@@ -73,18 +73,18 @@ public class BiomesExtension implements ISchematicExtension
             {
                 for (int z = 0; z < schematic.getSize().getZ(); z++)
                 {
-                    Biome biome = biomes[i];
+                    RegistryEntry<Biome> biome = biomes[i];
                     i++;
                     if (biome != null)
                     {
-                        ListNBT posNBT = new ListNBT();
-                        posNBT.add(IntNBT.valueOf(x));
-                        posNBT.add(IntNBT.valueOf(y));
-                        posNBT.add(IntNBT.valueOf(z));
+                        NbtList posNBT = new NbtList();
+                        posNBT.add(NbtInt.of(x));
+                        posNBT.add(NbtInt.of(y));
+                        posNBT.add(NbtInt.of(z));
 
-                        CompoundNBT biomeNBT = new CompoundNBT();
+                        NbtCompound biomeNBT = new NbtCompound();
                         biomeNBT.put("pos", posNBT);
-                        biomeNBT.put("biome", IntNBT.valueOf(palette.indexOf(biome)));
+                        biomeNBT.put("biome", NbtInt.of(palette.indexOf(biome)));
                         biomesNBT.add(biomeNBT);
                     }
                 }
@@ -94,30 +94,39 @@ public class BiomesExtension implements ISchematicExtension
     }
 
     @Override
-    public ISchematicExtension deserialize(Vector3i size, Block[] blocks, Entity[] entities, CompoundNBT nbt)
+    public ISchematicExtension deserialize(Vec3i size, Block[] blocks, Entity[] entities, NbtCompound nbt)
     {
         // Load Biome Palette
-        List<Biome> palette = new ArrayList<>();
-        ListNBT paletteNBT = nbt.getList("palette", Constants.NBT.TAG_STRING);
+        List<RegistryEntry<Biome>> palette = new ArrayList<>();
+        NbtList paletteNBT = nbt.getList("palette", NbtElement.STRING_TYPE);
         for (int i = 0; i < paletteNBT.size(); i++)
         {
             String biomeID = paletteNBT.getString(i);
-            Biome biome = ForgeRegistries.BIOMES.getValue(new ResourceLocation(biomeID));
+            Biome biome = BuiltinRegistries.BIOME.get(new Identifier(biomeID));
             if (biome == null)
             {
                 Keystone.LOGGER.warn("Trying to load schematic with unregistered biome '" + biomeID + "'!");
                 return null;
             }
-            else palette.add(biome);
+            else
+            {
+                Optional<RegistryKey<Biome>> biomeKey = BuiltinRegistries.BIOME.getKey(biome);
+                if (biomeKey.isPresent()) palette.add(BuiltinRegistries.BIOME.getEntry(biomeKey.get()).get());
+                else
+                {
+                    Keystone.LOGGER.warn("Trying to load schematic with unregistered biome entry '" + biomeID + "'!");
+                    return null;
+                }
+            }
         }
 
         // Load Biomes
-        ListNBT biomesNBT = nbt.getList("biomes", Constants.NBT.TAG_COMPOUND);
-        Biome[] biomes = new Biome[size.getX() * size.getY() * size.getZ()];
+        NbtList biomesNBT = nbt.getList("biomes", NbtElement.COMPOUND_TYPE);
+        RegistryEntry<Biome>[] biomes = new RegistryEntry[size.getX() * size.getY() * size.getZ()];
         for (int i = 0; i < biomesNBT.size(); i++)
         {
-            CompoundNBT biomeNBT = biomesNBT.getCompound(i);
-            ListNBT posNBT = biomeNBT.getList("pos", Constants.NBT.TAG_INT);
+            NbtCompound biomeNBT = biomesNBT.getCompound(i);
+            NbtList posNBT = biomeNBT.getList("pos", NbtElement.INT_TYPE);
             int index = posNBT.getInt(2) + posNBT.getInt(1) * size.getZ() + posNBT.getInt(0) * size.getZ() * size.getY();
             biomes[index] = palette.get(biomeNBT.getInt("biome"));
         }

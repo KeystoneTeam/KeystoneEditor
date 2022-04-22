@@ -2,15 +2,15 @@ package keystone.core.renderer.blocks.buffer;
 
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
-import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.model.ModelBakery;
+import net.minecraft.client.render.*;
+import net.minecraft.client.render.chunk.BlockBufferBuilderStorage;
+import net.minecraft.client.render.model.ModelLoader;
 import net.minecraft.util.Util;
 
 import java.util.SortedMap;
 
-public class SuperRenderTypeBuffer implements IRenderTypeBuffer
+public class SuperRenderTypeBuffer implements VertexConsumerProvider
 {
     static SuperRenderTypeBuffer instance;
 
@@ -32,73 +32,71 @@ public class SuperRenderTypeBuffer implements IRenderTypeBuffer
         lateBuffer = new SuperRenderTypeBufferPhase();
     }
 
-    public IVertexBuilder getEarlyBuffer(RenderType type)
+    public VertexConsumer getEarlyBuffer(RenderLayer type)
     {
         return earlyBuffer.getBuffer(type);
     }
 
     @Override
-    public IVertexBuilder getBuffer(RenderType type)
+    public VertexConsumer getBuffer(RenderLayer type)
     {
         return defaultBuffer.getBuffer(type);
     }
 
-    public IVertexBuilder getLateBuffer(RenderType type)
+    public VertexConsumer getLateBuffer(RenderLayer type)
     {
         return lateBuffer.getBuffer(type);
     }
 
-    public void endBatch()
+    public void draw()
     {
         RenderSystem.disableCull();
-        earlyBuffer.endBatch();
-        defaultBuffer.endBatch();
-        lateBuffer.endBatch();
+        earlyBuffer.draw();
+        defaultBuffer.draw();
+        lateBuffer.draw();
     }
 
-    public void endBatch(RenderType type)
+    public void draw(RenderLayer type)
     {
         RenderSystem.disableCull();
-        earlyBuffer.endBatch(type);
-        defaultBuffer.endBatch(type);
-        lateBuffer.endBatch(type);
+        earlyBuffer.draw(type);
+        defaultBuffer.draw(type);
+        lateBuffer.draw(type);
     }
 
-    private static class SuperRenderTypeBufferPhase extends IRenderTypeBuffer.Impl
+    private static class SuperRenderTypeBufferPhase extends VertexConsumerProvider.Immediate
     {
-        static final RegionRenderCacheBuilder blockBuilders = new RegionRenderCacheBuilder();
+        static final BlockBufferBuilderStorage blockBuilders = new BlockBufferBuilderStorage();
 
-        static final SortedMap<RenderType, BufferBuilder> createEntityBuilders()
+        static SortedMap<RenderLayer, BufferBuilder> createEntityBuilders()
         {
             return Util.make(new Object2ObjectLinkedOpenHashMap<>(), (map) ->
             {
-                map.put(Atlases.solidBlockSheet(), blockBuilders.builder(RenderType.solid()));
-                map.put(Atlases.cutoutBlockSheet(), blockBuilders.builder(RenderType.cutout()));
-                map.put(Atlases.bannerSheet(), blockBuilders.builder(RenderType.cutoutMipped()));
-                map.put(Atlases.translucentCullBlockSheet(), blockBuilders.builder(RenderType.translucent()));
-                put(map, Atlases.shieldSheet());
-                put(map, Atlases.bedSheet());
-                put(map, Atlases.shulkerBoxSheet());
-                put(map, Atlases.signSheet());
-                put(map, Atlases.chestSheet());
-                put(map, RenderType.translucentNoCrumbling());
-                put(map, RenderType.armorGlint());
-                put(map, RenderType.armorEntityGlint());
-                put(map, RenderType.glint());
-                put(map, RenderType.glintDirect());
-                put(map, RenderType.glintTranslucent());
-                put(map, RenderType.entityGlint());
-                put(map, RenderType.entityGlintDirect());
-                put(map, RenderType.waterMask());
-                ModelBakery.DESTROY_TYPES.forEach((renderType) -> {
-                    put(map, renderType);
-                });
+                map.put(TexturedRenderLayers.getEntitySolid(), blockBuilders.get(RenderLayer.getSolid()));
+                map.put(TexturedRenderLayers.getEntityCutout(), blockBuilders.get(RenderLayer.getCutout()));
+                map.put(TexturedRenderLayers.getBannerPatterns(), blockBuilders.get(RenderLayer.getCutoutMipped()));
+                map.put(TexturedRenderLayers.getEntityTranslucentCull(), blockBuilders.get(RenderLayer.getTranslucent()));
+                put(map, TexturedRenderLayers.getShieldPatterns());
+                put(map, TexturedRenderLayers.getBeds());
+                put(map, TexturedRenderLayers.getShulkerBoxes());
+                put(map, TexturedRenderLayers.getSign());
+                put(map, TexturedRenderLayers.getChest());
+                put(map, RenderLayer.getTranslucentNoCrumbling());
+                put(map, RenderLayer.getArmorGlint());
+                put(map, RenderLayer.getArmorEntityGlint());
+                put(map, RenderLayer.getGlint());
+                put(map, RenderLayer.getDirectGlint());
+                put(map, RenderLayer.getGlintTranslucent());
+                put(map, RenderLayer.getEntityGlint());
+                put(map, RenderLayer.getDirectEntityGlint());
+                put(map, RenderLayer.getWaterMask());
+                ModelLoader.BLOCK_DESTRUCTION_RENDER_LAYERS.forEach((RenderLayer) -> put(map, RenderLayer));
             });
         }
 
-        private static void put(Object2ObjectLinkedOpenHashMap<RenderType, BufferBuilder> map, RenderType type)
+        private static void put(Object2ObjectLinkedOpenHashMap<RenderLayer, BufferBuilder> map, RenderLayer type)
         {
-            map.put(type, new BufferBuilder(type.bufferSize()));
+            map.put(type, new BufferBuilder(type.getExpectedBufferSize()));
         }
 
         protected SuperRenderTypeBufferPhase()

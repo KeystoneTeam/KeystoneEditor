@@ -1,24 +1,22 @@
 package keystone.core.gui.screens.selection;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
-import keystone.core.events.KeystoneHotbarEvent;
-import keystone.core.events.KeystoneSelectionChangedEvent;
+import keystone.core.events.keystone.KeystoneHotbarEvents;
+import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.buttons.NudgeButton;
 import keystone.core.gui.widgets.buttons.SimpleButton;
+import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.modules.selection.boxes.SelectionBoundingBox;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
+import java.util.List;
+
 public class SelectionNudgeScreen extends KeystoneOverlay
 {
     private static final int MARGINS = 2;
@@ -46,7 +44,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
 
     protected SelectionNudgeScreen()
     {
-        super(new TranslationTextComponent("keystone.screen.selectionNudge"));
+        super(new TranslatableText("keystone.screen.selectionNudge"));
         this.selectionModule = Keystone.getModule(SelectionModule.class);
         selectionToNudge = selectionModule.getSelectionBoxCount() - 1;
         selectedBox = resolveSelectionIndex();
@@ -60,30 +58,31 @@ public class SelectionNudgeScreen extends KeystoneOverlay
             else open = null;
         }
     }
+    public static void registerEvents()
+    {
+        KeystoneHotbarEvents.CHANGED.register(SelectionNudgeScreen::onHotbarChanged);
+        KeystoneLifecycleEvents.SELECTION_CHANGED.register(SelectionNudgeScreen::onSelectionsChanged);
+    }
 
     //region Event Handlers
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public static void onHotbarChanged(final KeystoneHotbarEvent event)
+    public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
-        if (event.isCanceled()) return;
-
-        if (event.slot == KeystoneHotbarSlot.SELECTION && Keystone.getModule(SelectionModule.class).getSelectionBoxCount() > 0) open();
-        else if (open != null) open.onClose();
+        if (slot == KeystoneHotbarSlot.SELECTION && Keystone.getModule(SelectionModule.class).getSelectionBoxCount() > 0) open();
+        else if (open != null) open.close();
     }
-    @SubscribeEvent
-    public static void onSelectionsChanged(final KeystoneSelectionChangedEvent event)
+    public static void onSelectionsChanged(List<SelectionBoundingBox> selections, boolean createdSelection)
     {
-        if (event.selections.length == 0) selectedBox = null;
+        if (selections.size() == 0) selectedBox = null;
 
         if (open == null)
         {
-            if (event.selections.length > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
+            if (selections.size() > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
         }
         else
         {
-            if (event.selections.length == 0) open.onClose();
-            else if (event.createdSelection && open.selectionToNudge >= event.selections.length - 2) open.setSelectionToNudge(event.selections.length - 1);
-            else open.setSelectionToNudge(Math.min(open.selectionToNudge, event.selections.length - 1));
+            if (selections.size() == 0) open.close();
+            else if (createdSelection && open.selectionToNudge >= selections.size() - 2) open.setSelectionToNudge(selections.size() - 1);
+            else open.setSelectionToNudge(Math.min(open.selectionToNudge, selections.size() - 1));
         }
     }
     //endregion
@@ -99,10 +98,10 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     {
         updateSize();
 
-        this.previousBoxButton = new SimpleButton(x - MARGINS - 16, y, 16, panelHeight, new StringTextComponent("<"), button -> previousBox());
-        this.nextBoxButton = new SimpleButton(x + panelWidth + MARGINS, y, 16, panelHeight, new StringTextComponent(">"), button -> nextBox());
-        addButton(this.previousBoxButton);
-        addButton(this.nextBoxButton);
+        this.previousBoxButton = new SimpleButton(x - MARGINS - 16, y, 16, panelHeight, new LiteralText("<"), button -> previousBox());
+        this.nextBoxButton = new SimpleButton(x + panelWidth + MARGINS, y, 16, panelHeight, new LiteralText(">"), button -> nextBox());
+        addDrawableChild(this.previousBoxButton);
+        addDrawableChild(this.nextBoxButton);
 
         int panelCenter = x + panelWidth / 2;
         int bottomButtonsY = y + panelHeight - MARGINS - BUTTON_HEIGHT;
@@ -122,9 +121,9 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         this.nudgeCorner1.setColors(0x800000FF, 0x800000FF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
         this.nudgeCorner2.setColors(0x80FFFF00, 0x80FFFF00, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
 
-        addButton(this.nudgeBox);
-        addButton(this.nudgeCorner1);
-        addButton(this.nudgeCorner2);
+        addDrawableChild(this.nudgeBox);
+        addDrawableChild(this.nudgeCorner1);
+        addDrawableChild(this.nudgeCorner2);
     }
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
@@ -137,7 +136,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         fill(matrixStack, x, y, x + panelWidth, y + panelHeight, 0x80000000);
 
         // Selected Box Size and Widgets
-        drawCenteredString(matrixStack, font, boxSize, x + panelWidth / 2, sizeStrY, 0xFFFFFF);
+        drawCenteredText(matrixStack, textRenderer, boxSize, x + panelWidth / 2, sizeStrY, 0xFFFFFF);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
 
@@ -168,7 +167,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     {
         selectionToNudge = value;
         selectedBox = resolveSelectionIndex();
-        if (selectedBox == null) onClose();
+        if (selectedBox == null) close();
         else updateSize();
     }
     private SelectionBoundingBox resolveSelectionIndex()
@@ -181,8 +180,8 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     private void updateSize()
     {
         boxSize = String.format("%dW x %dL x %dH", selectedBox.getSize().getX(), selectedBox.getSize().getZ(), selectedBox.getSize().getY());
-        int strWidth = font.width(boxSize);
-        int minWidth = 2 * MARGINS + 2 * (2 * PADDING + font.width(new TranslationTextComponent("keystone.nudge").getString())) + PADDING;
+        int strWidth = textRenderer.getWidth(boxSize);
+        int minWidth = 2 * MARGINS + 2 * (2 * PADDING + textRenderer.getWidth(new TranslatableText("keystone.nudge").getString())) + PADDING;
         panelWidth = Math.max(strWidth + MARGINS + MARGINS, minWidth);
         buttonWidth = panelWidth / 2 - MARGINS - PADDING / 2;
         panelHeight = 2 * MARGINS + 2 * BUTTON_HEIGHT + 2 * PADDING + 10;

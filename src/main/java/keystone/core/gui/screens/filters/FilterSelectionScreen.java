@@ -1,9 +1,8 @@
 package keystone.core.gui.screens.filters;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
-import keystone.core.events.KeystoneHotbarEvent;
+import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
@@ -14,23 +13,18 @@ import keystone.core.gui.widgets.inputs.Dropdown;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
 import keystone.core.modules.filter.FilterDirectoryManager;
 import keystone.core.modules.filter.FilterModule;
-import net.minecraft.client.gui.screen.ChatScreen;
+import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class FilterSelectionScreen extends KeystoneOverlay
 {
     private static final int PADDING = 5;
@@ -44,13 +38,13 @@ public class FilterSelectionScreen extends KeystoneOverlay
     private int panelMaxX;
     private int panelMaxY;
 
-    private Button selectFilterButton;
+    private ButtonWidget selectFilterButton;
     private Dropdown<File> dropdown;
     private FieldWidgetList filterVariablesList;
 
     protected FilterSelectionScreen()
     {
-        super(new TranslationTextComponent("keystone.screen.filterPanel"));
+        super(new TranslatableText("keystone.screen.filterPanel"));
         this.filterModule = Keystone.getModule(FilterModule.class);
         this.filterManager = filterModule.getFilterDirectoryManager();
     }
@@ -62,19 +56,20 @@ public class FilterSelectionScreen extends KeystoneOverlay
             KeystoneOverlayHandler.addOverlay(open);
         }
     }
+    public static void registerEvents()
+    {
+        KeystoneHotbarEvents.CHANGED.register(FilterSelectionScreen::onHotbarChanged);
+    }
     public static void dirty()
     {
         dirtied = true;
     }
 
     //region Static Event Handlers
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public static void onHotbarChanged(final KeystoneHotbarEvent event)
+    public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
-        if (event.isCanceled()) return;
-
-        if (event.slot == KeystoneHotbarSlot.FILTER) open();
-        else if (open != null) open.onClose();
+        if (slot == KeystoneHotbarSlot.FILTER) open();
+        else if (open != null) open.close();
     }
     //endregion
 
@@ -91,30 +86,30 @@ public class FilterSelectionScreen extends KeystoneOverlay
 
         // Build Filter Variable Widgets
         panelMaxX = Math.min(KeystoneHotbar.getX() - 5, 280);
-        int maxPanelHeight = minecraft.getWindow().getGuiScaledHeight() - 50 - 2 * PADDING;
-        filterVariablesList = new FieldWidgetList(new TranslationTextComponent("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
+        int maxPanelHeight = client.getWindow().getScaledHeight() - 50 - 2 * PADDING;
+        filterVariablesList = new FieldWidgetList(new TranslatableText("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
 
         // Error Display
         KeystoneFilter selectedFilter = filterManager.getFilter(selectedFilterFile);
         if (!selectedFilter.isCompiledSuccessfully())
         {
-            TextDisplayWidget compileErrorDisplay = new TextDisplayWidget(0, filterVariablesList.getNextWidgetY(), filterVariablesList.getWidth() - 2 * PADDING, font)
+            TextDisplayWidget compileErrorDisplay = new TextDisplayWidget(0, filterVariablesList.getNextWidgetY(), filterVariablesList.getWidth() - 2 * PADDING, textRenderer)
                     .setPadding(0);
 
             String error = selectedFilter.getCompilerException().getLocalizedMessage();
             String splitRegex = "Line [0-9]+, Column [0-9]+:";
             String[] tokens = error.split(splitRegex, 2);
-            if (tokens.length == 1) compileErrorDisplay.addText(TextFormatting.RED, error);
+            if (tokens.length == 1) compileErrorDisplay.addText(Formatting.RED, error);
             else
             {
                 Pattern pattern = Pattern.compile(splitRegex);
                 Matcher matcher = pattern.matcher(error);
                 if (matcher.find())
                 {
-                    compileErrorDisplay.addText(TextFormatting.RED, (tokens[0] + matcher.group()).trim());
-                    compileErrorDisplay.addText(TextFormatting.RED, "  " + tokens[1].trim());
+                    compileErrorDisplay.addText(Formatting.RED, (tokens[0] + matcher.group()).trim());
+                    compileErrorDisplay.addText(Formatting.RED, "  " + tokens[1].trim());
                 }
-                else compileErrorDisplay.addText(TextFormatting.RED, error);
+                else compileErrorDisplay.addText(Formatting.RED, error);
             }
             filterVariablesList.add(compileErrorDisplay);
         }
@@ -127,20 +122,20 @@ public class FilterSelectionScreen extends KeystoneOverlay
         panelMaxY = centerHeight + halfPanelHeight;
 
         // Select Filter Button
-        int selectButtonX = 5 + this.font.width(new TranslationTextComponent("keystone.filter_panel.select").getString());
-        this.selectFilterButton = new ButtonNoHotkey(selectButtonX, panelMinY + 5, panelMaxX - selectButtonX - 5, 20, new StringTextComponent("!ERROR!"), (button) ->
+        int selectButtonX = 5 + this.textRenderer.getWidth(new TranslatableText("keystone.filter_panel.select").getString());
+        this.selectFilterButton = new ButtonNoHotkey(selectButtonX, panelMinY + 5, panelMaxX - selectButtonX - 5, 20, new LiteralText("!ERROR!"), (button) ->
         {
             disableWidgets(this.dropdown);
             this.dropdown.visible = true;
         });
 
         // Filter selection dropdown
-        this.dropdown = new Dropdown<>(selectFilterButton.x, selectFilterButton.y, selectFilterButton.getWidth(), new TranslationTextComponent("keystone.tool.filter.dropdown"),
+        this.dropdown = new Dropdown<>(selectFilterButton.x, selectFilterButton.y, selectFilterButton.getWidth(), new TranslatableText("keystone.tool.filter.dropdown"),
                 filterFile ->
                 {
                     KeystoneFilter filter = filterManager.getFilter(filterFile);
-                    if (filter.isCompiledSuccessfully()) return new StringTextComponent(filter.getName());
-                    else return new StringTextComponent(filter.getName()).withStyle(TextFormatting.RED);
+                    if (filter.isCompiledSuccessfully()) return new LiteralText(filter.getName());
+                    else return new LiteralText(filter.getName()).styled(style -> style.withColor(Formatting.RED));
                 },
                 (filterFile, title) ->
                 {
@@ -148,7 +143,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
                     selectedFilterFile = filterFile;
 
                     this.selectFilterButton.setMessage(title);
-                    this.init(minecraft, width, height);
+                    this.init(client, width, height);
                 }, filterManager.getInstalledFilters());
 
         if (selectedFilterFile != null)
@@ -165,19 +160,19 @@ public class FilterSelectionScreen extends KeystoneOverlay
         }
 
         // Run Filter Button
-        int buttonWidth = font.width(new TranslationTextComponent("keystone.filter_panel.runFilter").getString()) + 10;
+        int buttonWidth = textRenderer.getWidth(new TranslatableText("keystone.filter_panel.runFilter").getString()) + 10;
         int panelCenter = panelMaxX / 2;
-        ButtonNoHotkey runFilterButton = new ButtonNoHotkey(panelCenter - buttonWidth / 2, panelMaxY - 25, buttonWidth, 20, new TranslationTextComponent("keystone.filter_panel.runFilter"), button -> runFilter());
+        ButtonNoHotkey runFilterButton = new ButtonNoHotkey(panelCenter - buttonWidth / 2, panelMaxY - 25, buttonWidth, 20, new TranslatableText("keystone.filter_panel.runFilter"), button -> runFilter());
 
         // Add buttons
         this.selectFilterButton.setMessage(this.dropdown.getSelectedEntryTitle());
-        addButton(selectFilterButton);
-        addButton(runFilterButton);
-        this.children.add(dropdown);
+        addDrawableChild(selectFilterButton);
+        addDrawableChild(runFilterButton);
+        addDrawableChild(dropdown);
 
         // Create Filter Variables
         filterVariablesList.offset(0, panelMinY + ((panelMaxY - panelMinY) / 2) - (filterVariablesList.getHeight() / 2));
-        addButton(filterVariablesList);
+        addDrawableChild(filterVariablesList);
         filterManager.getFilter(selectedFilterFile).undirtyEditor();
     }
     @Override
@@ -188,18 +183,18 @@ public class FilterSelectionScreen extends KeystoneOverlay
             if (filterManager.getFilter(selectedFilterFile) == null)
             {
                 selectedFilterFile = filterManager.getInstalledFilters()[0];
-                init(minecraft, width, height);
+                init(client, width, height);
             }
         }
         if (dirtied)
         {
-            init(minecraft, width, height);
+            init(client, width, height);
             dirtied = false;
         }
 
         fill(stack, 0, panelMinY, panelMaxX, panelMaxY, 0x80000000);
 
-        drawString(stack, font, new TranslationTextComponent("keystone.filter_panel.select"), 5, panelMinY + 11, 0x8080FF);
+        drawTextWithShadow(stack, textRenderer, new TranslatableText("keystone.filter_panel.select"), 5, panelMinY + 11, 0x8080FF);
         super.render(stack, mouseX, mouseY, partialTicks);
         this.dropdown.render(stack, mouseX, mouseY, partialTicks);
     }
@@ -210,7 +205,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
     //region Helpers
     private void runFilter()
     {
-        for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).setFocus(false);
+        for (Element element : children()) if (element instanceof TextFieldWidget textField) textField.changeFocus(false);
         if (selectedFilterFile != null) filterModule.runFilter(filterManager.getFilter(selectedFilterFile));
     }
     //endregion

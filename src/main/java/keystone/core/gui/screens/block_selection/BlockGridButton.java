@@ -1,10 +1,11 @@
 package keystone.core.gui.screens.block_selection;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.BlockUtils;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
@@ -14,16 +15,16 @@ public class BlockGridButton extends AbstractBlockButton
     public static final int SIZE = 18;
     protected final BlockGridWidget parent;
 
-    protected BlockGridButton(BlockGridWidget parent, ItemStack itemStack, BlockState block, int x, int y, IBlockTooltipBuilder tooltipBuilder)
+    protected BlockGridButton(Screen screen, BlockGridWidget parent, ItemStack itemStack, BlockState block, int x, int y, IBlockTooltipBuilder tooltipBuilder)
     {
-        super(itemStack, block, x, y, SIZE, SIZE, tooltipBuilder);
+        super(screen, itemStack, block, x, y, SIZE, SIZE, tooltipBuilder);
         this.parent = parent;
     }
-    public static BlockGridButton create(BlockGridWidget parent, BlockState block, int count, int x, int y, IBlockTooltipBuilder tooltipBuilder)
+    public static BlockGridButton create(Screen screen, BlockGridWidget parent, BlockState block, int count, int x, int y, IBlockTooltipBuilder tooltipBuilder)
     {
-        Item item = BlockUtils.getBlockItem(block.getBlock(), parent.getItemRegistry());
+        Item item = BlockUtils.getBlockItem(block.getBlock());
         if (item == null) return null;
-        else return new BlockGridButton(parent, new ItemStack(item, count), block, x, y, tooltipBuilder);
+        else return new BlockGridButton(screen, parent, new ItemStack(item, count), block, x, y, tooltipBuilder);
     }
 
     @Override

@@ -1,13 +1,13 @@
 package keystone.core.gui.screens.block_selection;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.properties.BlockPropertiesWidgetList;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.TranslatableText;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
@@ -28,7 +28,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
 
     protected BlockPropertiesScreen(BlockType blockType, Consumer<BlockType> callback)
     {
-        super(new TranslationTextComponent("keystone.screen.blockProperties"));
+        super(new TranslatableText("keystone.screen.blockProperties"));
 
         this.callback = callback;
         this.block = new Block(blockType);
@@ -63,16 +63,16 @@ public class BlockPropertiesScreen extends KeystoneOverlay
 
         // Block Properties
         propertiesList.offset(panelX, panelY + PADDING);
-        addButton(propertiesList);
+        addDrawableChild(propertiesList);
 
         // Done Button
         int buttonWidth = (panelWidth - 3 * PADDING) >> 1;
-        addButton(new ButtonNoHotkey(panelX + PADDING, panelY + PADDING + propertiesList.getHeight() + PADDING, buttonWidth, 20, new TranslationTextComponent("keystone.done"), button -> onClose()));
-        addButton(new ButtonNoHotkey(panelX + panelWidth - PADDING - buttonWidth, panelY + PADDING + propertiesList.getHeight() + PADDING, buttonWidth, 20, new TranslationTextComponent("keystone.cancel"), button ->
+        addDrawableChild(new ButtonNoHotkey(panelX + PADDING, panelY + PADDING + propertiesList.getHeight() + PADDING, buttonWidth, 20, new TranslatableText("keystone.done"), button -> close()));
+        addDrawableChild(new ButtonNoHotkey(panelX + panelWidth - PADDING - buttonWidth, panelY + PADDING + propertiesList.getHeight() + PADDING, buttonWidth, 20, new TranslatableText("keystone.cancel"), button ->
         {
             callback.accept(null);
             ranCallback = true;
-            onClose();
+            close();
         }));
     }
 
@@ -91,7 +91,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
         {
             callback.accept(null);
             ranCallback = true;
-            onClose();
+            close();
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);

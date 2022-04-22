@@ -12,16 +12,16 @@ import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.block.Blocks;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.IntNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Rotation;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtIntArray;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ public class StructureVoidsExtension implements ISchematicExtension
         List<BlockPos> structureVoidsList = new ArrayList<>();
         bounds.forEachCoordinate((x, y, z) ->
         {
-            if (blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED).getMinecraftBlock().is(Blocks.STRUCTURE_VOID))
+            if (blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED).getMinecraftBlock().isOf(Blocks.STRUCTURE_VOID))
             {
                 structureVoidsList.add(new BlockPos(x - bounds.minX, y - bounds.minY, z - bounds.minZ));
             }
@@ -55,36 +55,33 @@ public class StructureVoidsExtension implements ISchematicExtension
     }
 
     @Override
-    public ResourceLocation id()
+    public Identifier id()
     {
-        return new ResourceLocation("keystone:structure_voids");
+        return new Identifier("keystone:structure_voids");
     }
 
     @Override
-    public void serialize(KeystoneSchematic schematic, CompoundNBT nbt)
+    public void serialize(KeystoneSchematic schematic, NbtCompound nbt)
     {
-        ListNBT list = new ListNBT();
+        NbtList list = new NbtList();
         for (BlockPos pos : structureVoids)
         {
-            ListNBT posNBT = new ListNBT();
-            posNBT.add(IntNBT.valueOf(pos.getX()));
-            posNBT.add(IntNBT.valueOf(pos.getY()));
-            posNBT.add(IntNBT.valueOf(pos.getZ()));
+            NbtIntArray posNBT = new NbtIntArray(new int[] { pos.getX(), pos.getY(), pos.getZ() });
             list.add(posNBT);
         }
         nbt.put("positions", list);
     }
 
     @Override
-    public ISchematicExtension deserialize(Vector3i size, Block[] blocks, Entity[] entities, CompoundNBT nbt)
+    public ISchematicExtension deserialize(Vec3i size, Block[] blocks, Entity[] entities, NbtCompound nbt)
     {
         List<BlockPos> structureVoidsList = new ArrayList<>();
 
-        ListNBT list = nbt.getList("positions", Constants.NBT.TAG_LIST);
+        NbtList list = nbt.getList("positions", NbtElement.INT_ARRAY_TYPE);
         for (int i = 0; i < list.size(); i++)
         {
-            ListNBT posNBT = list.getList(i);
-            structureVoidsList.add(new BlockPos(posNBT.getInt(0), posNBT.getInt(1), posNBT.getInt(2)));
+            int[] posNBT = list.getIntArray(i);
+            structureVoidsList.add(new BlockPos(posNBT[0], posNBT[1], posNBT[2]));
         }
 
         StructureVoidsExtension extension = new StructureVoidsExtension();
@@ -94,12 +91,12 @@ public class StructureVoidsExtension implements ISchematicExtension
     }
 
     @Override
-    public void place(KeystoneSchematic schematic, WorldModifierModules worldModifiers, BlockPos anchor, Rotation rotation, Mirror mirror, int scale)
+    public void place(KeystoneSchematic schematic, WorldModifierModules worldModifiers, BlockPos anchor, BlockRotation rotation, BlockMirror mirror, int scale)
     {
-        BlockType structureVoid = BlockTypeRegistry.fromMinecraftBlock(Blocks.STRUCTURE_VOID.defaultBlockState());
+        BlockType structureVoid = BlockTypeRegistry.fromMinecraftBlock(Blocks.STRUCTURE_VOID.getDefaultState());
         for (BlockPos pos : structureVoids)
         {
-            BlockPos oriented = BlockPosMath.getOrientedBlockPos(pos, schematic.getSize(), rotation, mirror, scale).offset(anchor);
+            BlockPos oriented = BlockPosMath.getOrientedBlockPos(pos, schematic.getSize(), rotation, mirror, scale).add(anchor);
             worldModifiers.blocks.setBlock(oriented.getX(), oriented.getY(), oriented.getZ(), structureVoid);
         }
     }

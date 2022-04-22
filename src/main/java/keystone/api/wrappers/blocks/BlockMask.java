@@ -1,12 +1,13 @@
 package keystone.api.wrappers.blocks;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.Blocks;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ITag;
-import net.minecraft.tags.ITagCollection;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.util.registry.Registry;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -26,8 +27,8 @@ public class BlockMask
     {
         forcedBlockAdditions.put(BlockTypeRegistry.AIR, new BlockType[]
         {
-                BlockTypeRegistry.fromMinecraftBlock(Blocks.CAVE_AIR.defaultBlockState()),
-                BlockTypeRegistry.fromMinecraftBlock(Blocks.VOID_AIR.defaultBlockState())
+                BlockTypeRegistry.fromMinecraftBlock(Blocks.CAVE_AIR.getDefaultState()),
+                BlockTypeRegistry.fromMinecraftBlock(Blocks.VOID_AIR.getDefaultState())
         });
     }
 
@@ -55,13 +56,16 @@ public class BlockMask
     {
         if (block.startsWith("#"))
         {
-            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getAllTags();
-            ITag<net.minecraft.block.Block> tag = tags.getTag(new ResourceLocation(block.substring(1)));
-            if (tag != null)
+            try
             {
-                List<net.minecraft.block.Block> blocks = tag.getValues();
-                for (net.minecraft.block.Block add : blocks) with(BlockTypeRegistry.fromMinecraftBlock(add.defaultBlockState()));
+                BlockArgumentParser parser = new BlockArgumentParser(new StringReader(block), true).parse(false);
+                Registry.BLOCK.iterateEntries(parser.getTagId()).forEach(tagEntry -> with(BlockTypeRegistry.fromMinecraftBlock(tagEntry.value().getDefaultState())));
             }
+            catch (CommandSyntaxException e)
+            {
+                Keystone.abortFilter(e.getLocalizedMessage());
+            }
+
             return this;
         }
         else return with(KeystoneFilter.block(block).blockType());
@@ -91,13 +95,16 @@ public class BlockMask
     {
         if (block.startsWith("#"))
         {
-            ITagCollection<net.minecraft.block.Block> tags = BlockTags.getAllTags();
-            ITag<net.minecraft.block.Block> tag = tags.getTag(new ResourceLocation(block.substring(1)));
-            if (tag != null)
+            try
             {
-                List<net.minecraft.block.Block> blocks = tag.getValues();
-                for (net.minecraft.block.Block add : blocks) without(BlockTypeRegistry.fromMinecraftBlock(add.defaultBlockState()));
+                BlockArgumentParser parser = new BlockArgumentParser(new StringReader(block), true).parse(false);
+                Registry.BLOCK.iterateEntries(parser.getTagId()).forEach(tagEntry -> without(BlockTypeRegistry.fromMinecraftBlock(tagEntry.value().getDefaultState())));
             }
+            catch (CommandSyntaxException e)
+            {
+                Keystone.abortFilter(e.getLocalizedMessage());
+            }
+
             return this;
         }
         else return without(KeystoneFilter.block(block).blockType());

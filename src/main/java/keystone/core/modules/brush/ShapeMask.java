@@ -1,18 +1,18 @@
 package keystone.core.modules.brush;
 
 import keystone.api.Keystone;
-import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.util.math.Vec3i;
 
 public class ShapeMask
 {
     public enum MaskType { OUTSIDE, INSIDE, EDGE, ERROR }
 
-    private Vector3i size;
+    private Vec3i size;
     private MaskType[] contents;
     private BrushModule brushModule;
     private int count;
 
-    public ShapeMask(Vector3i size, byte[] contents)
+    public ShapeMask(Vec3i size, byte[] contents)
     {
         this.size = size;
         this.contents = new MaskType[contents.length];

@@ -9,10 +9,11 @@ import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.*;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.util.registry.BuiltinRegistries;
+import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.util.registry.RegistryKey;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -22,11 +23,11 @@ import java.util.*;
 public class NBTSerializer
 {
     //region Files
-    public static boolean serialize(String path, CompoundNBT nbt)
+    public static boolean serialize(String path, NbtCompound nbt)
     {
         return serialize(new File(path), nbt);
     }
-    public static boolean serialize(File file, CompoundNBT nbt)
+    public static boolean serialize(File file, NbtCompound nbt)
     {
         Path path = file.toPath();
         Path parent = path.getParent();
@@ -48,7 +49,7 @@ public class NBTSerializer
             // Serialize nbt
             try (OutputStream outputStream = new FileOutputStream(file))
             {
-                CompressedStreamTools.writeCompressed(nbt, outputStream);
+                NbtIo.writeCompressed(nbt, outputStream);
                 return true;
             }
             catch (Throwable e)
@@ -59,36 +60,36 @@ public class NBTSerializer
         }
     }
 
-    public static CompoundNBT deserialize(String path)
+    public static NbtCompound deserialize(String path)
     {
         return deserialize(new File(path));
     }
-    public static CompoundNBT deserialize(File file)
+    public static NbtCompound deserialize(File file)
     {
         Path path = file.toPath();
-        if (!Files.exists(path)) return new CompoundNBT();
+        if (!Files.exists(path)) return new NbtCompound();
 
         try (InputStream inputStream = new FileInputStream(file))
         {
-            CompoundNBT nbt = CompressedStreamTools.readCompressed(inputStream);
-            if (nbt == null) nbt = new CompoundNBT();
+            NbtCompound nbt = NbtIo.readCompressed(inputStream);
+            if (nbt == null) nbt = new NbtCompound();
             return nbt;
         }
         catch (Throwable e)
         {
             e.printStackTrace();
-            return new CompoundNBT();
+            return new NbtCompound();
         }
     }
     //endregion
     //region Short Arrays
-    public static ListNBT serializeShortArray(short[] shorts)
+    public static NbtList serializeShortArray(short[] shorts)
     {
-        ListNBT listNBT = new ListNBT();
-        for (short s : shorts) listNBT.add(ShortNBT.valueOf(s));
+        NbtList listNBT = new NbtList();
+        for (short s : shorts) listNBT.add(NbtShort.of(s));
         return listNBT;
     }
-    public static short[] deserializeShortArray(ListNBT listNBT)
+    public static short[] deserializeShortArray(NbtList listNBT)
     {
         short[] shorts = new short[listNBT.size()];
         for (int i = 0; i < shorts.length; i++) shorts[i] = listNBT.getShort(i);
@@ -96,13 +97,13 @@ public class NBTSerializer
     }
     //endregion
     //region BlockType Arrays
-    public static ListNBT serializeBlockTypes(BlockType[] blockTypes)
+    public static NbtList serializeBlockTypes(BlockType[] blockTypes)
     {
         short[] indices = new short[blockTypes.length];
         for (int i = 0; i < blockTypes.length; i++) indices[i] = blockTypes[i] == null ? -1 : blockTypes[i].getKeystoneID();
         return serializeShortArray(indices);
     }
-    public static BlockType[] deserializeBlockTypes(ListNBT blockTypesNBT)
+    public static BlockType[] deserializeBlockTypes(NbtList blockTypesNBT)
     {
         BlockType[] blockTypes = new BlockType[blockTypesNBT.size()];
         for (int i = 0; i < blockTypes.length; i++)
@@ -114,53 +115,53 @@ public class NBTSerializer
     }
     //endregion
     //region Block Arrays
-    public static ListNBT serializeBlockPalette(BlockState[] palette)
+    public static NbtList serializeBlockPalette(BlockState[] palette)
     {
         List<BlockState> paletteList = new ArrayList<>();
         Collections.addAll(paletteList, palette);
 
-        ListNBT paletteNBT = new ListNBT();
+        NbtList paletteNBT = new NbtList();
         for (int i = 0; i < paletteList.size(); i++)
         {
             BlockState entry = paletteList.get(i);
-            CompoundNBT entryNBT = NBTUtil.writeBlockState(entry);
+            NbtCompound entryNBT = NbtHelper.fromBlockState(entry);
             paletteNBT.add(i, entryNBT);
         }
         return paletteNBT;
     }
-    public static BlockType[] deserializeBlockPalette(ListNBT paletteNBT)
+    public static BlockType[] deserializeBlockPalette(NbtList paletteNBT)
     {
         BlockType[] palette = new BlockType[paletteNBT.size()];
         for (int i = 0; i < palette.length; i++)
         {
-            CompoundNBT entry = paletteNBT.getCompound(i);
-            BlockState blockState = NBTUtil.readBlockState(entry);
+            NbtCompound entry = paletteNBT.getCompound(i);
+            BlockState blockState = NbtHelper.toBlockState(entry);
             palette[i] = BlockTypeRegistry.fromMinecraftBlock(blockState);
         }
         return palette;
     }
 
-    public static CompoundNBT serializeBlocks(Block[] blocks)
+    public static NbtCompound serializeBlocks(Block[] blocks)
     {
-        CompoundNBT nbt = new CompoundNBT();
+        NbtCompound nbt = new NbtCompound();
 
         // Palette
         List<BlockState> palette = generatePalette(blocks);
-        ListNBT paletteNBT = new ListNBT();
+        NbtList paletteNBT = new NbtList();
         for (int i = 0; i < palette.size(); i++)
         {
             BlockState entry = palette.get(i);
-            CompoundNBT entryNBT = NBTUtil.writeBlockState(entry);
+            NbtCompound entryNBT = NbtHelper.fromBlockState(entry);
             paletteNBT.add(i, entryNBT);
         }
         nbt.put("palette", paletteNBT);
 
         // Blocks
         {
-            ListNBT blocksNBT = new ListNBT();
+            NbtList blocksNBT = new NbtList();
             for (Block block : blocks)
             {
-                CompoundNBT blockNBT = new CompoundNBT();
+                NbtCompound blockNBT = new NbtCompound();
                 if (block == null) blockNBT.putInt("state", -1);
                 else
                 {
@@ -182,10 +183,10 @@ public class NBTSerializer
 
         return nbt;
     }
-    public static Block[] deserializeBlocks(CompoundNBT blocksNBT)
+    public static Block[] deserializeBlocks(NbtCompound blocksNBT)
     {
-        BlockType[] palette = deserializeBlockPalette(blocksNBT.getList("palette", Constants.NBT.TAG_COMPOUND));
-        ListNBT statesNBT = blocksNBT.getList("blocks", Constants.NBT.TAG_COMPOUND);
+        BlockType[] palette = deserializeBlockPalette(blocksNBT.getList("palette", NbtElement.COMPOUND_TYPE));
+        NbtList statesNBT = blocksNBT.getList("blocks", NbtElement.COMPOUND_TYPE);
         Block[] blocks = new Block[statesNBT.size()];
         loadBlocks(blocks, statesNBT, palette);
         return blocks;
@@ -203,11 +204,11 @@ public class NBTSerializer
         palette.sort(Comparator.comparing(BlockState::toString));
         return palette;
     }
-    private static void loadBlocks(Block[] blocks, ListNBT blocksNBT, BlockType[] palette)
+    private static void loadBlocks(Block[] blocks, NbtList blocksNBT, BlockType[] palette)
     {
         for (int i = 0; i < blocksNBT.size(); i++)
         {
-            CompoundNBT blockNBT = blocksNBT.getCompound(i);
+            NbtCompound blockNBT = blocksNBT.getCompound(i);
             int state = blockNBT.getInt("state");
             if (state < 0) blocks[i] = null;
             else
@@ -224,17 +225,17 @@ public class NBTSerializer
     }
     //endregion
     //region Biome Arrays
-    public static CompoundNBT serializeBiomes(Biome[] biomes)
+    public static NbtCompound serializeBiomes(Biome[] biomes)
     {
-        CompoundNBT nbt = new CompoundNBT();
+        NbtCompound nbt = new NbtCompound();
 
         // Palette
         List<Biome> palette = generatePalette(biomes);
-        ListNBT paletteNBT = new ListNBT();
+        NbtList paletteNBT = new NbtList();
         for (int i = 0; i < palette.size(); i++)
         {
             Biome entry = palette.get(i);
-            if (entry != null) paletteNBT.add(i, StringNBT.valueOf(entry.id()));
+            if (entry != null) paletteNBT.add(i, NbtString.of(entry.id()));
         }
         nbt.put("palette", paletteNBT);
 
@@ -245,30 +246,35 @@ public class NBTSerializer
 
         return nbt;
     }
-    public static ListNBT serializeBiomePalette(net.minecraft.world.biome.Biome[] palette)
+    public static List<RegistryEntry<net.minecraft.world.biome.Biome>> deserializeBiomePalette(NbtList paletteNBT)
     {
-        List<net.minecraft.world.biome.Biome> paletteList = new ArrayList<>(palette.length);
-        Collections.addAll(paletteList, palette);
-
-        ListNBT paletteNBT = new ListNBT();
-        for (int i = 0; i < palette.length; i++)
+        List<RegistryEntry<net.minecraft.world.biome.Biome>> palette = new ArrayList<>();
+        for (int i = 0; i < paletteNBT.size(); i++)
         {
-            net.minecraft.world.biome.Biome entry = paletteList.get(i);
-            if (entry != null) paletteNBT.add(i, StringNBT.valueOf(entry.getRegistryName().toString()));
+            net.minecraft.world.biome.Biome biome = BuiltinRegistries.BIOME.get(new Identifier(paletteNBT.getString(i)));
+            if (biome == null)
+            {
+                Keystone.LOGGER.error("Trying to deserialize unregistered biome '" + paletteNBT.getString(i) + "'!");
+                return null;
+            }
+            else
+            {
+                Optional<RegistryKey<net.minecraft.world.biome.Biome>> biomeKey = BuiltinRegistries.BIOME.getKey(biome);
+                if (biomeKey.isPresent()) palette.add(BuiltinRegistries.BIOME.getEntry(biomeKey.get()).get());
+                else
+                {
+                    Keystone.LOGGER.error("Trying to deserialize unregistered biome entry '" + paletteNBT.getString(i) + "'!");
+                    return null;
+                }
+            }
         }
-        return paletteNBT;
-    }
-    public static List<net.minecraft.world.biome.Biome> deserializeBiomePalette(ListNBT paletteNBT)
-    {
-        List<net.minecraft.world.biome.Biome> palette = new ArrayList<>();
-        for (int i = 0; i < paletteNBT.size(); i++) palette.add(ForgeRegistries.BIOMES.getValue(new ResourceLocation(paletteNBT.getString(i))));
         return palette;
     }
-    public static Biome[] deserializeBiomes(CompoundNBT nbt)
+    public static Biome[] deserializeBiomes(NbtCompound nbt)
     {
-        List<net.minecraft.world.biome.Biome> rawPalette = deserializeBiomePalette(nbt.getList("palette", Constants.NBT.TAG_STRING));
+        List<RegistryEntry<net.minecraft.world.biome.Biome>> rawPalette = deserializeBiomePalette(nbt.getList("palette", NbtElement.STRING_TYPE));
         List<Biome> palette = new ArrayList<>(rawPalette.size());
-        for (net.minecraft.world.biome.Biome biome : rawPalette) palette.add(new Biome(biome));
+        for (RegistryEntry<net.minecraft.world.biome.Biome> biome : rawPalette) palette.add(new Biome(biome));
 
         int[] biomeIndices = nbt.getIntArray("biomes");
         Biome[] biomes = new Biome[biomeIndices.length];
@@ -290,16 +296,16 @@ public class NBTSerializer
     }
     //endregion
     //region Entity Maps
-    public static CompoundNBT serializeEntities(Map<UUID, Entity> entities)
+    public static NbtCompound serializeEntities(Map<UUID, Entity> entities)
     {
-        CompoundNBT nbt = new CompoundNBT();
+        NbtCompound nbt = new NbtCompound();
         for (Map.Entry<UUID, Entity> entry : entities.entrySet()) nbt.put(entry.getKey().toString(), entry.getValue().serialize());
         return nbt;
     }
-    public static Map<UUID, Entity> deserializeEntities(CompoundNBT nbt)
+    public static Map<UUID, Entity> deserializeEntities(NbtCompound nbt)
     {
         Map<UUID, Entity> entities = new HashMap<>();
-        for (String key : nbt.getAllKeys())
+        for (String key : nbt.getKeys())
         {
             Entity entity = Entity.deserialize(nbt.getCompound(key));
             entities.put(UUID.fromString(key), entity);
@@ -308,24 +314,24 @@ public class NBTSerializer
     }
     //endregion
     //region Tile Entity Maps
-    public static ListNBT serializeTileEntities(Map<BlockPos, NBTCompound> tileEntities)
+    public static NbtList serializeTileEntities(Map<BlockPos, NBTCompound> tileEntities)
     {
-        ListNBT listNBT = new ListNBT();
+        NbtList listNBT = new NbtList();
         for (Map.Entry<BlockPos, NBTCompound> entry : tileEntities.entrySet())
         {
-            CompoundNBT entityNBT = new CompoundNBT();
+            NbtCompound entityNBT = new NbtCompound();
             entityNBT.putIntArray("pos", new int[] { entry.getKey().getX(), entry.getKey().getY(), entry.getKey().getZ() });
             entityNBT.put("nbt", entry.getValue().getMinecraftNBT());
             listNBT.add(entityNBT);
         }
         return listNBT;
     }
-    public static Map<BlockPos, NBTCompound> deserializeTileEntities(ListNBT tileEntitiesNBT)
+    public static Map<BlockPos, NBTCompound> deserializeTileEntities(NbtList tileEntitiesNBT)
     {
         Map<BlockPos, NBTCompound> ret = new HashMap<>();
         for (int i = 0; i < tileEntitiesNBT.size(); i++)
         {
-            CompoundNBT entityNBT = tileEntitiesNBT.getCompound(i);
+            NbtCompound entityNBT = tileEntitiesNBT.getCompound(i);
             int[] pos = entityNBT.getIntArray("pos");
             ret.put(new BlockPos(pos[0], pos[1], pos[2]), new NBTCompound(entityNBT.getCompound("nbt")));
         }

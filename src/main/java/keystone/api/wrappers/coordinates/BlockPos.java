@@ -20,7 +20,7 @@ public class BlockPos
     }
 
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @return The Minecraft block position
      */
     public net.minecraft.util.math.BlockPos getMinecraftBlockPos() { return pos; }

@@ -1,13 +1,13 @@
 package keystone.core.gui.screens;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.utils.ProgressBar;
-import net.minecraft.client.MainWindow;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.util.Window;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 
 public class ProgressBarOverlay extends KeystoneOverlay
 {
@@ -16,7 +16,7 @@ public class ProgressBarOverlay extends KeystoneOverlay
 
     private static boolean open;
     private static final ProgressBarOverlay overlay = new ProgressBarOverlay();
-    protected ProgressBarOverlay() { super(new StringTextComponent("Progress Bar")); }
+    protected ProgressBarOverlay() { super(new LiteralText("Progress Bar")); }
 
     public static void open(String title)
     {
@@ -27,7 +27,10 @@ public class ProgressBarOverlay extends KeystoneOverlay
             open = true;
         }
     }
-    public static void close() { if (open) overlay.onClose(); }
+    public static void closeOverlay()
+    {
+        if (open) overlay.close();
+    }
 
 
     private String barTitle;
@@ -46,9 +49,9 @@ public class ProgressBarOverlay extends KeystoneOverlay
     @Override
     protected void init()
     {
-        MainWindow window = minecraft.getWindow();
-        centerX = window.getGuiScaledWidth() >> 1;
-        centerY = window.getGuiScaledHeight() >> 1;
+        Window window = client.getWindow();
+        centerX = window.getScaledWidth() >> 1;
+        centerY = window.getScaledHeight() >> 1;
         minX = centerX - (WIDTH >> 1);
         minY = centerY - (HEIGHT >> 1);
         maxX = centerX + (WIDTH >> 1);
@@ -58,9 +61,9 @@ public class ProgressBarOverlay extends KeystoneOverlay
         panelMaxY = maxY + 1;
         if (ProgressBar.isCancellable())
         {
-            ITextComponent cancelLabel = new TranslationTextComponent("keystone.cancel");
-            int cancelButtonWidth = 4 + font.width(cancelLabel);
-            addButton(new SimpleButton(centerX - (cancelButtonWidth >> 1), maxY + 1, cancelButtonWidth, 14, cancelLabel, button -> ProgressBar.cancel())
+            Text cancelLabel = new TranslatableText("keystone.cancel");
+            int cancelButtonWidth = 4 + textRenderer.getWidth(cancelLabel);
+            addDrawableChild(new SimpleButton(centerX - (cancelButtonWidth >> 1), maxY + 1, cancelButtonWidth, 14, cancelLabel, button -> ProgressBar.cancel())
                     .setButtonColor(0xFF808080)
                     .setBorderColor(0xFF808080));
             panelMaxY += 15;
@@ -74,7 +77,7 @@ public class ProgressBarOverlay extends KeystoneOverlay
         fill(matrixStack, minX, minY, fillMaxX, maxY, 0xFFFFFF00);
 
         String string = ProgressBar.getIterations() > 1 ? barTitle + " (" + ProgressBar.getCompletedIterations() + "/" + ProgressBar.getIterations() + ")" : barTitle;
-        drawCenteredString(matrixStack, font, string, centerX, centerY - (HEIGHT >> 1) - 11, 0xFFFFFF00);
+        drawCenteredText(matrixStack, textRenderer, string, centerX, centerY - (HEIGHT >> 1) - 11, 0xFFFFFF00);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
 }

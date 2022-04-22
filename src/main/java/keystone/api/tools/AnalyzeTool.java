@@ -94,7 +94,7 @@ public class AnalyzeTool extends KeystoneFilter
             return;
         }
 
-        Util.getPlatform().openFile(file);
+        Util.getOperatingSystem().open(file);
     }
 
     public List<String> getBlockEntries()

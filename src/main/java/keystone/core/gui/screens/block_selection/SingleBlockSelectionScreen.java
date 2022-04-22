@@ -4,7 +4,7 @@ import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.widgets.BlockGridWidget;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.text.TranslatableText;
 
 import java.util.function.Consumer;
 
@@ -39,13 +39,13 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
     @Override
     public BlockGridWidget createMainPanel()
     {
-        return BlockGridWidget.createWithMargins(75, 75, 25, KeystoneHotbar.getHeight(), false, new TranslationTextComponent("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_TOOLTIP);
+        return BlockGridWidget.createWithMargins(this, 75, 75, 25, KeystoneHotbar.getHeight(), false, new TranslatableText("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_TOOLTIP);
     }
     @Override
     public void onBlockSelected(BlockState block)
     {
         callback.accept(block);
         ranCallback = true;
-        onClose();
+        close();
     }
 }

@@ -1,15 +1,15 @@
 package keystone.core.gui.screens.block_selection;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraftforge.fml.client.gui.GuiUtils;
+import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,26 +19,28 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
 {
     public interface IBlockTooltipBuilder
     {
-        void buildTooltip(BlockState block, int count, List<IFormattableTextComponent> tooltip);
+        void buildTooltip(BlockState block, int count, List<Text> tooltip);
     }
 
-    private final List<IFormattableTextComponent> tooltip;
+    private final List<Text> tooltip;
 
-    protected final Minecraft mc;
-    protected final FontRenderer fontRenderer;
+    protected final MinecraftClient mc;
+    protected final TextRenderer fontRenderer;
     protected final ItemStack itemStack;
     protected final BlockState block;
+    protected final Screen screen;
 
-    protected AbstractBlockButton(ItemStack itemStack, BlockState block, int x, int y, int width, int height, IBlockTooltipBuilder tooltipBuilder)
+    protected AbstractBlockButton(Screen screen, ItemStack itemStack, BlockState block, int x, int y, int width, int height, IBlockTooltipBuilder tooltipBuilder)
     {
-        super(x, y, width, height, itemStack.getDisplayName(), button -> {});
+        super(x, y, width, height, itemStack.getName(), button -> {});
 
-        this.mc = Minecraft.getInstance();
-        this.fontRenderer = mc.font;
+        this.mc = MinecraftClient.getInstance();
+        this.fontRenderer = mc.textRenderer;
         this.itemStack = itemStack;
         this.block = block;
+        this.screen = screen;
 
-        List<IFormattableTextComponent> tooltip = new ArrayList<>();
+        List<Text> tooltip = new ArrayList<>();
         tooltipBuilder.buildTooltip(block, itemStack.getCount(), tooltip);
         this.tooltip = Collections.unmodifiableList(tooltip);
     }
@@ -50,9 +52,9 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
     {
         if (active && visible && isHovered())
         {
-            Minecraft mc = Minecraft.getInstance();
+            MinecraftClient mc = MinecraftClient.getInstance();
             fill(matrixStack, x, y, x + width, y + height, 0x80FFFFFF);
-            KeystoneOverlayHandler.addTooltip((stack, mX, mY, pT) -> GuiUtils.drawHoveringText(itemStack, matrixStack, tooltip, mX, mY, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight(), -1, mc.font));
+            KeystoneOverlayHandler.addTooltip((stack, mX, mY, pT) -> screen.renderTooltip(matrixStack, tooltip, mX, mY));
         }
         KeystoneOverlay.drawItem(this, mc, itemStack, x + (width - 18) / 2 + 1, y + (height - 18) / 2 + 1);
     }
@@ -67,7 +69,7 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
                 boolean clicked = this.clicked(mouseX, mouseY);
                 if (clicked)
                 {
-                    this.playDownSound(Minecraft.getInstance().getSoundManager());
+                    this.playDownSound(MinecraftClient.getInstance().getSoundManager());
                     this.onClick(mouseX, mouseY);
                     onClicked(button);
                     return true;

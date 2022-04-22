@@ -1,35 +1,30 @@
 package keystone.core.gui.screens.block_selection;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.widgets.BlockGridWidget;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.registry.Registry;
 
 public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
 {
     public static final boolean DEBUG_LOG = false;
-
-    private final IForgeRegistry<Block> blockRegistry;
 
     private BlockGridWidget panel;
     private TextFieldWidget searchBar;
 
     protected AbstractBlockSelectionScreen(String narrationTitle)
     {
-        super(new TranslationTextComponent(narrationTitle));
-        blockRegistry = GameRegistry.findRegistry(Block.class);
+        super(new TranslatableText(narrationTitle));
     }
 
     public BlockGridWidget createMainPanel()
     {
-        return BlockGridWidget.createWithMargins(KeystoneHotbar.getX(), KeystoneHotbar.getX(), KeystoneHotbar.getHeight(), KeystoneHotbar.getHeight(), false, new TranslationTextComponent("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_TOOLTIP);
+        return BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX(), KeystoneHotbar.getX(), KeystoneHotbar.getHeight(), KeystoneHotbar.getHeight(), false, new TranslatableText("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_TOOLTIP);
     }
     public abstract void onBlockSelected(BlockState block);
 
@@ -41,33 +36,33 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
     @Override
     protected void init()
     {
-        this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
+        this.client.keyboard.setRepeatEvents(true);
 
         this.panel = createMainPanel();
-        blockRegistry.forEach(block -> this.panel.addBlock(block.defaultBlockState(), false));
+        Registry.BLOCK.forEach(block -> this.panel.addBlock(block.getDefaultState(), false));
         this.panel.rebuildButtons();
-        addButton(this.panel);
+        addDrawableChild(this.panel);
 
-        this.searchBar = new TextFieldWidget(font, panel.x + 1, panel.y - 13, panel.getWidth() - 1, 12, new TranslationTextComponent("keystone.search"));
+        this.searchBar = new TextFieldWidget(textRenderer, panel.x + 1, panel.y - 13, panel.getWidth() - 1, 12, new TranslatableText("keystone.search"));
         this.searchBar.setMaxLength(256);
-        this.searchBar.setBordered(false);
-        this.searchBar.setValue("");
-        this.searchBar.setResponder((str) -> this.panel.filter(str));
-        addButton(this.searchBar);
+        this.searchBar.setDrawsBackground(false);
+        this.searchBar.setText("");
+        this.searchBar.setChangedListener((str) -> this.panel.filter(str));
+        addDrawableChild(this.searchBar);
         this.setInitialFocus(this.searchBar);
     }
     @Override
     public void removed()
     {
-        this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
+        this.client.keyboard.setRepeatEvents(false);
     }
 
     @Override
-    public void resize(Minecraft minecraft, int width, int height)
+    public void resize(MinecraftClient minecraft, int width, int height)
     {
-        String s = this.searchBar.getValue();
+        String s = this.searchBar.getText();
         super.resize(minecraft, width, height);
-        this.searchBar.setValue(s);
+        this.searchBar.setText(s);
     }
 
     @Override

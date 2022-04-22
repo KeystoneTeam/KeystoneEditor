@@ -1,18 +1,19 @@
 package keystone.core.gui.screens.hotbar;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
 
 import java.util.function.Supplier;
 
 public class HotbarButton extends ButtonNoHotkey
 {
     public static final float SCALE = 2f;
-    private static final ResourceLocation selectionTexture = new ResourceLocation("keystone:textures/gui/hotbar.png");
+    private static final Identifier selectionTexture = new Identifier("keystone:textures/gui/hotbar.png");
 
-    private Minecraft mc;
+    private MinecraftClient mc;
     private final KeystoneHotbar parent;
     private final KeystoneHotbarSlot slot;
     private final Supplier<Boolean> enabledSupplier;
@@ -31,7 +32,7 @@ public class HotbarButton extends ButtonNoHotkey
         this.unscaledX = x;
         this.unscaledY = y;
 
-        this.mc = parent.getMinecraft();
+        this.mc = MinecraftClient.getInstance();
         this.parent = parent;
         this.slot = slot;
         this.enabledSupplier = enabledSupplier;
@@ -52,32 +53,20 @@ public class HotbarButton extends ButtonNoHotkey
                 if (isHovered())
                 {
                     colorSlot(stack, 0x80FFFFFF);
-                    renderToolTip(stack, mouseX, mouseY);
+                    renderTooltip(stack, mouseX, mouseY);
                 }
                 if (KeystoneHotbar.getSelectedSlot() == slot)
                 {
-                    mc.getTextureManager().bind(selectionTexture);
-                    blit(stack, unscaledX - 4, unscaledY - 4, 24, 24, 0, 22, 24, 24, 256, 256);
+                    RenderSystem.setShaderTexture(0, selectionTexture);
+                    drawTexture(stack, unscaledX - 4, unscaledY - 4, 24, 24, 0, 22, 24, 24, 256, 256);
                 }
             }
             else colorSlot(stack, 0x80FF0000);
         }
-        else if (isHovered()) renderToolTip(stack, mouseX, mouseY);
+        else if (isHovered()) renderTooltip(stack, mouseX, mouseY);
     }
     @Override
-    public boolean isHovered() { return isHovered && enabledSupplier.get(); }
-
-    @Override
-    protected void setFocused(boolean focused)
-    {
-        super.setFocused(focused);
-    }
-
-    @Override
-    public boolean changeFocus(boolean focus)
-    {
-        return super.changeFocus(focus);
-    }
+    public boolean isHovered() { return hovered && enabledSupplier.get(); }
 
     public KeystoneHotbarSlot getSlot() { return slot; }
 

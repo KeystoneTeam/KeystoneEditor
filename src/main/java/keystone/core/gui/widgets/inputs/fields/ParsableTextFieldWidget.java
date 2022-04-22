@@ -4,9 +4,8 @@ import keystone.api.Keystone;
 import keystone.api.variables.Hook;
 import keystone.core.gui.widgets.inputs.ParsableTextWidget;
 import keystone.core.utils.AnnotationUtils;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 
 import java.lang.reflect.Field;
 import java.util.function.Supplier;
@@ -19,7 +18,7 @@ public abstract class ParsableTextFieldWidget<T> extends ParsableTextWidget<T>
 
     public ParsableTextFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(new StringTextComponent(name), x, y, width, (T)field.get(instance.get()));
+        super(new LiteralText(name), x, y, width, (T)field.get(instance.get()));
 
         this.instance = instance;
         this.field = field;
@@ -40,7 +39,7 @@ public abstract class ParsableTextFieldWidget<T> extends ParsableTextWidget<T>
         {
             String error = "Cannot set " + value.getClass().getName() + " field '" + getMessage().getString() + "'!";
             Keystone.LOGGER.error(error);
-            mc.player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
+            mc.player.sendMessage(new LiteralText(error).styled(style -> style.withColor(Formatting.RED)), false);
             return false;
         }
     }

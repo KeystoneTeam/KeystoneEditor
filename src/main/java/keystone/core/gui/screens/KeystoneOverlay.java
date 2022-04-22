@@ -1,32 +1,32 @@
 package keystone.core.gui.screens;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.Widget;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class KeystoneOverlay extends Screen
 {
-    private static final ResourceLocation ROUNDED_BOX = new ResourceLocation("keystone:textures/gui/rounded_box.png");
+    private static final Identifier ROUNDED_BOX = new Identifier("keystone:textures/gui/rounded_box.png");
 
     private static int itemOffsetY = 0;
 
-    private Map<Widget, Boolean> widgetsActive = new HashMap<>();
+    private Map<ClickableWidget, Boolean> widgetsActive = new HashMap<>();
     private boolean restoreWidgets = false;
 
-    protected KeystoneOverlay(ITextComponent titleIn)
+    protected KeystoneOverlay(Text titleIn)
     {
         super(titleIn);
     }
@@ -38,7 +38,7 @@ public class KeystoneOverlay extends Screen
         return false;
     }
     @Override
-    public void onClose()
+    public void close()
     {
         KeystoneOverlayHandler.removeOverlay(this);
     }
@@ -48,7 +48,7 @@ public class KeystoneOverlay extends Screen
     {
         if (restoreWidgets)
         {
-            for (Map.Entry<Widget, Boolean> entry : widgetsActive.entrySet()) entry.getKey().active = entry.getValue();
+            for (Map.Entry<ClickableWidget, Boolean> entry : widgetsActive.entrySet()) entry.getKey().active = entry.getValue();
             restoreWidgets = false;
         }
         super.render(matrixStack, mouseX, mouseY, partialTicks);
@@ -56,25 +56,31 @@ public class KeystoneOverlay extends Screen
     @Override
     public void tick()
     {
-        for (Widget widget : buttons) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).tick();
+        for (Element widget : children()) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).tick();
     }
     //endregion
     //region Helper Functions
     public void checkMouseOverGui()
     {
-        this.buttons.forEach(widget -> { if (widget.isHovered() && widget.visible && widget.active) KeystoneGlobalState.MouseOverGUI = true; });
+        this.children().forEach(child ->
+        {
+            if (child instanceof ClickableWidget widget)
+            {
+                if (widget.isHovered() && widget.visible && widget.active) KeystoneGlobalState.MouseOverGUI = true;
+            }
+        });
     }
     public static void fillRounded(MatrixStack stack, int minX, int minY, int maxX, int maxY)
     {
         int cornerSize = 8;
-        Minecraft.getInstance().textureManager.bind(ROUNDED_BOX);
+        RenderSystem.setShaderTexture(0, ROUNDED_BOX);
         RenderSystem.enableBlend();
 
         // Corners
-        blit(stack, minX, minY, cornerSize, cornerSize, 0, 0, cornerSize, cornerSize, 16, 16);
-        blit(stack, maxX - cornerSize, minY, cornerSize, cornerSize, cornerSize, 0, cornerSize, cornerSize, 16, 16);
-        blit(stack, minX, maxY - cornerSize, cornerSize, cornerSize, 0, cornerSize, cornerSize, cornerSize, 16, 16);
-        blit(stack, maxX - cornerSize, maxY - cornerSize, cornerSize, cornerSize, cornerSize, cornerSize, cornerSize, cornerSize, 16, 16);
+        drawTexture(stack, minX, minY, cornerSize, cornerSize, 0, 0, cornerSize, cornerSize, 16, 16);
+        drawTexture(stack, maxX - cornerSize, minY, cornerSize, cornerSize, cornerSize, 0, cornerSize, cornerSize, 16, 16);
+        drawTexture(stack, minX, maxY - cornerSize, cornerSize, cornerSize, 0, cornerSize, cornerSize, cornerSize, 16, 16);
+        drawTexture(stack, maxX - cornerSize, maxY - cornerSize, cornerSize, cornerSize, cornerSize, cornerSize, cornerSize, cornerSize, 16, 16);
 
         // Edges
         fill(stack, minX + cornerSize, minY, maxX - cornerSize, minY + cornerSize, 0x80000000); // TOP
@@ -86,22 +92,20 @@ public class KeystoneOverlay extends Screen
         fill(stack, minX + cornerSize, minY + cornerSize, maxX - cornerSize, maxY - cornerSize, 0x80000000);
     }
 
-    public static void drawItem(Widget widget, Minecraft mc, ItemStack stack, int x, int y)
+    public static void drawItem(ClickableWidget widget, MinecraftClient mc, ItemStack stack, int x, int y)
     {
         drawItem(widget, mc, stack, x, y, null);
     }
-    public static void drawItem(Widget widget, Minecraft mc, ItemStack stack, int x, int y, String text)
+    public static void drawItem(ClickableWidget widget, MinecraftClient mc, ItemStack stack, int x, int y, String text)
     {
-        widget.setBlitOffset(200);
-        mc.getItemRenderer().blitOffset = 200.0F;
+        widget.setZOffset(200);
+        mc.getItemRenderer().zOffset = 200.0F;
+        
+        mc.getItemRenderer().renderInGuiWithOverrides(stack, x, y + itemOffsetY);
+        mc.getItemRenderer().renderGuiItemOverlay(mc.textRenderer, stack, x, y + itemOffsetY, text);
 
-        FontRenderer font = stack.getItem().getFontRenderer(stack);
-        if (font == null) font = mc.font;
-        mc.getItemRenderer().renderAndDecorateItem(stack, x, y + itemOffsetY);
-        mc.getItemRenderer().renderGuiItemDecorations(font, stack, x, y + itemOffsetY, text);
-
-        widget.setBlitOffset(0);
-        mc.getItemRenderer().blitOffset = 0.0F;
+        widget.setZOffset(0);
+        mc.getItemRenderer().zOffset = 0.0F;
     }
     public static void setItemOffsetY(int offset)
     {
@@ -113,17 +117,20 @@ public class KeystoneOverlay extends Screen
     }
     //endregion
     //region Widgets
-    public void disableWidgets(Widget... keepActive)
+    public void disableWidgets(ClickableWidget... keepActive)
     {
         this.widgetsActive.clear();
-        for (Widget widget : this.buttons)
+        for (Element element : children())
         {
-            widgetsActive.put(widget, widget.active);
-            widget.active = false;
+            if (element instanceof ClickableWidget widget)
+            {
+                widgetsActive.put(widget, widget.active);
+                widget.active = false;
+            }
         }
         if (keepActive != null)
         {
-            for (Widget widget : keepActive)
+            for (ClickableWidget widget : keepActive)
             {
                 widgetsActive.put(widget, true);
                 widget.active = true;

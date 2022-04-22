@@ -11,22 +11,25 @@ import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
+import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.gui.widgets.inputs.fields.EditableObject;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.Minecraft;
-import net.minecraft.command.arguments.BlockStateParser;
-import net.minecraft.command.arguments.ItemParser;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.BuiltinRegistries;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 
 import java.io.File;
+import java.util.Optional;
 
 /**
  * A filter compilable by Keystone. All filters must contain a class which extends {@link keystone.api.filters.KeystoneFilter}.
@@ -209,7 +212,7 @@ public class KeystoneFilter extends EditableObject
     public final void print(Object message)
     {
         if (message == null) message = "null";
-        Minecraft.getInstance().player.sendMessage(new StringTextComponent(message.toString()), Util.NIL_UUID);
+        MinecraftClient.getInstance().player.sendMessage(new LiteralText(message.toString()), false);
     }
     /**
      * Abort filter execution
@@ -340,21 +343,21 @@ public class KeystoneFilter extends EditableObject
     }
 
     /**
-     * Create a {@link BlockType} from a block ID. Any ID that is a valid ID for the
+     * Create a {@link Block} from a block ID. Any ID that is a valid ID for the
      * /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param block The block ID
      * @return The generated {@link BlockType}
      */
     public static Block block(String block)
     {
-        BlockState state = Blocks.RED_STAINED_GLASS.defaultBlockState();
-        CompoundNBT tileEntity = null;
+        BlockState state = Blocks.RED_STAINED_GLASS.getDefaultState();
+        NbtCompound tileEntity = null;
 
         try
         {
-            BlockStateParser parser = new BlockStateParser(new StringReader(block), false).parse(true);
-            state = parser.getState();
-            tileEntity = parser.getNbt();
+            BlockArgumentParser parser = new BlockArgumentParser(new StringReader(block), false).parse(true);
+            state = parser.getBlockState();
+            tileEntity = parser.getNbtData();
         }
         catch (CommandSyntaxException e)
         {
@@ -362,6 +365,17 @@ public class KeystoneFilter extends EditableObject
         }
 
         return new Block(state, tileEntity);
+    }
+
+    /**
+     * Create a {@link Block} from a block ID and tile entity. Any ID that is a valid ID
+     * for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
+     * @param block The block ID
+     * @return The generated {@link BlockType}
+     */
+    public static Block block(String block, NBTCompound tileEntity)
+    {
+        return block(block).setTileEntity(tileEntity);
     }
     /**
      * Create a {@link keystone.api.wrappers.Item} from an item ID. Any ID that is a valid ID for the
@@ -375,8 +389,9 @@ public class KeystoneFilter extends EditableObject
 
         try
         {
-            ItemParser parser = new ItemParser(new StringReader(item), false).parse();
-            stack = new ItemStack(parser.getItem(), 1, parser.getNbt());
+            ItemStringReader parser = new ItemStringReader(new StringReader(item), false).consume();
+            stack = new ItemStack(parser.getItem(), 1);
+            stack.setNbt(parser.getNbt());
         }
         catch (CommandSyntaxException e)
         {
@@ -393,7 +408,8 @@ public class KeystoneFilter extends EditableObject
      */
     public static Entity entity(String id)
     {
-        if (ForgeRegistries.ENTITIES.containsKey(new ResourceLocation(id))) return new Entity(id);
+        Optional<net.minecraft.entity.EntityType<?>> optionalEntity = Registry.ENTITY_TYPE.getOrEmpty(new Identifier(id));
+        if (optionalEntity.isPresent()) return new Entity(id);
         else
         {
             Keystone.abortFilter("Invalid entity ID: '" + id + "'!");
@@ -408,8 +424,17 @@ public class KeystoneFilter extends EditableObject
      */
     public static Biome biome(String id)
     {
-        ResourceLocation location = new ResourceLocation(id);
-        if (ForgeRegistries.BIOMES.containsKey(location)) return new Biome(ForgeRegistries.BIOMES.getValue(location));
+        Optional<net.minecraft.world.biome.Biome> optionalBiome = BuiltinRegistries.BIOME.getOrEmpty(new Identifier(id));
+        if (optionalBiome.isPresent())
+        {
+            Optional<RegistryKey<net.minecraft.world.biome.Biome>> optionalBiomeKey = BuiltinRegistries.BIOME.getKey(optionalBiome.get());
+            if (optionalBiome.isPresent()) return new Biome(BuiltinRegistries.BIOME.getEntry(optionalBiomeKey.get()).get());
+            else
+            {
+                Keystone.abortFilter("Invalid biome entry ID: '" + id + "'!");
+                return null;
+            }
+        }
         else
         {
             Keystone.abortFilter("Invalid biome ID: '" + id + "'!");

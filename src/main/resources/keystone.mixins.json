@@ -1,18 +1,28 @@
 {
   "required": true,
+  "minVersion": "0.8",
   "package": "keystone.core.mixins",
-  "compatibilityLevel": "JAVA_8",
-  "refmap": "keystone.refmap.json",
+  "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "BiomeInvoker",
+    "PersistentStateManagerAccessor",
+    "ServerPlayerEntityMixin"
   ],
   "client": [
-    "MixinAbstractGui",
-    "MixinGameRenderer",
-    "MixinKeyboardListener",
-    "MixinMinecraft",
-    "MixinMouseHelper",
-    "MixinSpectatorGui",
-    "MixinWorldRenderer"
+    "BufferRendererMixin",
+    "ClientPlayerEntityMixin",
+    "ClientPlayerInteractionManagerMixin",
+    "GameRendererInvoker",
+    "GameRendererMixin",
+    "InGameHudMixin",
+    "KeyBindingMixin",
+    "KeyboardMixin",
+    "MinecraftClientMixin",
+    "MixinDrawableHelper",
+    "MouseMixin",
+    "SpectatorHudMixin"
   ],
-  "minVersion": "0.8"
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

@@ -1,13 +1,12 @@
 package keystone.core.gui.screens.selection;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.api.tools.AnalyzeTool;
 import keystone.api.tools.DeleteEntitiesTool;
 import keystone.api.tools.FillTool;
-import keystone.core.events.KeystoneHotbarEvent;
-import keystone.core.events.KeystoneSelectionChangedEvent;
+import keystone.core.events.keystone.KeystoneHotbarEvents;
+import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.file_browser.SaveFileScreen;
@@ -17,28 +16,24 @@ import keystone.core.gui.widgets.buttons.NudgeButton;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.modules.selection.boxes.SelectionBoundingBox;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.Direction;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.client.gui.GuiUtils;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.util.math.Direction;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class SelectionScreen extends KeystoneOverlay
 {
     private static final int MARGINS = 2;
@@ -56,7 +51,7 @@ public class SelectionScreen extends KeystoneOverlay
 
     protected SelectionScreen()
     {
-        super(new TranslationTextComponent("keystone.screen.selection"));
+        super(new TranslatableText("keystone.screen.selection"));
         selectionModule = Keystone.getModule(SelectionModule.class);
     }
     public static void open()
@@ -67,29 +62,24 @@ public class SelectionScreen extends KeystoneOverlay
             KeystoneOverlayHandler.addOverlay(open);
         }
     }
-
-    //region Static Event Handlers
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public static void onHotbarChanged(final KeystoneHotbarEvent event)
+    public static void registerEvents()
     {
-        if (event.isCanceled()) return;
-
-        if (event.slot == KeystoneHotbarSlot.SELECTION && Keystone.getModule(SelectionModule.class).getSelectionBoxCount() > 0) open();
-        else if (open != null) open.onClose();
+        KeystoneHotbarEvents.CHANGED.register(SelectionScreen::onHotbarChanged);
+        KeystoneLifecycleEvents.SELECTION_CHANGED.register(SelectionScreen::onSelectionsChanged);
     }
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public static void onSelectionsChanged(final KeystoneSelectionChangedEvent event)
+    //region Static Event Handlers
+    public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
-        if (event.selections.length > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
-        else if (open != null) open.onClose();
+        if (slot == KeystoneHotbarSlot.SELECTION && Keystone.getModule(SelectionModule.class).getSelectionBoxCount() > 0) open();
+        else if (open != null) open.close();
+    }
+    public static void onSelectionsChanged(List<SelectionBoundingBox> selections, boolean createdSelection)
+    {
+        if (selections.size() > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
+        else if (open != null) open.close();
     }
     //endregion
     //region Screen Overrides
-    @Override
-    public void onClose()
-    {
-        KeystoneOverlayHandler.removeOverlay(this);
-    }
     @Override
     public void removed()
     {
@@ -121,13 +111,13 @@ public class SelectionScreen extends KeystoneOverlay
 
         for (SimpleButton button : buttons)
         {
-            int width = font.width(button.getMessage().getString());
+            int width = textRenderer.getWidth(button.getMessage().getString());
             if (width > panelWidth) panelWidth = width;
         }
         for (SimpleButton button : buttons)
         {
-            button.x = (panelWidth - font.width(button.getMessage().getString())) / 2;
-            addButton(button);
+            button.x = (panelWidth - textRenderer.getWidth(button.getMessage().getString())) / 2;
+            addDrawableChild(button);
         }
         panelWidth += 2 * (PADDING + MARGINS);
     }
@@ -149,9 +139,9 @@ public class SelectionScreen extends KeystoneOverlay
     //region Helpers
     private NudgeButton createNudgeButton(int startY, int index, String translationKey, NudgeButton.NudgeConsumer nudgeConsumer)
     {
-        TranslationTextComponent label = new TranslationTextComponent(translationKey);
+        TranslatableText label = new TranslatableText(translationKey);
         int y = startY + index * (BUTTON_HEIGHT + PADDING);
-        int buttonWidth = 2 * PADDING + font.width(label.getString());
+        int buttonWidth = 2 * PADDING + textRenderer.getWidth(label.getString());
         return (NudgeButton) new NudgeButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, nudgeConsumer, () -> null)
         {
             @Override
@@ -163,15 +153,15 @@ public class SelectionScreen extends KeystoneOverlay
             }
         }.setColors(0x80008000, 0x80008000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
     }
-    private SimpleButton createButton(int startY, int index, String translationKey, Button.IPressable pressable)
+    private SimpleButton createButton(int startY, int index, String translationKey, ButtonWidget.PressAction pressable)
     {
-        TranslationTextComponent label = new TranslationTextComponent(translationKey);
-        List<ITextComponent> tooltip = new ArrayList<>();
-        tooltip.add(new TranslationTextComponent(translationKey + ".tooltip"));
+        TranslatableText label = new TranslatableText(translationKey);
+        List<Text> tooltip = new ArrayList<>();
+        tooltip.add(new TranslatableText(translationKey + ".tooltip"));
 
         int y = startY + index * (BUTTON_HEIGHT + PADDING);
-        int buttonWidth = 2 * PADDING + font.width(label.getString());
-        return new SimpleButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, (stack, mouseX, mouseY, partialTicks) -> GuiUtils.drawHoveringText(stack, tooltip, mouseX, mouseY, width, height, (int)(tooltipWidth * width), font));
+        int buttonWidth = 2 * PADDING + textRenderer.getWidth(label.getString());
+        return new SimpleButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, (stack, mouseX, mouseY, partialTicks) -> renderTooltip(stack, tooltip, mouseX, mouseY));
     }
     //endregion
     //region Button Callbacks
@@ -188,18 +178,18 @@ public class SelectionScreen extends KeystoneOverlay
             HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
             historyModule.tryBeginHistoryEntry();
 
-            for (int x = selection.getMinCoords().getX(); x <= selection.getMaxCoords().getX(); x++)
+            for (int x = selection.getMin().getX(); x <= selection.getMax().getX(); x++)
             {
-                for (int y = selection.getMinCoords().getY(); y <= selection.getMaxCoords().getY(); y++)
+                for (int y = selection.getMin().getY(); y <= selection.getMax().getY(); y++)
                 {
-                    for (int z = selection.getMinCoords().getZ(); z <= selection.getMaxCoords().getZ(); z++)
+                    for (int z = selection.getMin().getZ(); z <= selection.getMax().getZ(); z++)
                     {
                         worldModifiers.blocks.setBlock(x, y, z, BlockTypeRegistry.AIR);
                     }
                 }
             }
 
-            BlockPos anchor = selection.getMinCoords().toBlockPos().offset(direction.getStepX() * newAmount, direction.getStepY() * newAmount, direction.getStepZ() * newAmount);
+            BlockPos anchor = new BlockPos(selection.getMin().add(direction.getOffsetX() * newAmount, direction.getOffsetY() * newAmount, direction.getOffsetZ() * newAmount));
             schematic.place(worldModifiers, anchor);
 
             historyModule.pushToEntry(NudgeButton.SELECTION_HISTORY_SUPPLIER.get());
@@ -208,35 +198,35 @@ public class SelectionScreen extends KeystoneOverlay
             historyModule.tryEndHistoryEntry();
         });
     }
-    private final void buttonDeselect(Button button)
+    private final void buttonDeselect(ButtonWidget button)
     {
         selectionModule.deselect();
     }
-    private final void buttonDeleteBlocks(Button button)
+    private final void buttonDeleteBlocks(ButtonWidget button)
     {
-        Keystone.runInternalFilter(new FillTool(Blocks.AIR.defaultBlockState()));
+        Keystone.runInternalFilter(new FillTool(Blocks.AIR.getDefaultState()));
     }
-    private final void buttonDeleteEntities(Button button)
+    private final void buttonDeleteEntities(ButtonWidget button)
     {
         Keystone.runInternalFilter(new DeleteEntitiesTool());
     }
-    private final void buttonAnalyze(Button button)
+    private final void buttonAnalyze(ButtonWidget button)
     {
         Keystone.runInternalFilter(new AnalyzeTool());
     }
-    private final void buttonCut(Button button)
+    private final void buttonCut(ButtonWidget button)
     {
         Keystone.getModule(ClipboardModule.class).cut();
     }
-    private final void buttonCopy(Button button)
+    private final void buttonCopy(ButtonWidget button)
     {
         Keystone.getModule(ClipboardModule.class).copy();
     }
-    private final void buttonPaste(Button button)
+    private final void buttonPaste(ButtonWidget button)
     {
         Keystone.getModule(ClipboardModule.class).paste();
     }
-    private final void buttonExport(Button button)
+    private final void buttonExport(ButtonWidget button)
     {
         SaveFileScreen.saveFile("kschem", KeystoneDirectories.getSchematicsDirectory(), true, file ->
                 Keystone.runOnMainThread(() ->

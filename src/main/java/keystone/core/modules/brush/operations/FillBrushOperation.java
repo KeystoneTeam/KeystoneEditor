@@ -7,8 +7,8 @@ import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 
 public class FillBrushOperation extends BrushOperation
 {
@@ -17,9 +17,9 @@ public class FillBrushOperation extends BrushOperation
     @Variable boolean useMask = false;
 
     @Override
-    public ITextComponent getName()
+    public Text getName()
     {
-        return new TranslationTextComponent("keystone.brush.fill");
+        return new TranslatableText("keystone.brush.fill");
     }
     @Override
     public boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration)

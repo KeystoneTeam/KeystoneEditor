@@ -2,15 +2,19 @@ package keystone.core;
 
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
-import keystone.core.events.KeystoneEvent;
+import keystone.core.events.KeystoneInputHandler;
+import keystone.core.events.keystone.KeystoneLifecycleEvents;
+import keystone.core.events.keystone.KeystoneRegistryEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
-import keystone.core.gui.screens.hotbar.KeystoneHotbar;
-import keystone.core.keybinds.KeystoneKeybinds;
+import keystone.core.gui.screens.brush.BrushSelectionScreen;
+import keystone.core.gui.screens.fill.FillAndReplaceScreen;
+import keystone.core.gui.screens.filters.FilterSelectionScreen;
+import keystone.core.gui.screens.schematics.CloneScreen;
+import keystone.core.gui.screens.schematics.ImportScreen;
+import keystone.core.gui.screens.selection.SelectionNudgeScreen;
+import keystone.core.gui.screens.selection.SelectionScreen;
+import keystone.core.keybinds.KeystoneKeyBindings;
 import keystone.core.modules.brush.BrushModule;
-import keystone.core.modules.brush.boxes.BrushPositionBox;
-import keystone.core.modules.brush.boxes.BrushPreviewBox;
-import keystone.core.modules.brush.renderers.BrushPositionBoxRenderer;
-import keystone.core.modules.brush.renderers.BrushPreviewBoxRenderer;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
@@ -20,13 +24,7 @@ import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.modules.schematic_import.ImportModule;
-import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
-import keystone.core.modules.schematic_import.renderers.ImportBoxRenderer;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.modules.selection.boxes.HighlightBoundingBox;
-import keystone.core.modules.selection.boxes.SelectionBoundingBox;
-import keystone.core.modules.selection.renderers.HighlightBoxRenderer;
-import keystone.core.modules.selection.renderers.SelectionBoxRenderer;
 import keystone.core.modules.world.BiomesModule;
 import keystone.core.modules.world.BlocksModule;
 import keystone.core.modules.world.EntitiesModule;
@@ -34,119 +32,115 @@ import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.schematic.extensions.BiomesExtension;
 import keystone.core.schematic.extensions.StructureVoidsExtension;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
-import net.minecraft.client.gui.screen.MainMenuScreen;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.*;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraftforge.client.event.GuiOpenEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.VersionChecker;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.forgespi.language.IModInfo;
 
-@Mod(KeystoneMod.MODID)
-public class KeystoneMod
+public class KeystoneMod implements ModInitializer, ClientModInitializer
 {
     public static final String MODID = "keystone";
     private static boolean initialized = false;
     private static boolean ranVersionCheck = false;
     private static boolean inWorld;
 
-    public KeystoneMod()
-    {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-        MinecraftForge.EVENT_BUS.addListener(this::gameLoaded);
-        MinecraftForge.EVENT_BUS.addListener(this::registerDefaultBoxes);
-        MinecraftForge.EVENT_BUS.addListener(this::registerDefaultModules);
-        MinecraftForge.EVENT_BUS.addListener(this::registerDefaultHistoryEntries);
-        MinecraftForge.EVENT_BUS.addListener(this::registerDefaultSchematicFormats);
-        MinecraftForge.EVENT_BUS.addListener(this::registerDefaultSchematicExtensions);
-        MinecraftForge.EVENT_BUS.addListener(this::onWorldLoaded);
-        MinecraftForge.EVENT_BUS.addListener(this::onWorldLeft);
-        MinecraftForge.EVENT_BUS.addListener(this::onLivingUpdate);
-    }
-
-    private void setup(final FMLCommonSetupEvent event)
+    @Override
+    public void onInitialize()
     {
         KeystoneDirectories.init();
+
+        KeystoneRegistryEvents.MODULES.register(registry ->
+        {
+            Keystone.LOGGER.info("Registering default Keystone modules");
+
+            registry.accept(new MouseModule());
+            registry.accept(new WorldCacheModule());
+            registry.accept(new BlocksModule());
+            registry.accept(new BiomesModule());
+            registry.accept(new EntitiesModule());
+            registry.accept(new GhostBlocksModule());
+            registry.accept(new HistoryModule());
+            registry.accept(new ClipboardModule());
+
+            registry.accept(new SelectionModule());
+            registry.accept(new BrushModule());
+            registry.accept(new ImportModule());
+            registry.accept(new FilterModule());
+        });
+
+        KeystoneRegistryEvents.HISTORY_ENTRIES.register(new KeystoneRegistryEvents.RegisterHistoryEntriesListener()
+        {
+            @Override
+            public void onRegister()
+            {
+                Keystone.LOGGER.info("Registering default Keystone history entries");
+
+                register("clone_import_boxes", CloneImportBoxesHistoryEntry::new);
+                register("import_boxes", ImportBoxesHistoryEntry::new);
+                register("selection_boxes", SelectionHistoryEntry::new);
+            }
+        });
+
+        KeystoneRegistryEvents.SCHEMATIC_FORMATS.register(registry ->
+        {
+            Keystone.LOGGER.info("Registering default Keystone schematic formats");
+
+            registry.accept(new KeystoneSchematicFormat());
+        });
+
+        KeystoneRegistryEvents.SCHEMATIC_EXTENSIONS.register(registry ->
+        {
+            Keystone.LOGGER.info("Registering default Keystone schematic extensions");
+
+            registry.accept(new BiomesExtension());
+            registry.accept(new StructureVoidsExtension());
+        });
     }
-    private void clientSetup(final FMLClientSetupEvent event)
+    @Override
+    public void onInitializeClient()
     {
-        KeystoneOverlayHandler.addOverlay(new KeystoneHotbar());
-        KeystoneKeybinds.register();
+        ScreenEvents.AFTER_INIT.register(this::gameLoaded);
+        ScreenEvents.AFTER_INIT.register(this::onWorldLeft);
+        ClientEntityEvents.ENTITY_LOAD.register(this::onWorldLoaded);
+
+        KeystoneInputHandler.registerEvents();
+        BrushSelectionScreen.registerEvents();
+        FillAndReplaceScreen.registerEvents();
+        FilterSelectionScreen.registerEvents();
+        CloneScreen.registerEvents();
+        ImportScreen.registerEvents();
+        SelectionNudgeScreen.registerEvents();
+        SelectionScreen.registerEvents();
+        KeystoneOverlayHandler.registerEvents();
+
+        KeystoneKeyBindings.register();
     }
 
-    private void gameLoaded(final GuiOpenEvent event)
+    private void gameLoaded(MinecraftClient client, Screen screen, int scaledWidth, int scaledHeight)
     {
         if (initialized) return;
         else initialized = true;
 
         Keystone.LOGGER.info("Triggering Keystone initialization events");
-
         Keystone.init();
-        MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterBoundingBoxTypes());
-        MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterModules());
-        MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterHistoryEntryTypes());
-        MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterSchematicFormats());
-        MinecraftForge.EVENT_BUS.post(new KeystoneEvent.RegisterSchematicExtensions());
+
+        KeystoneRegistryEvents.registerModules();
+        KeystoneRegistryEvents.registerHistoryEntries();
+        KeystoneRegistryEvents.registerSchematicFormats();
+        KeystoneRegistryEvents.registerSchematicExtensions();
+
         Keystone.postInit();
     }
-    private void registerDefaultBoxes(final KeystoneEvent.RegisterBoundingBoxTypes event)
-    {
-        Keystone.LOGGER.info("Registering default Keystone bounding box types");
 
-        event.register(SelectionBoundingBox.class, new SelectionBoxRenderer(), "selection_box");
-        event.register(HighlightBoundingBox.class, new HighlightBoxRenderer(), "highlight_box");
-        event.register(ImportBoundingBox.class, new ImportBoxRenderer(), "import_box");
-        event.register(BrushPositionBox.class, new BrushPositionBoxRenderer(), "brush_position");
-        event.register(BrushPreviewBox.class, new BrushPreviewBoxRenderer(), "brush_preview");
-    }
-    private void registerDefaultModules(final KeystoneEvent.RegisterModules event)
+    private void onWorldLoaded(Entity entity, ClientWorld world)
     {
-        Keystone.LOGGER.info("Registering default Keystone modules");
-
-        event.register(new MouseModule());
-        event.register(new WorldCacheModule());
-        event.register(new BlocksModule());
-        event.register(new BiomesModule());
-        event.register(new EntitiesModule());
-        event.register(new GhostBlocksModule());
-        event.register(new HistoryModule());
-        event.register(new ClipboardModule());
-
-        event.register(new SelectionModule());
-        event.register(new BrushModule());
-        event.register(new ImportModule());
-        event.register(new FilterModule());
-    }
-    private void registerDefaultHistoryEntries(final KeystoneEvent.RegisterHistoryEntryTypes event)
-    {
-        event.register("clone_import_boxes", CloneImportBoxesHistoryEntry::new);
-        event.register("import_boxes", ImportBoxesHistoryEntry::new);
-        event.register("selection_boxes", SelectionHistoryEntry::new);
-    }
-    private void registerDefaultSchematicFormats(final KeystoneEvent.RegisterSchematicFormats event)
-    {
-        event.register(new KeystoneSchematicFormat());
-    }
-    private void registerDefaultSchematicExtensions(final KeystoneEvent.RegisterSchematicExtensions event)
-    {
-        event.register(new BiomesExtension());
-        event.register(new StructureVoidsExtension());
-    }
-    private void onWorldLoaded(final EntityJoinWorldEvent event)
-    {
-        if (event.getEntity() instanceof PlayerEntity && event.getWorld().isClientSide && !inWorld)
+        if (entity instanceof PlayerEntity && !inWorld)
         {
             if (KeystoneConfig.startActive) Keystone.enableKeystone();
             inWorld = true;
@@ -154,59 +148,22 @@ public class KeystoneMod
             if (!ranVersionCheck)
             {
                 ranVersionCheck = true;
-
-                IModInfo modInfo = ModList.get().getModContainerByObject(this).get().getModInfo();
-                VersionChecker.CheckResult result = VersionChecker.getResult(modInfo);
-
-                if (result.status == VersionChecker.Status.OUTDATED)
-                {
-                    IFormattableTextComponent[] lines = new IFormattableTextComponent[]
-                            {
-                                    new TranslationTextComponent("keystone.version_check.outdated").withStyle(TextFormatting.GOLD),
-                                    new TranslationTextComponent("keystone.version_check.currentVersion",
-                                            new StringTextComponent(modInfo.getVersion().toString()).withStyle(TextFormatting.AQUA),
-                                            new StringTextComponent(result.target.toString()).withStyle(TextFormatting.AQUA)).withStyle(TextFormatting.GOLD),
-                                    new TranslationTextComponent("keystone.version_check.releasesLink").withStyle(TextFormatting.GOLD)
-                            };
-
-                    IFormattableTextComponent hyperlink = new TranslationTextComponent("keystone.version_check.releasesLink.hyperlink").withStyle
-                    (
-                        Style.EMPTY
-                            .withColor(TextFormatting.AQUA)
-                            .withUnderlined(true)
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, result.url))
-                    );
-                    lines[2] = lines[2].append(new StringTextComponent(" ")).append(hyperlink);
-
-                    for (IFormattableTextComponent line : lines) event.getEntity().sendMessage(line, Util.NIL_UUID);
-                    Keystone.disableKeystone();
-                }
+                VersionChecker.doVersionCheck();
             }
 
-            MinecraftForge.EVENT_BUS.post(new KeystoneEvent.JoinWorldEvent());
+            KeystoneKeyBindings.configureKeyConditions();
+            KeystoneLifecycleEvents.JOIN.invoker().join(world);
         }
     }
-    private void onWorldLeft(final GuiOpenEvent event)
+    private void onWorldLeft(MinecraftClient client, Screen screen, int scaledWidth, int scaledHeight)
     {
-        if (event.getGui() instanceof MainMenuScreen && inWorld)
+        if (screen instanceof TitleScreen && inWorld)
         {
             inWorld = false;
             Keystone.disableKeystone();
             Keystone.forEachModule(module -> module.resetModule());
 
-            MinecraftForge.EVENT_BUS.post(new KeystoneEvent.LeaveWorldEvent());
-        }
-    }
-    private void onLivingUpdate(final LivingEvent.LivingUpdateEvent event)
-    {
-        if (Keystone.isActive() && !event.getEntity().getType().equals(EntityType.PLAYER))
-        {
-            LivingEntity living = event.getEntityLiving();
-            living.yBodyRotO = living.yBodyRot;
-            living.yHeadRotO = living.yHeadRot;
-            living.xRotO = living.xRot;
-            living.yRotO = living.yRot;
-            event.setCanceled(true);
+            KeystoneLifecycleEvents.LEAVE.invoker().leave();
         }
     }
 }

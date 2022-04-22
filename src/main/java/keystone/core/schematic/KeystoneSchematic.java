@@ -5,28 +5,26 @@ import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
-import keystone.core.events.SchematicEvent;
+import keystone.core.client.Player;
 import keystone.core.math.BlockPosMath;
-import keystone.core.modules.selection.boxes.SelectionBoundingBox;
+import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
-import keystone.core.renderer.client.Player;
 import keystone.core.schematic.extensions.ISchematicExtension;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Rotation;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -37,10 +35,10 @@ import java.util.function.Consumer;
  */
 public class KeystoneSchematic
 {
-    private Vector3i size;
+    private Vec3i size;
     private Block[] blocks;
     private Entity[] entities;
-    private Map<ResourceLocation, ISchematicExtension> extensions;
+    private Map<Identifier, ISchematicExtension> extensions;
 
     /**
      * @param size The size of the schematic
@@ -48,7 +46,7 @@ public class KeystoneSchematic
      * @param entities The {@link Entity} contents of the schematic
      * @param extensions The {@link ISchematicExtension Extensions} stored in this schematic
      */
-    public KeystoneSchematic(Vector3i size, Block[] blocks, Entity[] entities, Map<ResourceLocation, ISchematicExtension> extensions)
+    public KeystoneSchematic(Vec3i size, Block[] blocks, Entity[] entities, Map<Identifier, ISchematicExtension> extensions)
     {
         this.size = size;
         this.blocks = blocks;
@@ -59,16 +57,16 @@ public class KeystoneSchematic
 
     /**
      * Create a schematic from a selection box
-     * @param box The {@link keystone.core.modules.selection.boxes.SelectionBoundingBox} to create the schematic from
+     * @param box The {@link SelectionBoundingBox} to create the schematic from
      * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
      * @return The generated {@link keystone.core.schematic.KeystoneSchematic}
      */
     public static KeystoneSchematic createFromSelection(SelectionBoundingBox box, WorldModifierModules worldModifiers)
     {
         // Get size
-        Vector3i size = new Vector3i(box.getMaxCoords().getX() - box.getMinCoords().getX() + 1,
-                box.getMaxCoords().getY() - box.getMinCoords().getY() + 1,
-                box.getMaxCoords().getZ() - box.getMinCoords().getZ() + 1);
+        Vec3i size = new Vec3i(box.getMax().getX() - box.getMin().getX() + 1,
+                box.getMax().getY() - box.getMin().getY() + 1,
+                box.getMax().getZ() - box.getMin().getZ() + 1);
 
         // Get blocks
         Block[] blocks = new Block[size.getX() * size.getY() * size.getZ()];
@@ -79,8 +77,8 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    blocks[i] = worldModifiers.blocks.getBlock(x + box.getMinCoords().getX(), y + box.getMinCoords().getY(), z + box.getMinCoords().getZ(), RetrievalMode.ORIGINAL);
-                    if (blocks[i].blockType().getMinecraftBlock().is(Blocks.STRUCTURE_VOID)) blocks[i] = null;
+                    blocks[i] = worldModifiers.blocks.getBlock(x + box.getMin().getX(), y + box.getMin().getY(), z + box.getMin().getZ(), RetrievalMode.ORIGINAL);
+                    if (blocks[i].blockType().getMinecraftBlock().isOf(Blocks.STRUCTURE_VOID)) blocks[i] = null;
                     i++;
                 }
             }
@@ -92,12 +90,12 @@ public class KeystoneSchematic
         entities = entityList.toArray(entities);
         for (Entity entity : entities)
         {
-            entity.move(-box.getMinCoords().getX(), -box.getMinCoords().getY(), -box.getMinCoords().getZ());
+            entity.move(-box.getMin().getX(), -box.getMin().getY(), -box.getMin().getZ());
             entity.breakMinecraftEntityConnection();
         }
 
         // Create schematic from data
-        World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimensionId());
+        World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
         return new KeystoneSchematic(size, blocks, entities, KeystoneSchematicFormat.createExtensions(world, box.getBoundingBox()));
     }
 
@@ -107,7 +105,7 @@ public class KeystoneSchematic
      */
     public KeystoneSchematic clone()
     {
-        return new KeystoneSchematic(new Vector3i(size.getX(), size.getY(), size.getZ()), Arrays.copyOf(blocks, blocks.length), Arrays.copyOf(entities, entities.length), Collections.unmodifiableMap(new HashMap<>(extensions)));
+        return new KeystoneSchematic(new Vec3i(size.getX(), size.getY(), size.getZ()), Arrays.copyOf(blocks, blocks.length), Arrays.copyOf(entities, entities.length), Collections.unmodifiableMap(new HashMap<>(extensions)));
     }
 
     /**
@@ -130,7 +128,7 @@ public class KeystoneSchematic
     /**
      * @return The size of the schematic
      */
-    public Vector3i getSize()
+    public Vec3i getSize()
     {
         return size;
     }
@@ -141,7 +139,7 @@ public class KeystoneSchematic
     /**
      * @return A Set containing the Resource Locations of all extensions that are added to this schematic
      */
-    public Set<ResourceLocation> getExtensionIDs() { return extensions.keySet(); }
+    public Set<Identifier> getExtensionIDs() { return extensions.keySet(); }
     /**
      * Get the {@link Block} at a relative block position in the schematic
      * @param relativePos The relative block position
@@ -151,14 +149,14 @@ public class KeystoneSchematic
     public Block getBlock(BlockPos relativePos)
     {
         int index = getIndex(relativePos);
-        if (index < 0) return new Block(Blocks.AIR.defaultBlockState());
+        if (index < 0) return new Block(Blocks.AIR.getDefaultState());
         else return blocks[getIndex(relativePos)];
     }
     /**
      * @param id The Resource Location of the extension
      * @return The {@link ISchematicExtension Extension} to this schematic with a given ID
      */
-    public ISchematicExtension getExtension(ResourceLocation id)
+    public ISchematicExtension getExtension(Identifier id)
     {
         return extensions.get(id);
     }
@@ -209,7 +207,7 @@ public class KeystoneSchematic
         {
             Entity scaled = entityTemplate.clone();
             scaled.position(scaled.x() * scale, scaled.y() * scale, scaled.z() * scale);
-            scaled.spawnInWorld(ghostWorld);
+            scaled.spawn(ghostWorld);
         }
 
         int i = 0;
@@ -225,8 +223,6 @@ public class KeystoneSchematic
                         continue;
                     }
                     Block block = blocks[i];
-                    SchematicEvent.ScaleBlock scaleEvent = new SchematicEvent.ScaleBlock(block.blockType(), scale);
-                    MinecraftForge.EVENT_BUS.post(scaleEvent);
 
                     for (int sx = 0; sx < scale; sx++)
                     {
@@ -235,20 +231,19 @@ public class KeystoneSchematic
                             for (int sz = 0; sz < scale; sz++)
                             {
                                 BlockPos localPos = new BlockPos(x * scale + sx, y * scale + sy, z * scale + sz);
-                                BlockType blockType = scaleEvent.getBlockType(sx, sy, sz);
+                                BlockType blockType = block.blockType();
 
                                 BlockState state = blockType.getMinecraftBlock();
-                                ghostWorld.setBlockAndUpdate(localPos, state);
+                                ghostWorld.setBlockState(localPos, state);
                                 if (block.tileEntity() != null)
                                 {
-                                    CompoundNBT tileEntityData = block.tileEntity().getMinecraftNBT().copy();
+                                    NbtCompound tileEntityData = block.tileEntity().getMinecraftNBT().copy();
                                     tileEntityData.putInt("x", x);
                                     tileEntityData.putInt("y", y);
                                     tileEntityData.putInt("z", z);
 
-                                    TileEntity tileEntity = ghostWorld.getBlockEntity(localPos);
-                                    if (tileEntity != null)
-                                        tileEntity.deserializeNBT(blockType.getMinecraftBlock(), tileEntityData);
+                                    BlockEntity tileEntity = ghostWorld.getBlockEntity(localPos);
+                                    if (tileEntity != null) tileEntity.readNbt(tileEntityData);
                                 }
                             }
                         }
@@ -271,25 +266,25 @@ public class KeystoneSchematic
      */
     public void place(WorldModifierModules worldModifiers, BlockPos anchor)
     {
-        place(worldModifiers, anchor, Rotation.NONE, Mirror.NONE, 1, new HashMap<>(), true);
+        place(worldModifiers, anchor, BlockRotation.NONE, BlockMirror.NONE, 1, new HashMap<>(), true);
     }
     /**
      * Place the schematic at a given {@link BlockPos}
      * @param worldModifiers The {@link WorldModifierModules} to place the schematic with
      * @param anchor The minimum {@link BlockPos} to place the schematic at
-     * @param rotation The {@link Rotation} of the schematic
-     * @param mirror The {@link Mirror} of the schematic
+     * @param rotation The {@link BlockRotation Rotation} of the schematic
+     * @param mirror The {@link BlockMirror Mirror} of the schematic
      * @param scale The scale of the schematic
      * @param extensionsToPlace A Map containing which extensions should be placed in the world and which should be ignored
      * @param placeAir If false, air will not be placed
      */
-    public void place(WorldModifierModules worldModifiers, BlockPos anchor, Rotation rotation, Mirror mirror, int scale, Map<ResourceLocation, Boolean> extensionsToPlace, boolean placeAir)
+    public void place(WorldModifierModules worldModifiers, BlockPos anchor, BlockRotation rotation, BlockMirror mirror, int scale, Map<Identifier, Boolean> extensionsToPlace, boolean placeAir)
     {
         int clampedScale = Math.max(scale, 1);
 
         for (Entity entityTemplate : entities)
         {
-            Entity oriented = entityTemplate.getOrientedEntity(Vector3d.atLowerCornerOf(anchor), rotation, mirror, size, clampedScale);
+            Entity oriented = entityTemplate.getOrientedEntity(Vec3d.of(anchor), rotation, mirror, size, clampedScale);
             worldModifiers.entities.setEntity(oriented);
         }
 
@@ -307,9 +302,6 @@ public class KeystoneSchematic
                         continue;
                     }
 
-                    SchematicEvent.ScaleBlock scaleEvent = new SchematicEvent.ScaleBlock(block.blockType(), clampedScale);
-                    MinecraftForge.EVENT_BUS.post(scaleEvent);
-
                     for (int sx = 0; sx < clampedScale; sx++)
                     {
                         for (int sy = 0; sy < clampedScale; sy++)
@@ -317,11 +309,11 @@ public class KeystoneSchematic
                             for (int sz = 0; sz < clampedScale; sz++)
                             {
                                 BlockPos localPos = new BlockPos(x * clampedScale + sx, y * clampedScale + sy, z * clampedScale + sz);
-                                BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, clampedScale).offset(anchor);
-                                BlockType blockType = scaleEvent.getBlockType(sx, sy, sz);
-
-                                blockType = BlockTypeRegistry.fromMinecraftBlock(blockType.getMinecraftBlock().rotate(worldModifiers.blocks.getWorld(), worldPos, rotation).mirror(mirror));
-                                worldModifiers.blocks.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), blockType);
+                                BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, clampedScale).add(anchor);
+                                BlockType blockType = block.blockType();
+                                blockType = BlockTypeRegistry.fromMinecraftBlock(blockType.getMinecraftBlock().rotate(rotation).mirror(mirror));
+                                Block oriented = new Block(blockType, block.tileEntity());
+                                worldModifiers.blocks.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), oriented);
                             }
                         }
                     }

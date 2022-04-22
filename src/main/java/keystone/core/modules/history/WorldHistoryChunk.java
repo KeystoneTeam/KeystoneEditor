@@ -10,16 +10,15 @@ import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
-import keystone.core.renderer.common.models.DimensionId;
 import keystone.core.utils.NBTSerializer;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.IServerWorld;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.ServerWorldAccess;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +30,7 @@ public class WorldHistoryChunk
     public final int chunkX;
     public final int chunkY;
     public final int chunkZ;
-    private final IServerWorld world;
+    private final ServerWorldAccess world;
 
     private final BlockType[] oldBlockTypes;
     private final BlockType[] blockTypeBuffer1;
@@ -53,7 +52,7 @@ public class WorldHistoryChunk
     private boolean swappedBiomes;
     private boolean swappedEntities;
 
-    public WorldHistoryChunk(Vector3i chunkPosition, IServerWorld world)
+    public WorldHistoryChunk(Vec3i chunkPosition, ServerWorldAccess world)
     {
         this.chunkX = chunkPosition.getX();
         this.chunkY = chunkPosition.getY();
@@ -87,10 +86,10 @@ public class WorldHistoryChunk
                     biomeBuffer2[i] = oldBiomes[i];
                     i++;
 
-                    TileEntity tileEntity = world.getBlockEntity(pos);
+                    BlockEntity tileEntity = world.getBlockEntity(pos);
                     if (tileEntity != null)
                     {
-                        CompoundNBT nbt = tileEntity.serializeNBT();
+                        NbtCompound nbt = tileEntity.createNbtWithIdentifyingData();
                         oldTileEntities.put(pos, new NBTCompound(nbt.copy()));
                         tileEntityBuffer1.put(pos, new NBTCompound(nbt.copy()));
                         tileEntityBuffer2.put(pos, new NBTCompound(nbt.copy()));
@@ -107,8 +106,8 @@ public class WorldHistoryChunk
         int startX = chunkX << 4;
         int startY = chunkY << 4;
         int startZ = chunkZ << 4;
-        AxisAlignedBB bb = new AxisAlignedBB(startX, startY, startZ, startX + 16, startY + 16, startZ + 16);
-        List<net.minecraft.entity.Entity> mcEntities = world.getEntitiesOfClass(net.minecraft.entity.Entity.class, bb);
+        Box bb = new Box(startX, startY, startZ, startX + 16, startY + 16, startZ + 16);
+        List<net.minecraft.entity.Entity> mcEntities = world.getNonSpectatingEntities(net.minecraft.entity.Entity.class, bb);
         for (net.minecraft.entity.Entity mcEntity : mcEntities)
         {
             Entity entity = new Entity(mcEntity);
@@ -118,21 +117,21 @@ public class WorldHistoryChunk
             allEntities.put(entity.keystoneUUID(), entity);
         }
     }
-    public WorldHistoryChunk(CompoundNBT nbt)
+    public WorldHistoryChunk(NbtCompound nbt)
     {
         WorldCacheModule worldCache = Keystone.getModule(WorldCacheModule.class);
         int[] chunkPos = nbt.getIntArray("ChunkPos");
         chunkX = chunkPos[0];
         chunkY = chunkPos[1];
         chunkZ = chunkPos[2];
-        world = worldCache.getDimensionServerWorld(DimensionId.from(new ResourceLocation(nbt.getString("World"))));
+        world = worldCache.getDimensionWorld(WorldCacheModule.getDimensionKey(new Identifier(nbt.getString("World"))));
 
-        oldBlockTypes = NBTSerializer.deserializeBlockTypes(nbt.getList("OldBlocks", Constants.NBT.TAG_SHORT));
-        blockTypeBuffer1 = NBTSerializer.deserializeBlockTypes(nbt.getList("BlockBuffer1", Constants.NBT.TAG_SHORT));
-        blockTypeBuffer2 = NBTSerializer.deserializeBlockTypes(nbt.getList("BlockBuffer2", Constants.NBT.TAG_SHORT));
-        oldTileEntities = NBTSerializer.deserializeTileEntities(nbt.getList("OldTileEntities", Constants.NBT.TAG_COMPOUND));
-        tileEntityBuffer1 = NBTSerializer.deserializeTileEntities(nbt.getList("TileEntityBuffer1", Constants.NBT.TAG_COMPOUND));
-        tileEntityBuffer2 = NBTSerializer.deserializeTileEntities(nbt.getList("TileEntityBuffer2", Constants.NBT.TAG_COMPOUND));
+        oldBlockTypes = NBTSerializer.deserializeBlockTypes(nbt.getList("OldBlocks", NbtElement.SHORT_TYPE));
+        blockTypeBuffer1 = NBTSerializer.deserializeBlockTypes(nbt.getList("BlockBuffer1", NbtElement.SHORT_TYPE));
+        blockTypeBuffer2 = NBTSerializer.deserializeBlockTypes(nbt.getList("BlockBuffer2", NbtElement.SHORT_TYPE));
+        oldTileEntities = NBTSerializer.deserializeTileEntities(nbt.getList("OldTileEntities", NbtElement.COMPOUND_TYPE));
+        tileEntityBuffer1 = NBTSerializer.deserializeTileEntities(nbt.getList("BlockEntityBuffer1", NbtElement.COMPOUND_TYPE));
+        tileEntityBuffer2 = NBTSerializer.deserializeTileEntities(nbt.getList("BlockEntityBuffer2", NbtElement.COMPOUND_TYPE));
         swappedBlocks = nbt.getBoolean("SwappedBlocks");
 
         oldBiomes = NBTSerializer.deserializeBiomes(nbt.getCompound("OldBiomes"));
@@ -147,19 +146,19 @@ public class WorldHistoryChunk
         swappedEntities = nbt.getBoolean("SwappedEntities");
     }
 
-    public CompoundNBT serialize()
+    public NbtCompound serialize()
     {
-        CompoundNBT nbt = new CompoundNBT();
+        NbtCompound nbt = new NbtCompound();
 
         nbt.putIntArray("ChunkPos", new int[] { chunkX, chunkY, chunkZ });
-        nbt.putString("World", world.getLevel().dimension().location().toString());
+        nbt.putString("World", world.toServerWorld().getRegistryKey().getValue().toString());
 
         nbt.put("OldBlocks", NBTSerializer.serializeBlockTypes(oldBlockTypes));
         nbt.put("BlockBuffer1", NBTSerializer.serializeBlockTypes(blockTypeBuffer1));
         nbt.put("BlockBuffer2", NBTSerializer.serializeBlockTypes(blockTypeBuffer2));
         nbt.put("OldTileEntities", NBTSerializer.serializeTileEntities(oldTileEntities));
-        nbt.put("TileEntityBuffer1", NBTSerializer.serializeTileEntities(tileEntityBuffer1));
-        nbt.put("TileEntityBuffer2", NBTSerializer.serializeTileEntities(tileEntityBuffer2));
+        nbt.put("BlockEntityBuffer1", NBTSerializer.serializeTileEntities(tileEntityBuffer1));
+        nbt.put("BlockEntityBuffer2", NBTSerializer.serializeTileEntities(tileEntityBuffer2));
         nbt.putBoolean("SwappedBlocks", swappedBlocks);
 
         nbt.put("OldBiomes", NBTSerializer.serializeBiomes(oldBiomes));
@@ -187,7 +186,7 @@ public class WorldHistoryChunk
         }
         return null;
     }
-    public NBTCompound getTileEntity(int x, int y, int z, RetrievalMode retrievalMode)
+    public NBTCompound getBlockEntity(int x, int y, int z, RetrievalMode retrievalMode)
     {
         BlockPos pos = new BlockPos(x, y, z);
         NBTCompound tileEntity = null;
@@ -348,17 +347,17 @@ public class WorldHistoryChunk
                     BlockPos pos = new BlockPos(x, y, z);
                     BlockType blockType = oldBlockTypes[i];
 
-                    world.getLevel().setBlockAndUpdate(pos, blockType.getMinecraftBlock());
+                    world.toServerWorld().setBlockState(pos, blockType.getMinecraftBlock());
                     NBTCompound blockData = oldTileEntities.getOrDefault(pos, null);
                     if (blockData != null)
                     {
-                        CompoundNBT tileEntityData = blockData.getMinecraftNBT().copy();
+                        NbtCompound tileEntityData = blockData.getMinecraftNBT().copy();
                         tileEntityData.putInt("x", x);
                         tileEntityData.putInt("y", y);
                         tileEntityData.putInt("z", z);
 
-                        TileEntity tileEntity = world.getBlockEntity(pos);
-                        if (tileEntity != null) tileEntity.deserializeNBT(blockType.getMinecraftBlock(), tileEntityData);
+                        BlockEntity tileEntity = world.getBlockEntity(pos);
+                        if (tileEntity != null) tileEntity.readNbt(tileEntityData);
                     }
                     i++;
                 }
@@ -370,10 +369,10 @@ public class WorldHistoryChunk
             if (!oldEntities.containsKey(entityID))
             {
                 Entity entity = allEntities.get(entityID);
-                net.minecraft.entity.Entity mcEntity = world.getLevel().getEntity(entity.minecraftUUID());
+                net.minecraft.entity.Entity mcEntity = world.toServerWorld().getEntity(entity.minecraftUUID());
                 if (mcEntity != null)
                 {
-                    mcEntity.remove();
+                    mcEntity.discard();
                     entity.breakMinecraftEntityConnection();
                 }
             }
@@ -393,18 +392,18 @@ public class WorldHistoryChunk
                     if (blockType != null && blockType.getMinecraftBlock() != null)
                     {
                         BlockPos pos = new BlockPos(x, y, z);
-                        world.getLevel().setBlockAndUpdate(pos, blockType.getMinecraftBlock());
+                        world.toServerWorld().setBlockState(pos, blockType.getMinecraftBlock());
 
                         NBTCompound blockData = (swappedBlocks ? tileEntityBuffer2 : tileEntityBuffer1).getOrDefault(pos, null);
                         if (blockData != null)
                         {
-                            CompoundNBT tileEntityData = blockData.getMinecraftNBT().copy();
+                            NbtCompound tileEntityData = blockData.getMinecraftNBT().copy();
                             tileEntityData.putInt("x", x);
                             tileEntityData.putInt("y", y);
                             tileEntityData.putInt("z", z);
 
-                            TileEntity tileEntity = world.getBlockEntity(pos);
-                            if (tileEntity != null) tileEntity.deserializeNBT(blockType.getMinecraftBlock(), tileEntityData);
+                            BlockEntity tileEntity = world.getBlockEntity(pos);
+                            if (tileEntity != null) tileEntity.readNbt(tileEntityData);
                         }
                     }
                     i++;
@@ -418,10 +417,10 @@ public class WorldHistoryChunk
             if (!activeEntityBuffer.containsKey(entityID))
             {
                 Entity entity = allEntities.get(entityID);
-                net.minecraft.entity.Entity mcEntity = world.getLevel().getEntity(entity.minecraftUUID());
+                net.minecraft.entity.Entity mcEntity = world.toServerWorld().getEntity(entity.minecraftUUID());
                 if (mcEntity != null)
                 {
-                    mcEntity.remove();
+                    mcEntity.discard();
                     entity.breakMinecraftEntityConnection();
                 }
             }

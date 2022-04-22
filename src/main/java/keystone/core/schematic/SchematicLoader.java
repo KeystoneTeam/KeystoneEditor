@@ -4,7 +4,7 @@ import keystone.api.Keystone;
 import keystone.core.schematic.formats.ISchematicFormat;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
 import keystone.core.utils.NBTSerializer;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.NbtCompound;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
@@ -35,7 +35,7 @@ public class SchematicLoader
 
     public static Set<String> getExtensions() { return extensions; }
 
-    public static CompoundNBT serializeSchematic(KeystoneSchematic schematic) { return KeystoneSchematicFormat.saveSchematic(schematic); }
+    public static NbtCompound serializeSchematic(KeystoneSchematic schematic) { return KeystoneSchematicFormat.saveSchematic(schematic); }
     public static void saveSchematic(KeystoneSchematic schematic, String path) { NBTSerializer.serialize(path, serializeSchematic(schematic)); }
     public static void saveSchematic(KeystoneSchematic schematic, File file) { NBTSerializer.serialize(file, serializeSchematic(schematic)); }
 
@@ -67,7 +67,7 @@ public class SchematicLoader
         }
         return null;
     }
-    public static KeystoneSchematic deserializeSchematic(CompoundNBT schematicNBT)
+    public static KeystoneSchematic deserializeSchematic(NbtCompound schematicNBT)
     {
         return defaultFormat.deserialize(schematicNBT);
     }

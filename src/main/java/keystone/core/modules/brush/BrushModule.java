@@ -2,24 +2,24 @@ package keystone.core.modules.brush;
 
 import keystone.api.Keystone;
 import keystone.core.KeystoneGlobalState;
-import keystone.core.events.KeystoneInputEvent;
+import keystone.core.client.Player;
+import keystone.core.events.keystone.KeystoneInputEvents;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.modules.IKeystoneModule;
-import keystone.core.modules.brush.boxes.BrushPositionBox;
-import keystone.core.modules.brush.providers.BrushPositionBoxProvider;
-import keystone.core.modules.brush.providers.BrushPreviewBoxProvider;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.world.WorldModifierModules;
-import keystone.core.renderer.client.Player;
-import keystone.core.renderer.client.providers.IBoundingBoxProvider;
-import keystone.core.renderer.common.models.Coords;
+import keystone.core.renderer.Color4f;
+import keystone.core.renderer.RenderBox;
+import keystone.core.renderer.RendererFactory;
+import keystone.core.renderer.overlay.ComplexOverlayRenderer;
 import keystone.core.utils.ProgressBar;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -33,42 +33,50 @@ public class BrushModule implements IKeystoneModule
     private HistoryModule historyModule;
     private WorldModifierModules worldModifiers;
 
-    private final IBoundingBoxProvider[] providers;
+    private ComplexOverlayRenderer outsideRenderer;
+    private ComplexOverlayRenderer insideRenderer;
+
     private BrushOperation brushOperation;
     private BrushShape brushShape;
     private int[] brushSize;
     private int minSpacing;
     private float minSpacingSqr;
     private int noise;
-    private final List<Coords> brushPositions = Collections.synchronizedList(new ArrayList<>());
-    private final List<BrushPositionBox> brushPositionBoxes = Collections.synchronizedList(new ArrayList<>());
+    private final List<Vec3i> brushPositions = Collections.synchronizedList(new ArrayList<>());
 
     private boolean immediateMode;
-    private Coords immediateModePosition;
-    private Coords lastImmediateModePosition;
+    private Vec3i immediateModePosition;
+    private Vec3i lastImmediateModePosition;
     private int immediateModeCooldown;
     private ShapeMask immediateModeShapeMask;
-    private final List<Coords> lastImmediateModeChanges = new ArrayList<>();
+    private final List<Vec3i> lastImmediateModeChanges = new ArrayList<>();
 
     private boolean dragging = false;
     private boolean executionCancelled = false;
-    private Coords lastCheckedPosition;
+    private Vec3i lastCheckedPosition;
 
     public BrushModule()
     {
-        providers = new IBoundingBoxProvider[]
-        {
-                new BrushPositionBoxProvider(),
-                new BrushPreviewBoxProvider()
-        };
-
-        MinecraftForge.EVENT_BUS.register(this);
         setMinSpacing(1);
         setNoise(100);
         setBrushShape(BrushShape.ROUND);
         setBrushOperation(BrushOperation.FILL);
         setBrushSize(9, 9, 9);
         setImmediateMode(false);
+
+        KeystoneInputEvents.MOUSE_CLICKED.register(this::onMouseClick);
+        KeystoneInputEvents.START_MOUSE_DRAG.register(this::onMouseDragStart);
+        ClientTickEvents.START_CLIENT_TICK.register(this::onTick);
+        KeystoneInputEvents.END_MOUSE_DRAG.register(this::onMouseDragEnd);
+
+        this.outsideRenderer = RendererFactory.createComplexOverlay(
+                RendererFactory.createWorldspaceOverlay().buildFill(),
+                RendererFactory.createWorldspaceOverlay().ignoreDepth().buildWireframe()
+        );
+        this.insideRenderer = RendererFactory.createComplexOverlay(
+                RendererFactory.createWorldspaceOverlay().ignoreCull().buildFill(),
+                RendererFactory.createWorldspaceOverlay().ignoreDepth().buildWireframe()
+        );
     }
 
     @Override
@@ -81,7 +89,6 @@ public class BrushModule implements IKeystoneModule
     public void resetModule()
     {
         brushPositions.clear();
-        brushPositionBoxes.clear();
         lastImmediateModeChanges.clear();
 
         setMinSpacing(1);
@@ -95,51 +102,11 @@ public class BrushModule implements IKeystoneModule
     public boolean isEnabled() { return KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.BRUSH; }
 
     @Override
-    public IBoundingBoxProvider[] getBoundingBoxProviders()
-    {
-        return providers;
-    }
-
-    public BrushOperation getBrushOperation() { return brushOperation; }
-    public boolean isImmediateMode() { return immediateMode; }
-    public BrushShape getBrushShape() { return brushShape; }
-    public int[] getBrushSize() { return brushSize; }
-    public int getMinSpacing() { return minSpacing; }
-    public int getNoise() { return noise; }
-    public List<BrushPositionBox> getBrushPositionBoxes() { return brushPositionBoxes; }
-
-    //region Event Handlers
-    @SubscribeEvent
-    public final void onMouseClick(final KeystoneInputEvent.MouseClickEvent event)
-    {
-        if (!Keystone.isActive() || !isEnabled() || event.gui) return;
-
-        if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
-        {
-            prepareBrush();
-            addBrushPosition(Player.getHighlightedBlock(), true);
-            executeBrush(true, true);
-        }
-    }
-    @SubscribeEvent
-    public final void onMouseDragStart(final KeystoneInputEvent.MouseDragStartEvent event)
-    {
-        if (!Keystone.isActive() || !isEnabled() || event.gui) return;
-
-        if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
-        {
-            prepareBrush();
-            addBrushPosition(Player.getHighlightedBlock(), true);
-            dragging = true;
-            executeBrush(true, false);
-        }
-    }
-    @SubscribeEvent
-    public final void onRender(final RenderWorldLastEvent event)
+    public void preRender(WorldRenderContext context)
     {
         if (dragging)
         {
-            Coords pos = Player.getHighlightedBlock();
+            Vec3i pos = Player.getHighlightedBlock();
 
             if (immediateMode)
             {
@@ -159,17 +126,88 @@ public class BrushModule implements IKeystoneModule
             }
         }
     }
-    @SubscribeEvent
-    public final void onTick(final TickEvent.ClientTickEvent event)
-    {
-        if (event.phase == TickEvent.Phase.START) if (immediateModeCooldown > 0) immediateModeCooldown--;
-    }
-    @SubscribeEvent
-    public final void onMouseDragEnd(final KeystoneInputEvent.MouseDragEndEvent event)
-    {
-        if (!Keystone.isActive() || !isEnabled() || event.gui) return;
 
-        if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+    @Override
+    public void renderWhenEnabled(WorldRenderContext context)
+    {
+        // Render Brush Positions
+        this.outsideRenderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME);
+        for (int i = 0; i < brushPositions.size(); i++)
+        {
+            RenderBox box = new RenderBox(brushPositions.get(i)).nudge();
+            this.outsideRenderer.drawCuboid(box, Color4f.yellow);
+        }
+
+        // Render Brush Preview
+        Vec3d center = Vec3d.of(Player.getHighlightedBlock());
+        center = center.add(brushSize[0] % 2 == 1 ? 0.5: 0, brushSize[1] % 2 == 1 ? 0.5: 0, brushSize[2] % 2 == 1 ? 0.5: 0);
+        Vec3i centerBlock = new Vec3i(center.x, center.y, center.z);
+
+        double xRadius = brushSize[0] * 0.5;
+        double yRadius = brushSize[1] * 0.5;
+        double zRadius = brushSize[2] * 0.5;
+
+        boolean outside = !brushShape.isPositionInShape(Player.getEyePosition(), centerBlock, brushSize[0], brushSize[1], brushSize[2]);
+        ComplexOverlayRenderer renderer = outside ? outsideRenderer : insideRenderer;
+        float fillAlpha = 0.25f;
+        if (brushShape == BrushShape.ROUND)
+        {
+            //renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawSphere(center, xRadius, yRadius, zRadius, Color4f.blue.withAlpha(fillAlpha));
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawSphere(center, xRadius, yRadius, zRadius, Color4f.blue);
+        }
+        else if (brushShape == BrushShape.DIAMOND)
+        {
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawDiamond(center, xRadius, yRadius, zRadius, Color4f.blue.withAlpha(fillAlpha));
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawDiamond(center, xRadius, yRadius, zRadius, Color4f.blue);
+        }
+        else if (brushShape == BrushShape.SQUARE)
+        {
+            RenderBox box = new RenderBox(center.add(-xRadius, -yRadius, -zRadius), center.add(xRadius, yRadius, zRadius));
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, Color4f.blue.withAlpha(fillAlpha));
+            renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawCuboid(box, Color4f.blue);
+        }
+    }
+
+    public BrushOperation getBrushOperation() { return brushOperation; }
+    public boolean isImmediateMode() { return immediateMode; }
+    public BrushShape getBrushShape() { return brushShape; }
+    public int[] getBrushSize() { return brushSize; }
+    public int getMinSpacing() { return minSpacing; }
+    public int getNoise() { return noise; }
+
+    //region Event Handlers
+    private void onMouseClick(int button, int modifiers, double mouseX, double mouseY, boolean gui)
+    {
+        if (!Keystone.isActive() || !isEnabled() || gui) return;
+
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+        {
+            prepareBrush();
+            addBrushPosition(Player.getHighlightedBlock(), true);
+            executeBrush(true, true);
+        }
+    }
+    private void onMouseDragStart(int button, double mouseX, double mouseY, boolean gui)
+    {
+        if (!Keystone.isActive() || !isEnabled() || gui) return;
+
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+        {
+            prepareBrush();
+            addBrushPosition(Player.getHighlightedBlock(), true);
+            dragging = true;
+            executeBrush(true, false);
+        }
+    }
+    private void onTick(MinecraftClient client)
+    {
+        if (immediateModeCooldown > 0) immediateModeCooldown--;
+    }
+    private void onMouseDragEnd(int button, double mouseX, double mouseY, boolean gui)
+    {
+        if (!Keystone.isActive() || !isEnabled() || gui) return;
+
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
             if (!immediateMode || addBrushPosition(Player.getHighlightedBlock())) executeBrush(false, true);
             dragging = false;
@@ -209,14 +247,13 @@ public class BrushModule implements IKeystoneModule
     public void prepareBrush()
     {
         brushPositions.clear();
-        brushPositionBoxes.clear();
         immediateModePosition = null;
         lastImmediateModePosition = null;
         immediateModeShapeMask = immediateMode ? this.brushShape.getShapeMask(brushSize[0], brushSize[1], brushSize[2]) : null;
     }
 
-    public boolean addBrushPosition(Coords position) { return addBrushPosition(position, false); }
-    public boolean addBrushPosition(Coords position, boolean force)
+    public boolean addBrushPosition(Vec3i position) { return addBrushPosition(position, false); }
+    public boolean addBrushPosition(Vec3i position, boolean force)
     {
         if (position == null) return false;
 
@@ -226,7 +263,6 @@ public class BrushModule implements IKeystoneModule
             else
             {
                 brushPositions.add(position);
-                brushPositionBoxes.add(new BrushPositionBox(position));
             }
 
             return true;
@@ -276,8 +312,8 @@ public class BrushModule implements IKeystoneModule
         int iterations = brushOperation.iterations();
         for (int iteration = 0; iteration < iterations; iteration++)
         {
-            Coords min = immediateModePosition.sub(brushSize[0] >> 1, brushSize[1] >> 1, brushSize[2] >> 1);
-            Coords max = min.add(brushSize[0] - 1, brushSize[1] - 1, brushSize[2] - 1);
+            Vec3i min = immediateModePosition.subtract(new Vec3i(brushSize[0] >> 1, brushSize[1] >> 1, brushSize[2] >> 1));
+            Vec3i max = min.add(brushSize[0] - 1, brushSize[1] - 1, brushSize[2] - 1);
             executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, immediateModeShapeMask, iteration, false);
             if (iteration < iterations - 1) worldModifiers.blocks.swapBuffers(true);
         }
@@ -299,13 +335,13 @@ public class BrushModule implements IKeystoneModule
         mainLoop:
         for (int iteration = 0; iteration < iterations; iteration++)
         {
-            Coords[] positions = new Coords[brushPositions.size()];
+            Vec3i[] positions = new Vec3i[brushPositions.size()];
             brushPositions.toArray(positions);
-            for (Coords position : positions)
+            for (Vec3i position : positions)
             {
                 if (executionCancelled) break mainLoop;
-                Coords min = position.sub(brushSize[0] >> 1, brushSize[1] >> 1, brushSize[2] >> 1);
-                Coords max = min.add(brushSize[0] - 1, brushSize[1] - 1, brushSize[2] - 1);
+                Vec3i min = position.subtract(new Vec3i(brushSize[0] >> 1, brushSize[1] >> 1, brushSize[2] >> 1));
+                Vec3i max = min.add(brushSize[0] - 1, brushSize[1] - 1, brushSize[2] - 1);
                 executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, shapeMask, iteration, progressBarGrouped);
             }
 
@@ -315,7 +351,6 @@ public class BrushModule implements IKeystoneModule
 
         ProgressBar.finish();
         brushPositions.clear();
-        brushPositionBoxes.clear();
         return !executionCancelled;
     }
     private void executeBrush(BlockPos min, BlockPos max, List<BlockPos> processedBlocks, ShapeMask shapeMask, int iteration, boolean progressBarGrouped)
@@ -343,23 +378,23 @@ public class BrushModule implements IKeystoneModule
     }
     //endregion
     //region Helpers
-    private float getPositionSpacingSqr(Coords position)
+    private double getPositionSpacingSqr(Vec3i position)
     {
         if (immediateMode)
         {
             if (lastImmediateModePosition != null)
             {
                 if (lastImmediateModePosition.equals(position)) return minSpacingSqr + 1;
-                else return position.distanceSqr(lastImmediateModePosition);
+                else return position.getSquaredDistance(lastImmediateModePosition);
             }
             else return minSpacingSqr;
         }
         else
         {
-            float dist = -1;
-            for (Coords test : brushPositions)
+            double dist = -1;
+            for (Vec3i test : brushPositions)
             {
-                float testDist = position.distanceSqr(test);
+                double testDist = position.getSquaredDistance(test);
                 if (dist < 0 || testDist < dist) dist = testDist;
             }
             if (dist < 0) dist = minSpacingSqr;

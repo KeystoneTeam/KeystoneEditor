@@ -1,19 +1,16 @@
 package keystone.core.gui.widgets.inputs;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.block_selection.BlockMaskEditScreen;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.utils.BlockUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.item.Item;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,17 +18,16 @@ import java.util.function.Consumer;
 
 public class BlockMaskWidget extends ButtonNoHotkey
 {
-    protected final Minecraft mc;
-    protected final FontRenderer font;
-    protected final Consumer<Widget[]> disableWidgets;
+    protected final MinecraftClient mc;
+    protected final TextRenderer font;
+    protected final Consumer<ClickableWidget[]> disableWidgets;
     protected final Runnable restoreWidgets;
 
     private BlockMask mask;
 
-    private final IForgeRegistry<Item> itemRegistry;
     private final List<ItemStack> stacks;
 
-    public BlockMaskWidget(ITextComponent name, int x, int y, int width, BlockMask value, Consumer<Widget[]> disableWidgets, Runnable restoreWidgets)
+    public BlockMaskWidget(Text name, int x, int y, int width, BlockMask value, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets)
     {
         super(x, y, width, getFinalHeight(), name, (button) ->
         {
@@ -53,11 +49,10 @@ public class BlockMaskWidget extends ButtonNoHotkey
         this.restoreWidgets = restoreWidgets;
         this.disableWidgets = disableWidgets;
 
-        this.mc = Minecraft.getInstance();
-        this.font = mc.font;
+        this.mc = MinecraftClient.getInstance();
+        this.font = mc.textRenderer;
         this.mask = value;
 
-        this.itemRegistry = GameRegistry.findRegistry(Item.class);
         this.stacks = new ArrayList<>();
         rebuildStacks();
     }
@@ -74,7 +69,7 @@ public class BlockMaskWidget extends ButtonNoHotkey
         this.stacks.clear();
         this.mask.forEach(block ->
         {
-            ItemStack stack = new ItemStack(BlockUtils.getBlockItem(block.getMinecraftBlock().getBlock(), itemRegistry));
+            ItemStack stack = new ItemStack(BlockUtils.getBlockItem(block.getMinecraftBlock().getBlock()));
             if (!stack.isEmpty()) this.stacks.add(stack);
         });
     }
@@ -88,7 +83,7 @@ public class BlockMaskWidget extends ButtonNoHotkey
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
         int y = this.y + getMaskOffset();
-        drawCenteredString(matrixStack, font, getMessage(), x + width / 2, y - getMaskOffset(), 0xFFFFFF);
+        drawCenteredText(matrixStack, font, getMessage(), x + width / 2, y - getMaskOffset(), 0xFFFFFF);
         fill(matrixStack, x, y, x + width, y + height - getMaskOffset(), 0x80FFFFFF);
 
         if (mask.isBlacklist()) fill(matrixStack, x + width - 4, y, x + width, y + 4, 0xFF000000);

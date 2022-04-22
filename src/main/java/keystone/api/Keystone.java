@@ -4,19 +4,21 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
+import keystone.core.client.Player;
+import keystone.core.events.minecraft.ClientPlayerEvents;
+import keystone.core.events.minecraft.ServerPlayerEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
+import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.registries.BlockTypeRegistry;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.world.GameType;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.LogicalSide;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.world.GameMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,6 +36,7 @@ public final class Keystone
     public static final Random RANDOM = new Random();
 
     private static FilterModule filterModule;
+    private static GhostBlocksModule ghostBlocksModule;
     private static Thread serverThread;
 
     //region Active Toggle
@@ -55,17 +58,17 @@ public final class Keystone
     public static void enableKeystone()
     {
         if (enabled) return;
-        Minecraft minecraft = Minecraft.getInstance();
+        MinecraftClient minecraft = MinecraftClient.getInstance();
 
         enabled = true;
         KeystoneGlobalState.AllowPlayerLook = false;
-        minecraft.mouseHandler.releaseMouse();
-        minecraft.player.abilities.setFlyingSpeed(KeystoneConfig.flySpeed);
+        minecraft.mouse.unlockCursor();
+        minecraft.player.getAbilities().setFlySpeed(KeystoneConfig.flySpeed);
 
         revertGuiScale = minecraft.options.guiScale;
         minecraft.options.guiScale = 3;
-        minecraft.resizeDisplay();
-        KeystoneOverlayHandler.resize(minecraft, minecraft.getWindow().getGuiScaledWidth(), minecraft.getWindow().getGuiScaledHeight());
+        minecraft.onResolutionChanged();
+        KeystoneOverlayHandler.resize(minecraft, minecraft.getWindow().getScaledWidth(), minecraft.getWindow().getScaledHeight());
     }
     /**
      * Disable Keystone if it isn't already
@@ -73,22 +76,22 @@ public final class Keystone
     public static void disableKeystone()
     {
         if (!enabled) return;
-        Minecraft minecraft = Minecraft.getInstance();
+        MinecraftClient minecraft = MinecraftClient.getInstance();
 
         enabled = false;
-        minecraft.mouseHandler.grabMouse();
+        minecraft.mouse.lockCursor();
         revertGamemode = true;
 
         minecraft.options.guiScale = revertGuiScale;
-        minecraft.resizeDisplay();
-        KeystoneOverlayHandler.resize(minecraft, minecraft.getWindow().getGuiScaledWidth(), minecraft.getWindow().getGuiScaledHeight());
+        minecraft.onResolutionChanged();
+        KeystoneOverlayHandler.resize(minecraft, minecraft.getWindow().getScaledWidth(), minecraft.getWindow().getScaledHeight());
     }
     /**
      * @return If Keystone is active and a world is loaded
      */
     public static boolean isActive()
     {
-        return enabled && Minecraft.getInstance().level != null;
+        return enabled && MinecraftClient.getInstance().world != null;
     }
     //endregion
     //region Module Registry
@@ -226,13 +229,28 @@ public final class Keystone
      */
     public static void init()
     {
-        MinecraftForge.EVENT_BUS.addListener(Keystone::onWorldTick);
-        MinecraftForge.EVENT_BUS.addListener(Keystone::onPlayerTick);
-        MinecraftForge.EVENT_BUS.addListener(Keystone::onRightClickBlock);
-        MinecraftForge.EVENT_BUS.addListener(Keystone::onGamemodeChanged);
+        WorldRenderEvents.LAST.register(context ->
+        {
+            Player.update(context.tickDelta(), MinecraftClient.getInstance().player);
+            if (Keystone.isActive())
+            {
+                ghostBlocksModule.renderGhostBlocks(context);
+                for (IKeystoneModule module : modules.values()) if (module.isEnabled()) module.preRender(context);
+                for (IKeystoneModule module : modules.values())
+                {
+                    module.alwaysRender(context);
+                    if (module.isEnabled()) module.renderWhenEnabled(context);
+                }
+            }
+        });
+
+        ClientPlayerEvents.ALLOW_USE_BLOCK.register((player, world, hand, hitResult) -> !Keystone.isActive());
+
+        ServerTickEvents.START_SERVER_TICK.register(Keystone::onServerTick);
+        ServerPlayerEvents.START_TICK.register(Keystone::onPlayerTick);
+        ServerPlayerEvents.ALLOW_USE_BLOCK.register((player, world, stack, hand, hitResult) -> !Keystone.isActive());
 
         BlockTypeRegistry.buildRegistry();
-
         BlockMask.buildForcedAdditionsList();
     }
 
@@ -243,16 +261,17 @@ public final class Keystone
     public static void postInit()
     {
         filterModule = getModule(FilterModule.class);
+        ghostBlocksModule = getModule(GhostBlocksModule.class);
         for (IKeystoneModule module : modules.values()) module.postInit();
     }
     /**
-     * Ran every world tick. Used to execute scheduled {@link keystone.api.Keystone.DelayedRunnable DelayedRunnables}
+     * Ran every server tick. Used to execute scheduled {@link keystone.api.Keystone.DelayedRunnable DelayedRunnables}
      * on the server thread
-     * @param event The {@link net.minecraftforge.event.TickEvent.WorldTickEvent} that was posted
+     * @param server The MinecraftServer that is ticking
      */
-    private static void onWorldTick(final TickEvent.WorldTickEvent event)
+    private static void onServerTick(MinecraftServer server)
     {
-        if (Keystone.isActive() && event.phase == TickEvent.Phase.START && event.side == LogicalSide.SERVER)
+        if (Keystone.isActive())
         {
             serverThread = Thread.currentThread();
 
@@ -264,60 +283,33 @@ public final class Keystone
         }
     }
     /**
-     * Ran every player tick. Used to change the player's gamemode when Keystone is toggled
+     * Ran every time a server player ticks. Used to change the player's gamemode when Keystone is toggled
      * on the server thread
-     * @param event The {@link net.minecraftforge.event.TickEvent.PlayerTickEvent} that was posted
+     * @param player The ServerPlayerEntity that is ticking
      */
-    private static void onPlayerTick(final TickEvent.PlayerTickEvent event)
+    private static void onPlayerTick(ServerPlayerEntity player)
     {
-        ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
-        if (clientPlayer == null || event.side != LogicalSide.SERVER) return;
+        ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
+        if (clientPlayer == null) return;
 
         if (Keystone.isActive())
         {
-            if (event.player instanceof ServerPlayerEntity)
+            if (player.getUuid().equals(clientPlayer.getUuid()))
             {
-                ServerPlayerEntity serverPlayer = (ServerPlayerEntity)event.player;
-                if (serverPlayer.getUUID().equals(clientPlayer.getUUID()))
+                if (player.interactionManager.getGameMode() != GameMode.SPECTATOR)
                 {
-                    if (serverPlayer.gameMode.getGameModeForPlayer() != GameType.SPECTATOR)
-                    {
-                        serverPlayer.setGameMode(GameType.SPECTATOR);
-                    }
+                    player.changeGameMode(GameMode.SPECTATOR);
                 }
             }
         }
         else if (revertGamemode)
         {
-            if (event.player instanceof ServerPlayerEntity)
+            if (player.getUuid().equals(clientPlayer.getUuid()))
             {
-                ServerPlayerEntity serverPlayer = (ServerPlayerEntity)event.player;
-                if (serverPlayer.getUUID().equals(clientPlayer.getUUID()))
-                {
-                    if (serverPlayer.gameMode.getPreviousGameModeForPlayer() != GameType.NOT_SET) serverPlayer.setGameMode(serverPlayer.gameMode.getPreviousGameModeForPlayer());
-                    revertGamemode = false;
-                }
+                if (player.interactionManager.getPreviousGameMode().getId() != -1) player.changeGameMode(player.interactionManager.getPreviousGameMode());
+                revertGamemode = false;
             }
         }
-    }
-    /**
-     * Ran when the player right-clicks a block. Used to prevent players opening containers while
-     * Keystone is active
-     * @param event The {@link net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock} that was posted
-     */
-    private static void onRightClickBlock(final PlayerInteractEvent.RightClickBlock event)
-    {
-        if (Keystone.isActive()) event.setCanceled(true);
-    }
-
-    /**
-     * Ran when the player's gamemode is changed. Used to prevent players changing gamemode while
-     * Keystone is active
-     * @param event The {@link net.minecraftforge.event.entity.player.PlayerEvent.PlayerChangeGameModeEvent} that was posted
-     */
-    private static void onGamemodeChanged(final PlayerEvent.PlayerChangeGameModeEvent event)
-    {
-        if (Keystone.isActive() && event.getNewGameMode() != GameType.SPECTATOR) event.setCanceled(true);
     }
     //endregion
 }

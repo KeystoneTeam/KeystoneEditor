@@ -3,12 +3,13 @@ package keystone.core.modules.history;
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.core.KeystoneConfig;
-import keystone.core.events.KeystoneEvent;
+import keystone.core.events.keystone.KeystoneLifecycleEvents;
+import keystone.core.events.keystone.KeystoneRegistryEvents;
+import keystone.core.events.minecraft.InputEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.utils.NBTSerializer;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.nbt.NbtCompound;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
@@ -17,7 +18,7 @@ import java.util.Map;
 
 public class HistoryModule implements IKeystoneModule
 {
-    private Map<String, KeystoneEvent.RegisterHistoryEntryTypes.HistoryEntryDeserializer> deserializers = new HashMap<>();
+    private Map<String, KeystoneRegistryEvents.RegisterHistoryEntriesListener.HistoryEntryDeserializer> deserializers = new HashMap<>();
     private HistoryStackFrame currentStackFrame;
     private int historyStackSize = 0;
     private int tryBeginHooksOpen = 0;
@@ -26,16 +27,21 @@ public class HistoryModule implements IKeystoneModule
 
     public HistoryModule()
     {
-        MinecraftForge.EVENT_BUS.addListener(this::onKeyboardInput);
+        InputEvents.KEY_PRESSED.register(this::onKeyboardInput);
+        KeystoneLifecycleEvents.JOIN.register(this::onJoinWorld);
     }
 
-    private void onKeyboardInput(final InputEvent.KeyInputEvent event)
+    private void onKeyboardInput(int key, int action, int scancode, int modifiers)
     {
-        if (Keystone.isActive() && event.getAction() == GLFW.GLFW_PRESS && (event.getModifiers() & GLFW.GLFW_MOD_CONTROL) > 0)
+        if (Keystone.isActive() && action == GLFW.GLFW_PRESS && (modifiers & GLFW.GLFW_MOD_CONTROL) > 0)
         {
-            if (event.getKey() == GLFW.GLFW_KEY_Z) undo();
-            else if (event.getKey() == GLFW.GLFW_KEY_Y) redo();
+            if (key == GLFW.GLFW_KEY_Z) undo();
+            else if (key == GLFW.GLFW_KEY_Y) redo();
         }
+    }
+    private void onJoinWorld(ClientWorld world)
+    {
+        Keystone.getModule(HistoryModule.class).clearHistory();
     }
 
     @Override
@@ -54,7 +60,7 @@ public class HistoryModule implements IKeystoneModule
     }
 
     //region Deserializers
-    public void registerDeserializer(String id, KeystoneEvent.RegisterHistoryEntryTypes.HistoryEntryDeserializer deserializer)
+    public void registerDeserializer(String id, KeystoneRegistryEvents.RegisterHistoryEntriesListener.HistoryEntryDeserializer deserializer)
     {
         if (deserializers.containsKey(id))
         {
@@ -63,7 +69,7 @@ public class HistoryModule implements IKeystoneModule
         }
         deserializers.put(id, deserializer);
     }
-    public IHistoryEntry deserializeHistoryEntry(CompoundNBT entryNBT)
+    public IHistoryEntry deserializeHistoryEntry(NbtCompound entryNBT)
     {
         String id = entryNBT.getString("id");
         if (!deserializers.containsKey(id))
@@ -276,7 +282,7 @@ public class HistoryModule implements IKeystoneModule
         File entryFile = KeystoneDirectories.getHistoryDirectory().toPath().resolve(index + ".nbt").toFile();
         if (entryFile.exists())
         {
-            CompoundNBT historyNBT = NBTSerializer.deserialize(entryFile);
+            NbtCompound historyNBT = NBTSerializer.deserialize(entryFile);
             return new HistoryStackFrame(index, historyNBT);
         }
         else return null;

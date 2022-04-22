@@ -4,7 +4,6 @@ import keystone.core.gui.screens.ProgressBarOverlay;
 
 public class ProgressBar
 {
-    private static String title;
     private static int iterations;
     private static int completedIterations;
     private static int steps;
@@ -14,12 +13,12 @@ public class ProgressBar
     public static void start(String title, int iterations) { start(title, iterations, null); }
     public static void start(String title, int iterations, Runnable cancelledCallback)
     {
-        ProgressBar.title = title;
         ProgressBar.iterations = iterations;
         steps = 1;
         completedIterations = 0;
         completedSteps = 0;
         ProgressBar.cancelledCallback = cancelledCallback;
+        ProgressBarOverlay.open(title);
     }
     public static void beginIteration(int steps)
     {
@@ -29,7 +28,6 @@ public class ProgressBar
     public static void nextStep()
     {
         ProgressBar.completedSteps++;
-        ProgressBarOverlay.open(title);
     }
     public static void nextIteration()
     {
@@ -43,7 +41,7 @@ public class ProgressBar
         completedIterations = 0;
         completedSteps = 0;
 
-        ProgressBarOverlay.close();
+        ProgressBarOverlay.closeOverlay();
     }
     public static void cancel()
     {

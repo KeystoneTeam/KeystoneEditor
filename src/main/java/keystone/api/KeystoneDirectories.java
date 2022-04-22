@@ -1,13 +1,16 @@
 package keystone.api;
 
 import keystone.core.KeystoneConfig;
-import net.minecraft.client.Minecraft;
+import keystone.core.mixins.PersistentStateManagerAccessor;
+import keystone.core.modules.world_cache.WorldCacheModule;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.world.World;
 
 import java.io.File;
 
 public class KeystoneDirectories
 {
-    private static String currentLevelID;
+    private static WorldCacheModule worldCache;
     private static File keystoneDirectory;
 
     private static File analysesDirectory;
@@ -17,18 +20,13 @@ public class KeystoneDirectories
 
     public static void init()
     {
-        keystoneDirectory = Minecraft.getInstance().gameDirectory.toPath().resolve(KeystoneConfig.keystoneDirectory).toFile();
+        keystoneDirectory = MinecraftClient.getInstance().runDirectory.toPath().resolve(KeystoneConfig.keystoneDirectory).toFile();
         if (!keystoneDirectory.exists()) keystoneDirectory.mkdirs();
 
         analysesDirectory = getKeystoneSubdirectory(KeystoneConfig.analysesDirectory);
         filterDirectory = getKeystoneSubdirectory(KeystoneConfig.filtersDirectory);
         schematicsDirectory = getKeystoneSubdirectory(KeystoneConfig.schematicsDirectory);
         stockFilterCache = getKeystoneSubdirectory(KeystoneConfig.stockFilterCache);
-    }
-
-    public static void setCurrentLevelID(String levelID)
-    {
-        currentLevelID = levelID;
     }
 
     public static File getKeystoneDirectory() { return keystoneDirectory; }
@@ -46,7 +44,8 @@ public class KeystoneDirectories
 
     public static File getWorldCacheDirectory()
     {
-        File file = Minecraft.getInstance().getLevelSource().getBaseDir().resolve(currentLevelID).resolve("##KEYSTONE.TEMP##").toFile();
+        if (worldCache == null) worldCache = Keystone.getModule(WorldCacheModule.class);
+        File file = ((PersistentStateManagerAccessor)worldCache.getDimensionWorld(World.OVERWORLD).getPersistentStateManager()).getDirectory().getParentFile().toPath().resolve("##KEYSTONE.TEMP##").toFile();
         if (!file.exists()) file.mkdirs();
         return file;
     }

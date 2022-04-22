@@ -3,23 +3,26 @@ package keystone.api.wrappers.entities;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
+import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.BoundingBox;
+import keystone.api.wrappers.coordinates.Vector3d;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.math.BlockPosMath;
-import keystone.core.modules.world_cache.WorldCacheModule;
-import keystone.core.renderer.blocks.world.GhostBlocksWorld;
-import keystone.core.renderer.client.Player;
-import net.minecraft.command.arguments.NBTPathArgument;
-import net.minecraft.command.arguments.NBTTagArgument;
+import keystone.core.modules.world.EntitiesModule;
+import keystone.core.utils.EntityUtils;
+import net.minecraft.command.argument.NbtElementArgumentType;
+import net.minecraft.command.argument.NbtPathArgumentType;
 import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.*;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.ServerWorldAccess;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -29,16 +32,21 @@ import java.util.UUID;
  */
 public class Entity
 {
-    private CompoundNBT entityData;
-    private UUID keystoneUUID;
-    private UUID minecraftUUID;
-    private Vector3d position;
-    private float pitch;
-    private float yaw;
+    private net.minecraft.entity.Entity previewEntity;
+    private net.minecraft.entity.Entity minecraftEntity;
+    private String entityType;
     private boolean killed;
-    private BoundingBox boundingBox;
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
+    private static EntitiesModule entitiesModule;
+
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Set the {@link EntitiesModule} used by the Entity wrapper
+     * @param entitiesModule The {@link EntitiesModule} the use
+     */
+    public static void setEntitiesModule(EntitiesModule entitiesModule) { Entity.entitiesModule = entitiesModule; }
+
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Create an entity wrapper for a given entity type ID
@@ -46,15 +54,16 @@ public class Entity
      */
     public Entity(String id)
     {
-        this.entityData = new CompoundNBT();
-        this.entityData.putString("id", id);
-        this.keystoneUUID = UUID.randomUUID();
-        this.minecraftUUID = null;
-        this.position = Vector3d.ZERO;
-        this.pitch = 0;
-        this.yaw = 0;
-        this.killed = false;
-        updateBoundingBox();
+        Optional<EntityType<?>> type = Registry.ENTITY_TYPE.getOrEmpty(new Identifier(id));
+        if (type.isEmpty())
+        {
+            Keystone.abortFilter("Invalid entity type '" + id + "'!");
+            return;
+        }
+
+        this.previewEntity = entitiesModule.createPreviewEntity(type.get(), new NbtCompound());
+        this.minecraftEntity = null;
+        this.entityType = id;
     }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
@@ -63,172 +72,134 @@ public class Entity
      */
     public Entity(net.minecraft.entity.Entity minecraftEntity)
     {
-        this(minecraftEntity.serializeNBT(), true);
+        this(EntityUtils.getEntityData(minecraftEntity), true);
     }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Create an entity wrapper for an NBT compound
      * @param nbt The Minecraft entity data
-     * @param copyMinecraftUUID If true, the UUID stored in the NBT will be copied to the wrapper
+     * @param useMinecraftEntity If true, Keystone will wrap an existing entity if one exists
      */
-    public Entity(CompoundNBT nbt, boolean copyMinecraftUUID)
+    public Entity(NbtCompound nbt, boolean useMinecraftEntity)
     {
-        this(nbt, copyMinecraftUUID, UUID.randomUUID());
+        String id = nbt.getString(net.minecraft.entity.Entity.ID_KEY);
+        Optional<EntityType<?>> type = Registry.ENTITY_TYPE.getOrEmpty(new Identifier(id));
+        if (type.isEmpty())
+        {
+            Keystone.abortFilter("Invalid entity type '" + id + "'!");
+            return;
+        }
+
+        if (useMinecraftEntity)
+        {
+            this.minecraftEntity = entitiesModule.getMinecraftEntity(nbt);
+            if (this.minecraftEntity == null) this.previewEntity = entitiesModule.createPreviewEntity(type.get(), new NbtCompound());
+            else
+            {
+                NbtCompound previewNBT = EntityUtils.getEntityDataNoUuid(this.minecraftEntity);
+                this.previewEntity = entitiesModule.createPreviewEntity(type.get(), previewNBT);
+            }
+        }
+        else
+        {
+            this.previewEntity = entitiesModule.createPreviewEntity(type.get(), nbt);
+            this.minecraftEntity = null;
+        }
+        this.entityType = id;
     }
+
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
-     * Create an entity wrapper for an NBT compound
-     * @param nbt The Minecraft entity data
-     * @param copyMinecraftUUID If true, the UUID stored in the NBT will be copied to the wrapper
-     * @param keystoneUUID The Keystone UUID
+     * @return The serialized NbtCompound
      */
-    public Entity(CompoundNBT nbt, boolean copyMinecraftUUID, UUID keystoneUUID)
+    public NbtCompound serialize()
     {
-        this.entityData = nbt.copy();
-        this.keystoneUUID = keystoneUUID;
+        NbtCompound nbt = new NbtCompound();
 
-        if (copyMinecraftUUID)
-        {
-            if (this.entityData.hasUUID("UUID")) this.minecraftUUID = this.entityData.getUUID("UUID");
-        }
-        else this.entityData.remove("UUID");
+        nbt.put("PreviewEntity", EntityUtils.getEntityDataNoUuid(this.previewEntity));
+        if (this.minecraftEntity != null) nbt.put("MinecraftEntity", EntityUtils.getEntityData(this.minecraftEntity));
 
-        if (this.entityData.contains("Pos"))
-        {
-            ListNBT posNBT = this.entityData.getList("Pos", Constants.NBT.TAG_DOUBLE);
-            this.position = new Vector3d(posNBT.getDouble(0), posNBT.getDouble(1), posNBT.getDouble(2));
-        }
-        if (this.entityData.contains("Rotation"))
-        {
-            ListNBT rotationNBT = this.entityData.getList("Rotation", Constants.NBT.TAG_FLOAT);
-            this.yaw = rotationNBT.getFloat(0);
-            this.pitch = rotationNBT.getFloat(1);
-        }
-        this.killed = false;
-
-        updateBoundingBox();
-    }
-    private Entity() {}
-
-    /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @return The serialized CompoundNBT
-     */
-    public CompoundNBT serialize()
-    {
-        CompoundNBT nbt = new CompoundNBT();
-        nbt.putUUID("keystone_uuid", keystoneUUID);
-        if (minecraftUUID != null) nbt.putUUID("minecraft_uuid", minecraftUUID);
-
-        ListNBT posNBT = new ListNBT();
-        posNBT.add(DoubleNBT.valueOf(position.x));
-        posNBT.add(DoubleNBT.valueOf(position.y));
-        posNBT.add(DoubleNBT.valueOf(position.z));
-        nbt.put("pos", posNBT);
-
-        nbt.putFloat("pitch", pitch);
-        nbt.putFloat("yaw", yaw);
-        nbt.putBoolean("killed", killed);
-
-        ListNBT boundingBoxNBT = new ListNBT();
-        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.minX));
-        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.minY));
-        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.minZ));
-        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.maxX));
-        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.maxY));
-        boundingBoxNBT.add(DoubleNBT.valueOf(boundingBox.maxZ));
-        nbt.put("bounding_box", boundingBoxNBT);
-
-        nbt.put("nbt", entityData);
         return nbt;
     }
-
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @param nbt The serialized CompoundNBT
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * @param nbt The serialized NbtCompound
      * @return The deserialized Entity
      */
-    public static Entity deserialize(CompoundNBT nbt)
+    public static Entity deserialize(NbtCompound nbt)
     {
-        Entity entity = new Entity();
-        entity.entityData = nbt.getCompound("nbt");
-        entity.keystoneUUID = nbt.getUUID("keystone_uuid");
-        if (nbt.contains("minecraft_uuid")) entity.minecraftUUID = nbt.getUUID("minecraft_uuid");
+        NbtCompound previewNBT = nbt.getCompound("PreviewEntity");
+        NbtCompound minecraftNBT = nbt.contains("MinecraftEntity", NbtElement.COMPOUND_TYPE) ? nbt.getCompound("MinecraftEntity") : null;
 
-        ListNBT posNBT = nbt.getList("pos", Constants.NBT.TAG_DOUBLE);
-        entity.position = new Vector3d(posNBT.getDouble(0), posNBT.getDouble(1), posNBT.getDouble(2));
-
-        entity.pitch = nbt.getFloat("pitch");
-        entity.yaw = nbt.getFloat("yaw");
-        entity.killed = nbt.getBoolean("killed");
-
-        ListNBT bb = nbt.getList("bounding_box", Constants.NBT.TAG_DOUBLE);
-        entity.boundingBox = new BoundingBox(bb.getDouble(0), bb.getDouble(1), bb.getDouble(2), bb.getDouble(3), bb.getDouble(4), bb.getDouble(5));
-
-        return entity;
+        if (minecraftNBT != null)
+        {
+            Entity entity = new Entity(minecraftNBT, true);
+            entity.previewEntity.readNbt(previewNBT);
+            return entity;
+        }
+        else return new Entity(previewNBT, false);
     }
 
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
-     * @return The Minecraft CompoundNBT that represents this entity
+     * @return The Minecraft entity that exists for storing changes made to the {@link Entity} that have not been finalized yet
      */
-    public CompoundNBT getMinecraftEntityData() { return this.entityData; }
-
+    public net.minecraft.entity.Entity getPreviewEntity()
+    {
+        return this.previewEntity;
+    }
+    public net.minecraft.entity.Entity getMinecraftEntity()
+    {
+        return this.minecraftEntity;
+    }
+    
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Clears the wrapper's UUID, breaking its connection with the Minecraft entity
      */
     public void breakMinecraftEntityConnection()
     {
-        this.minecraftUUID = null;
-        this.entityData.remove("UUID");
+        this.minecraftEntity = null;
     }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
-     * Spawn a new instance of this entity into a server world
-     * @param world The IServerWorld to spawn the entity in
+     * Spawn this entity into a ServerWorld
+     * @param world The ServerWorldAccess to spawn the entity in
      * @return The Minecraft entity that was spawned into the server world
      */
-    public net.minecraft.entity.Entity spawnInWorld(IServerWorld world)
+    public void spawn(ServerWorldAccess world)
     {
-        CompoundNBT entityNBT = this.entityData.copy();
-
-        // Spawning
-        Optional<net.minecraft.entity.Entity> entityOptional = EntityType.create(entityNBT, world.getLevel());
-        if (entityOptional.isPresent())
+        if (this.minecraftEntity == null)
         {
-            net.minecraft.entity.Entity minecraftEntity = entityOptional.get();
-            if (!(world instanceof GhostBlocksWorld)) this.minecraftUUID = minecraftEntity.getUUID();
-            minecraftEntity.moveTo(position.x, position.y, position.z, yaw, pitch);
-            world.addFreshEntityWithPassengers(minecraftEntity);
-            return minecraftEntity;
+            this.minecraftEntity = this.previewEntity.getType().create(world.toServerWorld());;
+            this.minecraftEntity.readNbt(EntityUtils.getEntityDataNoUuid(this.previewEntity));
+            world.spawnEntityAndPassengers(this.minecraftEntity);
         }
-        else return null;
     }
 
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @param anchor The Vector3d to use as an anchor for rotation
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * @param anchor The Vec3d to use as an anchor for rotation
      * @param rotation The Rotation
      * @param mirror The Mirror
      * @param size The size of the region that is being oriented
      * @param scale The scale
      * @return A copy of this entity with an applied orientation
      */
-    public Entity getOrientedEntity(Vector3d anchor, Rotation rotation, Mirror mirror, Vector3i size, int scale)
+    public Entity getOrientedEntity(Vec3d anchor, BlockRotation rotation, BlockMirror mirror, Vec3i size, int scale)
     {
-        if (anchor == null) anchor = Vector3d.ZERO;
-        CompoundNBT entityNBT = this.entityData.copy();
+        if (anchor == null) anchor = Vec3d.ZERO;
+        NbtCompound entityNBT = EntityUtils.getEntityDataNoUuid(this.previewEntity);
 
-        Vector3d oriented = BlockPosMath.getOrientedVector3d(this.position, size, rotation, mirror, scale);
+        Vec3d oriented = BlockPosMath.getOrientedVec3d(this.previewEntity.getPos(), size, rotation, mirror, scale);
         double x = anchor.x + oriented.x;
         double y = anchor.y + oriented.y;
         double z = anchor.z + oriented.z;
 
         float yaw = 0;
-        if (entityNBT.contains("Rotation", Constants.NBT.TAG_LIST))
+        if (entityNBT.contains("Rotation", NbtElement.LIST_TYPE))
         {
-            ListNBT rotationNBT = entityNBT.getList("Rotation", Constants.NBT.TAG_FLOAT);
+            NbtList rotationNBT = entityNBT.getList("Rotation", NbtElement.FLOAT_TYPE);
             yaw = rotationNBT.getFloat(0);
         }
         switch (mirror)
@@ -254,81 +225,64 @@ public class Entity
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Update this wrapper's Minecraft entity with all modifications made to the wrapper,
      * or spawn the entity if none exist
-     * @param world The IServerWorld to search for the entity in
+     * @param world The ServerWorldAccess to search for the entity in
      */
-    public void updateMinecraftEntity(IServerWorld world)
+    public void updateMinecraftEntity(ServerWorldAccess world)
     {
-        if (this.minecraftUUID != null)
+        if (this.minecraftEntity != null)
         {
-            net.minecraft.entity.Entity mcEntity = world.getLevel().getEntity(this.minecraftUUID);
-
-            try
+            if (this.killed)
             {
-                if (!this.killed) mcEntity.deserializeNBT(this.entityData);
-                else
-                {
-                    mcEntity.remove();
-                    breakMinecraftEntityConnection();
-                }
-            }
-            catch (Exception e)
-            {
+                this.minecraftEntity.discard();
                 breakMinecraftEntityConnection();
-                spawnInWorld(world);
             }
+            else this.minecraftEntity.readNbt(EntityUtils.getEntityDataNoUuid(this.previewEntity));
         }
-        else spawnInWorld(world);
-    }
-
-    public void updateBoundingBox()
-    {
-        World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimensionId());
-        net.minecraft.entity.Entity mcEntity = EntityType.create(this.entityData.copy(), world).orElse(null);
-        if (mcEntity == null) Keystone.LOGGER.error("Cannot update bounding box of Entity " + this);
-        else boundingBox = new BoundingBox(mcEntity.getBoundingBox());
+        else spawn(world);
     }
     //endregion
     //region API
     /**
-     * Create an identical copy of this entity, except for the UUID
+     * Create an identical copy of this entity, except for the UUID and Minecraft connection
      * @return The cloned entity
      */
     public Entity clone()
     {
-        Entity clone = new Entity(this.entityData.copy(), false, this.keystoneUUID);
-        clone.minecraftUUID = null;
-        clone.position = position;
-        clone.pitch = pitch;
-        clone.yaw = yaw;
-        clone.killed = killed;
-        clone.boundingBox = boundingBox;
-        return clone;
+        return new Entity(EntityUtils.getEntityDataNoUuid(this.previewEntity), false);
     }
-    public String type() { return this.entityData.getString("id"); }
+    public String type() { return this.entityType; }
     /**
      * @return The x-coordinate of the entity
      */
-    public double x() { return this.position.x; }
+    public double x() { return this.previewEntity.getPos().x; }
     /**
      * @return The y-coordinate of the entity
      */
-    public double y() { return this.position.y; }
+    public double y() { return this.previewEntity.getPos().y; }
     /**
      * @return The z-coordinate of the entity
      */
-    public double z() { return this.position.z; }
+    public double z() { return this.previewEntity.getPos().z; }
+    /**
+     * @return The position of the entity
+     */
+    public Vector3d pos() { return new Vector3d(this.previewEntity.getPos()); }
+    /**
+     * @return The {@link BlockPos} of the entity
+     */
+    public BlockPos blockPos() { return new BlockPos(this.previewEntity.getBlockPos()); }
     /**
      * @return This Entity's {@link BoundingBox}
      */
-    public BoundingBox boundingBox() { return this.boundingBox; }
+    public BoundingBox boundingBox() { return new BoundingBox(this.previewEntity.getBoundingBox()); }
     /**
      * @return The yaw angle of the entity, in degrees
      */
-    public float yaw() { return this.yaw; }
+    public float yaw() { return this.previewEntity.getYaw(); }
     /**
      * @return The pitch angle of the entity, in degrees
      */
-    public float pitch() { return this.pitch; }
+    public float pitch() { return this.previewEntity.getPitch(); }
     /**
      * @return An {@link NBTCompound} representing this entity's data. Note that modifying
      * this NBT Compound will not modify the entity unless you call {@link Entity#data(NBTCompound)}
@@ -336,24 +290,20 @@ public class Entity
      */
     public NBTCompound data()
     {
-        return new NBTCompound(this.entityData.copy());
+        return new NBTCompound(EntityUtils.getEntityDataNoUuid(this.previewEntity));
     }
     /**
-     * @return If this entity is in the world, the UUID of the Minecraft
-     * entity it represents, otherwise null
+     * @return If this entity is linked to a Minecraft entity, the UUID of the Minecraft entity it represents, otherwise null
      */
-    public UUID minecraftUUID() { return this.minecraftUUID; }
+    public UUID minecraftUUID() { return this.minecraftEntity != null ? this.minecraftEntity.getUuid() : null; }
     /**
-     * @return The UUID of this entity in Keystone. This is not the same
-     * as {@link Entity#minecraftUUID}
+     * @return The UUID of this entity in Keystone. This is not the same as {@link Entity#minecraftUUID}
      */
-    public UUID keystoneUUID() { return this.keystoneUUID; }
-
+    public UUID keystoneUUID() { return this.previewEntity.getUuid(); }
     /**
      * @return Whether the entity has been marked as killed
      */
     public boolean killed() { return this.killed; }
-
     /**
      * Set the entity's position
      * @param x The x-coordinate
@@ -363,16 +313,9 @@ public class Entity
      */
     public Entity position(double x, double y, double z)
     {
-        ListNBT posNBT = new ListNBT();
-        posNBT.add(DoubleNBT.valueOf(x));
-        posNBT.add(DoubleNBT.valueOf(y));
-        posNBT.add(DoubleNBT.valueOf(z));
-        this.entityData.put("Pos", posNBT);
-        this.position = new Vector3d(x, y, z);
-
+        this.previewEntity.setPos(x, y, z);
         return this;
     }
-
     /**
      * Move the entity's position by a given offset
      * @param x The x-offset
@@ -382,19 +325,8 @@ public class Entity
      */
     public Entity move(double x, double y, double z)
     {
-        if (this.position == null) return position(x, y, z);
-        else
-        {
-            this.position = new Vector3d(this.position.x + x, this.position.y + y, this.position.z + z);
-
-            ListNBT posNBT = new ListNBT();
-            posNBT.add(DoubleNBT.valueOf(this.position.x));
-            posNBT.add(DoubleNBT.valueOf(this.position.y));
-            posNBT.add(DoubleNBT.valueOf(this.position.z));
-            this.entityData.put("Pos", posNBT);
-
-            return this;
-        }
+        this.previewEntity.setPos(x() + x, y() + y, z() + z);
+        return this;
     }
     /**
      * Set the entity's yaw
@@ -403,13 +335,7 @@ public class Entity
      */
     public Entity yaw(float yaw)
     {
-        ListNBT rotationNBT = new ListNBT();
-        rotationNBT.add(FloatNBT.valueOf(yaw));
-        if (this.entityData.contains("Rotation")) rotationNBT.add(this.entityData.getList("Rotation", Constants.NBT.TAG_FLOAT).get(1));
-        else rotationNBT.add(FloatNBT.ZERO);
-        this.entityData.put("Rotation", rotationNBT);
-        this.yaw = yaw;
-
+        this.previewEntity.setYaw(yaw);
         return this;
     }
     /**
@@ -419,13 +345,7 @@ public class Entity
      */
     public Entity pitch(float pitch)
     {
-        ListNBT rotationNBT = new ListNBT();
-        if (this.entityData.contains("Rotation")) rotationNBT.add(this.entityData.getList("Rotation", Constants.NBT.TAG_FLOAT).get(0));
-        else rotationNBT.add(FloatNBT.ZERO);
-        rotationNBT.add(FloatNBT.valueOf(pitch));
-        this.entityData.put("Rotation", rotationNBT);
-        this.pitch = pitch;
-
+        this.previewEntity.setPitch(pitch);
         return this;
     }
     /**
@@ -438,7 +358,6 @@ public class Entity
      * @param killed Whether this entity is killed
      */
     public void setKilled(boolean killed) { this.killed = killed; }
-
     /**
      * Set NBT data at a given path to a given value. This cannot be used to change
      * the entity's type
@@ -448,7 +367,7 @@ public class Entity
      */
     public Entity data(String path, String data)
     {
-        if (path.equals("id"))
+        if (path.equals(net.minecraft.entity.Entity.ID_KEY))
         {
             Keystone.abortFilter("Modifying an entity's type ID is not allowed!");
             return this;
@@ -456,10 +375,12 @@ public class Entity
 
         try
         {
-            NBTPathArgument.NBTPath nbtPath = NBTPathArgument.nbtPath().parse(new StringReader(path));
-            INBT nbt = NBTTagArgument.nbtTag().parse(new StringReader(data));
-            nbtPath.set(this.entityData, () -> nbt);
-            updateBoundingBox();
+            NbtPathArgumentType.NbtPath nbtPath = NbtPathArgumentType.nbtPath().parse(new StringReader(path));
+            NbtElement nbt = NbtElementArgumentType.nbtElement().parse(new StringReader(data));
+
+            NbtCompound previewNBT = EntityUtils.getEntityData(this.previewEntity);
+            nbtPath.put(previewNBT, () -> nbt);
+            this.previewEntity.readNbt(previewNBT);
             return this;
         }
         catch (CommandSyntaxException e)
@@ -468,7 +389,6 @@ public class Entity
             return this;
         }
     }
-
     /**
      * Set this entity's NBT data compound. This cannot be used to change the entity's type
      * @param data The {@link NBTCompound} to set this entity's data to
@@ -476,29 +396,15 @@ public class Entity
      */
     public Entity data(NBTCompound data)
     {
-        if (data.getString("id") != this.entityData.getString("id"))
+        if (data.getString(net.minecraft.entity.Entity.ID_KEY) != this.entityType)
         {
             Keystone.abortFilter("Modifying an entity's type ID is not allowed!");
             return this;
         }
 
-        CompoundNBT newEntityData = data.getMinecraftNBT().copy();
-        newEntityData.remove("UUID");
-        this.entityData = newEntityData;
-
-        if (this.entityData.contains("Pos"))
-        {
-            ListNBT posNBT = this.entityData.getList("Pos", Constants.NBT.TAG_DOUBLE);
-            this.position = new Vector3d(posNBT.getDouble(0), posNBT.getDouble(1), posNBT.getDouble(2));
-        }
-        if (this.entityData.contains("Rotation"))
-        {
-            ListNBT rotationNBT = this.entityData.getList("Rotation", Constants.NBT.TAG_FLOAT);
-            this.yaw = rotationNBT.getFloat(0);
-            this.pitch = rotationNBT.getFloat(1);
-        }
-
-        updateBoundingBox();
+        NbtCompound newEntityData = data.getMinecraftNBT().copy();
+        newEntityData.remove(net.minecraft.entity.Entity.UUID_KEY);
+        this.previewEntity.readNbt(newEntityData);
         return this;
     }
     //endregion
@@ -516,16 +422,16 @@ public class Entity
     {
         return toString().hashCode();
     }
-
     @Override
     public String toString()
     {
-        StringBuilder stringBuilder = new StringBuilder(this.entityData.getString("id"));
-        stringBuilder.append(this.entityData.toString());
+        StringBuilder stringBuilder = new StringBuilder(this.entityType);
+        stringBuilder.append(EntityUtils.getEntityDataNoUuid(this.previewEntity));
         stringBuilder.append("<");
-        stringBuilder.append(keystoneUUID.toString());
-        stringBuilder.append("|");
-        stringBuilder.append(minecraftUUID == null ? "NULL" : minecraftUUID.toString());
+        stringBuilder.append(this.previewEntity.getUuid().toString());
+        stringBuilder.append(" | ");
+        if (this.minecraftEntity != null) stringBuilder.append(this.minecraftEntity.getUuid().toString());
+        else stringBuilder.append("NULL");
         stringBuilder.append(">");
         return stringBuilder.toString();
     }

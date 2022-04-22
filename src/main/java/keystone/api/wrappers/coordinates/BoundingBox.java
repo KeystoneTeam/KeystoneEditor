@@ -1,25 +1,25 @@
 package keystone.api.wrappers.coordinates;
 
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Box;
 
 /**
- * A wrapper for a Minecraft AxisAlignedBB
+ * A wrapper for a Minecraft Box
  */
 public class BoundingBox
 {
     public interface CoordinateConsumer { void accept(int x, int y, int z); }
 
-    private AxisAlignedBB bb;
+    private Box bb;
     public final double minX, minY, minZ;
     public final double maxX, maxY, maxZ;
     public final double centerX, centerY, centerZ;
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @param minecraftBB The Minecraft AxisAlignedBB for the wrapper
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * @param minecraftBB The Minecraft Box for the wrapper
      */
-    public BoundingBox(AxisAlignedBB minecraftBB)
+    public BoundingBox(Box minecraftBB)
     {
         this.bb = minecraftBB;
         this.minX = minecraftBB.minX;
@@ -34,19 +34,19 @@ public class BoundingBox
     }
 
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param min The minimum Minecraft BlockPos contained within the bounding box
      * @param max The maximum Minecraft BlockPos contained within the bounding box
      */
-    public BoundingBox(net.minecraft.util.math.BlockPos min, net.minecraft.util.math.BlockPos max)
+    public BoundingBox(net.minecraft.util.math.Vec3i min, net.minecraft.util.math.Vec3i max)
     {
-        this(new AxisAlignedBB(min, max.offset(1, 1, 1)));
+        this(new Box(min.getX(), min.getY(), min.getZ(), max.getX() + 1, max.getY() + 1, max.getZ() + 1));
     }
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @return The Minecraft AxisAlignedBB
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * @return The Minecraft Box
      */
-    public AxisAlignedBB getMinecraftBoundingBox()
+    public Box getMinecraftBoundingBox()
     {
         return this.bb;
     }
@@ -58,7 +58,7 @@ public class BoundingBox
      */
     public BoundingBox(BlockPos min, BlockPos max)
     {
-        this(new AxisAlignedBB(min.getMinecraftBlockPos(), max.getMinecraftBlockPos().offset(1, 1, 1)));
+        this(new Box(min.getMinecraftBlockPos(), max.getMinecraftBlockPos().add(1, 1, 1)));
     }
     /**
      * @param minX The minimum x-coordinate contained within the bounding box
@@ -70,7 +70,7 @@ public class BoundingBox
      */
     public BoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
     {
-        this(new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ));
+        this(new Box(minX, minY, minZ, maxX, maxY, maxZ));
     }
 
     /**

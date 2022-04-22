@@ -1,26 +1,21 @@
 package keystone.core.gui.screens.hotbar;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
-import keystone.api.tools.FillTool;
-import keystone.core.events.KeystoneHotbarEvent;
+import keystone.core.client.Player;
+import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.screens.KeystoneOverlay;
-import keystone.core.gui.screens.block_selection.SingleBlockSelectionScreen;
-import keystone.core.gui.screens.fill.FillAndReplaceScreen;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.renderer.client.Player;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.fml.client.gui.GuiUtils;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +23,7 @@ import java.util.List;
 public class KeystoneHotbar extends KeystoneOverlay
 {
     private static KeystoneHotbarSlot selectedSlot;
-    private static final ResourceLocation hotbarTexture = new ResourceLocation("keystone:textures/gui/hotbar.png");
+    private static final Identifier hotbarTexture = new Identifier("keystone:textures/gui/hotbar.png");
 
     private static int offsetX;
     private static int offsetY;
@@ -36,16 +31,15 @@ public class KeystoneHotbar extends KeystoneOverlay
 
     public KeystoneHotbar()
     {
-        super(new TranslationTextComponent("keystone.screen.hotbar"));
-        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onHotbarChanged);
+        super(new TranslatableText("keystone.screen.hotbar"));
+        KeystoneHotbarEvents.CHANGED.register(this::onHotbarChanged);
     }
 
     //region Hotbar Changed Event
-    private final void onHotbarChanged(final KeystoneHotbarEvent event)
+    // TODO: Separate this from the hotbar screen
+    private final void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
-        if (event.isCanceled()) return;
-
-        switch (event.slot)
+        switch (slot)
         {
             case CLONE:
                 Keystone.getModule(ClipboardModule.class).copy();
@@ -62,8 +56,8 @@ public class KeystoneHotbar extends KeystoneOverlay
     @Override
     public void init()
     {
-        offsetX = Math.round((minecraft.getWindow().getGuiScaledWidth() / 2.0f / HotbarButton.SCALE) - 71);
-        offsetY = Math.round((minecraft.getWindow().getGuiScaledHeight() / HotbarButton.SCALE) - 22);
+        offsetX = Math.round((client.getWindow().getScaledWidth() / 2.0f / HotbarButton.SCALE) - 71);
+        offsetY = Math.round((client.getWindow().getScaledHeight() / HotbarButton.SCALE) - 22);
 
         hotbarButtons = new HotbarButton[]
         {
@@ -84,7 +78,7 @@ public class KeystoneHotbar extends KeystoneOverlay
                 new HotbarButton(this, KeystoneHotbarSlot.SPAWN,     getSlotX(6), offsetY + 3)
         };
         hotbarButtons[6].active = false; // Spawn
-        for (HotbarButton button : hotbarButtons) addButton(button);
+        for (HotbarButton button : hotbarButtons) addDrawableChild(button);
 
         if (selectedSlot == null) setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
@@ -92,29 +86,32 @@ public class KeystoneHotbar extends KeystoneOverlay
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
-        stack.pushPose();
+        stack.push();
         stack.scale(HotbarButton.SCALE, HotbarButton.SCALE, HotbarButton.SCALE);
 
         // Draw hotbar
-        this.minecraft.getTextureManager().bind(hotbarTexture);
-        blit(stack, offsetX, offsetY, 142, 22, 0, 0, 142, 22, 256, 256);
+        RenderSystem.setShaderTexture(0, hotbarTexture);
+        drawTexture(stack, offsetX, offsetY, 142, 22, 0, 0, 142, 22, 256, 256);
 
         // Render slots
         boolean drawCurrentToolName = true;
-        for (Widget button : this.buttons)
+        for (Element element : children())
         {
-            button.render(stack, mouseX, mouseY, partialTicks);
-            if (button.isHovered()) drawCurrentToolName = false;
+            if (element instanceof ClickableWidget widget)
+            {
+                widget.render(stack, mouseX, mouseY, partialTicks);
+                if (widget.isHovered()) drawCurrentToolName = false;
+            }
         }
 
-        stack.popPose();
+        stack.pop();
     }
-    public void renderToolName(MatrixStack stack, IFormattableTextComponent toolName, int mouseX, int mouseY)
+    public void renderToolName(MatrixStack stack, MutableText toolName, int mouseX, int mouseY)
     {
-        Minecraft mc = Minecraft.getInstance();
-        List<IFormattableTextComponent> text = new ArrayList<>();
+        MinecraftClient mc = MinecraftClient.getInstance();
+        List<Text> text = new ArrayList<>();
         text.add(toolName);
-        GuiUtils.drawHoveringText(ItemStack.EMPTY, stack, text, mouseX, mouseY, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight(), -1, mc.font);
+        renderTooltip(stack, text, mouseX, mouseY);
     }
 
     public static KeystoneHotbarSlot getSelectedSlot()
@@ -124,8 +121,15 @@ public class KeystoneHotbar extends KeystoneOverlay
     }
     public static void setSelectedSlot(KeystoneHotbarSlot slot)
     {
-        if (selectedSlot != slot) MinecraftForge.EVENT_BUS.post(new KeystoneHotbarEvent(slot));
-        selectedSlot = slot;
+        if (selectedSlot != slot)
+        {
+            if (KeystoneHotbarEvents.ALLOW_CHANGE.invoker().allowChange(selectedSlot, slot))
+            {
+                KeystoneHotbarSlot previous = selectedSlot;
+                selectedSlot = slot;
+                KeystoneHotbarEvents.CHANGED.invoker().changed(previous, slot);
+            }
+        }
     }
     public static int getX() { return (int)(offsetX * HotbarButton.SCALE); }
     public static int getY() { return (int)(offsetY * HotbarButton.SCALE); }

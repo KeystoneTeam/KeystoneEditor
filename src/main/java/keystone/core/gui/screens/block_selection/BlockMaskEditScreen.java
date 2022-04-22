@@ -1,6 +1,5 @@
 package keystone.core.gui.screens.block_selection;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
@@ -8,8 +7,9 @@ import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.gui.widget.button.CheckboxButton;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.widget.CheckboxWidget;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.TranslatableText;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
@@ -37,37 +37,37 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
     protected void init()
     {
         super.init();
-        this.maskPanel = BlockGridWidget.createWithMargins(KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 80, false, new TranslationTextComponent("keystone.mask_panel"), state ->
+        this.maskPanel = BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 80, false, new TranslatableText("keystone.mask_panel"), state ->
         {
             this.mask.without(BlockTypeRegistry.fromMinecraftBlock(state));
             this.maskPanel.removeBlock(state);
         }, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
         this.mask.forEach(block -> maskPanel.addBlock(block.getMinecraftBlock(), false));
         this.maskPanel.rebuildButtons();
-        this.children.add(maskPanel);
+        addDrawableChild(maskPanel);
 
         // Done and Cancel Buttons
-        addButton(new CheckboxButton(maskPanel.x, maskPanel.y + maskPanel.getHeight() + 5, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.blacklist"), this.mask.isBlacklist(), true)
+        addDrawableChild(new CheckboxWidget(maskPanel.x, maskPanel.y + maskPanel.getHeight() + 5, maskPanel.getWidth(), 20, new TranslatableText("keystone.blacklist"), this.mask.isBlacklist(), true)
         {
             @Override
             public void onPress()
             {
                 super.onPress();
-                if (selected()) mask.blacklist();
+                if (isChecked()) mask.blacklist();
                 else mask.whitelist();
             }
         });
         int gapCenter = (height - maskPanel.y - maskPanel.getHeight()) / 2;
-        addButton(new ButtonNoHotkey(maskPanel.x, maskPanel.y + maskPanel.getHeight() + gapCenter - 10, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.done"), button ->
+        addDrawableChild(new ButtonNoHotkey(maskPanel.x, maskPanel.y + maskPanel.getHeight() + gapCenter - 10, maskPanel.getWidth(), 20, new TranslatableText("keystone.done"), button ->
         {
             if (!ranCallback)
             {
                 callback.accept(mask);
                 ranCallback = true;
             }
-            onClose();
+            close();
         }));
-        addButton(new ButtonNoHotkey(maskPanel.x, height - 25, maskPanel.getWidth(), 20, new TranslationTextComponent("keystone.cancel"), button -> onClose()));
+        addDrawableChild(new ButtonNoHotkey(maskPanel.x, height - 25, maskPanel.getWidth(), 20, new TranslatableText("keystone.cancel"), button -> close()));
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)

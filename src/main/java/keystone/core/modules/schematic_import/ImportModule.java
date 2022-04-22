@@ -4,7 +4,7 @@ import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3i;
-import keystone.core.events.KeystoneHotbarEvent;
+import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.screens.file_browser.OpenFilesScreen;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
@@ -15,27 +15,22 @@ import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.history.entries.CloneImportBoxesHistoryEntry;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
-import keystone.core.modules.schematic_import.boxes.ImportBoundingBox;
-import keystone.core.modules.schematic_import.providers.ImportBoxProvider;
+import keystone.core.modules.selection.SelectableCuboid;
+import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.modules.selection.boxes.SelectionBoundingBox;
-import keystone.core.renderer.client.providers.IBoundingBoxProvider;
-import keystone.core.renderer.common.models.Coords;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.common.MinecraftForge;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3i;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class ImportModule implements IKeystoneModule
@@ -50,12 +45,13 @@ public class ImportModule implements IKeystoneModule
     private List<ImportBoundingBox> importBoxes;
     private HistoryModule historyModule;
     private GhostBlocksModule ghostBlocksModule;
+    private ImportBoxRenderer renderer;
 
     public ImportModule()
     {
         historyEntrySupplier = IMPORT_HISTORY_SUPPLIER;
         importBoxes = Collections.synchronizedList(new ArrayList<>());
-        MinecraftForge.EVENT_BUS.addListener(this::onSlotChanged);
+        KeystoneHotbarEvents.CHANGED.register(this::onSlotChanged);
     }
 
     public IHistoryEntry makeHistoryEntry() { return historyEntrySupplier.get(); }
@@ -72,45 +68,48 @@ public class ImportModule implements IKeystoneModule
     {
         this.historyModule = Keystone.getModule(HistoryModule.class);
         this.ghostBlocksModule = Keystone.getModule(GhostBlocksModule.class);
+        this.renderer = new ImportBoxRenderer();
     }
     @Override
     public void resetModule()
     {
         clearImportBoxes(false);
     }
-
     @Override
-    public IBoundingBoxProvider[] getBoundingBoxProviders()
+    public Collection<? extends SelectableCuboid> getSelectableBoxes() { return this.importBoxes; }
+    @Override
+    public void alwaysRender(WorldRenderContext context)
     {
-        return new IBoundingBoxProvider[] { new ImportBoxProvider(this)};
+        KeystoneHotbarSlot slot = KeystoneHotbar.getSelectedSlot();
+        if (slot == KeystoneHotbarSlot.CLONE || slot == KeystoneHotbarSlot.IMPORT) this.importBoxes.forEach(box -> renderer.render(context, box));
     }
     //endregion
     //region Event Handlers
-    private void onSlotChanged(final KeystoneHotbarEvent event)
+    private void onSlotChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
-        if (event.previousSlot == KeystoneHotbarSlot.IMPORT && event.slot != KeystoneHotbarSlot.IMPORT) clearImportBoxes(true);
+        if (previous == KeystoneHotbarSlot.IMPORT && slot != KeystoneHotbarSlot.IMPORT) clearImportBoxes(true);
     }
     //endregion
     //region Import Calls
-    public void promptImportSchematic(Coords minPosition)
+    public void promptImportSchematic(Vec3i minPosition)
     {
-        OpenFilesScreen.openFiles(new StringTextComponent("Import Schematics"), SchematicLoader.getExtensions(),
+        OpenFilesScreen.openFiles(new LiteralText("Import Schematics"), SchematicLoader.getExtensions(),
                 KeystoneDirectories.getSchematicsDirectory(), true, (files) ->
         {
             for (File schematic : files) importSchematic(schematic, minPosition);
         });
     }
-    public void importSchematic(String path, Coords minPosition)
+    public void importSchematic(String path, Vec3i minPosition)
     {
         KeystoneSchematic schematic = SchematicLoader.loadSchematic(path);
         importSchematic(schematic, minPosition);
     }
-    public void importSchematic(File file, Coords minPosition)
+    public void importSchematic(File file, Vec3i minPosition)
     {
         KeystoneSchematic schematic = SchematicLoader.loadSchematic(file);
         importSchematic(schematic, minPosition);
     }
-    public void importSchematic(KeystoneSchematic schematic, Coords minPosition)
+    public void importSchematic(KeystoneSchematic schematic, Vec3i minPosition)
     {
         IHistoryEntry historyEntry = historyEntrySupplier.get();
         if (historyEntry != null)
@@ -124,7 +123,7 @@ public class ImportModule implements IKeystoneModule
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.IMPORT);
         ImportScreen.open();
     }
-    public void setCloneImportBoxes(SelectionBoundingBox selection, KeystoneSchematic schematic, Coords minPosition, Rotation rotation, Mirror mirror, Vector3i offset, int repeat, int scale)
+    public void setCloneImportBoxes(SelectionBoundingBox selection, KeystoneSchematic schematic, Vec3i minPosition, BlockRotation rotation, BlockMirror mirror, Vector3i offset, int repeat, int scale)
     {
         historyModule.tryBeginHistoryEntry();
         historyModule.pushToEntry(new CloneImportBoxesHistoryEntry(selection.getBoundingBox(), schematic, minPosition, rotation, mirror, offset, repeat, scale, false));
@@ -147,7 +146,7 @@ public class ImportModule implements IKeystoneModule
 
         return old;
     }
-    public void restoreCloneImportBoxes(KeystoneSchematic schematic, Coords minPosition, Rotation rotation, Mirror mirror, Vector3i offset, int repeat, int scale)
+    public void restoreCloneImportBoxes(KeystoneSchematic schematic, Vec3i minPosition, BlockRotation rotation, BlockMirror mirror, Vector3i offset, int repeat, int scale)
     {
         importBoxes.forEach(importBox -> ghostBlocksModule.releaseWorld(importBox.getGhostBlocks()));
         this.importBoxes.clear();
@@ -215,8 +214,8 @@ public class ImportModule implements IKeystoneModule
 
         for (ImportBoundingBox importBox : importBoxes) importBox.setScale(scale);
     }
-    public void placeAll(Map<ResourceLocation, Boolean> extensionsToPlace) { placeAll(extensionsToPlace, true); }
-    public void placeAll(Map<ResourceLocation, Boolean> extensionsToPlace, boolean copyAir)
+    public void placeAll(Map<Identifier, Boolean> extensionsToPlace) { placeAll(extensionsToPlace, true); }
+    public void placeAll(Map<Identifier, Boolean> extensionsToPlace, boolean copyAir)
     {
         if (importBoxes.size() == 0) return;
 

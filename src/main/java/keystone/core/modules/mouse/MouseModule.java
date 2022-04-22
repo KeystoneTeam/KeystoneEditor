@@ -1,112 +1,120 @@
 package keystone.core.modules.mouse;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
+import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
-import keystone.core.events.KeystoneInputEvent;
+import keystone.core.events.keystone.KeystoneInputEvents;
+import keystone.core.events.minecraft.InputEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.selection.SelectedFace;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.renderer.client.ClientRenderer;
-import keystone.core.renderer.client.Player;
-import keystone.core.renderer.common.models.AbstractBoundingBox;
-import keystone.core.renderer.common.models.DimensionId;
-import keystone.core.renderer.common.models.SelectableBoundingBox;
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.client.MinecraftClient;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class MouseModule implements IKeystoneModule
 {
     private SelectionModule selectionModule;
     private SelectedFace selectedFace;
+    private List<SelectedFace> orderedSelectedFaces;
     private boolean draggingBox;
-
+    
     public MouseModule()
     {
-        MinecraftForge.EVENT_BUS.register(this);
         selectedFace = null;
         draggingBox = false;
+        orderedSelectedFaces = new ArrayList<>();
+        registerEvents();
     }
 
+    //region Module Overrides
     @Override
     public boolean isEnabled()
     {
         return true;
     }
-    @Override
-    public void preRender(MatrixStack stack, float partialTicks, DimensionId dimensionId)
-    {
-        if (selectionModule == null) selectionModule = Keystone.getModule(SelectionModule.class);
 
+    @Override
+    public void postInit()
+    {
+        this.selectionModule = Keystone.getModule(SelectionModule.class);
+    }
+
+    @Override
+    public void preRender(WorldRenderContext context)
+    {
         if (selectionModule.isCreatingSelection()) selectedFace = null;
         else
         {
             if (!draggingBox)
             {
-                selectedFace = null;
-                List<AbstractBoundingBox> boxes = new ArrayList<>();
-                ClientRenderer.getBoundingBoxes(Player.getDimensionId()).forEachOrdered(box -> boxes.add(box));
-                for (AbstractBoundingBox box : boxes)
+                orderedSelectedFaces.clear();
+                Keystone.forEachModule(module ->
                 {
-                    if (box instanceof SelectableBoundingBox)
+                    module.getSelectableBoxes().forEach(selectable ->
                     {
-                        SelectableBoundingBox selectable = (SelectableBoundingBox)box;
-                        if (!selectable.isEnabled()) continue;
-
-                        SelectedFace face = selectable.getSelectedFace();
-                        if (face != null)
+                        if (selectable.isEnabled())
                         {
-                            if (selectedFace == null) selectedFace = face;
-                            else if (face.getDistance() < selectedFace.getDistance()) selectedFace = face;
-                            else if (face.getDistance() == selectedFace.getDistance() && face.getBox().getPriority() > selectedFace.getBox().getPriority()) selectedFace = face;
+                            selectable.getSelectedFaces(orderedSelectedFaces);
                         }
-                    }
+                    });
+                });
+                if (orderedSelectedFaces.size() > 0)
+                {
+                    orderedSelectedFaces.sort(Comparator.comparingDouble(SelectedFace::getDistance));
+                    selectedFace = orderedSelectedFaces.get(0);
+
+                    double threshold = Math.min(KeystoneConfig.selectFaceSkipThreshold, 0.125 * selectedFace.getClosestEdgeLength());
+                    if (selectedFace.getInternalDistance() < threshold && orderedSelectedFaces.size() > 1) selectedFace = orderedSelectedFaces.get(1);
                 }
+                else selectedFace = null;
             }
             else if (selectedFace != null) selectedFace.getBox().drag(selectedFace);
         }
     }
-
+    //endregion
     //region Getters
     public SelectedFace getSelectedFace() { return selectedFace; }
     public boolean isDraggingBox() { return draggingBox; }
     //endregion
     //region Events
-    @SubscribeEvent
-    public final void onMouseClick(final KeystoneInputEvent.MouseClickEvent event)
+    private void registerEvents()
     {
-        if (Keystone.isActive() && Minecraft.getInstance().screen == null && !event.gui && event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(!KeystoneGlobalState.AllowPlayerLook);
+        KeystoneInputEvents.MOUSE_CLICKED.register(this::onMouseClick);
+        KeystoneInputEvents.START_MOUSE_DRAG.register(this::onMouseDragStart);
+        KeystoneInputEvents.END_MOUSE_DRAG.register(this::onMouseDragEnd);
+        InputEvents.MOUSE_SCROLLED.register(this::onScroll);
     }
-    @SubscribeEvent
-    public final void onMouseDragStart(final KeystoneInputEvent.MouseDragStartEvent event)
+    
+    private void onMouseClick(int button, int modifiers, double mouseX, double mouseY, boolean gui)
     {
-        if (Keystone.isActive() && Minecraft.getInstance().screen == null && !event.gui)
+        if (Keystone.isActive() && MinecraftClient.getInstance().currentScreen == null && !gui && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(!KeystoneGlobalState.AllowPlayerLook);
+    }
+    private void onMouseDragStart(int button, double mouseX, double mouseY, boolean gui)
+    {
+        if (Keystone.isActive() && MinecraftClient.getInstance().currentScreen == null && !gui)
         {
-            if (event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(true);
-            else if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT && selectedFace != null) startDraggingBox();
+            if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(true);
+            else if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && selectedFace != null) startDraggingBox();
         }
     }
-    @SubscribeEvent
-    public final void onMouseDragEnd(final KeystoneInputEvent.MouseDragEndEvent event)
+    private void onMouseDragEnd(int button, double mouseX, double mouseY, boolean gui)
     {
-        if (Keystone.isActive() && Minecraft.getInstance().screen == null && !event.gui)
+        if (Keystone.isActive() && MinecraftClient.getInstance().currentScreen == null && !gui)
         {
-            if (event.button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(false);
-            else if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT) endDraggingBox();
+            if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(false);
+            else if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) endDraggingBox();
         }
     }
-    @SubscribeEvent
-    public final void onScroll(final InputEvent.MouseScrollEvent event)
+    private void onScroll(double offsetX, double offsetY)
     {
         if (Keystone.isActive() && !KeystoneGlobalState.MouseOverGUI && KeystoneGlobalState.CloseSelection)
         {
-            KeystoneGlobalState.CloseSelectionDistance += event.getScrollDelta();
+            KeystoneGlobalState.CloseSelectionDistance += offsetY;
             if (KeystoneGlobalState.CloseSelectionDistance < 0) KeystoneGlobalState.CloseSelectionDistance = 0;
         }
     }
@@ -116,8 +124,8 @@ public class MouseModule implements IKeystoneModule
     {
         KeystoneGlobalState.AllowPlayerLook = allowLook;
         KeystoneGlobalState.CloseSelection = allowLook;
-        if (allowLook) Minecraft.getInstance().mouseHandler.grabMouse();
-        else Minecraft.getInstance().mouseHandler.releaseMouse();
+        if (allowLook) MinecraftClient.getInstance().mouse.lockCursor();
+        else MinecraftClient.getInstance().mouse.unlockCursor();
     }
     private void startDraggingBox()
     {

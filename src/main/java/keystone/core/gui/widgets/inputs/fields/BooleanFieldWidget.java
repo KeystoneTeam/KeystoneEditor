@@ -3,16 +3,15 @@ package keystone.core.gui.widgets.inputs.fields;
 import keystone.api.Keystone;
 import keystone.api.variables.Hook;
 import keystone.core.utils.AnnotationUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.button.CheckboxButton;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.widget.CheckboxWidget;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 
 import java.lang.reflect.Field;
 import java.util.function.Supplier;
 
-public class BooleanFieldWidget extends CheckboxButton
+public class BooleanFieldWidget extends CheckboxWidget
 {
     private final Supplier<Object> instance;
     private final Field field;
@@ -21,7 +20,7 @@ public class BooleanFieldWidget extends CheckboxButton
 
     public BooleanFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(x, y, width, getFinalHeight(), new StringTextComponent(name), (boolean)field.get(instance.get()), true);
+        super(x, y, width, getFinalHeight(), new LiteralText(name), (boolean)field.get(instance.get()), true);
 
         this.instance = instance;
         this.field = field;
@@ -42,14 +41,14 @@ public class BooleanFieldWidget extends CheckboxButton
         super.onPress();
         try
         {
-            field.set(instance.get(), this.selected());
+            field.set(instance.get(), this.isChecked());
             AnnotationUtils.runHook(instance.get(), hook);
         }
         catch (IllegalArgumentException | IllegalAccessException e)
         {
             String error = "Cannot set Boolean field '" + name + "'!";
             Keystone.LOGGER.error(error);
-            Minecraft.getInstance().player.sendMessage(new StringTextComponent(error).withStyle(TextFormatting.RED), Util.NIL_UUID);
+            MinecraftClient.getInstance().player.sendMessage(new LiteralText(error).styled(style -> style.withColor(Formatting.RED)), false);
         }
     }
 }

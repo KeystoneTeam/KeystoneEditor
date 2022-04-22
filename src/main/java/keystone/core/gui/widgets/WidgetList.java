@@ -1,32 +1,33 @@
 package keystone.core.gui.widgets;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WidgetList extends Widget
+public class WidgetList extends ClickableWidget
 {
     private int scrollIndex;
     private int maxScrollIndex;
 
     private final int padding;
     private final int maxHeight;
-    private final List<Widget> currentWidgets = new ArrayList<>();
-    private final List<Widget> widgets = new ArrayList<>();
-    private final List<Widget> queuedWidgets = new ArrayList<>();
+    private final List<ClickableWidget> currentWidgets = new ArrayList<>();
+    private final List<ClickableWidget> widgets = new ArrayList<>();
+    private final List<ClickableWidget> queuedWidgets = new ArrayList<>();
 
-    public WidgetList(int x, int y, int width, int maxHeight, int padding, ITextComponent label)
+    public WidgetList(int x, int y, int width, int maxHeight, int padding, Text label)
     {
         super(x, y, width, 0, label);
         this.padding = padding;
         this.maxHeight = maxHeight;
     }
 
-    public void add(Widget widget) { add(widget, false); }
-    public void add(Widget widget, boolean queued)
+    public void add(ClickableWidget widget) { add(widget, false); }
+    public void add(ClickableWidget widget, boolean queued)
     {
         widget.x += this.x + padding;
 
@@ -61,12 +62,12 @@ public class WidgetList extends Widget
     {
         this.x += x;
         this.y += y;
-        for (Widget widget : widgets)
+        for (ClickableWidget widget : widgets)
         {
             widget.x += x;
             widget.y += y;
         }
-        for (Widget widget : queuedWidgets)
+        for (ClickableWidget widget : queuedWidgets)
         {
             widget.x += x;
             widget.y += y;
@@ -96,7 +97,7 @@ public class WidgetList extends Widget
 
         while (i < widgets.size())
         {
-            Widget widget = widgets.get(i);
+            ClickableWidget widget = widgets.get(i);
             if (height + widget.getHeight() > maxHeight) break;
             widget.y = y;
 
@@ -117,10 +118,10 @@ public class WidgetList extends Widget
             fill(stack, x + width - 1, scrollbarY, x + width + 1, scrollbarY + scrollbarHeight, 0xFF808080);
         }
 
-        stack.pushPose();
+        stack.push();
         currentWidgets.forEach(widget -> widget.render(stack, mouseX, mouseY, partialTicks));
         queuedWidgets.forEach(widget -> widget.render(stack, mouseX, mouseY, partialTicks));
-        stack.popPose();
+        stack.pop();
     }
 
     @Override
@@ -140,40 +141,40 @@ public class WidgetList extends Widget
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button)
     {
-        for (Widget widget : queuedWidgets) if (widget.mouseClicked(mouseX, mouseY, button)) return true;
-        for (Widget widget : currentWidgets) if (widget.mouseClicked(mouseX, mouseY, button)) return true;
+        for (ClickableWidget widget : queuedWidgets) if (widget.mouseClicked(mouseX, mouseY, button)) return true;
+        for (ClickableWidget widget : currentWidgets) if (widget.mouseClicked(mouseX, mouseY, button)) return true;
         return false;
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button)
     {
-        for (Widget widget : queuedWidgets) if (widget.mouseReleased(mouseX, mouseY, button)) return true;
-        for (Widget widget : currentWidgets) if (widget.mouseReleased(mouseX, mouseY, button)) return true;
+        for (ClickableWidget widget : queuedWidgets) if (widget.mouseReleased(mouseX, mouseY, button)) return true;
+        for (ClickableWidget widget : currentWidgets) if (widget.mouseReleased(mouseX, mouseY, button)) return true;
         return false;
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY)
     {
-        for (Widget widget : queuedWidgets) if (widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
-        for (Widget widget : currentWidgets) if (widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
+        for (ClickableWidget widget : queuedWidgets) if (widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
+        for (ClickableWidget widget : currentWidgets) if (widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
         return false;
     }
 
     @Override
     public boolean isHovered()
     {
-        for (Widget widget : queuedWidgets) if (widget.isHovered()) return true;
-        for (Widget widget : currentWidgets) if (widget.isHovered()) return true;
+        for (ClickableWidget widget : queuedWidgets) if (widget.isHovered()) return true;
+        for (ClickableWidget widget : currentWidgets) if (widget.isHovered()) return true;
         return false;
     }
 
     @Override
     public boolean isMouseOver(double mouseX, double mouseY)
     {
-        for (Widget widget : queuedWidgets) if (widget.isMouseOver(mouseX, mouseY)) return true;
-        for (Widget widget : currentWidgets) if (widget.isMouseOver(mouseX, mouseY)) return true;
+        for (ClickableWidget widget : queuedWidgets) if (widget.isMouseOver(mouseX, mouseY)) return true;
+        for (ClickableWidget widget : currentWidgets) if (widget.isMouseOver(mouseX, mouseY)) return true;
         return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
     }
 
@@ -187,33 +188,39 @@ public class WidgetList extends Widget
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollDelta)
     {
-        for (Widget widget : queuedWidgets) if (widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
-        for (Widget widget : currentWidgets) if (widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
+        for (ClickableWidget widget : queuedWidgets) if (widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
+        for (ClickableWidget widget : currentWidgets) if (widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
         return scrollPanel(mouseX, mouseY, scrollDelta);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {
-        for (Widget widget : queuedWidgets) if (widget.keyPressed(keyCode, scanCode, modifiers)) return true;
-        for (Widget widget : currentWidgets) if (widget.keyPressed(keyCode, scanCode, modifiers)) return true;
+        for (ClickableWidget widget : queuedWidgets) if (widget.keyPressed(keyCode, scanCode, modifiers)) return true;
+        for (ClickableWidget widget : currentWidgets) if (widget.keyPressed(keyCode, scanCode, modifiers)) return true;
         return false;
     }
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers)
     {
-        for (Widget widget : queuedWidgets) if (widget.keyReleased(keyCode, scanCode, modifiers)) return true;
-        for (Widget widget : currentWidgets) if (widget.keyReleased(keyCode, scanCode, modifiers)) return true;
+        for (ClickableWidget widget : queuedWidgets) if (widget.keyReleased(keyCode, scanCode, modifiers)) return true;
+        for (ClickableWidget widget : currentWidgets) if (widget.keyReleased(keyCode, scanCode, modifiers)) return true;
         return false;
     }
 
     @Override
     public boolean charTyped(char codePoint, int modifiers)
     {
-        for (Widget widget : queuedWidgets) if (widget.charTyped(codePoint, modifiers)) return true;
-        for (Widget widget : currentWidgets) if (widget.charTyped(codePoint, modifiers)) return true;
+        for (ClickableWidget widget : queuedWidgets) if (widget.charTyped(codePoint, modifiers)) return true;
+        for (ClickableWidget widget : currentWidgets) if (widget.charTyped(codePoint, modifiers)) return true;
         return false;
+    }
+
+    @Override
+    public void appendNarrations(NarrationMessageBuilder builder)
+    {
+
     }
     //endregion
 }

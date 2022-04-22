@@ -2,49 +2,56 @@ package keystone.core.renderer.blocks.world;
 
 import keystone.api.Keystone;
 import keystone.core.renderer.blocks.GhostWorldRenderer;
-import net.minecraft.block.AbstractFurnaceBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.ArmorStandEntity;
-import net.minecraft.entity.item.ItemFrameEntity;
+import net.minecraft.entity.decoration.ArmorStandEntity;
+import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.world.*;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.registry.BuiltinRegistries;
+import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.world.LightType;
+import net.minecraft.world.ServerWorldAccess;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeRegistry;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.biome.BiomeKeys;
+import net.minecraft.world.tick.EmptyTickSchedulers;
+import net.minecraft.world.tick.QueryableTickScheduler;
 
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
+public class GhostBlocksWorld extends WrappedWorld implements ServerWorldAccess
 {
     protected Map<BlockPos, BlockState> blocks;
-    protected Map<BlockPos, TileEntity> tileEntities;
-    protected List<TileEntity> renderedTileEntities;
+    protected Map<BlockPos, BlockEntity> tileEntities;
+    protected List<BlockEntity> renderedTileEntities;
     protected List<Entity> entities;
-    protected MutableBoundingBox bounds;
+    protected BlockBox bounds;
     protected GhostWorldRenderer renderer;
-    protected Rotation rotation;
-    protected Mirror mirror;
+    protected BlockRotation rotation;
+    protected BlockMirror mirror;
 
-    public GhostBlocksWorld(World original, Rotation rotation, Mirror mirror)
+    public GhostBlocksWorld(World original, BlockRotation rotation, BlockMirror mirror)
     {
-        super(original, new WrappedChunkProvider(WrappedChunk::new));
+        super(original);
+        setChunkManager(new GhostChunkManager(this));
+
         this.blocks = new HashMap<>();
         this.tileEntities = new HashMap<>();
-        this.bounds = new MutableBoundingBox();
+        this.bounds = new BlockBox(BlockPos.ORIGIN);
         this.entities = new ArrayList<>();
         this.renderedTileEntities = new ArrayList<>();
 
@@ -56,14 +63,14 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     }
 
     public GhostWorldRenderer getRenderer () { return renderer; }
-    public Rotation getRotation() { return rotation; }
-    public Mirror getMirror() { return mirror; }
+    public BlockRotation getRotation() { return rotation; }
+    public BlockMirror getMirror() { return mirror; }
     public Set<BlockPos> getAllPositions()
     {
         return blocks.keySet();
     }
 
-    public void setOrientation(Rotation rotation, Mirror mirror)
+    public void setOrientation(BlockRotation rotation, BlockMirror mirror)
     {
         this.rotation = rotation;
         this.mirror = mirror;
@@ -73,25 +80,25 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     {
         this.blocks.clear();
         this.tileEntities.clear();
-        this.bounds = new MutableBoundingBox();
+        this.bounds = new BlockBox(BlockPos.ORIGIN);
         this.entities.clear();
         this.renderedTileEntities.clear();
-        this.rotation = Rotation.NONE;
-        this.mirror = Mirror.NONE;
+        this.rotation = BlockRotation.NONE;
+        this.mirror = BlockMirror.NONE;
         this.renderer.markDirty();
     }
 
     @Override
-    public boolean addFreshEntity(Entity entityIn)
+    public boolean spawnEntity(Entity entityIn)
     {
         if (entityIn instanceof ItemFrameEntity)
-            ((ItemFrameEntity) entityIn).getItem()
-                    .setTag(null);
+            ((ItemFrameEntity) entityIn).getHeldItemStack()
+                    .setNbt(null);
         if (entityIn instanceof ArmorStandEntity)
         {
             ArmorStandEntity armorStandEntity = (ArmorStandEntity) entityIn;
-            armorStandEntity.getAllSlots()
-                    .forEach(stack -> stack.setTag(null));
+            armorStandEntity.getItemsEquipped()
+                    .forEach(stack -> stack.setNbt(null));
         }
 
         this.renderer.markDirty();
@@ -104,21 +111,18 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     }
 
     @Override
-    public TileEntity getBlockEntity(BlockPos pos)
+    public BlockEntity getBlockEntity(BlockPos pos)
     {
-        if (isOutsideBuildHeight(pos))
-            return null;
-        if (tileEntities.containsKey(pos))
-            return tileEntities.get(pos);
-        if (!blocks.containsKey(pos))
-            return null;
+        if (isOutOfHeightLimit(pos)) return null;
+        if (tileEntities.containsKey(pos)) return tileEntities.get(pos);
+        if (!blocks.containsKey(pos)) return null;
 
         BlockState blockState = getBlockState(pos);
-        if (blockState.hasTileEntity())
+        if (blockState.hasBlockEntity())
         {
             try
             {
-                TileEntity tileEntity = blockState.createTileEntity(this);
+                BlockEntity tileEntity = ((BlockEntityProvider)blockState.getBlock()).createBlockEntity(pos, blockState);
                 if (tileEntity != null)
                 {
                     onTEadded(tileEntity, pos);
@@ -126,27 +130,25 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
                     renderedTileEntities.add(tileEntity);
                 }
                 return tileEntity;
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
-                Keystone.LOGGER.debug("Could not create TileEntity of block " + blockState + ": " + e);
+                Keystone.LOGGER.debug("Could not create BlockEntity of block " + blockState + ": " + e);
             }
         }
         return null;
     }
 
-    protected void onTEadded(TileEntity tileEntity, BlockPos pos)
+    protected void onTEadded(BlockEntity tileEntity, BlockPos pos)
     {
-        tileEntity.setLevelAndPosition(this, pos);
+        tileEntity.setWorld(this);
     }
 
     @Override
     public BlockState getBlockState(BlockPos globalPos)
     {
-//        if (globalPos.getY() - bounds.y0 == -1 && !renderMode)
-//            return Blocks.AIR.defaultBlockState();
-        if (getBounds().isInside(globalPos) && blocks.containsKey(globalPos))
-            return processBlockStateForPrinting(blocks.get(globalPos));
-        return Blocks.AIR.defaultBlockState();
+        if (getBounds().contains(globalPos) && blocks.containsKey(globalPos)) return blocks.get(globalPos);
+        return Blocks.AIR.getDefaultState();
     }
 
     public Map<BlockPos, BlockState> getBlockMap()
@@ -161,77 +163,70 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     }
 
     @Override
-    public Biome getBiome(BlockPos pos)
+    public RegistryEntry<Biome> getBiome(BlockPos pos)
     {
-        return BiomeRegistry.THE_VOID;
+        return BuiltinRegistries.BIOME.getEntry(BiomeKeys.THE_VOID).get();
     }
 
     @Override
-    public int getBrightness(LightType p_226658_1_, BlockPos p_226658_2_)
+    public int getLightLevel(LightType p_226658_1_, BlockPos p_226658_2_)
     {
         return 10;
     }
 
     @Override
-    public List<Entity> getEntities(Entity arg0, AxisAlignedBB arg1, Predicate<? super Entity> arg2)
+    public List<Entity> getOtherEntities(Entity arg0, Box arg1, Predicate<? super Entity> arg2)
     {
         return Collections.emptyList();
     }
 
-    public <T extends Entity> List<T> getEntities(Class<? extends T> arg0, AxisAlignedBB arg1,
+    public <T extends Entity> List<T> getEntities(Class<? extends T> arg0, Box arg1,
                                                   Predicate<? super T> arg2)
     {
         return Collections.emptyList();
     }
 
     @Override
-    public List<? extends PlayerEntity> players()
+    public List<? extends PlayerEntity> getPlayers()
     {
         return Collections.emptyList();
     }
 
     @Override
-    public int getSkyDarken()
+    public int getAmbientDarkness()
     {
         return 0;
     }
 
     @Override
-    public boolean isStateAtPosition(BlockPos pos, Predicate<BlockState> predicate)
+    public boolean testBlockState(BlockPos pos, Predicate<BlockState> predicate)
     {
         return predicate.test(getBlockState(pos));
     }
 
     @Override
-    public boolean destroyBlock(BlockPos arg0, boolean arg1)
-    {
-        return setBlock(arg0, Blocks.AIR.defaultBlockState(), 3);
-    }
-
-    @Override
     public boolean removeBlock(BlockPos arg0, boolean arg1)
     {
-        return setBlock(arg0, Blocks.AIR.defaultBlockState(), 3);
+        return setBlockState(arg0, Blocks.AIR.getDefaultState(), 3);
     }
 
     @Override
-    public boolean setBlock(BlockPos pos, BlockState state, int flags)
+    public boolean setBlockState(BlockPos pos, BlockState state, int flags)
     {
-        pos = pos.immutable();
-        bounds.expand(new MutableBoundingBox(pos, pos));
+        pos = pos.toImmutable();
+        bounds.encompass(BlockBox.create(pos, pos));
         blocks.put(pos, state);
         if (tileEntities.containsKey(pos))
         {
-            TileEntity tileEntity = tileEntities.get(pos);
-            if (!tileEntity.getType()
-                    .isValid(state.getBlock()))
+            BlockEntity tileEntity = tileEntities.get(pos);
+            if (!tileEntity.getType().supports(state))
             {
                 tileEntities.remove(pos);
                 renderedTileEntities.remove(tileEntity);
             }
         }
 
-        TileEntity tileEntity = getBlockEntity(pos);
+        BlockEntity tileEntity = getBlockEntity(pos);
         if (tileEntity != null)
             tileEntities.put(pos, tileEntity);
 
@@ -240,48 +235,31 @@ public class GhostBlocksWorld extends WrappedWorld implements IServerWorld
     }
 
     @Override
-    public ITickList<Block> getBlockTicks()
+    public QueryableTickScheduler<Block> getBlockTickScheduler()
     {
-        return EmptyTickList.empty();
+        return EmptyTickSchedulers.getClientTickScheduler();
     }
 
     @Override
-    public ITickList<Fluid> getLiquidTicks()
+    public QueryableTickScheduler<Fluid> getFluidTickScheduler()
     {
-        return EmptyTickList.empty();
+        return EmptyTickSchedulers.getClientTickScheduler();
     }
 
-    public MutableBoundingBox getBounds()
+    public BlockBox getBounds()
     {
         return bounds;
     }
 
-    public Iterable<TileEntity> getRenderedTileEntities()
+    public Iterable<BlockEntity> getRenderedTileEntities()
     {
         return renderedTileEntities;
     }
 
-    protected BlockState processBlockStateForPrinting(BlockState state)
-    {
-        if (state.getBlock() instanceof AbstractFurnaceBlock && state.hasProperty(BlockStateProperties.LIT))
-            state = state.setValue(BlockStateProperties.LIT, false);
-        return state;
-    }
-
     @Override
-    public ServerWorld getWorld()
-    {
-        if (this.world instanceof ServerWorld)
-        {
-            return (ServerWorld) this.world;
-        }
-        throw new IllegalStateException("Cannot use IServerWorld#getWorld in a client environment");
-    }
-
-    @Override
-    public ServerWorld getLevel()
+    public ServerWorld toServerWorld()
     {
         if (this.world instanceof ServerWorld) return (ServerWorld) this.world;
-        throw new IllegalStateException("Cannot use IServerWorld#getWorld in a client environment");
+        throw new IllegalStateException("Cannot use ServerLevelAccess#toServerWorld in a client environment");
     }
 }

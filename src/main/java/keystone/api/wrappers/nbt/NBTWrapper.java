@@ -1,14 +1,14 @@
 package keystone.api.wrappers.nbt;
 
-import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.NbtElement;
 
-public class NBTWrapper<N extends INBT>
+public class NBTWrapper<N extends NbtElement>
 {
     protected final N nbt;
 
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @param nbt The Minecraft INBT
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * @param nbt The Minecraft NbtElement
      */
     protected NBTWrapper(N nbt)
     {
@@ -16,8 +16,8 @@ public class NBTWrapper<N extends INBT>
     }
 
     /**
-     * INTERNAL USE ONLY, DO NOT USE IN FILTERS
-     * @return The Minecraft INBT
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * @return The Minecraft NbtElement
      */
     public N getMinecraftNBT() { return this.nbt; }
 
@@ -34,6 +34,6 @@ public class NBTWrapper<N extends INBT>
     @Override
     public String toString()
     {
-        return nbt.getAsString();
+        return nbt.asString();
     }
 }

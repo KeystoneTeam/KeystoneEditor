@@ -1,11 +1,10 @@
 package keystone.core.gui.screens.fill;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
-import keystone.core.events.KeystoneHotbarEvent;
+import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.block_selection.SingleBlockSelectionScreen;
@@ -15,14 +14,11 @@ import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.BlockMaskWidget;
 import keystone.core.gui.widgets.inputs.BlockPaletteWidget;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.TranslatableText;
 import org.lwjgl.glfw.GLFW;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class FillAndReplaceScreen extends KeystoneOverlay
 {
     private static final int PADDING = 5;
@@ -36,7 +32,7 @@ public class FillAndReplaceScreen extends KeystoneOverlay
 
     protected FillAndReplaceScreen()
     {
-        super(new TranslationTextComponent("keystone.screen.fill"));
+        super(new TranslatableText("keystone.screen.fill"));
         previousMask = new BlockMask();
         previousPalette = new BlockPalette();
     }
@@ -48,6 +44,10 @@ public class FillAndReplaceScreen extends KeystoneOverlay
             open = true;
         }
     }
+    public static void registerEvents()
+    {
+        KeystoneHotbarEvents.CHANGED.register(FillAndReplaceScreen::onHotbarChanged);
+    }
     //endregion
 
     private int panelMinY;
@@ -56,15 +56,14 @@ public class FillAndReplaceScreen extends KeystoneOverlay
     private BlockMaskWidget mask;
     private BlockPaletteWidget palette;
 
-    @SubscribeEvent
-    public static void onHotbarChanged(final KeystoneHotbarEvent event)
+    public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
-        if (event.slot != KeystoneHotbarSlot.FILL)
+        if (slot != KeystoneHotbarSlot.FILL)
         {
-            if (open) instance.onClose();
+            if (open) instance.close();
             if (quickFill != null)
             {
-                quickFill.onClose();
+                quickFill.close();
                 quickFill = null;
             }
         }
@@ -102,19 +101,19 @@ public class FillAndReplaceScreen extends KeystoneOverlay
 
         int y = panelMinY + PADDING;
         int width = panelMaxX - 2 * PADDING;
-        mask = new BlockMaskWidget(new TranslationTextComponent("keystone.fill.mask"), PADDING, y, width, previousMask, this::disableWidgets, this::restoreWidgets);
+        mask = new BlockMaskWidget(new TranslatableText("keystone.fill.mask"), PADDING, y, width, previousMask, this::disableWidgets, this::restoreWidgets);
         y += mask.getHeight() + PADDING;
-        palette = new BlockPaletteWidget(new TranslationTextComponent("keystone.fill.palette"), PADDING, y, width, previousPalette, this::disableWidgets, this::restoreWidgets);
+        palette = new BlockPaletteWidget(new TranslatableText("keystone.fill.palette"), PADDING, y, width, previousPalette, this::disableWidgets, this::restoreWidgets);
         y += palette.getHeight() + PADDING;
 
         int buttonWidth = (panelMaxX - 3 * PADDING) >> 1;
-        ButtonNoHotkey fillButton = new ButtonNoHotkey(PADDING, y, buttonWidth, 20, new TranslationTextComponent("keystone.fill.fill"), this::fillButton);
-        ButtonNoHotkey cancelButton = new ButtonNoHotkey(panelMaxX - PADDING - buttonWidth, y, buttonWidth, 20, new TranslationTextComponent("keystone.cancel"), button -> onClose());
+        ButtonNoHotkey fillButton = new ButtonNoHotkey(PADDING, y, buttonWidth, 20, new TranslatableText("keystone.fill.fill"), this::fillButton);
+        ButtonNoHotkey cancelButton = new ButtonNoHotkey(panelMaxX - PADDING - buttonWidth, y, buttonWidth, 20, new TranslatableText("keystone.cancel"), button -> close());
 
-        addButton(mask);
-        addButton(palette);
-        addButton(fillButton);
-        addButton(cancelButton);
+        addDrawableChild(mask);
+        addDrawableChild(palette);
+        addDrawableChild(fillButton);
+        addDrawableChild(cancelButton);
     }
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
@@ -127,7 +126,7 @@ public class FillAndReplaceScreen extends KeystoneOverlay
     {
         if (keyCode == GLFW.GLFW_KEY_ESCAPE)
         {
-            onClose();
+            close();
             return true;
         }
         else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
@@ -139,10 +138,10 @@ public class FillAndReplaceScreen extends KeystoneOverlay
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    private void fillButton(Button button)
+    private void fillButton(ButtonWidget button)
     {
         FillTool fillTool = new FillTool(mask.getMask(), palette.getPalette());
         Keystone.runInternalFilter(fillTool);
-        onClose();
+        close();
     }
 }

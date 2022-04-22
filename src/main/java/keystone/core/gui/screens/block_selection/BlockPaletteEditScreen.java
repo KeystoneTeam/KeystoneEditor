@@ -1,6 +1,5 @@
 package keystone.core.gui.screens.block_selection;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.KeystoneOverlayHandler;
@@ -9,7 +8,8 @@ import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.TranslatableText;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
@@ -37,7 +37,7 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
     protected void init()
     {
         super.init();
-        this.palettePanel = BlockGridWidget.createWithMargins(KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 50, true, new TranslationTextComponent("keystone.mask_panel"), state ->
+        this.palettePanel = BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 50, true, new TranslatableText("keystone.mask_panel"), state ->
         {
             BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(state);
             this.palette.without(wrapper, 1);
@@ -49,19 +49,20 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
         });
 
         this.palettePanel.rebuildButtons();
-        this.children.add(palettePanel);
+        addDrawableChild(palettePanel);
 
         // Done and Cancel Buttons
-        addButton(new ButtonNoHotkey(palettePanel.x, palettePanel.y + palettePanel.getHeight() + 5, palettePanel.getWidth(), 20, new TranslationTextComponent("keystone.done"), button ->
+        addDrawableChild(new ButtonNoHotkey(palettePanel.x, palettePanel.y + palettePanel.getHeight() + 5, palettePanel.getWidth(), 20, new TranslatableText("keystone.done"), button ->
         {
             if (!ranCallback)
             {
                 callback.accept(palette);
                 ranCallback = true;
             }
-            onClose();
+            close();
         }));
-        addButton(new ButtonNoHotkey(palettePanel.x, height - 20, palettePanel.getWidth(), 20, new TranslationTextComponent("keystone.cancel"), button -> onClose()));
+
+        addDrawableChild(new ButtonNoHotkey(palettePanel.x, height - 20, palettePanel.getWidth(), 20, new TranslatableText("keystone.cancel"), button -> close()));
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
