@@ -148,34 +148,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
             if (!ranVersionCheck)
             {
                 ranVersionCheck = true;
-
-                // TODO: Re-implement version checker
-                //IModInfo modInfo = ModList.get().getModContainerByObject(this).get().getModInfo();
-                //VersionChecker.CheckResult result = VersionChecker.getResult(modInfo);
-                //
-                //if (result.status == VersionChecker.Status.OUTDATED)
-                //{
-                //    MutableText[] lines = new MutableText[]
-                //            {
-                //                    new TranslatableText("keystone.version_check.outdated").withStyle(Formatting.GOLD),
-                //                    new TranslatableText("keystone.version_check.currentVersion",
-                //                            new LiteralText(modInfo.getVersion().toString()).withStyle(Formatting.AQUA),
-                //                            new LiteralText(result.target.toString()).withStyle(Formatting.AQUA)).withStyle(Formatting.GOLD),
-                //                    new TranslatableText("keystone.version_check.releasesLink").withStyle(Formatting.GOLD)
-                //            };
-                //
-                //    MutableText hyperlink = new TranslatableText("keystone.version_check.releasesLink.hyperlink").withStyle
-                //    (
-                //        Style.EMPTY
-                //            .withColor(Formatting.AQUA)
-                //            .withUnderlined(true)
-                //            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, result.url))
-                //    );
-                //    lines[2] = lines[2].append(new LiteralText(" ")).append(hyperlink);
-                //
-                //    for (MutableText line : lines) event.getEntity().sendMessage(line, false);
-                //    Keystone.disableKeystone();
-                //}
+                VersionChecker.doVersionCheck();
             }
 
             KeystoneKeyBindings.configureKeyConditions();

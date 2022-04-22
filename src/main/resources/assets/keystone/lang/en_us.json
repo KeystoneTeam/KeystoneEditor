@@ -3,6 +3,7 @@
   "keystone.version_check.currentVersion": "You are using %s, the current version is %s",
   "keystone.version_check.releasesLink": "To download the update, click",
   "keystone.version_check.releasesLink.hyperlink": "here",
+  "keystone.version_check.changelog": "Changes:",
 
   "keystone.screen.selection": "Selection tools",
   "keystone.screen.selectionNudge": "Nudge selection bounds",
