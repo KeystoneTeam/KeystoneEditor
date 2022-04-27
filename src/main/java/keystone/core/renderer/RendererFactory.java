@@ -168,15 +168,15 @@ public final class RendererFactory
 
     public static RendererBuilder createWireframeOverlay()
     {
-        return new RendererBuilder(DefaultRendererModifiers.LINES_SHADER, DefaultRendererModifiers.TRANSLUCENT, DefaultRendererModifiers.IGNORE_CULL, new DefaultRendererModifiers.PolygonOffset(1));
+        return new RendererBuilder(DefaultRendererModifiers.LINES_SHADER, DefaultRendererModifiers.TRANSLUCENT, DefaultRendererModifiers.IGNORE_CULL, new DefaultRendererModifiers.PolygonOffset(2));
     }
     public static RendererBuilder createSmartPolygonOverlay(Supplier<Boolean> cullingCondition)
     {
-        return new RendererBuilder(DefaultRendererModifiers.POSITION_COLOR_SHADER, DefaultRendererModifiers.TRANSLUCENT, new DefaultRendererModifiers.ConditionalCull(cullingCondition), new DefaultRendererModifiers.PolygonOffset(1));
+        return new RendererBuilder(DefaultRendererModifiers.POSITION_COLOR_SHADER, DefaultRendererModifiers.TRANSLUCENT, new DefaultRendererModifiers.ConditionalCull(cullingCondition), new DefaultRendererModifiers.PolygonOffset(2));
     }
     public static RendererBuilder createPolygonOverlay()
     {
-        return new RendererBuilder(DefaultRendererModifiers.POSITION_COLOR_SHADER, DefaultRendererModifiers.TRANSLUCENT, DefaultRendererModifiers.IGNORE_CULL, new DefaultRendererModifiers.PolygonOffset(1));
+        return new RendererBuilder(DefaultRendererModifiers.POSITION_COLOR_SHADER, DefaultRendererModifiers.TRANSLUCENT, DefaultRendererModifiers.IGNORE_CULL, new DefaultRendererModifiers.PolygonOffset(2));
     }
 
     public static ComplexOverlayRenderer createComplexOverlay(IOverlayRenderer fillRenderer, IOverlayRenderer wireframeRenderer)

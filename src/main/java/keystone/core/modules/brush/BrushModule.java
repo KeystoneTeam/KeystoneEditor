@@ -70,7 +70,7 @@ public class BrushModule implements IKeystoneModule
 
         this.renderer = RendererFactory.createComplexOverlay(
                 RendererFactory.createSmartPolygonOverlay(this::isCameraInsideShape).buildFill(),
-                RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe()
+                RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe(4.0f)
         );
     }
 

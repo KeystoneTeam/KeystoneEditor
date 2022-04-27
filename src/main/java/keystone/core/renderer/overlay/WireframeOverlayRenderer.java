@@ -162,125 +162,193 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         int sizeZ = size.getZ();
         
         Color4f color;
-        Vec3f normal;
-        renderer.lines(lineWidth, VertexFormats.LINES);
 
         //region X
         if (sizeY > 0 && sizeZ > 0)
         {
-            //region -X Face
+            //region WEST
+            renderer.lines(lineWidth, VertexFormats.LINES);
             color = colorProvider.apply(Direction.WEST).withAlpha(alphaProvider.apply(Direction.WEST));
-            normal = new Vec3f(0, 0, 1);
-            for (int y = 1; y < sizeY; y++)
+            for (int i = 0; i < sizeZ; i++)
             {
-                renderer.vertex(min.add(0, y * scale, 0)).color(color).normal(normal).next();
-                renderer.vertex(min.add(0, y * scale, sizeZ * scale)).color(color).normal(normal).next();
+                for (int k = 0; k < sizeY; k += 128)
+                {
+                    Vec3d a = min.add(0, k, i);
+                    Vec3d b = min.add(0, Math.min(sizeY, k + 128), i);
+                    Vec3d normal = b.subtract(a);
+                    renderer.vertex(a).color(color).normal(normal).next();
+                    renderer.vertex(b).color(color).normal(normal).next();
+                }
             }
-            normal = new Vec3f(0, 1, 0);
-            for (int z = 1; z < sizeZ; z++)
+            for (int i = 0; i < sizeY; i++)
             {
-                renderer.vertex(min.add(0, 0, z * scale)).color(color).normal(normal).next();
-                renderer.vertex(min.add(0, sizeY * scale, z * scale)).color(color).normal(normal).next();
+                for (int k = 0; k < sizeZ; k += 128)
+                {
+                    Vec3d a = min.add(0, i, k);
+                    Vec3d b = min.add(0, i, Math.min(sizeZ, k + 128));
+                    Vec3d normal = b.subtract(a);
+                    renderer.vertex(a).color(color).normal(normal).next();
+                    renderer.vertex(b).color(color).normal(normal).next();
+                }
             }
+            renderer.draw();
             //endregion
+            //region EAST
             if (sizeX > 0)
             {
-                //region +X Face
+                renderer.lines(lineWidth, VertexFormats.LINES);
                 color = colorProvider.apply(Direction.EAST).withAlpha(alphaProvider.apply(Direction.EAST));
-                normal = new Vec3f(0, 0, 0);
-                for (int y = 1; y < sizeY; y++)
+                for (int i = 0; i < sizeZ; i++)
                 {
-                    renderer.vertex(min.add(sizeX * scale, y * scale, 0)).color(color).normal(normal).next();
-                    renderer.vertex(min.add(sizeX * scale, y * scale, sizeZ * scale)).color(color).normal(normal).next();
+                    for (int k = 0; k < sizeY; k += 128)
+                    {
+                        Vec3d a = min.add(sizeX, k, i);
+                        Vec3d b = min.add(sizeX, Math.min(sizeY, k + 128), i);
+                        Vec3d normal = b.subtract(a);
+                        renderer.vertex(a).color(color).normal(normal).next();
+                        renderer.vertex(b).color(color).normal(normal).next();
+                    }
                 }
-                normal = new Vec3f(0, 1, 0);
-                for (int z = 1; z < sizeZ; z++)
+                for (int i = 0; i < sizeY; i++)
                 {
-                    renderer.vertex(min.add(sizeX * scale, 0, z * scale)).color(color).normal(normal).next();
-                    renderer.vertex(min.add(sizeX * scale, sizeY * scale, z * scale)).color(color).normal(normal).next();
+                    for (int k = 0; k < sizeZ; k += 128)
+                    {
+                        Vec3d a = min.add(sizeX, i, k);
+                        Vec3d b = min.add(sizeX, i, Math.min(sizeZ, k + 128));
+                        Vec3d normal = b.subtract(a);
+                        renderer.vertex(a).color(color).normal(normal).next();
+                        renderer.vertex(b).color(color).normal(normal).next();
+                    }
                 }
-                //endregion
+                renderer.draw();
             }
+            //endregion
         }
         //endregion
         //region Y
         if (sizeX > 0 && sizeZ > 0)
         {
-            //region -Y Face
+            //region DOWN
+            renderer.lines(lineWidth, VertexFormats.LINES);
             color = colorProvider.apply(Direction.DOWN).withAlpha(alphaProvider.apply(Direction.DOWN));
-            normal = new Vec3f(0, 0, 1);
-            for (int x = 1; x < sizeX; x++)
+            for (int i = 0; i < sizeX; i++)
             {
-                renderer.vertex(min.add(x * scale, 0, 0)).color(color).normal(normal).next();
-                renderer.vertex(min.add(x * scale, 0, sizeZ * scale)).color(color).normal(normal).next();
+                for (int k = 0; k < sizeZ; k += 128)
+                {
+                    Vec3d a = min.add(i, 0, k);
+                    Vec3d b = min.add(i, 0, Math.min(sizeZ, k + 128));
+                    Vec3d normal = b.subtract(a);
+                    renderer.vertex(a).color(color).normal(normal).next();
+                    renderer.vertex(b).color(color).normal(normal).next();
+                }
             }
-            normal = new Vec3f(1, 0, 0);
-            for (int z = 1; z < sizeZ; z++)
+            for (int i = 0; i < sizeZ; i++)
             {
-                renderer.vertex(min.add(0, 0, z * scale)).color(color).normal(normal).next();
-                renderer.vertex(min.add(sizeX * scale, 0, z * scale)).color(color).normal(normal).next();
+                for (int k = 0; k < sizeX; k += 128)
+                {
+                    Vec3d a = min.add(k, 0, i);
+                    Vec3d b = min.add(Math.min(sizeX, k + 128), 0, i);
+                    Vec3d normal = b.subtract(a);
+                    renderer.vertex(a).color(color).normal(normal).next();
+                    renderer.vertex(b).color(color).normal(normal).next();
+                }
             }
+            renderer.draw();
             //endregion
+            //region UP
             if (sizeY > 0)
             {
-                //region +Y Face
+                renderer.lines(lineWidth, VertexFormats.LINES);
                 color = colorProvider.apply(Direction.UP).withAlpha(alphaProvider.apply(Direction.UP));
-                normal = new Vec3f(0, 0, 1);
-                for (int x = 1; x < sizeX; x++)
+                for (int i = 0; i < sizeX; i++)
                 {
-                    renderer.vertex(min.add(x * scale, sizeY * scale, 0)).color(color).normal(normal).next();
-                    renderer.vertex(min.add(x * scale, sizeY * scale, sizeZ * scale)).color(color).normal(normal).next();
+                    for (int k = 0; k < sizeZ; k += 128)
+                    {
+                        Vec3d a = min.add(i, sizeY, k);
+                        Vec3d b = min.add(i, sizeY, Math.min(sizeZ, k + 128));
+                        Vec3d normal = b.subtract(a);
+                        renderer.vertex(a).color(color).normal(normal).next();
+                        renderer.vertex(b).color(color).normal(normal).next();
+                    }
                 }
-                normal = new Vec3f(1, 0, 0);
-                for (int z = 1; z < sizeZ; z++)
+                for (int i = 0; i < sizeZ; i++)
                 {
-                    renderer.vertex(min.add(0, sizeY * scale, z * scale)).color(color).normal(normal).next();
-                    renderer.vertex(min.add(sizeX * scale, sizeY * scale, z * scale)).color(color).normal(normal).next();
+                    for (int k = 0; k < sizeX; k += 128)
+                    {
+                        Vec3d a = min.add(k, sizeY, i);
+                        Vec3d b = min.add(Math.min(sizeX, k + 128), sizeY, i);
+                        Vec3d normal = b.subtract(a);
+                        renderer.vertex(a).color(color).normal(normal).next();
+                        renderer.vertex(b).color(color).normal(normal).next();
+                    }
                 }
-                //endregion
+                renderer.draw();
             }
+            //endregion
         }
         //endregion
         //region Z
         if (sizeX > 0 && sizeY > 0)
         {
-            //region -Z Face
+            //region NORTH
+            renderer.lines(lineWidth, VertexFormats.LINES);
             color = colorProvider.apply(Direction.NORTH).withAlpha(alphaProvider.apply(Direction.NORTH));
-            normal = new Vec3f(1, 0, 0);
-            for (int y = 1; y < sizeY; y++)
+            for (int i = 0; i < sizeX; i++)
             {
-                renderer.vertex(min.add(0, y * scale, 0)).color(color).normal(normal).next();
-                renderer.vertex(min.add(sizeX * scale, y * scale, 0)).color(color).normal(normal).next();
+                for (int k = 0; k < sizeY; k += 128)
+                {
+                    Vec3d a = min.add(i, k, 0);
+                    Vec3d b = min.add(i, Math.min(sizeY, k + 128), 0);
+                    Vec3d normal = b.subtract(a);
+                    renderer.vertex(a).color(color).normal(normal).next();
+                    renderer.vertex(b).color(color).normal(normal).next();
+                }
             }
-            normal = new Vec3f(0, 1, 0);
-            for (int x = 1; x < sizeX; x++)
+            for (int i = 0; i < sizeY; i++)
             {
-                renderer.vertex(min.add(x * scale, 0, 0)).color(color).normal(normal).next();
-                renderer.vertex(min.add(x * scale, sizeY * scale, 0)).color(color).normal(normal).next();
+                for (int k = 0; k < sizeX; k += 128)
+                {
+                    Vec3d a = min.add(k, i, 0);
+                    Vec3d b = min.add(Math.min(sizeX, k + 128), i, 0);
+                    Vec3d normal = b.subtract(a);
+                    renderer.vertex(a).color(color).normal(normal).next();
+                    renderer.vertex(b).color(color).normal(normal).next();
+                }
             }
+            renderer.draw();
             //endregion
+            //region SOUTH
             if (sizeZ > 0)
             {
-                //region +Z Face
+                renderer.lines(lineWidth, VertexFormats.LINES);
                 color = colorProvider.apply(Direction.SOUTH).withAlpha(alphaProvider.apply(Direction.SOUTH));
-                normal = new Vec3f(1, 0, 0);
-                for (int y = 1; y < sizeY; y++)
+                for (int i = 0; i < sizeX; i++)
                 {
-                    renderer.vertex(min.add(0, y * scale, sizeZ * scale)).color(color).normal(normal).next();
-                    renderer.vertex(min.add(sizeX * scale, y * scale, sizeZ * scale)).color(color).normal(normal).next();
+                    for (int k = 0; k < sizeY; k += 128)
+                    {
+                        Vec3d a = min.add(i, k, sizeZ);
+                        Vec3d b = min.add(i, Math.min(sizeY, k + 128), sizeZ);
+                        Vec3d normal = b.subtract(a);
+                        renderer.vertex(a).color(color).normal(normal).next();
+                        renderer.vertex(b).color(color).normal(normal).next();
+                    }
                 }
-                normal = new Vec3f(0, 1, 0);
-                for (int x = 1; x < sizeX; x++)
+                for (int i = 0; i < sizeY; i++)
                 {
-                    renderer.vertex(min.add(x * scale, 0, sizeZ * scale)).color(color).normal(normal).next();
-                    renderer.vertex(min.add(x * scale, sizeY * scale, sizeZ * scale)).color(color).normal(normal).next();
+                    for (int k = 0; k < sizeX; k += 128)
+                    {
+                        Vec3d a = min.add(k, i, sizeZ);
+                        Vec3d b = min.add(Math.min(sizeX, k + 128), i, sizeZ);
+                        Vec3d normal = b.subtract(a);
+                        renderer.vertex(a).color(color).normal(normal).next();
+                        renderer.vertex(b).color(color).normal(normal).next();
+                    }
                 }
-                //endregion
+                renderer.draw();
             }
+            //endregion
         }
         //endregion
-
-        renderer.draw();
     }
     @Override
     public void drawPlane(Vec3d center, Direction planeNormal, double gridScale, IColorProvider colorProvider, IAlphaProvider alphaProvider)
