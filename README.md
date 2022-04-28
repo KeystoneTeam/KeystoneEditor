@@ -13,6 +13,5 @@ Compilation
 --------------
 1) Clone this repository and check out the branch of the version you want to build. (master is updated whenever a new version is released)
 2) Load it into an IDE of your choice and import the project.
-3) Run `gradlew genIntellijRuns`, `gradlew genVSCodeRuns` or `gradlew genEclipseRuns` depending on the IDE you use.
-4) Run `gradlew build` to build the jar
-5) You'll find the built jars in the `/build/libs/` folder. The file ending with (Forge \<version\>) is the mod file with all required dependencies, the other jar file only contains the actual mod code and will not work in Minecraft
+3) Run `gradlew build` to build the jar
+4) You'll find the built jars in the `/build/libs/` folder. The file ending with '-fabric.jar' is the mod file with all required dependencies, the other jar files contain only the actual non-remapped mod code and will not work in Minecraft
