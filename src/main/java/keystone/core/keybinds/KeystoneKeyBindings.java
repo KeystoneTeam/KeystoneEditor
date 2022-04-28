@@ -2,6 +2,7 @@ package keystone.core.keybinds;
 
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
+import keystone.core.KeystoneConfig;
 import keystone.core.keybinds.conflicts.DefaultKeyConditions;
 import keystone.core.keybinds.conflicts.IKeyCondition;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -15,6 +16,9 @@ import org.lwjgl.glfw.GLFW;
 public class KeystoneKeyBindings
 {
     public static final KeyBinding TOGGLE_KEYSTONE = new KeyBinding("key.toggle_keystone", GLFW.GLFW_KEY_K, "key.categories.keystone");
+    public static final KeyBinding MULTI_SELECT = new KeyBinding("key.multiselect", GLFW.GLFW_KEY_LEFT_CONTROL, "key.categories.keystone");
+    public static final KeyBinding INCREASE_FLY_SPEED = new KeyBinding("key.fly_speed.increase", GLFW.GLFW_KEY_UP, "key.categories.keystone");
+    public static final KeyBinding DECREASE_FLY_SPEED = new KeyBinding("key.fly_speed.decrease", GLFW.GLFW_KEY_DOWN, "key.categories.keystone");
     public static final KeyBinding DELETE_BLOCKS = new KeyBinding("key.delete_blocks", GLFW.GLFW_KEY_DELETE, "key.categories.keystone");
 
     private static boolean addedConditions = false;
@@ -22,11 +26,16 @@ public class KeystoneKeyBindings
     public static void register()
     {
         KeyBindingHelper.registerKeyBinding(TOGGLE_KEYSTONE);
+        KeyBindingHelper.registerKeyBinding(MULTI_SELECT);
+        KeyBindingHelper.registerKeyBinding(INCREASE_FLY_SPEED);
+        KeyBindingHelper.registerKeyBinding(DECREASE_FLY_SPEED);
         KeyBindingHelper.registerKeyBinding(DELETE_BLOCKS);
 
         ClientTickEvents.END_CLIENT_TICK.register(client ->
         {
             while (TOGGLE_KEYSTONE.wasPressed()) Keystone.toggleKeystone();
+            while (INCREASE_FLY_SPEED.wasPressed()) Keystone.increaseFlySpeed(KeystoneConfig.flySpeedChangeAmount);
+            while (DECREASE_FLY_SPEED.wasPressed()) Keystone.decreaseFlySpeed(KeystoneConfig.flySpeedChangeAmount);
             while (DELETE_BLOCKS.wasPressed()) if (Keystone.isActive()) Keystone.runInternalFilter(new FillTool(Blocks.AIR.getDefaultState()));
         });
     }
@@ -38,6 +47,11 @@ public class KeystoneKeyBindings
         GameOptions options = MinecraftClient.getInstance().options;
         IKeyCondition noGuiOpen = DefaultKeyConditions.NO_GUI_OPEN;
         IKeyCondition keystoneInactive = DefaultKeyConditions.KEYSTONE_INACTIVE;
+        IKeyCondition keystoneActive = DefaultKeyConditions.KEYSTONE_ACTIVE;
+
+        KeyBindingUtils.addConditions(INCREASE_FLY_SPEED, keystoneActive);
+        KeyBindingUtils.addConditions(DECREASE_FLY_SPEED, keystoneActive);
+        KeyBindingUtils.addConditions(DELETE_BLOCKS, keystoneActive);
 
         KeyBindingUtils.addConditions(options.forwardKey, noGuiOpen);
         KeyBindingUtils.addConditions(options.leftKey, noGuiOpen);

@@ -1,11 +1,11 @@
 package keystone.core.modules.history;
 
 import keystone.api.Keystone;
-import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.client.Player;
+import keystone.core.modules.world.WorldChangeQueueModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -22,24 +22,23 @@ public class HistoryStackFrame
 
     private ServerWorldAccess world;
     private final HistoryModule historyModule;
+    private final WorldChangeQueueModule worldChangeQueue;
     private final List<IHistoryEntry> entries;
     private final Map<Vec3i, WorldHistoryChunk> chunks;
 
     public HistoryStackFrame(int index)
     {
-        this.historyModule = Keystone.getModule(HistoryModule.class);
-        this.index = index;
-        this.world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
-        this.entries = Collections.synchronizedList(new ArrayList<>());
-        this.chunks = Collections.synchronizedMap(new HashMap<>());
+        this (index, null);
     }
     public HistoryStackFrame(int index, NbtCompound nbt)
     {
         this.historyModule = Keystone.getModule(HistoryModule.class);
+        this.worldChangeQueue = Keystone.getModule(WorldChangeQueueModule.class);
         this.index = index;
+        this.world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
         this.entries = Collections.synchronizedList(new ArrayList<>());
         this.chunks = Collections.synchronizedMap(new HashMap<>());
-        deserialize(nbt);
+        if (nbt != null) deserialize(nbt);
     }
 
     public NbtCompound serialize()
@@ -89,17 +88,17 @@ public class HistoryStackFrame
 
     public void undo()
     {
-        for (WorldHistoryChunk chunk : chunks.values()) chunk.undo();
+        for (WorldHistoryChunk chunk : chunks.values()) worldChangeQueue.enqueueChange(chunk, true);
         for (int i = entries.size() - 1; i >= 0; i--) entries.get(i).undo();
     }
     public void redo()
     {
-        for (WorldHistoryChunk chunk : chunks.values()) chunk.redo();
+        for (WorldHistoryChunk chunk : chunks.values()) worldChangeQueue.enqueueChange(chunk, false);
         for (IHistoryEntry entry : entries) entry.redo();
     }
     public void applyChanges()
     {
-        for (WorldHistoryChunk chunk : chunks.values()) chunk.redo();
+        for (WorldHistoryChunk chunk : chunks.values()) worldChangeQueue.enqueueChange(chunk, false);
     }
     public boolean addToUnsavedChanges()
     {
@@ -129,10 +128,6 @@ public class HistoryStackFrame
     public void setBlock(int x, int y, int z, Block block)
     {
         getOrAddChunk(x, y, z).setBlock(x, y, z, block);
-    }
-    public void setBiome(int x, int y, int z, Biome biome)
-    {
-        getOrAddChunk(x, y, z).setBiome(x, y, z, biome);
     }
     public void setEntity(Entity entity)
     {
@@ -166,10 +161,6 @@ public class HistoryStackFrame
     public void swapBlockBuffers(boolean copy)
     {
         for (WorldHistoryChunk chunk : chunks.values()) chunk.swapBlockBuffers(copy);
-    }
-    public void swapBiomeBuffers(boolean copy)
-    {
-        for (WorldHistoryChunk chunk : chunks.values()) chunk.swapBiomeBuffers(copy);
     }
     public void swapEntityBuffers(boolean copy)
     {

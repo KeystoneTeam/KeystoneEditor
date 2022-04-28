@@ -28,6 +28,7 @@ import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.world.BiomesModule;
 import keystone.core.modules.world.BlocksModule;
 import keystone.core.modules.world.EntitiesModule;
+import keystone.core.modules.world.WorldChangeQueueModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.schematic.extensions.BiomesExtension;
 import keystone.core.schematic.extensions.StructureVoidsExtension;
@@ -67,6 +68,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
             registry.accept(new GhostBlocksModule());
             registry.accept(new HistoryModule());
             registry.accept(new ClipboardModule());
+            registry.accept(new WorldChangeQueueModule());
 
             registry.accept(new SelectionModule());
             registry.accept(new BrushModule());
@@ -143,6 +145,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         if (entity instanceof PlayerEntity && !inWorld)
         {
             if (KeystoneConfig.startActive) Keystone.enableKeystone();
+            else Keystone.disableKeystone();
             inWorld = true;
 
             if (!ranVersionCheck)

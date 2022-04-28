@@ -174,7 +174,6 @@ public class WorldRegion
         }
         else return false;
     }
-
     /**
      * Set the block at a position in the filter box to a {@link BlockType}.
      * This will only work if the position is within the filter box or
@@ -194,27 +193,6 @@ public class WorldRegion
         }
         else return false;
     }
-
-    /**
-     * Set the biome at a position in the filter box to a {@link Biome}.
-     * This will only work if the position is within the filter box or
-     * allowBlocksOutside is true
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @param z The z coordinate
-     * @param biome The {@link Biome} to change the position to
-     * @return Whether the change was successful
-     */
-    public boolean setBiome(int x, int y, int z, Biome biome)
-    {
-        if (allowBlocksOutside || isPositionInBox(x, y, z))
-        {
-            worldModifiers.biomes.setBiome(x, y, z, biome);
-            return true;
-        }
-        else return false;
-    }
-
     /**
      * Add or modify an {@link Entity} in the region
      * @param entity The {@link Entity} to add or modify

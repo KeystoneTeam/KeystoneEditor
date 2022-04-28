@@ -1,17 +1,17 @@
 package keystone.core.renderer.overlay;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.client.Camera;
 import keystone.core.renderer.Color4f;
 import keystone.core.renderer.RenderBox;
 import keystone.core.renderer.interfaces.IAlphaProvider;
 import keystone.core.renderer.interfaces.IColorProvider;
 import keystone.core.renderer.interfaces.IRenderer;
-import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 
 import java.util.function.BiFunction;

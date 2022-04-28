@@ -1,6 +1,7 @@
 package keystone.core.gui.screens.filters;
 
 import keystone.api.Keystone;
+import keystone.api.KeystoneDirectories;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
@@ -9,6 +10,7 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.widgets.TextDisplayWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
+import keystone.core.gui.widgets.buttons.TextClickButton;
 import keystone.core.gui.widgets.inputs.Dropdown;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
 import keystone.core.modules.filter.FilterDirectoryManager;
@@ -20,6 +22,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Util;
 
 import java.io.File;
 import java.util.regex.Matcher;
@@ -122,7 +125,9 @@ public class FilterSelectionScreen extends KeystoneOverlay
         panelMaxY = centerHeight + halfPanelHeight;
 
         // Select Filter Button
-        int selectButtonX = 5 + this.textRenderer.getWidth(new TranslatableText("keystone.filter_panel.select").getString());
+        TextClickButton filterLabel = new TextClickButton(5, panelMinY + 11, new TranslatableText("keystone.filter_panel.select"), 0x8080FF, button -> Util.getOperatingSystem().open(KeystoneDirectories.getFilterDirectory()));
+        addDrawableChild(filterLabel);
+        int selectButtonX = filterLabel.x + filterLabel.getWidth();
         this.selectFilterButton = new ButtonNoHotkey(selectButtonX, panelMinY + 5, panelMaxX - selectButtonX - 5, 20, new LiteralText("!ERROR!"), (button) ->
         {
             disableWidgets(this.dropdown);
@@ -194,7 +199,6 @@ public class FilterSelectionScreen extends KeystoneOverlay
 
         fill(stack, 0, panelMinY, panelMaxX, panelMaxY, 0x80000000);
 
-        drawTextWithShadow(stack, textRenderer, new TranslatableText("keystone.filter_panel.select"), 5, panelMinY + 11, 0x8080FF);
         super.render(stack, mouseX, mouseY, partialTicks);
         this.dropdown.render(stack, mouseX, mouseY, partialTicks);
     }

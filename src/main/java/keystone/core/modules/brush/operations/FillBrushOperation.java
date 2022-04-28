@@ -12,9 +12,8 @@ import net.minecraft.text.TranslatableText;
 
 public class FillBrushOperation extends BrushOperation
 {
-    @Variable BlockMask mask = new BlockMask().with("minecraft:air");
+    @Variable BlockMask mask = new BlockMask().blacklist();
     @Variable BlockPalette palette = new BlockPalette().with("minecraft:stone");
-    @Variable boolean useMask = false;
 
     @Override
     public Text getName()
@@ -25,7 +24,7 @@ public class FillBrushOperation extends BrushOperation
     public boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration)
     {
         BlockType existing = worldModifiers.blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED);
-        if (!useMask || mask.valid(existing))
+        if (mask.valid(existing))
         {
             worldModifiers.blocks.setBlock(x, y, z, palette.randomBlock());
             return true;
