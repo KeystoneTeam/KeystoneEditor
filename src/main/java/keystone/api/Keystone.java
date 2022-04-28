@@ -41,7 +41,8 @@ public final class Keystone
 
     //region Active Toggle
     private static boolean enabled;
-    private static boolean revertGamemode;
+    private static boolean revertPlayer;
+    private static float flySpeed = KeystoneConfig.flySpeed;
     private static int revertGuiScale;
 
     /**
@@ -63,7 +64,6 @@ public final class Keystone
         enabled = true;
         KeystoneGlobalState.AllowPlayerLook = false;
         minecraft.mouse.unlockCursor();
-        minecraft.player.getAbilities().setFlySpeed(KeystoneConfig.flySpeed);
 
         revertGuiScale = minecraft.options.guiScale;
         minecraft.options.guiScale = 3;
@@ -80,7 +80,7 @@ public final class Keystone
 
         enabled = false;
         minecraft.mouse.lockCursor();
-        revertGamemode = true;
+        revertPlayer = true;
 
         minecraft.options.guiScale = revertGuiScale;
         minecraft.onResolutionChanged();
@@ -211,6 +211,39 @@ public final class Keystone
     //endregion
     //region API
     /**
+     * @return The camera fly speed
+     */
+    public static float getFlySpeed()
+    {
+        return flySpeed;
+    }
+    /**
+     * Set the camera's fly speed
+     * @param speed The new speed of the camera
+     */
+    public static void setFlySpeed(float speed)
+    {
+        flySpeed = speed;
+    }
+    /**
+     * Increase the camera's fly speed
+     * @param amount The amount to increase the camera's speed by
+     */
+    public static void increaseFlySpeed(float amount)
+    {
+        flySpeed += amount;
+        flySpeed = Math.min(0.5f, flySpeed);
+    }
+    /**
+     * Decrease the camera's fly speed
+     * @param amount The amount to decrease the camera's speed by
+     */
+    public static void decreaseFlySpeed(float amount)
+    {
+        flySpeed -= amount;
+        flySpeed = Math.max(0, flySpeed);
+    }
+    /**
      * Cancel filter execution and log the reason
      * @param reason The reason for canceling filter execution
      */
@@ -294,20 +327,27 @@ public final class Keystone
 
         if (Keystone.isActive())
         {
+            if (player.getAbilities().getFlySpeed() != flySpeed)
+            {
+                player.getAbilities().setFlySpeed(flySpeed);
+                MinecraftClient.getInstance().player.getAbilities().setFlySpeed(flySpeed);
+            }
+            if (player.interactionManager.getGameMode() != GameMode.SPECTATOR) player.changeGameMode(GameMode.SPECTATOR);
+
             if (player.getUuid().equals(clientPlayer.getUuid()))
             {
-                if (player.interactionManager.getGameMode() != GameMode.SPECTATOR)
-                {
-                    player.changeGameMode(GameMode.SPECTATOR);
-                }
+
             }
         }
-        else if (revertGamemode)
+        else if (revertPlayer)
         {
             if (player.getUuid().equals(clientPlayer.getUuid()))
             {
+                player.getAbilities().setFlySpeed(0.05f);
+                MinecraftClient.getInstance().player.getAbilities().setFlySpeed(0.05f);
+
                 if (player.interactionManager.getPreviousGameMode().getId() != -1) player.changeGameMode(player.interactionManager.getPreviousGameMode());
-                revertGamemode = false;
+                revertPlayer = false;
             }
         }
     }

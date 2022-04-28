@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(DrawableHelper.class)
-public class MixinDrawableHelper
+public class DrawableHelperMixin
 {
     @Inject(method = "fill(Lnet/minecraft/util/math/Matrix4f;IIIII)V", at = @At("HEAD"))
     private static void fillHead(Matrix4f matrix, int minX, int minY, int maxX, int maxY, int color, CallbackInfo callback)

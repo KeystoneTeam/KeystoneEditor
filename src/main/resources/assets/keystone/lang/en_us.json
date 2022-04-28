@@ -31,6 +31,8 @@
   "key.categories.keystone": "Keystone",
   "key.toggle_keystone": "Toggle Keystone",
   "key.multiselect": "Multi-Select",
+  "key.fly_speed.increase": "Increase Fly Speed",
+  "key.fly_speed.decrease": "Decrease Fly Speed",
   "key.delete_blocks": "Delete Selection",
 
   "keystone.hotbar.selection": "Selection",

@@ -145,6 +145,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         if (entity instanceof PlayerEntity && !inWorld)
         {
             if (KeystoneConfig.startActive) Keystone.enableKeystone();
+            else Keystone.disableKeystone();
             inWorld = true;
 
             if (!ranVersionCheck)

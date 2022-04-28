@@ -1,8 +1,6 @@
 package keystone.core.utils;
 
 import keystone.api.Keystone;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.TranslatableText;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,7 +9,6 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;

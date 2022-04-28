@@ -1,7 +1,6 @@
 package keystone.core;
 
 import keystone.api.Keystone;
-import keystone.api.wrappers.entities.Entity;
 import keystone.core.utils.IniFile;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
@@ -13,9 +12,7 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;

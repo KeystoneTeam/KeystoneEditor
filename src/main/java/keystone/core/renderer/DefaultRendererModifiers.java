@@ -2,7 +2,6 @@ package keystone.core.renderer;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import keystone.core.renderer.interfaces.IRenderer;
 import keystone.core.renderer.interfaces.IRendererModifier;
 import net.minecraft.client.render.GameRenderer;
 

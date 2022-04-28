@@ -11,9 +11,6 @@ import keystone.core.modules.world_cache.WorldCacheModule;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class BiomesModule implements IKeystoneModule
 {
     private HistoryModule historyModule;

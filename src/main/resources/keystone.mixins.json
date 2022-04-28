@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "BiomeInvoker",
+    "LivingEntityMixin",
     "PersistentStateManagerAccessor",
     "ServerPlayerEntityMixin"
   ],
@@ -12,13 +13,13 @@
     "BufferRendererMixin",
     "ClientPlayerEntityMixin",
     "ClientPlayerInteractionManagerMixin",
+    "DrawableHelperMixin",
     "GameRendererInvoker",
     "GameRendererMixin",
     "InGameHudMixin",
     "KeyBindingMixin",
     "KeyboardMixin",
     "MinecraftClientMixin",
-    "MixinDrawableHelper",
     "MouseMixin",
     "SpectatorHudMixin"
   ],
