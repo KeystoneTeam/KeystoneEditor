@@ -11,6 +11,7 @@ import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.minecraft.InputEvents;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
+import keystone.core.keybinds.KeystoneKeyBindings;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
@@ -35,11 +36,12 @@ public class SelectionModule implements IKeystoneModule
 {
     private HistoryModule historyModule;
     private MouseModule mouseModule;
-    private List<SelectionBoundingBox> selectionBoxes;
+    private final List<SelectionBoundingBox> selectionBoxes;
     private ComplexOverlayRenderer highlightRenderer;
     private SelectionBoxRenderer selectionBoxRenderer;
 
     private Vec3i firstSelectionPoint;
+    private boolean multiSelect;
     private boolean creatingSelection;
 
     public SelectionModule()
@@ -52,6 +54,7 @@ public class SelectionModule implements IKeystoneModule
         KeystoneInputEvents.END_MOUSE_DRAG.register(this::onMouseDragEnd);
         KeystoneHotbarEvents.ALLOW_CHANGE.register(this::allowHotbarChange);
     }
+    //region Module Implementation
     @Override
     public void postInit()
     {
@@ -72,6 +75,7 @@ public class SelectionModule implements IKeystoneModule
     }
     @Override
     public Collection<? extends SelectableCuboid> getSelectableBoxes() { return this.selectionBoxes; }
+    //endregion
     //region Selection Methods
     public void deselect()
     {
@@ -153,9 +157,12 @@ public class SelectionModule implements IKeystoneModule
         // Selection Boxes
         if (!KeystoneGlobalState.HideSelectionBoxes)
         {
-            for (int i = 0; i < selectionBoxes.size(); i++)
+            synchronized (this.selectionBoxes)
             {
-                selectionBoxRenderer.render(context, selectionBoxes.get(i));
+                for (int i = 0; i < selectionBoxes.size(); i++)
+                {
+                    if (!creatingSelection || multiSelect || i == selectionBoxes.size() - 1) selectionBoxRenderer.render(context, selectionBoxes.get(i));
+                }
             }
         }
     }
@@ -236,6 +243,7 @@ public class SelectionModule implements IKeystoneModule
         {
             firstSelectionPoint = Player.getHighlightedBlock();
             creatingSelection = true;
+            multiSelect = KeystoneKeyBindings.MULTI_SELECT.isPressed();
             selectionBoxes.add(SelectionBoundingBox.startNew(firstSelectionPoint));
         }
     }
@@ -249,8 +257,16 @@ public class SelectionModule implements IKeystoneModule
             historyModule.pushToEntry(new SelectionHistoryEntry(selectionBoxes, false));
             historyModule.endHistoryEntry();
 
+            if (!multiSelect)
+            {
+                SelectionBoundingBox selection = selectionBoxes.get(selectionBoxes.size() - 1);
+                selectionBoxes.clear();
+                selectionBoxes.add(selection);
+            }
+
             firstSelectionPoint = null;
             creatingSelection = false;
+            multiSelect = false;
             KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, true);
         }
     }

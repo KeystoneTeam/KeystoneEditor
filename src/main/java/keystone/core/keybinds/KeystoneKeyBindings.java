@@ -15,6 +15,7 @@ import org.lwjgl.glfw.GLFW;
 public class KeystoneKeyBindings
 {
     public static final KeyBinding TOGGLE_KEYSTONE = new KeyBinding("key.toggle_keystone", GLFW.GLFW_KEY_K, "key.categories.keystone");
+    public static final KeyBinding MULTI_SELECT = new KeyBinding("key.multiselect", GLFW.GLFW_KEY_LEFT_CONTROL, "key.categories.keystone");
     public static final KeyBinding DELETE_BLOCKS = new KeyBinding("key.delete_blocks", GLFW.GLFW_KEY_DELETE, "key.categories.keystone");
 
     private static boolean addedConditions = false;
@@ -23,6 +24,7 @@ public class KeystoneKeyBindings
     {
         KeyBindingHelper.registerKeyBinding(TOGGLE_KEYSTONE);
         KeyBindingHelper.registerKeyBinding(DELETE_BLOCKS);
+        KeyBindingHelper.registerKeyBinding(MULTI_SELECT);
 
         ClientTickEvents.END_CLIENT_TICK.register(client ->
         {
