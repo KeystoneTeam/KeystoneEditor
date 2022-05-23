@@ -12,12 +12,15 @@ import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.NBTSerializer;
+import keystone.core.utils.PalettedArray;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.structure.Structure;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -35,16 +38,14 @@ import java.util.*;
 
 public class WorldHistoryChunk
 {
-    private static final Codec<PalettedContainer<BlockState>> BLOCK_STATES_CODEC = PalettedContainer.createCodec(net.minecraft.block.Block.STATE_IDS, BlockState.CODEC, PalettedContainer.PaletteProvider.BLOCK_STATE, Blocks.AIR.getDefaultState());
-
     public final int chunkX;
     public final int chunkY;
     public final int chunkZ;
     private final ServerWorldAccess world;
 
-    private final PalettedContainer<BlockState> oldBlockStates;
-    private PalettedContainer<BlockState> blockStateBuffer1;
-    private PalettedContainer<BlockState> blockStateBuffer2;
+    private final PalettedArray<BlockState> oldBlockStates;
+    private PalettedArray<BlockState> blockStateBuffer1;
+    private PalettedArray<BlockState> blockStateBuffer2;
 
     private final Map<BlockPos, NBTCompound> oldTileEntities;
     private final Map<BlockPos, NBTCompound> tileEntityBuffer1;
@@ -70,9 +71,9 @@ public class WorldHistoryChunk
 
         if (!section.isEmpty())
         {
-            this.oldBlockStates = section.getBlockStateContainer().copy();
-            this.blockStateBuffer1 = section.getBlockStateContainer().copy();
-            this.blockStateBuffer2 = section.getBlockStateContainer().copy();
+            this.oldBlockStates = copyBlockStateContainer(section.getBlockStateContainer());
+            this.blockStateBuffer1 = this.oldBlockStates.copy();
+            this.blockStateBuffer2 = this.oldBlockStates.copy();
 
             this.oldTileEntities = new HashMap<>();
             this.tileEntityBuffer1 = new HashMap<>();
@@ -91,9 +92,9 @@ public class WorldHistoryChunk
         }
         else
         {
-            this.oldBlockStates = new PalettedContainer<>(net.minecraft.block.Block.STATE_IDS, Blocks.AIR.getDefaultState(), PalettedContainer.PaletteProvider.BLOCK_STATE);
-            this.blockStateBuffer1 = new PalettedContainer<>(net.minecraft.block.Block.STATE_IDS, Blocks.AIR.getDefaultState(), PalettedContainer.PaletteProvider.BLOCK_STATE);
-            this.blockStateBuffer2 = new PalettedContainer<>(net.minecraft.block.Block.STATE_IDS, Blocks.AIR.getDefaultState(), PalettedContainer.PaletteProvider.BLOCK_STATE);
+            this.oldBlockStates = new PalettedArray<>(4096, 1, Blocks.AIR.getDefaultState());
+            this.blockStateBuffer1 = new PalettedArray<>(4096, 1, Blocks.AIR.getDefaultState());
+            this.blockStateBuffer2 = new PalettedArray<>(4096, 1, Blocks.AIR.getDefaultState());
 
             this.oldTileEntities = new HashMap<>();
             this.tileEntityBuffer1 = new HashMap<>();
@@ -136,17 +137,17 @@ public class WorldHistoryChunk
             NbtCompound buffer1NBT = blocksNBT.getCompound("Buffer1");
             NbtCompound buffer2NBT = blocksNBT.getCompound("Buffer2");
 
-            this.oldBlockStates = BLOCK_STATES_CODEC.parse(NbtOps.INSTANCE, oldNBT).promotePartial(this::onRecoverableError).getOrThrow(false, Keystone.LOGGER::error);
-            this.blockStateBuffer1 = BLOCK_STATES_CODEC.parse(NbtOps.INSTANCE, buffer1NBT).promotePartial(this::onRecoverableError).getOrThrow(false, Keystone.LOGGER::error);
-            this.blockStateBuffer2 = BLOCK_STATES_CODEC.parse(NbtOps.INSTANCE, buffer2NBT).promotePartial(this::onRecoverableError).getOrThrow(false, Keystone.LOGGER::error);
+            this.oldBlockStates = new PalettedArray<>(oldNBT, serialized -> NbtHelper.toBlockState((NbtCompound)serialized));
+            this.blockStateBuffer1 = new PalettedArray<>(buffer1NBT, serialized -> NbtHelper.toBlockState((NbtCompound)serialized));
+            this.blockStateBuffer2 = new PalettedArray<>(buffer2NBT, serialized -> NbtHelper.toBlockState((NbtCompound)serialized));
 
             this.swappedBlocks = blocksNBT.getBoolean("Swapped");
         }
         else
         {
-            this.oldBlockStates = new PalettedContainer<>(net.minecraft.block.Block.STATE_IDS, Blocks.AIR.getDefaultState(), PalettedContainer.PaletteProvider.BLOCK_STATE);
-            this.blockStateBuffer1 = new PalettedContainer<>(net.minecraft.block.Block.STATE_IDS, Blocks.AIR.getDefaultState(), PalettedContainer.PaletteProvider.BLOCK_STATE);
-            this.blockStateBuffer2 = new PalettedContainer<>(net.minecraft.block.Block.STATE_IDS, Blocks.AIR.getDefaultState(), PalettedContainer.PaletteProvider.BLOCK_STATE);
+            this.oldBlockStates = new PalettedArray<>(4096, 1, Blocks.AIR.getDefaultState());
+            this.blockStateBuffer1 = new PalettedArray<>(4096, 1, Blocks.AIR.getDefaultState());
+            this.blockStateBuffer2 = new PalettedArray<>(4096, 1, Blocks.AIR.getDefaultState());
 
             this.swappedBlocks = false;
         }
@@ -187,9 +188,22 @@ public class WorldHistoryChunk
             this.swappedEntities = false;
         }
     }
-    private void onRecoverableError(String error)
+
+    private PalettedArray<BlockState> copyBlockStateContainer(PalettedContainer<BlockState> container)
     {
-        Keystone.LOGGER.error("Recoverable error when loading WorldHistoryChunk [" + chunkX + ", " + chunkY + ", " + chunkZ + "]: " + error);
+        PalettedArray<BlockState> ret = new PalettedArray<>(4096, 1, null);
+        for (int x = 0; x < 16; x++)
+        {
+            for (int y = 0; y < 16; y++)
+            {
+                for (int z = 0; z < 16; z++)
+                {
+                    int index = z + y * 16 + x * 256;
+                    ret.set(index, container.get(x, y, z));
+                }
+            }
+        }
+        return ret;
     }
 
     public NbtCompound serialize()
@@ -203,9 +217,9 @@ public class WorldHistoryChunk
         nbt.putString("World", world.toServerWorld().getRegistryKey().getValue().toString());
 
         NbtCompound blocksNBT = new NbtCompound();
-        blocksNBT.put("Old", BLOCK_STATES_CODEC.encodeStart(NbtOps.INSTANCE, this.oldBlockStates).getOrThrow(false, Keystone.LOGGER::error));
-        blocksNBT.put("Buffer1", BLOCK_STATES_CODEC.encodeStart(NbtOps.INSTANCE, this.blockStateBuffer1).getOrThrow(false, Keystone.LOGGER::error));
-        blocksNBT.put("Buffer2", BLOCK_STATES_CODEC.encodeStart(NbtOps.INSTANCE, this.blockStateBuffer2).getOrThrow(false, Keystone.LOGGER::error));
+        blocksNBT.put("Old", this.oldBlockStates.serialize(NbtHelper::fromBlockState));
+        blocksNBT.put("Buffer1", this.blockStateBuffer1.serialize(NbtHelper::fromBlockState));
+        blocksNBT.put("Buffer2", this.blockStateBuffer2.serialize(NbtHelper::fromBlockState));
         blocksNBT.putBoolean("Swapped", this.swappedBlocks);
         nbt.put("Blocks", blocksNBT);
 
@@ -233,9 +247,9 @@ public class WorldHistoryChunk
 
         switch (retrievalMode)
         {
-            case ORIGINAL: return BlockTypeRegistry.fromMinecraftBlock(this.oldBlockStates.get(x, y, z));
-            case LAST_SWAPPED: return BlockTypeRegistry.fromMinecraftBlock(swappedBlocks ? blockStateBuffer1.get(x, y, z) : blockStateBuffer2.get(x, y, z));
-            case CURRENT: return BlockTypeRegistry.fromMinecraftBlock(swappedBlocks ? blockStateBuffer2.get(x, y, z) : blockStateBuffer1.get(x, y, z));
+            case ORIGINAL: return BlockTypeRegistry.fromMinecraftBlock(this.oldBlockStates.get(z + y * 16 + x * 256));
+            case LAST_SWAPPED: return BlockTypeRegistry.fromMinecraftBlock(swappedBlocks ? blockStateBuffer1.get(z + y * 16 + x * 256) : blockStateBuffer2.get(z + y * 16 + x * 256));
+            case CURRENT: return BlockTypeRegistry.fromMinecraftBlock(swappedBlocks ? blockStateBuffer2.get(z + y * 16 + x * 256) : blockStateBuffer1.get(z + y * 16 + x * 256));
         }
         return null;
     }
@@ -266,30 +280,30 @@ public class WorldHistoryChunk
         switch (retrievalMode)
         {
             case ORIGINAL:
-                blockType = BlockTypeRegistry.fromMinecraftBlock(oldBlockStates.get(x, y, z));
+                blockType = BlockTypeRegistry.fromMinecraftBlock(oldBlockStates.get(z + y * 16 + x * 256));
                 tileEntity = oldTileEntities.getOrDefault(pos, null);
                 break;
             case LAST_SWAPPED:
                 if (swappedBlocks)
                 {
-                    blockType = BlockTypeRegistry.fromMinecraftBlock(blockStateBuffer1.get(x, y, z));
+                    blockType = BlockTypeRegistry.fromMinecraftBlock(blockStateBuffer1.get(z + y * 16 + x * 256));
                     tileEntity = tileEntityBuffer1.getOrDefault(pos, null);
                 }
                 else
                 {
-                    blockType = BlockTypeRegistry.fromMinecraftBlock(blockStateBuffer2.get(x, y, z));
+                    blockType = BlockTypeRegistry.fromMinecraftBlock(blockStateBuffer2.get(z + y * 16 + x * 256));
                     tileEntity = tileEntityBuffer2.getOrDefault(pos, null);
                 }
                 break;
             case CURRENT:
                 if (swappedBlocks)
                 {
-                    blockType = BlockTypeRegistry.fromMinecraftBlock(blockStateBuffer2.get(x, y, z));
+                    blockType = BlockTypeRegistry.fromMinecraftBlock(blockStateBuffer2.get(z + y * 16 + x * 256));
                     tileEntity = tileEntityBuffer2.getOrDefault(pos, null);
                 }
                 else
                 {
-                    blockType = BlockTypeRegistry.fromMinecraftBlock(blockStateBuffer1.get(x, y, z));
+                    blockType = BlockTypeRegistry.fromMinecraftBlock(blockStateBuffer1.get(z + y * 16 + x * 256));
                     tileEntity = tileEntityBuffer1.getOrDefault(pos, null);
                 }
                 break;
@@ -348,7 +362,7 @@ public class WorldHistoryChunk
             y -= chunkY * 16;
             z -= chunkZ * 16;
 
-            blockStateBuffer2.swapUnsafe(x, y, z, blockType.getMinecraftBlock());
+            blockStateBuffer2.set(z + y * 16 + x * 256, blockType.getMinecraftBlock());
         }
         else
         {
@@ -358,7 +372,7 @@ public class WorldHistoryChunk
             y -= chunkY * 16;
             z -= chunkZ * 16;
 
-            blockStateBuffer1.swapUnsafe(x, y, z, blockType.getMinecraftBlock());
+            blockStateBuffer1.set(z + y * 16 + x * 256, blockType.getMinecraftBlock());
         }
     }
     public void setBlock(int x, int y, int z, Block block)
@@ -373,7 +387,7 @@ public class WorldHistoryChunk
             y -= chunkY * 16;
             z -= chunkZ * 16;
 
-            blockStateBuffer2.swapUnsafe(x, y, z, block.blockType().getMinecraftBlock());
+            blockStateBuffer2.set(z + y * 16 + x * 256, block.blockType().getMinecraftBlock());
         }
         else
         {
@@ -384,7 +398,7 @@ public class WorldHistoryChunk
             y -= chunkY * 16;
             z -= chunkZ * 16;
 
-            blockStateBuffer1.swapUnsafe(x, y, z, block.blockType().getMinecraftBlock());
+            blockStateBuffer1.set(z + y * 16 + x * 256, block.blockType().getMinecraftBlock());
         }
     }
     public void setEntity(Entity entity)
@@ -430,7 +444,7 @@ public class WorldHistoryChunk
                 for (int z = 0; z < 16; z++)
                 {
                     BlockPos pos = start.add(x, y, z);
-                    BlockState state = oldBlockStates.get(x, y, z);
+                    BlockState state = oldBlockStates.get(z + y * 16 + x * 256);
 
                     world.toServerWorld().setBlockState(pos, state);
                     NBTCompound blockData = oldTileEntities.getOrDefault(pos, null);
@@ -465,7 +479,7 @@ public class WorldHistoryChunk
     public void redo()
     {
         BlockPos start = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
-        PalettedContainer<BlockState> blockStates = swappedBlocks ? blockStateBuffer2 : blockStateBuffer1;
+        PalettedArray<BlockState> blockStates = swappedBlocks ? blockStateBuffer2 : blockStateBuffer1;
         Map<BlockPos, NBTCompound> tileEntities = swappedEntities ? tileEntityBuffer2 : tileEntityBuffer1;
         Map<UUID, Entity> entities = swappedEntities ? entityBuffer2 : entityBuffer1;
 
@@ -476,7 +490,7 @@ public class WorldHistoryChunk
                 for (int z = 0; z < 16; z++)
                 {
                     BlockPos pos = start.add(x, y, z);
-                    BlockState state = blockStates.get(x, y, z);
+                    BlockState state = blockStates.get(z + y * 16 + x * 256);
 
                     world.toServerWorld().setBlockState(pos, state);
                     NBTCompound blockData = tileEntities.getOrDefault(pos, null);

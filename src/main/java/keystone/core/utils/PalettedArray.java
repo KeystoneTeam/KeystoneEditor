@@ -1,7 +1,13 @@
 package keystone.core.utils;
 
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 public class PalettedArray<T>
 {
@@ -9,18 +15,55 @@ public class PalettedArray<T>
 
     private byte[] binary;
     private List<T> palette;
-    private int bits;
+    private byte bits;
     private int size;
 
+    private PalettedArray() {}
     public PalettedArray(int size, int startingBits, T startingContent)
     {
         palette = new ArrayList<>();
-        palette.add(startingContent);
+        if (startingContent != null) palette.add(startingContent);
 
-        this.bits = startingBits;
+        this.bits = (byte)startingBits;
         this.size = size;
 
         this.binary = new byte[(int)Math.ceil(size / (double) binaryTypeBitCount * startingBits)];
+    }
+    public PalettedArray(NbtCompound nbt, Function<NbtElement, T> paletteElementDeserializer)
+    {
+        palette = new ArrayList<>();
+        for (NbtElement nbtElement : (NbtList)nbt.get("Palette")) palette.add(paletteElementDeserializer.apply(nbtElement));
+
+        binary = nbt.getByteArray("Binary");
+        bits = nbt.getByte("Bits");
+        size = nbt.getInt("Size");
+    }
+
+    public PalettedArray<T> copy()
+    {
+        PalettedArray<T> copy = new PalettedArray<>();
+
+        copy.binary = Arrays.copyOf(binary, binary.length);
+        copy.palette = new ArrayList<>(palette.size());
+        copy.palette.addAll(palette);
+        copy.bits = bits;
+        copy.size = size;
+
+        return copy;
+    }
+
+    public NbtCompound serialize(Function<T, NbtElement> paletteElementSerializer)
+    {
+        NbtList paletteList = new NbtList();
+        for (T paletteElement : palette) paletteList.add(paletteElementSerializer.apply(paletteElement));
+
+        NbtCompound ret = new NbtCompound();
+        ret.put("Palette", paletteList);
+        ret.putByteArray("Binary", binary);
+        ret.putByte("Bits", bits);
+        ret.putInt("Size", size);
+
+        return ret;
     }
 
     public T get(int index)
@@ -49,7 +92,7 @@ public class PalettedArray<T>
     }
     private void increaseBits()
     {
-        int newBits = bits + 1;
+        byte newBits = (byte)(bits + 1);
         byte[] newBinary = new byte[(int)Math.ceil(size / (double) binaryTypeBitCount * newBits)];
 
         for (int i = 0; i < size; i++)

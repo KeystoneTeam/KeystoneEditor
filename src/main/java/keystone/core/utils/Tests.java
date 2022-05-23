@@ -1,5 +1,9 @@
 package keystone.core.utils;
 
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtString;
+
 public class Tests
 {
     public static void main(String[] args)
@@ -9,7 +13,7 @@ public class Tests
 
     private static void testPalettedArray()
     {
-        PalettedArray<String> test = new PalettedArray<>(40, 2, "NULL");
+        PalettedArray<String> test = new PalettedArray<>(40, 1, "NULL");
         for (int i = 0; i < test.size(); i += 8)
         {
             test.set(i + 0, "NULL");
@@ -21,6 +25,9 @@ public class Tests
             test.set(i + 6, "Test6");
             test.set(i + 7, "Test7");
         }
+
+        NbtCompound nbt = test.serialize(NbtString::of);
+        test = new PalettedArray<>(nbt, NbtElement::asString);
 
         for (int i = 0; i < test.size(); i++) System.out.println(i + ": " + test.get(i));
     }
