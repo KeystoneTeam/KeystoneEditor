@@ -4,7 +4,8 @@ import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.InternalCompilerException;
@@ -120,7 +121,7 @@ public class FilterCompiler
     private static void sendErrorMessage(String message)
     {
         PlayerEntity player = MinecraftClient.getInstance().player;
-        if (player != null) player.sendMessage(new LiteralText(message).styled(style -> style.withColor(Formatting.RED)), false);
+        if (player != null) player.sendMessage(Text.literal(message).styled(style -> style.withColor(Formatting.RED)), false);
     }
     private static String createRandomClassName()
     {

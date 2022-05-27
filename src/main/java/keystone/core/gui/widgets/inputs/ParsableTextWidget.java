@@ -5,7 +5,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
@@ -82,7 +82,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
             {
                 String error = "Invalid value '" + getText() + "' for filter variable '" + getMessage().getString() + "'!";
                 Keystone.LOGGER.error(error);
-                mc.player.sendMessage(new LiteralText(error).styled(style -> style.withColor(Formatting.RED)), false);
+                mc.player.sendMessage(Text.literal(error).styled(style -> style.withColor(Formatting.RED)), false);
             }
             finally
             {

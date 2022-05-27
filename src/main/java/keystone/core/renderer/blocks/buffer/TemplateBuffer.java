@@ -14,12 +14,13 @@ public class TemplateBuffer
 
     public TemplateBuffer(BufferBuilder buf)
     {
-        Pair<BufferBuilder.DrawArrayParameters, ByteBuffer> state = buf.popData();
-        BufferBuilder.DrawArrayParameters parameters = state.getFirst();
-        ByteBuffer rendered = state.getSecond();
+        BufferBuilder.BuiltBuffer state = buf.end();
+        BufferBuilder.DrawArrayParameters parameters = state.getParameters();
+        // TODO: Check if this is the right buffer to get, and if I need to do anything with the index buffer
+        ByteBuffer rendered = state.getVertexBuffer();
 
-        formatSize = parameters.getVertexFormat().getVertexSize();
-        vertexCount = parameters.getVertexCount();
+        formatSize = parameters.format().getVertexSizeByte();
+        vertexCount = parameters.vertexCount();
 
         rendered.order(ByteOrder.nativeOrder()); // Vanilla bug, endianness does not carry over into sliced buffers
 

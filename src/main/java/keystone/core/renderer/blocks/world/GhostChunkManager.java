@@ -16,6 +16,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
@@ -29,6 +30,7 @@ import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.dimension.DimensionTypes;
 import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.EmptyTickSchedulers;
@@ -95,7 +97,7 @@ public class GhostChunkManager extends ChunkManager
 
             private DummyWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> registryEntry, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed)
             {
-                super(properties, registryRef, registryEntry, profiler, isClient, debugWorld, seed);
+                super(properties, registryRef, registryEntry, profiler, isClient, debugWorld, seed, -1);
             }
 
             public World withAccess(DynamicRegistryManager access)
@@ -112,6 +114,9 @@ public class GhostChunkManager extends ChunkManager
 
             @Override
             public void syncWorldEvent(PlayerEntity pPlayer, int pType, BlockPos pPos, int pData) {}
+
+            @Override
+            public void emitGameEvent(GameEvent event, Vec3d emitterPos, GameEvent.Emitter emitter) {}
 
             @Override
             public void emitGameEvent(Entity pEntity, GameEvent pEvent, BlockPos pPos) {}
@@ -147,8 +152,11 @@ public class GhostChunkManager extends ChunkManager
             public QueryableTickScheduler<Fluid> getFluidTickScheduler() { return EmptyTickSchedulers.getClientTickScheduler(); }
 
             @Override public void updateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags) { }
+
             @Override public void playSound(@org.jetbrains.annotations.Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
+            @Override public void playSound(@org.jetbrains.annotations.Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) { }
             @Override public void playSoundFromEntity(@org.jetbrains.annotations.Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
+            @Override public void playSoundFromEntity(@org.jetbrains.annotations.Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) { }
             @Override public String asString() { return null; }
             @org.jetbrains.annotations.Nullable @Override public Entity getEntityById(int id) { return null; }
             @org.jetbrains.annotations.Nullable @Override public MapState getMapState(String id) { return null; }
@@ -162,7 +170,7 @@ public class GhostChunkManager extends ChunkManager
 
         private static final DummyWorld DUMMY_LEVEL = new DummyWorld(null, null, DynamicRegistryManager.BUILTIN.get()
                 .get(Registry.DIMENSION_TYPE_KEY)
-                .getEntry(DimensionType.OVERWORLD_REGISTRY_KEY).get(), null, false, false, 0);
+                .getEntry(DimensionTypes.OVERWORLD).get(), null, false, false, 0);
 
         public EmptierChunk(DynamicRegistryManager registryAccess)
         {

@@ -6,7 +6,8 @@ import keystone.api.wrappers.blocks.BlockMask;
 import keystone.core.gui.widgets.inputs.BlockMaskWidget;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.lang.reflect.Field;
@@ -21,7 +22,7 @@ public class BlockMaskFieldWidget extends BlockMaskWidget
 
     public BlockMaskFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets) throws IllegalAccessException
     {
-        super(new LiteralText(name), x, y, width, (BlockMask)field.get(instance.get()), disableWidgets, restoreWidgets);
+        super(Text.literal(name), x, y, width, (BlockMask)field.get(instance.get()), disableWidgets, restoreWidgets);
 
         this.instance = instance;
         this.field = field;
@@ -41,7 +42,7 @@ public class BlockMaskFieldWidget extends BlockMaskWidget
         {
             String error = "Cannot set BlockMask field '" + getMessage().getString() + "'!";
             Keystone.LOGGER.error(error);
-            mc.player.sendMessage(new LiteralText(error).styled(style -> style.withColor(Formatting.RED)), false);
+            mc.player.sendMessage(Text.literal(error).styled(style -> style.withColor(Formatting.RED)), false);
         }
     }
 }

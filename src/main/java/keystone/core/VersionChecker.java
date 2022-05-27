@@ -48,10 +48,10 @@ public class VersionChecker
                 List<MutableText> lines = new ArrayList<>();
 
                 // Out of date message
-                lines.add(new TranslatableText("keystone.version_check.outdated").styled(style -> style.withColor(Formatting.GOLD)));
-                lines.add(new TranslatableText("keystone.version_check.currentVersion",
-                                new LiteralText(keystoneVersion.getFriendlyString()).styled(style -> style.withColor(Formatting.AQUA)),
-                                new LiteralText(target.getFriendlyString()).styled(style -> style.withColor(Formatting.AQUA))).styled(style -> style.withColor(Formatting.GOLD)));
+                lines.add(Text.translatable("keystone.version_check.outdated").styled(style -> style.withColor(Formatting.GOLD)));
+                lines.add(Text.translatable("keystone.version_check.currentVersion",
+                                Text.literal(keystoneVersion.getFriendlyString()).styled(style -> style.withColor(Formatting.AQUA)),
+                                Text.literal(target.getFriendlyString()).styled(style -> style.withColor(Formatting.AQUA))).styled(style -> style.withColor(Formatting.GOLD)));
 
                 // Changelog
                 if (changelogSection != null)
@@ -72,19 +72,19 @@ public class VersionChecker
                     changelog.sort(Comparator.comparing(Pair::getLeft));
                     if (changelog.size() > 0)
                     {
-                        lines.add(new LiteralText(""));
-                        lines.add(new TranslatableText("keystone.version_check.changelog").styled(style -> style.withColor(Formatting.GOLD)));
+                        lines.add(Text.literal(""));
+                        lines.add(Text.literal("keystone.version_check.changelog").styled(style -> style.withColor(Formatting.GOLD)));
                         changelog.forEach(pair ->
-                                lines.add(new LiteralText("    " + pair.getLeft().getFriendlyString() + ": ").styled(style -> style.withColor(Formatting.AQUA)).append(
-                                        new LiteralText(pair.getRight()).styled(style -> style.withColor(Formatting.GREEN))
+                                lines.add(Text.literal("    " + pair.getLeft().getFriendlyString() + ": ").styled(style -> style.withColor(Formatting.AQUA)).append(
+                                        Text.literal(pair.getRight()).styled(style -> style.withColor(Formatting.GREEN))
                                 )));
                     }
                 }
 
                 // Update link
-                lines.add(new LiteralText(""));
-                lines.add(new TranslatableText("keystone.version_check.releasesLink").styled(style -> style.withColor(Formatting.GOLD)).append(new LiteralText(" "))
-                        .append(new TranslatableText("keystone.version_check.releasesLink.hyperlink").setStyle
+                lines.add(Text.literal(""));
+                lines.add(Text.literal("keystone.version_check.releasesLink").styled(style -> style.withColor(Formatting.GOLD)).append(Text.literal(" "))
+                        .append(Text.literal("keystone.version_check.releasesLink.hyperlink").setStyle
                         (
                                 Style.EMPTY
                                         .withColor(Formatting.AQUA)
@@ -108,7 +108,7 @@ public class VersionChecker
                 e.printStackTrace();
             }
 
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Failed to perform version check!").styled(style -> style.withColor(Formatting.RED)), false);
+            MinecraftClient.getInstance().player.sendMessage(Text.literal("Failed to perform version check!").styled(style -> style.withColor(Formatting.RED)), false);
         }
     }
 }

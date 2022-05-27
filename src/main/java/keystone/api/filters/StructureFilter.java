@@ -9,7 +9,7 @@ import keystone.core.utils.ProgressBar;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import net.minecraft.util.math.random.Random;
 
 public abstract class StructureFilter extends KeystoneFilter
 {
@@ -26,7 +26,7 @@ public abstract class StructureFilter extends KeystoneFilter
     @Override public boolean allowBlocksOutsideRegion() { return true; }
     @Override public void initialize()
     {
-        this.random = seed == 0 ? Keystone.RANDOM : new Random(seed);
+        this.random = seed == 0 ? Keystone.RANDOM : Random.create(seed);
     }
 
     @Override

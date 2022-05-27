@@ -12,9 +12,9 @@ import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
-
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableTextContent;
 import java.util.List;
 
 public class SelectionNudgeScreen extends KeystoneOverlay
@@ -44,7 +44,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
 
     protected SelectionNudgeScreen()
     {
-        super(new TranslatableText("keystone.screen.selectionNudge"));
+        super(Text.translatable("keystone.screen.selectionNudge"));
         this.selectionModule = Keystone.getModule(SelectionModule.class);
         selectionToNudge = selectionModule.getSelectionBoxCount() - 1;
         selectedBox = resolveSelectionIndex();
@@ -98,8 +98,8 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     {
         updateSize();
 
-        this.previousBoxButton = new SimpleButton(x - MARGINS - 16, y, 16, panelHeight, new LiteralText("<"), button -> previousBox());
-        this.nextBoxButton = new SimpleButton(x + panelWidth + MARGINS, y, 16, panelHeight, new LiteralText(">"), button -> nextBox());
+        this.previousBoxButton = new SimpleButton(x - MARGINS - 16, y, 16, panelHeight, Text.literal("<"), button -> previousBox());
+        this.nextBoxButton = new SimpleButton(x + panelWidth + MARGINS, y, 16, panelHeight, Text.literal(">"), button -> nextBox());
         addDrawableChild(this.previousBoxButton);
         addDrawableChild(this.nextBoxButton);
 
@@ -181,7 +181,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     {
         boxSize = String.format("%dW x %dL x %dH", selectedBox.getSize().getX(), selectedBox.getSize().getZ(), selectedBox.getSize().getY());
         int strWidth = textRenderer.getWidth(boxSize);
-        int minWidth = 2 * MARGINS + 2 * (2 * PADDING + textRenderer.getWidth(new TranslatableText("keystone.nudge").getString())) + PADDING;
+        int minWidth = 2 * MARGINS + 2 * (2 * PADDING + textRenderer.getWidth(Text.literal("keystone.nudge").getString())) + PADDING;
         panelWidth = Math.max(strWidth + MARGINS + MARGINS, minWidth);
         buttonWidth = panelWidth / 2 - MARGINS - PADDING / 2;
         panelHeight = 2 * MARGINS + 2 * BUTTON_HEIGHT + 2 * PADDING + 10;

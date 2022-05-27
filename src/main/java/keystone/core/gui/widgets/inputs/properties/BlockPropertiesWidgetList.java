@@ -7,8 +7,9 @@ import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Property;
-import net.minecraft.text.TranslatableText;
-
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableTextContent;
 import java.util.Collection;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -22,7 +23,7 @@ public class BlockPropertiesWidgetList extends WidgetList
 
     public BlockPropertiesWidgetList(Block block, int x, int y, int width, int maxHeight, int padding, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets)
     {
-        super(x, y, width, maxHeight, padding, new TranslatableText("keystone.block_properties.propertiesPanel"));
+        super(x, y, width, maxHeight, padding, Text.translatable("keystone.block_properties.propertiesPanel"));
 
         this.intendedWidth = width - 2 * padding;
         this.disableWidgets = disableWidgets;

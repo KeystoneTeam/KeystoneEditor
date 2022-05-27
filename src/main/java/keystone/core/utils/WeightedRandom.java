@@ -1,7 +1,7 @@
 package keystone.core.utils;
 
 import java.util.List;
-import java.util.Random;
+import net.minecraft.util.math.random.Random;
 
 public final class WeightedRandom
 {

@@ -16,7 +16,8 @@ import keystone.core.gui.widgets.inputs.BlockPaletteWidget;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableTextContent;
 import org.lwjgl.glfw.GLFW;
 
 public class FillAndReplaceScreen extends KeystoneOverlay
@@ -32,7 +33,7 @@ public class FillAndReplaceScreen extends KeystoneOverlay
 
     protected FillAndReplaceScreen()
     {
-        super(new TranslatableText("keystone.screen.fill"));
+        super(Text.translatable("keystone.screen.fill"));
         previousMask = new BlockMask();
         previousPalette = new BlockPalette();
     }
@@ -101,14 +102,14 @@ public class FillAndReplaceScreen extends KeystoneOverlay
 
         int y = panelMinY + PADDING;
         int width = panelMaxX - 2 * PADDING;
-        mask = new BlockMaskWidget(new TranslatableText("keystone.fill.mask"), PADDING, y, width, previousMask, this::disableWidgets, this::restoreWidgets);
+        mask = new BlockMaskWidget(Text.translatable("keystone.fill.mask"), PADDING, y, width, previousMask, this::disableWidgets, this::restoreWidgets);
         y += mask.getHeight() + PADDING;
-        palette = new BlockPaletteWidget(new TranslatableText("keystone.fill.palette"), PADDING, y, width, previousPalette, this::disableWidgets, this::restoreWidgets);
+        palette = new BlockPaletteWidget(Text.translatable("keystone.fill.palette"), PADDING, y, width, previousPalette, this::disableWidgets, this::restoreWidgets);
         y += palette.getHeight() + PADDING;
 
         int buttonWidth = (panelMaxX - 3 * PADDING) >> 1;
-        ButtonNoHotkey fillButton = new ButtonNoHotkey(PADDING, y, buttonWidth, 20, new TranslatableText("keystone.fill.fill"), this::fillButton);
-        ButtonNoHotkey cancelButton = new ButtonNoHotkey(panelMaxX - PADDING - buttonWidth, y, buttonWidth, 20, new TranslatableText("keystone.cancel"), button -> close());
+        ButtonNoHotkey fillButton = new ButtonNoHotkey(PADDING, y, buttonWidth, 20, Text.translatable("keystone.fill.fill"), this::fillButton);
+        ButtonNoHotkey cancelButton = new ButtonNoHotkey(panelMaxX - PADDING - buttonWidth, y, buttonWidth, 20, Text.translatable("keystone.cancel"), button -> close());
 
         addDrawableChild(mask);
         addDrawableChild(palette);

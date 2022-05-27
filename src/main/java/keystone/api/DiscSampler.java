@@ -1,10 +1,10 @@
 package keystone.api;
 
 import keystone.api.wrappers.coordinates.Vector2f;
+import net.minecraft.util.math.random.Random;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class DiscSampler
 {

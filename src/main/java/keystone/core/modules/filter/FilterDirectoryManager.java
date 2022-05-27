@@ -116,11 +116,12 @@ public class FilterDirectoryManager
         try
         {
             ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
-            Collection<Identifier> filterResources = resourceManager.findResources("stock_filters", path -> path.endsWith(".java") || path.endsWith(".filter"));
+            // TODO: Check if the stock filter predicate works
+            Map<Identifier, Resource> filterResources = resourceManager.findResources("stock_filters", path -> path.getPath().endsWith(".java") || path.getPath().endsWith(".filter"));
 
-            for (Identifier filterIdentifier : filterResources)
+            for (Map.Entry<Identifier, Resource> filterEntry : filterResources.entrySet())
             {
-                Matcher matcher = Pattern.compile("[0-9a-z_\\.]+$").matcher(filterIdentifier.getPath());
+                Matcher matcher = Pattern.compile("[0-9a-z_\\.]+$").matcher(filterEntry.getKey().getPath());
                 matcher.find();
                 String fileName = matcher.group();
                 fileName = StringUtils.titleCase(fileName.replace('_', ' '));
@@ -128,8 +129,8 @@ public class FilterDirectoryManager
                 File cacheFile = stockFilterCache.toPath().resolve(fileName).toFile();
                 if (!cacheFile.exists()) cacheFile.createNewFile();
 
-                try (Resource filterResource = resourceManager.getResource(filterIdentifier);
-                     InputStream filterStream = filterResource.getInputStream();
+                Resource filterResource = filterEntry.getValue();
+                try (InputStream filterStream = filterResource.getInputStream();
                      FileOutputStream fileOutputStream = new FileOutputStream(cacheFile))
                 {
                     int read;

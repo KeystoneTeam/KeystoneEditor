@@ -2,15 +2,14 @@ package keystone.core.gui.screens.file_browser;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-
+import net.minecraft.text.TranslatableTextContent;
 import java.io.File;
 import java.util.Set;
 import java.util.function.Consumer;
 
 public class OpenFilesScreen extends FileBrowserScreen
 {
-    protected static TranslatableText OPEN_LABEL = new TranslatableText("keystone.file_browser.open");
+    protected static Text OPEN_LABEL = Text.translatable("keystone.file_browser.open");
 
     protected OpenFilesScreen(Text prompt, Set<String> fileExtensions, File root, boolean recursive, Consumer<File[]> callback)
     {

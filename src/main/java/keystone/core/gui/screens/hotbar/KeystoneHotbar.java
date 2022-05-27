@@ -14,7 +14,7 @@ import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class KeystoneHotbar extends KeystoneOverlay
 
     public KeystoneHotbar()
     {
-        super(new TranslatableText("keystone.screen.hotbar"));
+        super(Text.literal("keystone.screen.hotbar"));
         KeystoneHotbarEvents.CHANGED.register(this::onHotbarChanged);
     }
 
@@ -106,7 +106,7 @@ public class KeystoneHotbar extends KeystoneOverlay
 
         stack.pop();
     }
-    public void renderToolName(MatrixStack stack, MutableText toolName, int mouseX, int mouseY)
+    public void renderToolName(MatrixStack stack, Text toolName, int mouseX, int mouseY)
     {
         MinecraftClient mc = MinecraftClient.getInstance();
         List<Text> text = new ArrayList<>();

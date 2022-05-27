@@ -15,7 +15,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.CheckboxWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 import org.lwjgl.glfw.GLFW;
@@ -45,7 +45,7 @@ public class ImportScreen extends KeystoneOverlay
 
     protected ImportScreen()
     {
-        super(new TranslatableText("keystone.screen.import"));
+        super(Text.literal("keystone.screen.import"));
         importModule = Keystone.getModule(ImportModule.class);
 
         extensionsToPlace = new HashMap<>();
@@ -109,8 +109,7 @@ public class ImportScreen extends KeystoneOverlay
         addDrawableChild(mirrorButton);
         addDrawableChild(nudgeImports);
 
-        TranslatableText scaleLabel = new TranslatableText("keystone.schematic_import.scale");
-        IntegerWidget scale = new IntegerWidget(scaleLabel, MARGINS, y, panelWidth - 2 * MARGINS, 1, 1, 8)
+        IntegerWidget scale = new IntegerWidget(Text.translatable("keystone.schematic_import.scale"), MARGINS, y, panelWidth - 2 * MARGINS, 1, 1, 8)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -206,16 +205,16 @@ public class ImportScreen extends KeystoneOverlay
     }
     private SimpleButton createButton(int y, String translationKey, ButtonWidget.PressAction pressable)
     {
-        TranslatableText label = new TranslatableText(translationKey);
+        Text label = Text.translatable(translationKey);
         List<Text> tooltip = new ArrayList<>();
-        tooltip.add(new TranslatableText(translationKey + ".tooltip"));
+        tooltip.add(Text.translatable(translationKey + ".tooltip"));
 
         int buttonWidth = 2 * PADDING + textRenderer.getWidth(label.getString());
         return new SimpleButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, (stack, mouseX, mouseY, partialTicks) -> renderTooltip(stack, tooltip, mouseX, mouseY));
     }
     private CheckboxWidget createExtensionOption(int y, Identifier extensionID)
     {
-        TranslatableText label = new TranslatableText(extensionID.getNamespace() + "." + extensionID.getPath() + ".shouldPlace");
+        Text label = Text.translatable(extensionID.getNamespace() + "." + extensionID.getPath() + ".shouldPlace");
         return new CheckboxWidget(MARGINS, y, panelWidth - 2 * MARGINS, 20, label, extensionsToPlace.get(extensionID), true)
         {
             @Override

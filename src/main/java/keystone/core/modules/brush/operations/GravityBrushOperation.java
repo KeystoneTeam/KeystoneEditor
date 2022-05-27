@@ -6,14 +6,14 @@ import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 
 public class GravityBrushOperation extends BrushOperation
 {
     @Override
     public Text getName()
     {
-        return new TranslatableText("keystone.brush.gravity");
+        return Text.translatable("keystone.brush.gravity");
     }
     @Override
     public boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration)

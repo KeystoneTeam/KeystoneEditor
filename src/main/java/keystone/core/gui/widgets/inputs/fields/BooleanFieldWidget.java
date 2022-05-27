@@ -5,7 +5,8 @@ import keystone.api.variables.Hook;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.CheckboxWidget;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.lang.reflect.Field;
@@ -20,7 +21,7 @@ public class BooleanFieldWidget extends CheckboxWidget
 
     public BooleanFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(x, y, width, getFinalHeight(), new LiteralText(name), (boolean)field.get(instance.get()), true);
+        super(x, y, width, getFinalHeight(), Text.literal(name), (boolean)field.get(instance.get()), true);
 
         this.instance = instance;
         this.field = field;
@@ -48,7 +49,7 @@ public class BooleanFieldWidget extends CheckboxWidget
         {
             String error = "Cannot set Boolean field '" + name + "'!";
             Keystone.LOGGER.error(error);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText(error).styled(style -> style.withColor(Formatting.RED)), false);
+            MinecraftClient.getInstance().player.sendMessage(Text.literal(error).styled(style -> style.withColor(Formatting.RED)), false);
         }
     }
 }

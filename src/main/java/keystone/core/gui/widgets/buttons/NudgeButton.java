@@ -12,7 +12,9 @@ import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.math.Direction;
 import org.lwjgl.glfw.GLFW;
 
@@ -21,7 +23,7 @@ public class NudgeButton extends SimpleButton
     public interface NudgeConsumer { void nudge(Direction direction, int amount); }
     public interface NudgeHistorySupplier { IHistoryEntry get(); }
 
-    public static final TranslatableText NUDGE = new TranslatableText("keystone.nudge");
+    public static final Text NUDGE = Text.translatable("keystone.nudge");
     public static final NudgeHistorySupplier SELECTION_HISTORY_SUPPLIER = () ->
     {
         SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);

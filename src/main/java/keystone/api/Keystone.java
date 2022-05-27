@@ -18,22 +18,26 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.GameMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
  * Base Keystone API class, used to retrieve {@link keystone.core.modules.IKeystoneModule Modules},
  * global state, and toggle whether Keystone is active. Also contains
- * {@link org.apache.logging.log4j.Logger} and {@link java.util.Random} instances
+ * {@link org.apache.logging.log4j.Logger} and {@link Random} instances
  */
 public final class Keystone
 {
     public static final Logger LOGGER = LogManager.getLogger();
-    public static final Random RANDOM = new Random();
+    public static final Random RANDOM = Random.create();
 
     private static FilterModule filterModule;
     private static GhostBlocksModule ghostBlocksModule;
@@ -65,8 +69,8 @@ public final class Keystone
         KeystoneGlobalState.AllowPlayerLook = false;
         minecraft.mouse.unlockCursor();
 
-        revertGuiScale = minecraft.options.guiScale;
-        minecraft.options.guiScale = 3;
+        revertGuiScale = minecraft.options.getGuiScale().getValue();
+        minecraft.options.getGuiScale().setValue(3);
         minecraft.onResolutionChanged();
         KeystoneOverlayHandler.resize(minecraft, minecraft.getWindow().getScaledWidth(), minecraft.getWindow().getScaledHeight());
     }
@@ -82,7 +86,7 @@ public final class Keystone
         minecraft.mouse.lockCursor();
         revertPlayer = true;
 
-        minecraft.options.guiScale = revertGuiScale;
+        minecraft.options.getGuiScale().setValue(revertGuiScale);
         minecraft.onResolutionChanged();
         KeystoneOverlayHandler.resize(minecraft, minecraft.getWindow().getScaledWidth(), minecraft.getWindow().getScaledHeight());
     }
@@ -277,7 +281,7 @@ public final class Keystone
             }
         });
 
-        ClientPlayerEvents.ALLOW_USE_BLOCK.register((player, world, hand, hitResult) -> !Keystone.isActive());
+        ClientPlayerEvents.ALLOW_USE_BLOCK.register((player, hand, hitResult) -> !Keystone.isActive());
 
         ServerTickEvents.START_SERVER_TICK.register(Keystone::onServerTick);
         ServerPlayerEvents.START_TICK.register(Keystone::onPlayerTick);

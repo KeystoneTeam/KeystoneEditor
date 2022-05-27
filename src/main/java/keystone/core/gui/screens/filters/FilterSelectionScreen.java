@@ -19,8 +19,9 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 
@@ -47,7 +48,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
 
     protected FilterSelectionScreen()
     {
-        super(new TranslatableText("keystone.screen.filterPanel"));
+        super(Text.literal("keystone.screen.filterPanel"));
         this.filterModule = Keystone.getModule(FilterModule.class);
         this.filterManager = filterModule.getFilterDirectoryManager();
     }
@@ -90,7 +91,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
         // Build Filter Variable Widgets
         panelMaxX = Math.min(KeystoneHotbar.getX() - 5, 280);
         int maxPanelHeight = client.getWindow().getScaledHeight() - 50 - 2 * PADDING;
-        filterVariablesList = new FieldWidgetList(new TranslatableText("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
+        filterVariablesList = new FieldWidgetList(Text.translatable("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
 
         // Error Display
         KeystoneFilter selectedFilter = filterManager.getFilter(selectedFilterFile);
@@ -125,22 +126,22 @@ public class FilterSelectionScreen extends KeystoneOverlay
         panelMaxY = centerHeight + halfPanelHeight;
 
         // Select Filter Button
-        TextClickButton filterLabel = new TextClickButton(5, panelMinY + 11, new TranslatableText("keystone.filter_panel.select"), 0x8080FF, button -> Util.getOperatingSystem().open(KeystoneDirectories.getFilterDirectory()));
+        TextClickButton filterLabel = new TextClickButton(5, panelMinY + 11, Text.translatable("keystone.filter_panel.select"), 0x8080FF, button -> Util.getOperatingSystem().open(KeystoneDirectories.getFilterDirectory()));
         addDrawableChild(filterLabel);
         int selectButtonX = filterLabel.x + filterLabel.getWidth();
-        this.selectFilterButton = new ButtonNoHotkey(selectButtonX, panelMinY + 5, panelMaxX - selectButtonX - 5, 20, new LiteralText("!ERROR!"), (button) ->
+        this.selectFilterButton = new ButtonNoHotkey(selectButtonX, panelMinY + 5, panelMaxX - selectButtonX - 5, 20, Text.literal("!ERROR!"), (button) ->
         {
             disableWidgets(this.dropdown);
             this.dropdown.visible = true;
         });
 
         // Filter selection dropdown
-        this.dropdown = new Dropdown<>(selectFilterButton.x, selectFilterButton.y, selectFilterButton.getWidth(), new TranslatableText("keystone.tool.filter.dropdown"),
+        this.dropdown = new Dropdown<>(selectFilterButton.x, selectFilterButton.y, selectFilterButton.getWidth(), Text.literal("keystone.tool.filter.dropdown"),
                 filterFile ->
                 {
                     KeystoneFilter filter = filterManager.getFilter(filterFile);
-                    if (filter.isCompiledSuccessfully()) return new LiteralText(filter.getName());
-                    else return new LiteralText(filter.getName()).styled(style -> style.withColor(Formatting.RED));
+                    if (filter.isCompiledSuccessfully()) return Text.literal(filter.getName());
+                    else return Text.literal(filter.getName()).styled(style -> style.withColor(Formatting.RED));
                 },
                 (filterFile, title) ->
                 {
@@ -165,9 +166,9 @@ public class FilterSelectionScreen extends KeystoneOverlay
         }
 
         // Run Filter Button
-        int buttonWidth = textRenderer.getWidth(new TranslatableText("keystone.filter_panel.runFilter").getString()) + 10;
+        int buttonWidth = textRenderer.getWidth(Text.translatable("keystone.filter_panel.runFilter").getString()) + 10;
         int panelCenter = panelMaxX / 2;
-        ButtonNoHotkey runFilterButton = new ButtonNoHotkey(panelCenter - buttonWidth / 2, panelMaxY - 25, buttonWidth, 20, new TranslatableText("keystone.filter_panel.runFilter"), button -> runFilter());
+        ButtonNoHotkey runFilterButton = new ButtonNoHotkey(panelCenter - buttonWidth / 2, panelMaxY - 25, buttonWidth, 20, Text.literal("keystone.filter_panel.runFilter"), button -> runFilter());
 
         // Add buttons
         this.selectFilterButton.setMessage(this.dropdown.getSelectedEntryTitle());

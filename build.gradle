@@ -35,11 +35,17 @@ dependencies {
 
 // Autofill fabric.mod.json values
 processResources {
-    inputs.property "version", project.version
+    def variables = [
+            "version": project.version,
+            "target_minecraft_versions": project.target_minecraft_versions,
+            "loader_version": project.loader_version,
+            "fabric_version": project.fabric_version
+    ]
+    inputs.properties(variables)
     filteringCharset "UTF-8"
 
     filesMatching("fabric.mod.json") {
-        expand "version": project.version
+        expand(variables)
     }
 }
 

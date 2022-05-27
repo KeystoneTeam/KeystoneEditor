@@ -1,6 +1,7 @@
 package keystone.core.modules.clipboard;
 
 import keystone.api.Keystone;
+import keystone.api.enums.RetrievalMode;
 import keystone.api.tools.FillTool;
 import keystone.core.client.Player;
 import keystone.core.events.minecraft.InputEvents;
@@ -97,7 +98,7 @@ public class ClipboardModule implements IKeystoneModule
             clearClipboard();
             for (SelectionBoundingBox selection : Keystone.getModule(SelectionModule.class).getSelectionBoundingBoxes())
             {
-                clipboard.add(KeystoneSchematic.createFromSelection(selection, worldModifiers));
+                clipboard.add(KeystoneSchematic.createFromSelection(selection, worldModifiers, RetrievalMode.ORIGINAL, Blocks.STRUCTURE_VOID.getDefaultState()));
             }
         });
     }

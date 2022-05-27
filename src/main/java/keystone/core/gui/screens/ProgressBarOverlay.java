@@ -5,9 +5,9 @@ import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.utils.ProgressBar;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 
 public class ProgressBarOverlay extends KeystoneOverlay
 {
@@ -16,7 +16,7 @@ public class ProgressBarOverlay extends KeystoneOverlay
 
     private static boolean open;
     private static final ProgressBarOverlay overlay = new ProgressBarOverlay();
-    protected ProgressBarOverlay() { super(new LiteralText("Progress Bar")); }
+    protected ProgressBarOverlay() { super(Text.literal("Progress Bar")); }
 
     public static void open(String title)
     {
@@ -61,7 +61,7 @@ public class ProgressBarOverlay extends KeystoneOverlay
         panelMaxY = maxY + 1;
         if (ProgressBar.isCancellable())
         {
-            Text cancelLabel = new TranslatableText("keystone.cancel");
+            Text cancelLabel = Text.translatable("keystone.cancel");
             int cancelButtonWidth = 4 + textRenderer.getWidth(cancelLabel);
             addDrawableChild(new SimpleButton(centerX - (cancelButtonWidth >> 1), maxY + 1, cancelButtonWidth, 14, cancelLabel, button -> ProgressBar.cancel())
                     .setButtonColor(0xFF808080)

@@ -32,7 +32,7 @@ public class Camera
 
     public static int getRenderDistanceChunks()
     {
-        return MinecraftClient.getInstance().options.viewDistance;
+        return MinecraftClient.getInstance().options.getViewDistance().getValue();
     }
 
     public static int getRenderDistanceBlocks()

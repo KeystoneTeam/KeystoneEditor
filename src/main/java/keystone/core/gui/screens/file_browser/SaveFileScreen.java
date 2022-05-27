@@ -3,8 +3,7 @@ package keystone.core.gui.screens.file_browser;
 import keystone.core.gui.widgets.inputs.ParsableTextWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-
+import net.minecraft.text.TranslatableTextContent;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
@@ -12,9 +11,9 @@ import java.util.function.Consumer;
 
 public class SaveFileScreen extends FileBrowserScreen
 {
-    protected static TranslatableText SAVE_FILE_LABEL = new TranslatableText("keystone.file_browser.saveFile");
-    protected static TranslatableText FILE_NAME_LABEL = new TranslatableText("keystone.file_browser.fileName");
-    protected static TranslatableText SAVE_LABEL = new TranslatableText("keystone.file_browser.save");
+    protected static Text SAVE_FILE_LABEL = Text.translatable("keystone.file_browser.saveFile");
+    protected static Text FILE_NAME_LABEL = Text.translatable("keystone.file_browser.fileName");
+    protected static Text SAVE_LABEL = Text.translatable("keystone.file_browser.save");
 
     private String extension;
     private ParsableTextWidget<String> fileName;

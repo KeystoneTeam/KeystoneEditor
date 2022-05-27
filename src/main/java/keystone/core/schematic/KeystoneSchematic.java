@@ -4,6 +4,7 @@ import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
+import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.client.Player;
 import keystone.core.math.BlockPosMath;
@@ -54,19 +55,34 @@ public class KeystoneSchematic
         for (Entity entity : this.entities) entity.breakMinecraftEntityConnection();
         this.extensions = extensions;
     }
-
     /**
      * Create a schematic from a selection box
      * @param box The {@link SelectionBoundingBox} to create the schematic from
      * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
-     * @return The generated {@link keystone.core.schematic.KeystoneSchematic}
+     * @param retrievalMode The {@link RetrievalMode} used in reading the schematic contents
+     * @param structureVoid The {@link BlockState} that represents structure voids
+     * @return The generated {@link KeystoneSchematic}
      */
-    public static KeystoneSchematic createFromSelection(SelectionBoundingBox box, WorldModifierModules worldModifiers)
+    public static KeystoneSchematic createFromSelection(SelectionBoundingBox box, WorldModifierModules worldModifiers, RetrievalMode retrievalMode, BlockState structureVoid)
     {
+        return createFromCorners(box.getCorner1(), box.getCorner2(), worldModifiers, retrievalMode, structureVoid);
+    }
+    /**
+     * Create a schematic from two corners
+     * @param corner1 The first corner
+     * @param corner2 The second corner
+     * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
+     * @param retrievalMode The {@link RetrievalMode} used in reading the schematic contents
+     * @param structureVoid The {@link BlockState} that represents structure voids
+     * @return The generated {@link KeystoneSchematic}
+     */
+    public static KeystoneSchematic createFromCorners(Vec3i corner1, Vec3i corner2, WorldModifierModules worldModifiers, RetrievalMode retrievalMode, BlockState structureVoid)
+    {
+        BlockPos min = new BlockPos(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()), Math.min(corner1.getZ(), corner2.getZ()));
+        BlockPos max = new BlockPos(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()), Math.max(corner1.getZ(), corner2.getZ()));
+
         // Get size
-        Vec3i size = new Vec3i(box.getMax().getX() - box.getMin().getX() + 1,
-                box.getMax().getY() - box.getMin().getY() + 1,
-                box.getMax().getZ() - box.getMin().getZ() + 1);
+        Vec3i size = new Vec3i(max.getX() - min.getX() + 1, max.getY() - min.getY() + 1, max.getZ() - min.getZ() + 1);
 
         // Get blocks
         Block[] blocks = new Block[size.getX() * size.getY() * size.getZ()];
@@ -77,26 +93,27 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    blocks[i] = worldModifiers.blocks.getBlock(x + box.getMin().getX(), y + box.getMin().getY(), z + box.getMin().getZ(), RetrievalMode.ORIGINAL);
-                    if (blocks[i].blockType().getMinecraftBlock().isOf(Blocks.STRUCTURE_VOID)) blocks[i] = null;
+                    blocks[i] = worldModifiers.blocks.getBlock(x + min.getX(), y + min.getY(), z + min.getZ(), retrievalMode);
+                    if (blocks[i].blockType().getMinecraftBlock() == structureVoid) blocks[i] = null;
                     i++;
                 }
             }
         }
 
         // Get entities
-        List<Entity> entityList = worldModifiers.entities.getEntities(box.getBoundingBox(), RetrievalMode.ORIGINAL);
+        BoundingBox box = new BoundingBox(min, max);
+        List<Entity> entityList = worldModifiers.entities.getEntities(box, RetrievalMode.ORIGINAL);
         Entity[] entities = new Entity[entityList.size()];
         entities = entityList.toArray(entities);
         for (Entity entity : entities)
         {
-            entity.move(-box.getMin().getX(), -box.getMin().getY(), -box.getMin().getZ());
+            entity.move(-min.getX(), -min.getY(), -min.getZ());
             entity.breakMinecraftEntityConnection();
         }
 
         // Create schematic from data
         World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
-        return new KeystoneSchematic(size, blocks, entities, KeystoneSchematicFormat.createExtensions(world, box.getBoundingBox()));
+        return new KeystoneSchematic(size, blocks, entities, KeystoneSchematicFormat.createExtensions(world, box));
     }
 
     /**

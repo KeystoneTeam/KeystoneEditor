@@ -14,8 +14,10 @@ import net.minecraft.util.annotation.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.MutableWorldProperties;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -40,7 +42,7 @@ public class WrappedWorld extends World
 
     public WrappedWorld(World world)
     {
-        super((MutableWorldProperties) world.getLevelProperties(), world.getRegistryKey(), world.method_40134(), world::getProfiler, world.isClient, world.isDebugWorld(), 0);
+        super((MutableWorldProperties) world.getLevelProperties(), world.getRegistryKey(), world.getDimensionEntry(), world::getProfiler, world.isClient, world.isDebugWorld(), 0, -1);
         this.world = world;
     }
 
@@ -75,24 +77,24 @@ public class WrappedWorld extends World
     {
         return world.getBlockState(pos);
     }
+
     @Override public RecipeManager getRecipeManager() { return world.getRecipeManager(); }
     @Override public String asString() { return world.asString(); }
 
     @Override public List<? extends PlayerEntity> getPlayers() { return Collections.emptyList(); }
     @Override public void syncWorldEvent(@org.jetbrains.annotations.Nullable PlayerEntity player, int eventId, BlockPos pos, int data) { }
+
     @Override public void playSound(@org.jetbrains.annotations.Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
+    @Override public void playSound(@org.jetbrains.annotations.Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) { }
     @Override public void playSoundFromEntity(@org.jetbrains.annotations.Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
+    @Override public void playSoundFromEntity(@org.jetbrains.annotations.Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) { }
     @Override public void emitGameEvent(@org.jetbrains.annotations.Nullable Entity entity, GameEvent event, BlockPos pos) { }
+    @Override public void emitGameEvent(GameEvent event, Vec3d emitterPos, GameEvent.Emitter emitter) { }
     @Override @org.jetbrains.annotations.Nullable public MapState getMapState(String id) { return null; }
     @Override public void putMapState(String id, MapState state) { }
     @Override @org.jetbrains.annotations.Nullable public Entity getEntityById(int id) { return null; }
     @Override public void setBlockBreakingInfo(int entityId, BlockPos pos, int progress) { }
     @Override public int getMaxLightLevel() { return 15; }
-
-    // TODO: Check if this is the correct override
-    @Override public void updateNeighborsAlways(BlockPos pos, Block block) { }
-    //@Override public void updateNeighbourForOutputSignal(BlockPos p_175666_1_, Block p_175666_2_) {}
-
 
     @Override
     public int getTopY()

@@ -7,7 +7,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.registry.Registry;
 
 public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
@@ -19,12 +21,12 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
 
     protected AbstractBlockSelectionScreen(String narrationTitle)
     {
-        super(new TranslatableText(narrationTitle));
+        super(Text.translatable(narrationTitle));
     }
 
     public BlockGridWidget createMainPanel()
     {
-        return BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX(), KeystoneHotbar.getX(), KeystoneHotbar.getHeight(), KeystoneHotbar.getHeight(), false, new TranslatableText("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_TOOLTIP);
+        return BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX(), KeystoneHotbar.getX(), KeystoneHotbar.getHeight(), KeystoneHotbar.getHeight(), false, Text.translatable("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_TOOLTIP);
     }
     public abstract void onBlockSelected(BlockState block);
 
@@ -43,7 +45,7 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
         this.panel.rebuildButtons();
         addDrawableChild(this.panel);
 
-        this.searchBar = new TextFieldWidget(textRenderer, panel.x + 1, panel.y - 13, panel.getWidth() - 1, 12, new TranslatableText("keystone.search"));
+        this.searchBar = new TextFieldWidget(textRenderer, panel.x + 1, panel.y - 13, panel.getWidth() - 1, 12, Text.translatable("keystone.search"));
         this.searchBar.setMaxLength(256);
         this.searchBar.setDrawsBackground(false);
         this.searchBar.setText("");

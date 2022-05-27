@@ -18,10 +18,10 @@ public final class ClientPlayerEvents
     {
         for (final ClientTick listener : listeners) listener.tick(player);
     });
-    public static final Event<AllowUseBlock> ALLOW_USE_BLOCK = EventFactory.createArrayBacked(AllowUseBlock.class, (player, world, hand, hitResult) -> true, listeners -> (player, world, hand, hitResult) ->
+    public static final Event<AllowUseBlock> ALLOW_USE_BLOCK = EventFactory.createArrayBacked(AllowUseBlock.class, (player, hand, hitResult) -> true, listeners -> (player, hand, hitResult) ->
     {
         boolean allow = true;
-        for (final AllowUseBlock listener : listeners) if (!listener.allow(player, world, hand, hitResult)) allow = false;
+        for (final AllowUseBlock listener : listeners) if (!listener.allow(player, hand, hitResult)) allow = false;
         return allow;
     });
     //endregion
@@ -32,7 +32,7 @@ public final class ClientPlayerEvents
     }
     public interface AllowUseBlock
     {
-        boolean allow(ClientPlayerEntity player, World world, Hand hand, BlockHitResult hitResult);
+        boolean allow(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult);
     }
     //endregion
 }

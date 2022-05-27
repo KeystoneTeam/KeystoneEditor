@@ -2,6 +2,7 @@ package keystone.core.gui.screens.selection;
 
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
+import keystone.api.enums.RetrievalMode;
 import keystone.api.tools.AnalyzeTool;
 import keystone.api.tools.DeleteEntitiesTool;
 import keystone.api.tools.FillTool;
@@ -26,7 +27,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.lwjgl.glfw.GLFW;
@@ -51,7 +52,7 @@ public class SelectionScreen extends KeystoneOverlay
 
     protected SelectionScreen()
     {
-        super(new TranslatableText("keystone.screen.selection"));
+        super(Text.literal("keystone.screen.selection"));
         selectionModule = Keystone.getModule(SelectionModule.class);
     }
     public static void open()
@@ -139,7 +140,7 @@ public class SelectionScreen extends KeystoneOverlay
     //region Helpers
     private NudgeButton createNudgeButton(int startY, int index, String translationKey, NudgeButton.NudgeConsumer nudgeConsumer)
     {
-        TranslatableText label = new TranslatableText(translationKey);
+        Text label = Text.translatable(translationKey);
         int y = startY + index * (BUTTON_HEIGHT + PADDING);
         int buttonWidth = 2 * PADDING + textRenderer.getWidth(label.getString());
         return (NudgeButton) new NudgeButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, nudgeConsumer, () -> null)
@@ -155,9 +156,9 @@ public class SelectionScreen extends KeystoneOverlay
     }
     private SimpleButton createButton(int startY, int index, String translationKey, ButtonWidget.PressAction pressable)
     {
-        TranslatableText label = new TranslatableText(translationKey);
+        Text label = Text.translatable(translationKey);
         List<Text> tooltip = new ArrayList<>();
-        tooltip.add(new TranslatableText(translationKey + ".tooltip"));
+        tooltip.add(Text.translatable(translationKey + ".tooltip"));
 
         int y = startY + index * (BUTTON_HEIGHT + PADDING);
         int buttonWidth = 2 * PADDING + textRenderer.getWidth(label.getString());
@@ -173,7 +174,7 @@ public class SelectionScreen extends KeystoneOverlay
             int newAmount = (amount < 0) ? selection.getAxisSize(direction.getAxis()) : amount;
 
             WorldModifierModules worldModifiers = new WorldModifierModules();
-            KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(selection, worldModifiers);
+            KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(selection, worldModifiers, RetrievalMode.ORIGINAL, Blocks.STRUCTURE_VOID.getDefaultState());
 
             HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
             historyModule.tryBeginHistoryEntry();
@@ -231,7 +232,7 @@ public class SelectionScreen extends KeystoneOverlay
         SaveFileScreen.saveFile("kschem", KeystoneDirectories.getSchematicsDirectory(), true, file ->
                 Keystone.runOnMainThread(() ->
                 {
-                    KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(SelectionNudgeScreen.getSelectionToNudge(), new WorldModifierModules());
+                    KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(SelectionNudgeScreen.getSelectionToNudge(), new WorldModifierModules(), RetrievalMode.ORIGINAL, Blocks.STRUCTURE_VOID.getDefaultState());
                     SchematicLoader.saveSchematic(schematic, file);
                 }));
     }

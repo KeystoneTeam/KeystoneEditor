@@ -134,8 +134,8 @@ public class BlockType
                 else blockStr = blockStr + "[" + token + "]";
             }
 
-            BlockArgumentParser parser = new BlockArgumentParser(new StringReader(blockStr), false).parse(false);
-            return BlockTypeRegistry.fromMinecraftBlock(parser.getBlockState());
+            BlockState state = BlockArgumentParser.block(Registry.BLOCK, blockStr, false).blockState();
+            return BlockTypeRegistry.fromMinecraftBlock(state);
         }
         catch (ArrayIndexOutOfBoundsException e)
         {
@@ -172,8 +172,8 @@ public class BlockType
             }
             else blockStr = blockStr + "[" + property + "=" + value + "]";
 
-            BlockArgumentParser parser = new BlockArgumentParser(new StringReader(blockStr), false).parse(false);
-            return BlockTypeRegistry.fromMinecraftBlock(parser.getBlockState());
+            BlockState state = BlockArgumentParser.block(Registry.BLOCK, blockStr, false).blockState();
+            return BlockTypeRegistry.fromMinecraftBlock(state);
         }
         catch (CommandSyntaxException e)
         {

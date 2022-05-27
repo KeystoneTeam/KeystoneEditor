@@ -1,7 +1,8 @@
 package keystone.core.modules.brush;
 
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.Vec3i;
@@ -17,7 +18,7 @@ public abstract class BrushShape
     //region Default Shapes
     public static final BrushShape ROUND = new BrushShape()
     {
-        public Text getName() { return new TranslatableText("keystone.shape.round"); }
+        public Text getName() { return Text.translatable("keystone.shape.round"); }
         protected boolean isLocalizedPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ)
         {
             float nX = (2 * x / sizeX);
@@ -28,7 +29,7 @@ public abstract class BrushShape
     };
     public static final BrushShape DIAMOND = new BrushShape()
     {
-        public Text getName() { return new TranslatableText("keystone.shape.diamond"); }
+        public Text getName() { return Text.translatable("keystone.shape.diamond"); }
         protected boolean isLocalizedPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ)
         {
             x = Math.abs(x) - (sizeX % 2 == 0 ? 0.5f : 0);
@@ -45,7 +46,7 @@ public abstract class BrushShape
     };
     public static final BrushShape SQUARE = new BrushShape()
     {
-        public Text getName() { return new TranslatableText("keystone.shape.square"); }
+        public Text getName() { return Text.translatable("keystone.shape.square"); }
         protected boolean isLocalizedPositionInShape(float x, float y, float z, float sizeX, float sizeY, float sizeZ) { return true; }
     };
     //endregion

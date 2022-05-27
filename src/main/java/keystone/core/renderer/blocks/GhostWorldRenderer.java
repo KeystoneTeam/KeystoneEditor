@@ -175,7 +175,9 @@ public class GhostWorldRenderer
                 if (!startedFluidBufferBuilders.containsKey(renderLayer)) startedFluidBufferBuilders.put(renderLayer, new HashSet<>());
                 if (startedFluidBufferBuilders.get(renderLayer).add(chunkPos)) bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
 
-                if (blockRendererDispatcher.renderFluid(localPos, blockAccess, bufferBuilder, blockState, fluidState)) usedFluidRenderLayers.add(renderLayer);
+                // TODO: Check if I need to find a way to re-implement the if statement before adding the layer to usedFluidRendersLayers
+                blockRendererDispatcher.renderFluid(localPos, blockAccess, bufferBuilder, blockState, fluidState);
+                usedFluidRenderLayers.add(renderLayer);
             }
 
             // Block Rendering
@@ -186,7 +188,9 @@ public class GhostWorldRenderer
                 bufferBuilder = blockBuffers.get(renderLayer);
                 if (startedBufferBuilders.add(renderLayer)) bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
 
-                if (blockRendererDispatcher.renderBlock(blockState, localPos, blockAccess, ms, bufferBuilder, true, minecraft.world.random)) usedBlockRenderLayers.add(renderLayer);
+                // TODO: Check if I need to find a way to re-implement the if statement before adding the layer to usedBlockRenderLayers
+                blockRendererDispatcher.renderBlock(blockState, localPos, blockAccess, ms, bufferBuilder, true, minecraft.world.random);
+                usedBlockRenderLayers.add(renderLayer);
             }
 
             ms.pop();
@@ -207,7 +211,6 @@ public class GhostWorldRenderer
         for (RenderLayer layer : startedBufferBuilders)
         {
             BufferBuilder buf = blockBuffers.get(layer);
-            buf.end();
             bufferCache.put(layer, new SuperByteBuffer(buf));
         }
     }

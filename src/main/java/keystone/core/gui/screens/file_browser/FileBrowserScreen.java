@@ -5,9 +5,9 @@ import keystone.core.gui.widgets.buttons.SimpleButton;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
@@ -22,7 +22,7 @@ public abstract class FileBrowserScreen extends Screen
     protected static final int MARGINS = 2;
     protected static final int PADDING = 5;
     protected static final int BUTTON_HEIGHT = 20;
-    protected static TranslatableText CANCEL_LABEL = new TranslatableText("keystone.cancel");
+    protected static Text CANCEL_LABEL = Text.translatable("keystone.cancel");
 
     //region Data Types
     protected class FileStructure
@@ -92,11 +92,11 @@ public abstract class FileBrowserScreen extends Screen
 
         public FileButton(FileBrowserScreen screen, int index, int width, File file, FileStructure parent, boolean selected)
         {
-            super(index, width, new LiteralText(file.getName()), (button) -> screen.selectFile((FileButton) button));
+            super(index, width, Text.literal(file.getName()), (button) -> screen.selectFile((FileButton) button));
 
             this.file = file;
             this.selected = selected;
-            this.path = new LiteralText(parent.path + "/" + file.getName());
+            this.path = Text.literal(parent.path + "/" + file.getName());
         }
 
         @Override
@@ -112,7 +112,7 @@ public abstract class FileBrowserScreen extends Screen
 
         public DirectoryButton(FileBrowserScreen screen, int index, int width, FileStructure fileStructure, boolean parent)
         {
-            super(index, width, new LiteralText(parent ? "../" : fileStructure.getThisDirectory().getName() + "/"), (button) -> screen.moveToDirectory((DirectoryButton)button));
+            super(index, width, Text.literal(parent ? "../" : fileStructure.getThisDirectory().getName() + "/"), (button) -> screen.moveToDirectory((DirectoryButton)button));
             this.fileStructure = fileStructure;
         }
     }
@@ -162,7 +162,7 @@ public abstract class FileBrowserScreen extends Screen
         this.panelY = 50;
         int buttonWidth = this.panelWidth - 2 * MARGINS;
 
-        this.currentPath = new LiteralText(this.currentFileStructure.path);
+        this.currentPath = Text.literal(this.currentFileStructure.path);
 
         this.allButtons.clear();
         int i = 0;

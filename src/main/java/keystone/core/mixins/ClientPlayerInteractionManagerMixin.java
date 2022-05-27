@@ -16,8 +16,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ClientPlayerInteractionManagerMixin
 {
     @Inject(method = "interactBlock", at = @At("HEAD"), cancellable = true)
-    public void allowInteractBlock(ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> callback)
+    public void allowInteractBlock(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> callback)
     {
-        if (!ClientPlayerEvents.ALLOW_USE_BLOCK.invoker().allow(player, world, hand, hitResult)) callback.setReturnValue(ActionResult.PASS);
+        if (!ClientPlayerEvents.ALLOW_USE_BLOCK.invoker().allow(player, hand, hitResult)) callback.setReturnValue(ActionResult.PASS);
     }
 }

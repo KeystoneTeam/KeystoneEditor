@@ -6,7 +6,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
             for (Enum test : enumClass.getEnumConstants()) if (isValueAllowed((T)test)) valuesList.add((T)test);
 
             this.dropdown = null;
-            this.dropdown = new Dropdown<>(x, y + getEnumOffset() + 20, width, getMessage(), entry -> new LiteralText(AnnotationUtils.getEnumValueName(entry)), (entry, title) ->
+            this.dropdown = new Dropdown<>(x, y + getEnumOffset() + 20, width, getMessage(), entry -> Text.literal(AnnotationUtils.getEnumValueName(entry)), (entry, title) ->
             {
                 setMessage(title);
                 onSetValue(entry);

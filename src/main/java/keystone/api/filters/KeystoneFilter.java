@@ -4,25 +4,34 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
 import keystone.api.WorldRegion;
+import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.Item;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
+import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.gui.widgets.inputs.fields.EditableObject;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
+import keystone.core.modules.world.WorldModifierModules;
+import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.command.CommandRegistryWrapper;
 import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.command.argument.BlockStateArgument;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.BuiltinRegistries;
 import net.minecraft.util.registry.Registry;
@@ -212,7 +221,7 @@ public class KeystoneFilter extends EditableObject
     public final void print(Object message)
     {
         if (message == null) message = "null";
-        MinecraftClient.getInstance().player.sendMessage(new LiteralText(message.toString()), false);
+        MinecraftClient.getInstance().player.sendMessage(Text.literal(message.toString()), false);
     }
     /**
      * Abort filter execution
@@ -346,7 +355,7 @@ public class KeystoneFilter extends EditableObject
      * Create a {@link Block} from a block ID. Any ID that is a valid ID for the
      * /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param block The block ID
-     * @return The generated {@link BlockType}
+     * @return The generated {@link Block}
      */
     public static Block block(String block)
     {
@@ -355,9 +364,9 @@ public class KeystoneFilter extends EditableObject
 
         try
         {
-            BlockArgumentParser parser = new BlockArgumentParser(new StringReader(block), false).parse(true);
-            state = parser.getBlockState();
-            tileEntity = parser.getNbtData();
+            BlockArgumentParser.BlockResult parser = BlockArgumentParser.block(Registry.BLOCK, block, true);
+            state = parser.blockState();
+            tileEntity = parser.nbt();
         }
         catch (CommandSyntaxException e)
         {
@@ -366,16 +375,37 @@ public class KeystoneFilter extends EditableObject
 
         return new Block(state, tileEntity);
     }
-
     /**
      * Create a {@link Block} from a block ID and tile entity. Any ID that is a valid ID
      * for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param block The block ID
-     * @return The generated {@link BlockType}
+     * @return The generated {@link Block}
      */
     public static Block block(String block, NBTCompound tileEntity)
     {
         return block(block).setTileEntity(tileEntity);
+    }
+    /**
+     * Create a {@link Block} from a block ID. Any ID that is a valid ID for the
+     * /setblock command without NBT will work. [e.g. "minecraft:stone_slab[type=top]"]
+     * @param blockType The block ID
+     * @return The generated {@link BlockType}
+     */
+    public static BlockType blockType(String blockType)
+    {
+        BlockState state = Blocks.RED_STAINED_GLASS.getDefaultState();
+
+        try
+        {
+            BlockArgumentParser.BlockResult parser = BlockArgumentParser.block(Registry.BLOCK, blockType, false);
+            state = parser.blockState();
+        }
+        catch (CommandSyntaxException e)
+        {
+            Keystone.abortFilter(e.getLocalizedMessage());
+        }
+
+        return BlockTypeRegistry.fromMinecraftBlock(state);
     }
     /**
      * Create a {@link keystone.api.wrappers.Item} from an item ID. Any ID that is a valid ID for the
@@ -383,15 +413,15 @@ public class KeystoneFilter extends EditableObject
      * @param item The item ID
      * @return The generated {@link keystone.api.wrappers.Item}
      */
-    public static final Item item(String item)
+    public static Item item(String item)
     {
         ItemStack stack = ItemStack.EMPTY;
 
         try
         {
-            ItemStringReader parser = new ItemStringReader(new StringReader(item), false).consume();
-            stack = new ItemStack(parser.getItem(), 1);
-            stack.setNbt(parser.getNbt());
+            ItemStringReader.ItemResult parser = ItemStringReader.item(CommandRegistryWrapper.of(Registry.ITEM), new StringReader(item));
+            stack = new ItemStack(parser.item(), 1);
+            stack.setNbt(parser.nbt());
         }
         catch (CommandSyntaxException e)
         {
@@ -440,6 +470,42 @@ public class KeystoneFilter extends EditableObject
             Keystone.abortFilter("Invalid biome ID: '" + id + "'!");
             return null;
         }
+    }
+    /**
+     * Create a schematic from two corners
+     * @param corner1 The first corner
+     * @param corner2 The second corner
+     * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
+     * @return The generated {@link KeystoneSchematic}
+     */
+    public static KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers)
+    {
+        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, RetrievalMode.LAST_SWAPPED, Blocks.STRUCTURE_VOID.getDefaultState());
+    }
+    /**
+     * Create a schematic from two corners
+     * @param corner1 The first corner
+     * @param corner2 The second corner
+     * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
+     * @param retrievalMode The {@link RetrievalMode} used in reading the schematic contents
+     * @return The generated {@link KeystoneSchematic}
+     */
+    public static KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers, RetrievalMode retrievalMode)
+    {
+        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode, Blocks.STRUCTURE_VOID.getDefaultState());
+    }
+    /**
+     * Create a schematic from two corners
+     * @param corner1 The first corner
+     * @param corner2 The second corner
+     * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
+     * @param retrievalMode The {@link RetrievalMode} used in reading the schematic contents
+     * @param structureVoid The {@link BlockType} that represents structure voids
+     * @return The generated {@link KeystoneSchematic}
+     */
+    public static KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers, RetrievalMode retrievalMode, BlockType structureVoid)
+    {
+        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode, structureVoid.getMinecraftBlock());
     }
     //endregion
 }

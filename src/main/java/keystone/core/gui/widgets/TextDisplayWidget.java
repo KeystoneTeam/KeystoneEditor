@@ -5,7 +5,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.ChatMessages;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -28,7 +28,7 @@ public class TextDisplayWidget extends ClickableWidget
 
     public TextDisplayWidget(int x, int y, int width, TextRenderer font)
     {
-        super(x, y, width, 0, new LiteralText("Text Display"));
+        super(x, y, width, 0, Text.literal("Text Display"));
         this.lines = new ArrayList<>();
         this.trimmedLines = new ArrayList<>();
         this.font = font;
@@ -68,7 +68,7 @@ public class TextDisplayWidget extends ClickableWidget
     public void addText(Formatting color, String... lines)
     {
         Text[] components = new Text[lines.length];
-        for (int i = 0; i < lines.length; i++) components[i] = new LiteralText(lines[i]).styled(style -> style.withColor(color));
+        for (int i = 0; i < lines.length; i++) components[i] = Text.literal(lines[i]).styled(style -> style.withColor(color));
         addText(components);
     }
     public void addException(Throwable throwable)
@@ -84,7 +84,7 @@ public class TextDisplayWidget extends ClickableWidget
 
             String[] strings = stringWriter.toString().split(System.lineSeparator());
             Text[] lines = new Text[strings.length];
-            for (int i = 0; i < strings.length; i++) lines[i] = new LiteralText(strings[i].replace("\t", "  ")).styled(style -> style.withColor(Formatting.RED));
+            for (int i = 0; i < strings.length; i++) lines[i] = Text.literal(strings[i].replace("\t", "  ")).styled(style -> style.withColor(Formatting.RED));
             addText(lines);
         }
         catch (IOException e)

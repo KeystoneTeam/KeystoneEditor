@@ -6,7 +6,8 @@ import keystone.core.gui.widgets.inputs.EnumWidget;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.lang.reflect.Field;
@@ -22,7 +23,7 @@ public class EnumFieldWidget<T extends Enum<T>> extends EnumWidget<T>
 
     public EnumFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BiConsumer<ClickableWidget, Boolean> addDropdown) throws IllegalAccessException
     {
-        super(new LiteralText(name), x, y, width, (T)field.get(instance.get()), disableWidgets, restoreWidgets, addDropdown);
+        super(Text.literal(name), x, y, width, (T)field.get(instance.get()), disableWidgets, restoreWidgets, addDropdown);
 
         this.instance = instance;
         this.field = field;
@@ -42,7 +43,7 @@ public class EnumFieldWidget<T extends Enum<T>> extends EnumWidget<T>
         {
             String error = "Cannot set Enum field '" + getMessage().getString() + "'!";
             Keystone.LOGGER.error(error);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText(error).styled(style -> style.withColor(Formatting.RED)), false);
+            MinecraftClient.getInstance().player.sendMessage(Text.literal(error).styled(style -> style.withColor(Formatting.RED)), false);
             e.printStackTrace();
         }
     }

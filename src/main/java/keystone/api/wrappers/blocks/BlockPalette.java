@@ -2,6 +2,7 @@ package keystone.api.wrappers.blocks;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Either;
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.modules.filter.providers.BlockTypeProvider;
@@ -12,6 +13,7 @@ import keystone.core.utils.WeightedRandom;
 import net.minecraft.block.Block;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.tag.TagKey;
+import net.minecraft.util.registry.Registry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,22 +97,17 @@ public class BlockPalette
      */
     public BlockPalette with(String block, int weight)
     {
-        if (block.startsWith("#"))
+        try
         {
-            try
-            {
-                BlockArgumentParser parser = new BlockArgumentParser(new StringReader(block), true).parse(false);
-                TagKey<Block> tag = parser.getTagId();
-                if (tag != null) with(new TagBlockProvider(tag), weight);
-            }
-            catch (CommandSyntaxException e)
-            {
-                e.printStackTrace();
-            }
-
-            return this;
+            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(Registry.BLOCK, block, false);
+            if (parser.left().isPresent()) return with(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()), weight);
+            if (parser.right().isPresent()) return with(new TagBlockProvider(parser.right().get().tag(), parser.right().get().vagueProperties()), weight);
         }
-        else return with(KeystoneFilter.block(block).blockType(), weight);
+        catch (CommandSyntaxException e)
+        {
+            e.printStackTrace();
+        }
+        return this;
     }
     /**
      * Add a {@link BlockType} to the palette with a weight of 1
@@ -198,22 +195,17 @@ public class BlockPalette
      */
     public BlockPalette without(String block, int weight)
     {
-        if (block.startsWith("#"))
+        try
         {
-            try
-            {
-                BlockArgumentParser parser = new BlockArgumentParser(new StringReader(block), true).parse(false);
-                TagKey<Block> tag = parser.getTagId();
-                if (tag != null) without(new TagBlockProvider(tag), weight);
-            }
-            catch (CommandSyntaxException e)
-            {
-                e.printStackTrace();
-            }
-
-            return this;
+            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(Registry.BLOCK, block, false);
+            if (parser.left().isPresent()) return without(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()), weight);
+            if (parser.right().isPresent()) return without(new TagBlockProvider(parser.right().get().tag(), parser.right().get().vagueProperties()), weight);
         }
-        else return without(KeystoneFilter.block(block).blockType(), weight);
+        catch (CommandSyntaxException e)
+        {
+            e.printStackTrace();
+        }
+        return this;
     }
     /**
      * Remove a {@link BlockType} from the palette

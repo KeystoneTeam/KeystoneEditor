@@ -2,12 +2,17 @@ package keystone.api.wrappers.blocks;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Either;
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
+import keystone.core.modules.filter.providers.TagBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.util.registry.RegistryEntryList;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -54,21 +59,22 @@ public class BlockMask
      */
     public BlockMask with(String block)
     {
-        if (block.startsWith("#"))
+        try
         {
-            try
+            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(Registry.BLOCK, block, false);
+            if (parser.left().isPresent()) return with(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()));
+            if (parser.right().isPresent())
             {
-                BlockArgumentParser parser = new BlockArgumentParser(new StringReader(block), true).parse(false);
-                Registry.BLOCK.iterateEntries(parser.getTagId()).forEach(tagEntry -> with(BlockTypeRegistry.fromMinecraftBlock(tagEntry.value().getDefaultState())));
+                RegistryEntryList<net.minecraft.block.Block> tag = parser.right().get().tag();
+                for (RegistryEntry<net.minecraft.block.Block> tagElement : tag) with(BlockTypeRegistry.fromMinecraftBlock(tagElement.value().getDefaultState()));
+                return this;
             }
-            catch (CommandSyntaxException e)
-            {
-                Keystone.abortFilter(e.getLocalizedMessage());
-            }
-
-            return this;
         }
-        else return with(KeystoneFilter.block(block).blockType());
+        catch (CommandSyntaxException e)
+        {
+            e.printStackTrace();
+        }
+        return this;
     }
     /**
      * Add a {@link BlockType} to the mask
@@ -93,21 +99,22 @@ public class BlockMask
      */
     public BlockMask without(String block)
     {
-        if (block.startsWith("#"))
+        try
         {
-            try
+            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(Registry.BLOCK, block, false);
+            if (parser.left().isPresent()) return without(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()));
+            if (parser.right().isPresent())
             {
-                BlockArgumentParser parser = new BlockArgumentParser(new StringReader(block), true).parse(false);
-                Registry.BLOCK.iterateEntries(parser.getTagId()).forEach(tagEntry -> without(BlockTypeRegistry.fromMinecraftBlock(tagEntry.value().getDefaultState())));
+                RegistryEntryList<net.minecraft.block.Block> tag = parser.right().get().tag();
+                for (RegistryEntry<net.minecraft.block.Block> tagElement : tag) without(BlockTypeRegistry.fromMinecraftBlock(tagElement.value().getDefaultState()));
+                return this;
             }
-            catch (CommandSyntaxException e)
-            {
-                Keystone.abortFilter(e.getLocalizedMessage());
-            }
-
-            return this;
         }
-        else return without(KeystoneFilter.block(block).blockType());
+        catch (CommandSyntaxException e)
+        {
+            e.printStackTrace();
+        }
+        return this;
     }
     /**
      * Remove a {@link BlockType} from the mask

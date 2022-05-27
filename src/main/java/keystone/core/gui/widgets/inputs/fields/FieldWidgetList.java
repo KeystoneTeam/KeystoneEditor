@@ -9,7 +9,11 @@ import keystone.core.gui.widgets.WidgetList;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.LiteralText;
+import net.minecraft.client.util.ChatMessages;
+import net.minecraft.server.command.TellRawCommand;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -56,14 +60,15 @@ public class FieldWidgetList extends WidgetList
             {
                 String error = "Could not create editor for field '" + variableName + "'!";
                 Keystone.LOGGER.error(error);
-                MinecraftClient.getInstance().player.sendMessage(new LiteralText(error).styled(style -> style.withColor(Formatting.RED)), false);
+
+                MinecraftClient.getInstance().player.sendMessage(Text.literal(error).styled(style -> style.withColor(Formatting.RED)), false);
                 e.printStackTrace();
             }
             catch (IllegalAccessException e)
             {
                 String error = "Could not access field '" + variableName + "'!";
                 Keystone.LOGGER.error(error);
-                MinecraftClient.getInstance().player.sendMessage(new LiteralText(error).styled(style -> style.withColor(Formatting.RED)), false);
+                MinecraftClient.getInstance().player.sendMessage(Text.literal(error).styled(style -> style.withColor(Formatting.RED)), false);
                 e.printStackTrace();
             }
         }

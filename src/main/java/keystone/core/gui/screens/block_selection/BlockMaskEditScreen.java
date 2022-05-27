@@ -9,7 +9,9 @@ import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.widget.CheckboxWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableTextContent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
@@ -37,7 +39,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
     protected void init()
     {
         super.init();
-        this.maskPanel = BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 80, false, new TranslatableText("keystone.mask_panel"), state ->
+        this.maskPanel = BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 80, false, Text.translatable("keystone.mask_panel"), state ->
         {
             this.mask.without(BlockTypeRegistry.fromMinecraftBlock(state));
             this.maskPanel.removeBlock(state);
@@ -47,7 +49,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         addDrawableChild(maskPanel);
 
         // Done and Cancel Buttons
-        addDrawableChild(new CheckboxWidget(maskPanel.x, maskPanel.y + maskPanel.getHeight() + 5, maskPanel.getWidth(), 20, new TranslatableText("keystone.blacklist"), this.mask.isBlacklist(), true)
+        addDrawableChild(new CheckboxWidget(maskPanel.x, maskPanel.y + maskPanel.getHeight() + 5, maskPanel.getWidth(), 20, Text.translatable("keystone.blacklist"), this.mask.isBlacklist(), true)
         {
             @Override
             public void onPress()
@@ -58,7 +60,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
             }
         });
         int gapCenter = (height - maskPanel.y - maskPanel.getHeight()) / 2;
-        addDrawableChild(new ButtonNoHotkey(maskPanel.x, maskPanel.y + maskPanel.getHeight() + gapCenter - 10, maskPanel.getWidth(), 20, new TranslatableText("keystone.done"), button ->
+        addDrawableChild(new ButtonNoHotkey(maskPanel.x, maskPanel.y + maskPanel.getHeight() + gapCenter - 10, maskPanel.getWidth(), 20, Text.translatable("keystone.done"), button ->
         {
             if (!ranCallback)
             {
@@ -67,7 +69,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
             }
             close();
         }));
-        addDrawableChild(new ButtonNoHotkey(maskPanel.x, height - 25, maskPanel.getWidth(), 20, new TranslatableText("keystone.cancel"), button -> close()));
+        addDrawableChild(new ButtonNoHotkey(maskPanel.x, height - 25, maskPanel.getWidth(), 20, Text.translatable("keystone.cancel"), button -> close()));
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)

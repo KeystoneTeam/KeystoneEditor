@@ -7,7 +7,9 @@ import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.properties.BlockPropertiesWidgetList;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableTextContent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
@@ -28,7 +30,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
 
     protected BlockPropertiesScreen(BlockType blockType, Consumer<BlockType> callback)
     {
-        super(new TranslatableText("keystone.screen.blockProperties"));
+        super(Text.translatable("keystone.screen.blockProperties"));
 
         this.callback = callback;
         this.block = new Block(blockType);
@@ -67,8 +69,8 @@ public class BlockPropertiesScreen extends KeystoneOverlay
 
         // Done Button
         int buttonWidth = (panelWidth - 3 * PADDING) >> 1;
-        addDrawableChild(new ButtonNoHotkey(panelX + PADDING, panelY + PADDING + propertiesList.getHeight() + PADDING, buttonWidth, 20, new TranslatableText("keystone.done"), button -> close()));
-        addDrawableChild(new ButtonNoHotkey(panelX + panelWidth - PADDING - buttonWidth, panelY + PADDING + propertiesList.getHeight() + PADDING, buttonWidth, 20, new TranslatableText("keystone.cancel"), button ->
+        addDrawableChild(new ButtonNoHotkey(panelX + PADDING, panelY + PADDING + propertiesList.getHeight() + PADDING, buttonWidth, 20, Text.translatable("keystone.done"), button -> close()));
+        addDrawableChild(new ButtonNoHotkey(panelX + panelWidth - PADDING - buttonWidth, panelY + PADDING + propertiesList.getHeight() + PADDING, buttonWidth, 20, Text.translatable("keystone.cancel"), button ->
         {
             callback.accept(null);
             ranCallback = true;

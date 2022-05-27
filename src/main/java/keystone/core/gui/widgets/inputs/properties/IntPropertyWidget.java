@@ -4,7 +4,8 @@ import keystone.api.wrappers.blocks.Block;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.state.property.IntProperty;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 
 public class IntPropertyWidget extends IntegerWidget
 {
@@ -13,7 +14,7 @@ public class IntPropertyWidget extends IntegerWidget
 
     public IntPropertyWidget(Block block, IntProperty property, int x, int y, int width)
     {
-        super(new LiteralText(property.getName()), x, y, width, block.blockType().getMinecraftBlock().get(property));
+        super(Text.literal(property.getName()), x, y, width, block.blockType().getMinecraftBlock().get(property));
 
         this.block = block;
         this.property = property;

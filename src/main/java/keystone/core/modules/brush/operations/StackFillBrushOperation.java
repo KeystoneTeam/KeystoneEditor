@@ -7,7 +7,7 @@ import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 
 public class StackFillBrushOperation extends BrushOperation
 {
@@ -18,7 +18,7 @@ public class StackFillBrushOperation extends BrushOperation
     @Override
     public Text getName()
     {
-        return new TranslatableText("keystone.brush.stackFill");
+        return Text.translatable("keystone.brush.stackFill");
     }
     @Override
     public boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration)

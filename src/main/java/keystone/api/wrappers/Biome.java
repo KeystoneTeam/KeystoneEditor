@@ -1,7 +1,9 @@
 package keystone.api.wrappers;
 
 import keystone.core.mixins.BiomeInvoker;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryEntry;
@@ -13,7 +15,7 @@ public class Biome
 {
     private RegistryEntry<net.minecraft.world.biome.Biome> biome;
     private Identifier id;
-    private TranslatableText name;
+    private Text name;
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
@@ -24,7 +26,7 @@ public class Biome
     {
         this.biome = minecraftBiome;
         this.id = minecraftBiome.getKey().get().getValue();
-        this.name = new TranslatableText("biome." + this.id.getNamespace() + "." + this.id.getPath());
+        this.name = Text.translatable("biome." + this.id.getNamespace() + "." + this.id.getPath());
     }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
@@ -63,14 +65,6 @@ public class Biome
     public float temperature(int x, int y, int z)
     {
         return ((BiomeInvoker)(Object)biome.value()).invokeGetTemperature(new BlockPos(x, y, z));
-    }
-    /**
-     * @return The category of the biome. Can be [none, taiga, extreme_hills, jungle, mesa, plains, savanna,
-     * icy, the_end, beach, forest, ocean, desert, river, swamp, mushroom, nether]
-     */
-    public String category()
-    {
-        return net.minecraft.world.biome.Biome.getCategory(this.biome).getName();
     }
     /**
      * @return The type of rain in the biome. Can be [none, rain, snow]

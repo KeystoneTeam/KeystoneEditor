@@ -21,7 +21,8 @@ import keystone.core.modules.selection.SelectionModule;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
@@ -93,7 +94,7 @@ public class ImportModule implements IKeystoneModule
     //region Import Calls
     public void promptImportSchematic(Vec3i minPosition)
     {
-        OpenFilesScreen.openFiles(new LiteralText("Import Schematics"), SchematicLoader.getExtensions(),
+        OpenFilesScreen.openFiles(Text.literal("Import Schematics"), SchematicLoader.getExtensions(),
                 KeystoneDirectories.getSchematicsDirectory(), true, (files) ->
         {
             for (File schematic : files) importSchematic(schematic, minPosition);

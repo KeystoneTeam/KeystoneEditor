@@ -7,21 +7,23 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.tag.TagKey;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryEntryList;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class TagBlockProvider implements IBlockProvider
 {
-    private final TagKey<Block> blockTag;
+    private final RegistryEntryList<Block> blockTag;
+    private final Map<String, String> vagueProperties;
     private final List<BlockState> states;
 
-    public TagBlockProvider(TagKey<Block> blockTag)
+    public TagBlockProvider(RegistryEntryList<Block> blockTag, Map<String, String> vagueProperties)
     {
         this.blockTag = blockTag;
         List<BlockState> states = new ArrayList<>();
-        Registry.BLOCK.iterateEntries(this.blockTag).forEach(entry -> states.add(entry.value().getDefaultState()));
+        // TODO: Implement vague properties
+        this.blockTag.forEach(entry -> states.add(entry.value().getDefaultState()));
+        this.vagueProperties = vagueProperties;
         this.states = Collections.unmodifiableList(states);
     }
 
@@ -38,7 +40,7 @@ public class TagBlockProvider implements IBlockProvider
     @Override
     public IBlockProvider clone()
     {
-        return new TagBlockProvider(blockTag);
+        return new TagBlockProvider(blockTag, vagueProperties);
     }
 
     @Override
@@ -46,12 +48,13 @@ public class TagBlockProvider implements IBlockProvider
     {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TagBlockProvider blockProvider = (TagBlockProvider) o;
-        return blockTag.id().equals(blockProvider.blockTag.id());
+        TagBlockProvider that = (TagBlockProvider) o;
+        return states.equals(that.states);
     }
+
     @Override
     public int hashCode()
     {
-        return blockTag.id().hashCode();
+        return states.hashCode();
     }
 }

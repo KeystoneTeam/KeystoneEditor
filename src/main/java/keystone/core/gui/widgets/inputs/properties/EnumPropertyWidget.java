@@ -5,7 +5,8 @@ import keystone.core.gui.widgets.inputs.EnumWidget;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.state.property.EnumProperty;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.StringIdentifiable;
 
 import java.util.function.BiConsumer;
@@ -18,7 +19,7 @@ public class EnumPropertyWidget<T extends Enum<T> & StringIdentifiable> extends 
 
     public EnumPropertyWidget(Block block, EnumProperty<T> property, int x, int y, int width, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BiConsumer<ClickableWidget, Boolean> addDropdown)
     {
-        super(new LiteralText(property.getName()), x, y, width, block.blockType().getMinecraftBlock().get(property), disableWidgets, restoreWidgets, addDropdown);
+        super(Text.literal(property.getName()), x, y, width, block.blockType().getMinecraftBlock().get(property), disableWidgets, restoreWidgets, addDropdown);
 
         this.block = block;
         this.property = property;

@@ -10,7 +10,7 @@ import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.utils.ProgressBar;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
@@ -268,7 +268,7 @@ public class FilterModule implements IKeystoneModule
     public void abortFilter(String... reason)
     {
         abortFilter = new Text[reason.length];
-        for (int i = 0; i < reason.length; i++) abortFilter[i] = new LiteralText(reason[i]).styled(style -> style.withColor(Formatting.RED));
+        for (int i = 0; i < reason.length; i++) abortFilter[i] = Text.literal(reason[i]).styled(style -> style.withColor(Formatting.RED));
     }
     public void filterException(KeystoneFilter filter, Throwable throwable)
     {
