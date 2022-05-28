@@ -12,6 +12,7 @@ import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BlockPos;
+import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.gui.widgets.inputs.fields.EditableObject;
@@ -505,6 +506,45 @@ public class KeystoneFilter extends EditableObject
      */
     public static KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers, RetrievalMode retrievalMode, BlockType structureVoid)
     {
+        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode, structureVoid.getMinecraftBlock());
+    }
+    /**
+     * Create a schematic from a {@link BoundingBox}
+     * @param bounds The {@link BoundingBox} of  the schematic
+     * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
+     * @return The generated {@link KeystoneSchematic}
+     */
+    public static KeystoneSchematic schematic(BoundingBox bounds, WorldModifierModules worldModifiers)
+    {
+        BlockPos corner1 = new BlockPos((int)bounds.minX, (int)bounds.minY, (int)bounds.minZ);
+        BlockPos corner2 = new BlockPos((int)bounds.maxX, (int)bounds.maxY, (int)bounds.maxZ);
+        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, RetrievalMode.ORIGINAL, Blocks.STRUCTURE_VOID.getDefaultState());
+    }
+    /**
+     * Create a schematic from a {@link BoundingBox}
+     * @param bounds The {@link BoundingBox} of  the schematic
+     * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
+     * @param retrievalMode The {@link RetrievalMode} used in reading the schematic contents
+     * @return The generated {@link KeystoneSchematic}
+     */
+    public static KeystoneSchematic schematic(BoundingBox bounds, WorldModifierModules worldModifiers, RetrievalMode retrievalMode)
+    {
+        BlockPos corner1 = new BlockPos((int)bounds.minX, (int)bounds.minY, (int)bounds.minZ);
+        BlockPos corner2 = new BlockPos((int)bounds.maxX, (int)bounds.maxY, (int)bounds.maxZ);
+        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode, Blocks.STRUCTURE_VOID.getDefaultState());
+    }
+    /**
+     * Create a schematic from a {@link BoundingBox}
+     * @param bounds The {@link BoundingBox} of  the schematic
+     * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
+     * @param retrievalMode The {@link RetrievalMode} used in reading the schematic contents
+     * @param structureVoid The {@link BlockType} that represents structure voids
+     * @return The generated {@link KeystoneSchematic}
+     */
+    public static KeystoneSchematic schematic(BoundingBox bounds, WorldModifierModules worldModifiers, RetrievalMode retrievalMode, BlockType structureVoid)
+    {
+        BlockPos corner1 = new BlockPos((int)bounds.minX, (int)bounds.minY, (int)bounds.minZ);
+        BlockPos corner2 = new BlockPos((int)bounds.maxX, (int)bounds.maxY, (int)bounds.maxZ);
         return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode, structureVoid.getMinecraftBlock());
     }
     //endregion

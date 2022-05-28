@@ -68,6 +68,13 @@ public class WorldRegion
     public Vector3i getSize() { return this.size; }
 
     /**
+     * @return The {@link WorldModifierModules} used by this world region. Should only
+     * be used as a parameter for function calls, and should never be used for directly
+     * modifying world contents
+     */
+    public WorldModifierModules getWorldModifiers() { return this.worldModifiers; }
+
+    /**
      * @param x The x-coordinate
      * @param y The y-coordinate
      * @param z The z-coordinate
@@ -97,7 +104,7 @@ public class WorldRegion
     }
 
     /**
-     * Get the block at a position in the filter box, before any changes were made by the filter
+     * Get the {@link BlockType} at a position in the filter box, before any changes were made by the filter
      * @param x The x coordinate
      * @param y The y coordinate
      * @param z The z coordinate
@@ -106,7 +113,7 @@ public class WorldRegion
     public BlockType getBlockType(int x, int y, int z) { return worldModifiers.blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED); }
 
     /**
-     * Get the block at a position in the filter box
+     * Get the {@link BlockType} at a position in the filter box
      * @param x The x coordinate
      * @param y The y coordinate
      * @param z The z coordinate
@@ -116,6 +123,28 @@ public class WorldRegion
     public BlockType getBlockType(int x, int y, int z, RetrievalMode retrievalMode)
     {
         return worldModifiers.blocks.getBlockType(x, y, z, retrievalMode);
+    }
+
+    /**
+     * Get the {@link Block} at a position in the filter box, before any changes were made by the filter
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     * @return The block at the given coordinates
+     */
+    public Block getBlock(int x, int y, int z) { return worldModifiers.blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED); }
+
+    /**
+     * Get the {@link Block} at a position in the filter box
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     * @param retrievalMode The {@link RetrievalMode} to use when getting the block
+     * @return The block at the given coordinates
+     */
+    public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
+    {
+        return worldModifiers.blocks.getBlock(x, y, z, retrievalMode);
     }
 
     /**

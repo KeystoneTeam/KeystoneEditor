@@ -25,4 +25,24 @@ public class Vector2f
         this.x = vec.getX();
         this.y = vec.getY();
     }
+
+    @Override
+    public int hashCode()
+    {
+        return vec.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj) return true;
+        else if (!(obj instanceof Vector2f other)) return false;
+        else return vec.equals(other.vec);
+    }
+
+    @Override
+    public String toString()
+    {
+        return vec.toString();
+    }
 }

@@ -30,4 +30,24 @@ public class Vector3i
         this.y = vec.getY();
         this.z = vec.getZ();
     }
+
+    @Override
+    public int hashCode()
+    {
+        return vec.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj) return true;
+        else if (!(obj instanceof Vector3i other)) return false;
+        else return vec.equals(other.vec);
+    }
+
+    @Override
+    public String toString()
+    {
+        return vec.toString();
+    }
 }

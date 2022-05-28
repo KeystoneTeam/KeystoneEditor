@@ -62,7 +62,7 @@ public class FilterModule implements IKeystoneModule
         if (!testAborted()) runFilter(filter);
     }
     /**
-     * Run a {@link keystone.api.filters.KeystoneFilter} on the current selection boxes
+     * Run a {@link KeystoneFilter} on the current selection boxes
      * @param filter The filter to run
      */
     public void runFilter(KeystoneFilter filter) { runFilter(filter, 0); }

@@ -111,4 +111,25 @@ public class BoundingBox
         }
     }
     //endregion
+
+
+    @Override
+    public int hashCode()
+    {
+        return bb.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj) return true;
+        else if (!(obj instanceof BoundingBox other)) return false;
+        else return bb.equals(other.bb);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "BoundingBox[(" + minX + ", " + minY + ", " + minZ + ") -> (" + maxX + ", " + maxY + ", " + maxZ + ")]";
+    }
 }

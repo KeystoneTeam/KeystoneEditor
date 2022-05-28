@@ -26,6 +26,20 @@ public class BlockPos
     public net.minecraft.util.math.BlockPos getMinecraftBlockPos() { return pos; }
 
     @Override
+    public int hashCode()
+    {
+        return pos.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj) return true;
+        else if (!(obj instanceof BlockPos other)) return false;
+        else return pos.equals(other.pos);
+    }
+
+    @Override
     public String toString()
     {
         return this.pos.toString();

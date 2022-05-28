@@ -168,7 +168,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
         // Run Filter Button
         int buttonWidth = textRenderer.getWidth(Text.translatable("keystone.filter_panel.runFilter").getString()) + 10;
         int panelCenter = panelMaxX / 2;
-        ButtonNoHotkey runFilterButton = new ButtonNoHotkey(panelCenter - buttonWidth / 2, panelMaxY - 25, buttonWidth, 20, Text.literal("keystone.filter_panel.runFilter"), button -> runFilter());
+        ButtonNoHotkey runFilterButton = new ButtonNoHotkey(panelCenter - buttonWidth / 2, panelMaxY - 25, buttonWidth, 20, Text.translatable("keystone.filter_panel.runFilter"), button -> runFilter());
 
         // Add buttons
         this.selectFilterButton.setMessage(this.dropdown.getSelectedEntryTitle());

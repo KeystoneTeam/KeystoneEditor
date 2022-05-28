@@ -47,4 +47,24 @@ public class Vector3f
         copy.normalize();
         return new Vector3f(copy);
     }
+
+    @Override
+    public int hashCode()
+    {
+        return vec.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj) return true;
+        else if (!(obj instanceof Vector3f other)) return false;
+        else return vec.equals(other.vec);
+    }
+
+    @Override
+    public String toString()
+    {
+        return vec.toString();
+    }
 }

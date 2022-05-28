@@ -43,4 +43,24 @@ public class Vector3d
     {
         return new Vector3d(vec.normalize());
     }
+
+    @Override
+    public int hashCode()
+    {
+        return vec.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj) return true;
+        else if (!(obj instanceof Vector3d other)) return false;
+        else return vec.equals(other.vec);
+    }
+
+    @Override
+    public String toString()
+    {
+        return vec.toString();
+    }
 }
