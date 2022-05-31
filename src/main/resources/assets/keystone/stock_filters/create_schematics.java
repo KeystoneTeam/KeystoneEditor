@@ -20,7 +20,7 @@ import java.util.*;
 
 public class CreateSchematics extends KeystoneFilter
 {
-    private static BlockType markerBlockType = blockType("minecraft:structure_block[mode=save]");
+    private BlockType markerBlockType = blockType("minecraft:structure_block[mode=save]");
 
     @Variable BlockPalette replaceMarkerWith = palette("minecraft:air");
     @Variable BlockMask borderMask = blacklist("minecraft:air");
@@ -62,6 +62,7 @@ public class CreateSchematics extends KeystoneFilter
         frontier.push(new BlockPos(x, y, z));
         while (!frontier.isEmpty() && iterations > 0)
         {
+            if (isCanceled()) break;
             iterations--;
 
             BlockPos pos = (BlockPos)frontier.remove();

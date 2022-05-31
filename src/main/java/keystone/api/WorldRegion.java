@@ -159,20 +159,6 @@ public class WorldRegion
     {
         return worldModifiers.biomes.getBiome(x, y, z, retrievalMode);
     }
-
-    /**
-     * Set the block at a position in the filter box. This will only work if the position is within the filter box
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @param z The z coordinate
-     * @param block The block to change the position to. [e.g. "stone", "minecraft:stone", "stone_slab[type=top]", "chest{Items:[]}"]
-     * @return Whether the change was successful
-     */
-    public boolean setBlock(int x, int y, int z, String block)
-    {
-        return setBlock(x, y, z, KeystoneFilter.block(block));
-    }
-
     /**
      * Set the block at a position in the filter box to a random entry in a {@link BlockPalette}.
      * This will only work if the position is within the filter box

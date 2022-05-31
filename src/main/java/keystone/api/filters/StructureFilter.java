@@ -47,6 +47,8 @@ public abstract class StructureFilter extends KeystoneFilter
         List<Vector2f> regionCoordinates = coordinates.get(region);
         for (Vector2f coordinate : regionCoordinates)
         {
+            if (isCanceled()) break;
+
             processStructure(coordinate, region);
             ProgressBar.nextStep();
         }

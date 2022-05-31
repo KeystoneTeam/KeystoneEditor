@@ -57,7 +57,7 @@ public class Entity
         Optional<EntityType<?>> type = Registry.ENTITY_TYPE.getOrEmpty(new Identifier(id));
         if (type.isEmpty())
         {
-            Keystone.abortFilter("Invalid entity type '" + id + "'!");
+            Keystone.tryCancelFilter("Invalid entity type '" + id + "'!");
             return;
         }
 
@@ -86,7 +86,7 @@ public class Entity
         Optional<EntityType<?>> type = Registry.ENTITY_TYPE.getOrEmpty(new Identifier(id));
         if (type.isEmpty())
         {
-            Keystone.abortFilter("Invalid entity type '" + id + "'!");
+            Keystone.tryCancelFilter("Invalid entity type '" + id + "'!");
             return;
         }
 
@@ -368,7 +368,7 @@ public class Entity
     {
         if (path.equals(net.minecraft.entity.Entity.ID_KEY))
         {
-            Keystone.abortFilter("Modifying an entity's type ID is not allowed!");
+            Keystone.tryCancelFilter("Modifying an entity's type ID is not allowed!");
             return this;
         }
 
@@ -384,7 +384,7 @@ public class Entity
         }
         catch (CommandSyntaxException e)
         {
-            Keystone.abortFilter(e.getLocalizedMessage());
+            Keystone.tryCancelFilter(e.getLocalizedMessage());
             return this;
         }
     }
@@ -397,7 +397,7 @@ public class Entity
     {
         if (data.getString(net.minecraft.entity.Entity.ID_KEY) != this.entityType)
         {
-            Keystone.abortFilter("Modifying an entity's type ID is not allowed!");
+            Keystone.tryCancelFilter("Modifying an entity's type ID is not allowed!");
             return this;
         }
 

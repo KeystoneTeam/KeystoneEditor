@@ -44,7 +44,7 @@ public class NBTCompound extends NBTWrapper<NbtCompound>
         }
         catch (CommandSyntaxException e)
         {
-            Keystone.abortFilter(e.getLocalizedMessage());
+            Keystone.tryCancelFilter(e.getLocalizedMessage());
         }
     }
 

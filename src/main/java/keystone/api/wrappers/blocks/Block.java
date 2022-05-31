@@ -1,10 +1,15 @@
 package keystone.api.wrappers.blocks;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import keystone.api.Keystone;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.registry.Registry;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -18,6 +23,24 @@ public class Block
     private NBTCompound tileEntity;
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
+    public static Block create(String block)
+    {
+        BlockState state = Blocks.RED_STAINED_GLASS.getDefaultState();
+        NbtCompound tileEntity = null;
+
+        try
+        {
+            BlockArgumentParser.BlockResult parser = BlockArgumentParser.block(Registry.BLOCK, block, true);
+            state = parser.blockState();
+            tileEntity = parser.nbt();
+        }
+        catch (CommandSyntaxException e)
+        {
+            Keystone.tryCancelFilter(e.getLocalizedMessage());
+        }
+
+        return new Block(state, tileEntity);
+    }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param state The Minecraft BlockState

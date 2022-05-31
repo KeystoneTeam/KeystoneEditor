@@ -10,6 +10,8 @@ import keystone.core.events.minecraft.ServerPlayerEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
+import keystone.core.modules.filter.execution.AbstractFilterThread;
+import keystone.core.modules.filter.execution.FilterExecutor;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.registries.BlockTypeRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -18,15 +20,14 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.GameMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -191,6 +192,29 @@ public final class Keystone
         if (delay == 0 && Thread.currentThread() == serverThread) runnable.run();
         else addList.add(new DelayedRunnable(delay, runnable));
     }
+
+    /**
+     * Schedule a {@link Runnable} to run on a Timer thread after a given delay
+     * @param delay The delay, in ticks
+     * @param runnable The {@link Runnable} to run after the delay
+     */
+    public static void runDelayed(int delay, Runnable runnable)
+    {
+        if (delay > 0)
+        {
+            final Timer t = new Timer();
+            t.schedule(new TimerTask()
+            {
+                @Override
+                public void run()
+                {
+                    runnable.run();
+                    t.cancel();
+                }
+            }, 50L * delay);
+        }
+        else runnable.run();
+    }
     //endregion
     //region Internal Filters
     /**
@@ -247,17 +271,20 @@ public final class Keystone
         flySpeed -= amount;
         flySpeed = Math.max(0, flySpeed);
     }
-    /**
-     * Cancel filter execution and log the reason
-     * @param reason The reason for canceling filter execution
-     */
-    public static void abortFilter(String... reason) { filterModule.abortFilter(reason); }
-    /**
-     * Report an exception raised by a filter and log it to the player
-     * @param filter The {@link KeystoneFilter} which raised the exception
-     * @param throwable The Throwable that was raised
-     */
-    public static void filterException(KeystoneFilter filter, Throwable throwable) { filterModule.filterException(filter, throwable); }
+    public static boolean tryCancelFilter(String... reason)
+    {
+        if (Thread.currentThread() instanceof AbstractFilterThread filterThread)
+        {
+            filterThread.getExecutor().cancel(reason);
+            return true;
+        }
+        else
+        {
+            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+            for (String s : reason) player.sendMessage(Text.literal(s).styled(style -> style.withColor(Formatting.RED)), false);
+            return false;
+        }
+    }
     //endregion
     //region Event Handling
     /**

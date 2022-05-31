@@ -294,7 +294,7 @@ public class BlockPalette
     {
         if (palette.size() == 0)
         {
-            Keystone.abortFilter("Cannot get random index from empty BlockPalette!");
+            Keystone.tryCancelFilter("Cannot get random index from empty BlockPalette!");
             return 0;
         }
 
@@ -310,7 +310,7 @@ public class BlockPalette
     {
         if (palette.size() == 0)
         {
-            Keystone.abortFilter("Cannot get block at index from empty BlockPalette!");
+            Keystone.tryCancelFilter("Cannot get block at index from empty BlockPalette!");
             return BlockTypeRegistry.AIR;
         }
 

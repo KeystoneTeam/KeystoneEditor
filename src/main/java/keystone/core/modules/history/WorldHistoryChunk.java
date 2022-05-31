@@ -9,6 +9,7 @@ import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
+import keystone.core.mixins.WorldAccessor;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.NBTSerializer;
@@ -31,6 +32,7 @@ import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.PalettedContainer;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -57,7 +59,7 @@ public class WorldHistoryChunk
     private boolean swappedBlocks;
     private boolean swappedEntities;
 
-    public WorldHistoryChunk(Vec3i chunkPosition, ServerWorldAccess world)
+    public WorldHistoryChunk(Vec3i chunkPosition, @NotNull ServerWorldAccess world)
     {
         this.chunkX = chunkPosition.getX();
         this.chunkY = chunkPosition.getY();

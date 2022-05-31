@@ -90,7 +90,7 @@ public class AnalyzeTool extends KeystoneFilter
         catch (Exception e)
         {
             e.printStackTrace();
-            abort("Failed to write analysis file! Reason: " + e.getLocalizedMessage());
+            cancel("Failed to write analysis file! Reason: " + e.getLocalizedMessage());
             return;
         }
 

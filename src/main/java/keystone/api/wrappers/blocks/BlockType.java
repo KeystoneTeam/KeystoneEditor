@@ -101,7 +101,7 @@ public class BlockType
      */
     public boolean isBlock(String test)
     {
-        return isBlock(KeystoneFilter.block(test).blockType());
+        return isBlock(Block.create(test).blockType());
     }
 
     /**
@@ -139,12 +139,12 @@ public class BlockType
         }
         catch (ArrayIndexOutOfBoundsException e)
         {
-            Keystone.abortFilter("Malformed block properties set " + properties);
+            Keystone.tryCancelFilter("Malformed block properties set " + properties);
             return this;
         }
         catch (CommandSyntaxException e)
         {
-            Keystone.abortFilter(e.getLocalizedMessage());
+            Keystone.tryCancelFilter(e.getLocalizedMessage());
             return this;
         }
     }
@@ -177,7 +177,7 @@ public class BlockType
         }
         catch (CommandSyntaxException e)
         {
-            Keystone.abortFilter(e.getLocalizedMessage());
+            Keystone.tryCancelFilter(e.getLocalizedMessage());
             return this;
         }
     }
@@ -211,7 +211,7 @@ public class BlockType
         if (o.getClass() == String.class)
         {
             String string = (String) o;
-            BlockType blockType = KeystoneFilter.block(string).blockType();
+            BlockType blockType = Block.create(string).blockType();
             return this.string.equals(blockType.string);
         }
         return false;

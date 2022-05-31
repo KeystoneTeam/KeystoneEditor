@@ -16,6 +16,9 @@ import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.gui.widgets.inputs.fields.EditableObject;
+import keystone.core.modules.filter.execution.AbstractFilterThread;
+import keystone.core.modules.filter.execution.CustomFilterThread;
+import keystone.core.modules.filter.execution.FilterExecutor;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.world.WorldModifierModules;
@@ -26,12 +29,9 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.CommandRegistryWrapper;
 import net.minecraft.command.argument.BlockArgumentParser;
-import net.minecraft.command.argument.BlockStateArgument;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.LiteralTextContent;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.BuiltinRegistries;
@@ -88,14 +88,13 @@ public class KeystoneFilter extends EditableObject
      * @return The exception thrown when compiling the filter
      */
     public final Throwable getCompilerException() { return this.compilerException; }
-
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
-     * Set the {@link WorldRegion FilterBoxes} this filter is being run on
+     * Set the {@link WorldRegion WorldRegions} this filter is being run on
      * @param regions The regions that the filter is modifying
      * @return The modified filter instance
      */
-    public final KeystoneFilter setBlockRegions(WorldRegion[] regions)
+    public final KeystoneFilter setWorldRegions(WorldRegion[] regions)
     {
         this.regions = regions;
         HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
@@ -121,10 +120,26 @@ public class KeystoneFilter extends EditableObject
         }
         return this;
     }
-
-    public final void setIteration(int iteration)
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Set the current pass of this filter
+     * @param pass The current pass number
+     * @return The modified filter instance
+     */
+    public final void setPass(int pass)
     {
-        this.iteration = iteration;
+        this.iteration = pass;
+    }
+
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * This must be called from a filter thread. If it is not, it will return null
+     * @return The {@link FilterExecutor} running this filter
+     */
+    private FilterExecutor getExecutor()
+    {
+        if (Thread.currentThread() instanceof AbstractFilterThread filterThread) return filterThread.getExecutor();
+        else return null;
     }
     //endregion
     //region Filter Steps
@@ -225,23 +240,58 @@ public class KeystoneFilter extends EditableObject
         MinecraftClient.getInstance().player.sendMessage(Text.literal(message.toString()), false);
     }
     /**
-     * Abort filter execution
-     * @param reason The reason the filter cannot be completed
+     * Cancel filter execution
+     * @param reasons The reason the filter cannot be completed
      */
-    public final void abort(String reason)
+    public final void cancel(String... reasons)
     {
-        Keystone.abortFilter(reason);
+        getExecutor().cancel(reasons);
     }
-
     /**
-     * Throw an throwable and abort further execution
+     * Throw a throwable and abort further execution
      * @param throwable The throwable to be thrown
      */
-    public final void throwException(Throwable throwable) { Keystone.filterException(this, throwable); }
+    public final void throwException(Throwable throwable) { getExecutor().throwException(throwable); }
+
+    /**
+     * When writing loops with no guaranteed stopping point, always add a check for this at the beginning of each
+     * iteration, to ensure the cancel button works. [e.g. if(isCanceled()) break;]
+     * @return True if the filter was canceled, false otherwise
+     */
+    public final boolean isCanceled() { return getExecutor().isCanceled(); }
     /**
      * @return The number of {@link WorldRegion FilterBoxes} that the filter is modifying
      */
     public final int regionCount() { return Keystone.getModule(SelectionModule.class).getSelectionBoxCount(); }
+
+    /**
+     * Create a new filter thread for running custom code
+     * @param threadCode The code to run on the thread
+     * @return The created thread
+     */
+    public CustomFilterThread thread(Runnable threadCode) { return getExecutor().newThread(threadCode, null, false); }
+    /**
+     * Create a new filter thread for running custom code
+     * @param threadCode The code to run on the thread
+     * @param onExecutionEnded The code to run when the rest of the code has finished
+     * @return The created thread
+     */
+    public CustomFilterThread thread(Runnable threadCode, Runnable onExecutionEnded) { return getExecutor().newThread(threadCode, onExecutionEnded, false); }
+    /**
+     * Create a new filter thread for running custom code
+     * @param threadCode The code to run on the thread
+     * @param start If true, the thread starts automatically
+     * @return The created thread
+     */
+    public CustomFilterThread thread(Runnable threadCode, boolean start) { return getExecutor().newThread(threadCode, null, start); }
+    /**
+     * Create a new filter thread for running custom code
+     * @param threadCode The code to run on the thread
+     * @param onExecutionEnded The code to run when the rest of the code has finished
+     * @param start If true, the thread starts automatically
+     * @return The created thread
+     */
+    public CustomFilterThread thread(Runnable threadCode, Runnable onExecutionEnded, boolean start) { return getExecutor().newThread(threadCode, onExecutionEnded, start); }
 
     /**
      * Create a {@link BlockPalette} from multiple block IDs. Any ID that is a valid ID
@@ -358,23 +408,9 @@ public class KeystoneFilter extends EditableObject
      * @param block The block ID
      * @return The generated {@link Block}
      */
-    public static Block block(String block)
+    public final Block block(String block)
     {
-        BlockState state = Blocks.RED_STAINED_GLASS.getDefaultState();
-        NbtCompound tileEntity = null;
-
-        try
-        {
-            BlockArgumentParser.BlockResult parser = BlockArgumentParser.block(Registry.BLOCK, block, true);
-            state = parser.blockState();
-            tileEntity = parser.nbt();
-        }
-        catch (CommandSyntaxException e)
-        {
-            Keystone.abortFilter(e.getLocalizedMessage());
-        }
-
-        return new Block(state, tileEntity);
+        return Block.create(block);
     }
     /**
      * Create a {@link Block} from a block ID and tile entity. Any ID that is a valid ID
@@ -382,7 +418,7 @@ public class KeystoneFilter extends EditableObject
      * @param block The block ID
      * @return The generated {@link Block}
      */
-    public static Block block(String block, NBTCompound tileEntity)
+    public final Block block(String block, NBTCompound tileEntity)
     {
         return block(block).setTileEntity(tileEntity);
     }
@@ -392,7 +428,7 @@ public class KeystoneFilter extends EditableObject
      * @param blockType The block ID
      * @return The generated {@link BlockType}
      */
-    public static BlockType blockType(String blockType)
+    public final BlockType blockType(String blockType)
     {
         BlockState state = Blocks.RED_STAINED_GLASS.getDefaultState();
 
@@ -403,7 +439,7 @@ public class KeystoneFilter extends EditableObject
         }
         catch (CommandSyntaxException e)
         {
-            Keystone.abortFilter(e.getLocalizedMessage());
+            getExecutor().cancel(e.getLocalizedMessage());
         }
 
         return BlockTypeRegistry.fromMinecraftBlock(state);
@@ -414,7 +450,7 @@ public class KeystoneFilter extends EditableObject
      * @param item The item ID
      * @return The generated {@link keystone.api.wrappers.Item}
      */
-    public static Item item(String item)
+    public final Item item(String item)
     {
         ItemStack stack = ItemStack.EMPTY;
 
@@ -426,7 +462,7 @@ public class KeystoneFilter extends EditableObject
         }
         catch (CommandSyntaxException e)
         {
-            Keystone.abortFilter(e.getLocalizedMessage());
+            getExecutor().cancel(e.getLocalizedMessage());
         }
 
         return new Item(stack);
@@ -437,13 +473,13 @@ public class KeystoneFilter extends EditableObject
      * @param id The entity ID
      * @return The generated {@link Entity}
      */
-    public static Entity entity(String id)
+    public final Entity entity(String id)
     {
         Optional<net.minecraft.entity.EntityType<?>> optionalEntity = Registry.ENTITY_TYPE.getOrEmpty(new Identifier(id));
         if (optionalEntity.isPresent()) return new Entity(id);
         else
         {
-            Keystone.abortFilter("Invalid entity ID: '" + id + "'!");
+            getExecutor().cancel("Invalid entity ID: '" + id + "'!");
             return null;
         }
     }
@@ -453,7 +489,7 @@ public class KeystoneFilter extends EditableObject
      * @param id The biome ID
      * @return The generated {@link Biome}
      */
-    public static Biome biome(String id)
+    public final Biome biome(String id)
     {
         Optional<net.minecraft.world.biome.Biome> optionalBiome = BuiltinRegistries.BIOME.getOrEmpty(new Identifier(id));
         if (optionalBiome.isPresent())
@@ -462,13 +498,13 @@ public class KeystoneFilter extends EditableObject
             if (optionalBiome.isPresent()) return new Biome(BuiltinRegistries.BIOME.getEntry(optionalBiomeKey.get()).get());
             else
             {
-                Keystone.abortFilter("Invalid biome entry ID: '" + id + "'!");
+                getExecutor().cancel("Invalid biome entry ID: '" + id + "'!");
                 return null;
             }
         }
         else
         {
-            Keystone.abortFilter("Invalid biome ID: '" + id + "'!");
+            getExecutor().cancel("Invalid biome ID: '" + id + "'!");
             return null;
         }
     }
@@ -479,7 +515,7 @@ public class KeystoneFilter extends EditableObject
      * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
      * @return The generated {@link KeystoneSchematic}
      */
-    public static KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers)
+    public final KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers)
     {
         return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, RetrievalMode.LAST_SWAPPED, Blocks.STRUCTURE_VOID.getDefaultState());
     }
@@ -491,7 +527,7 @@ public class KeystoneFilter extends EditableObject
      * @param retrievalMode The {@link RetrievalMode} used in reading the schematic contents
      * @return The generated {@link KeystoneSchematic}
      */
-    public static KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers, RetrievalMode retrievalMode)
+    public final KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers, RetrievalMode retrievalMode)
     {
         return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode, Blocks.STRUCTURE_VOID.getDefaultState());
     }
@@ -504,7 +540,7 @@ public class KeystoneFilter extends EditableObject
      * @param structureVoid The {@link BlockType} that represents structure voids
      * @return The generated {@link KeystoneSchematic}
      */
-    public static KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers, RetrievalMode retrievalMode, BlockType structureVoid)
+    public final KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers, RetrievalMode retrievalMode, BlockType structureVoid)
     {
         return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode, structureVoid.getMinecraftBlock());
     }
@@ -514,7 +550,7 @@ public class KeystoneFilter extends EditableObject
      * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
      * @return The generated {@link KeystoneSchematic}
      */
-    public static KeystoneSchematic schematic(BoundingBox bounds, WorldModifierModules worldModifiers)
+    public final KeystoneSchematic schematic(BoundingBox bounds, WorldModifierModules worldModifiers)
     {
         BlockPos corner1 = new BlockPos((int)bounds.minX, (int)bounds.minY, (int)bounds.minZ);
         BlockPos corner2 = new BlockPos((int)bounds.maxX, (int)bounds.maxY, (int)bounds.maxZ);
@@ -527,7 +563,7 @@ public class KeystoneFilter extends EditableObject
      * @param retrievalMode The {@link RetrievalMode} used in reading the schematic contents
      * @return The generated {@link KeystoneSchematic}
      */
-    public static KeystoneSchematic schematic(BoundingBox bounds, WorldModifierModules worldModifiers, RetrievalMode retrievalMode)
+    public final KeystoneSchematic schematic(BoundingBox bounds, WorldModifierModules worldModifiers, RetrievalMode retrievalMode)
     {
         BlockPos corner1 = new BlockPos((int)bounds.minX, (int)bounds.minY, (int)bounds.minZ);
         BlockPos corner2 = new BlockPos((int)bounds.maxX, (int)bounds.maxY, (int)bounds.maxZ);
@@ -541,7 +577,7 @@ public class KeystoneFilter extends EditableObject
      * @param structureVoid The {@link BlockType} that represents structure voids
      * @return The generated {@link KeystoneSchematic}
      */
-    public static KeystoneSchematic schematic(BoundingBox bounds, WorldModifierModules worldModifiers, RetrievalMode retrievalMode, BlockType structureVoid)
+    public final KeystoneSchematic schematic(BoundingBox bounds, WorldModifierModules worldModifiers, RetrievalMode retrievalMode, BlockType structureVoid)
     {
         BlockPos corner1 = new BlockPos((int)bounds.minX, (int)bounds.minY, (int)bounds.minZ);
         BlockPos corner2 = new BlockPos((int)bounds.maxX, (int)bounds.maxY, (int)bounds.maxZ);
