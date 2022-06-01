@@ -60,7 +60,7 @@ public class SelectionBoxRenderer
         // Render Box Grid
         renderer.lineWidth(1.0f).drawGrid(Vec3d.of(box.getMin()), box.getSize(), 1.0, boxColor, direction ->
         {
-            if (selectedFace != null && selectedFace.getBox().equals(box) && selectedFace.getFaceDirection() == direction) return 1.0f;
+            if (selectedFace != null && selectedFace.getBox().equals(box) && selectedFace.getFaceDirection() == direction) return 0.333f;
             else return 0.25f;
         }, false);
         renderer.revertLineWidth();

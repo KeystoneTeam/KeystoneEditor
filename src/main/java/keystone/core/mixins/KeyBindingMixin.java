@@ -1,5 +1,6 @@
 package keystone.core.mixins;
 
+import keystone.core.KeystoneGlobalState;
 import keystone.core.keybinds.KeyBindingUtils;
 import keystone.core.keybinds.conflicts.IKeyCondition;
 import keystone.core.keybinds.conflicts.IKeyConditionContainer;
@@ -63,6 +64,7 @@ public class KeyBindingMixin implements IKeyConditionContainer
     @Override
     public boolean testConditions()
     {
+        if (KeystoneGlobalState.BlockingKeys) return false;
         for (IKeyCondition condition : conditions) if (!condition.test()) return false;
         return true;
     }

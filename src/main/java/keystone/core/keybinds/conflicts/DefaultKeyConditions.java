@@ -11,7 +11,7 @@ public enum DefaultKeyConditions implements IKeyCondition
         @Override
         public boolean test()
         {
-            return MinecraftClient.getInstance().currentScreen != null || (KEYSTONE_ACTIVE.test() && KeystoneGlobalState.BlockingKeys);
+            return MinecraftClient.getInstance().currentScreen != null || (KEYSTONE_ACTIVE.test() && KeystoneGlobalState.GuiConsumingKeys);
         }
     },
     NO_GUI_OPEN

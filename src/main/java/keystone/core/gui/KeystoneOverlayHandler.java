@@ -123,7 +123,7 @@ public class KeystoneOverlayHandler
     //region Event Forwarding
     private static void tick()
     {
-        KeystoneGlobalState.BlockingKeys = MinecraftClient.getInstance().currentScreen != null;
+        KeystoneGlobalState.GuiConsumingKeys = MinecraftClient.getInstance().currentScreen != null;
         if (MinecraftClient.getInstance().currentScreen != null) return;
 
         overlays.forEach(screen ->
@@ -133,7 +133,7 @@ public class KeystoneOverlayHandler
             {
                 if (listener instanceof TextFieldWidget)
                 {
-                    if (((TextFieldWidget) listener).isFocused()) KeystoneGlobalState.BlockingKeys = true;
+                    if (((TextFieldWidget) listener).isFocused()) KeystoneGlobalState.GuiConsumingKeys = true;
                 }
             }
         });

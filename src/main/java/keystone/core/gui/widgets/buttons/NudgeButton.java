@@ -12,9 +12,7 @@ import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.math.Direction;
 import org.lwjgl.glfw.GLFW;
 
@@ -152,7 +150,7 @@ public class NudgeButton extends SimpleButton
             }
         }
 
-        if (blockKeys) KeystoneGlobalState.BlockingKeys = true;
+        if (blockKeys) KeystoneGlobalState.GuiConsumingKeys = true;
     }
 
     //region Input

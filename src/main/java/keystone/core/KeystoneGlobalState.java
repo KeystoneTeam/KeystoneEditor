@@ -22,7 +22,14 @@ public class KeystoneGlobalState
      */
     public static boolean MouseOverGUI = false;
     /**
-     * If true, most keybinds will be disabled, such as movement and menu hotkeys
+     * If true, either a vanilla screen is open or a TextFieldWidget is focused. This will
+     * disable any keybinds with the NO_GUI_OPEN condition and enable an keybinds with the
+     * GUI_OPEN condition
+     */
+    public static boolean GuiConsumingKeys = false;
+    /**
+     * If true, all keybinds will be disabled. This is used to force the player to wait for
+     * something, such as flushing the {@link keystone.core.modules.world.WorldChangeQueueModule}
      */
     public static boolean BlockingKeys = false;
     /**

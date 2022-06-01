@@ -90,15 +90,18 @@ public class HistoryStackFrame
     {
         for (WorldHistoryChunk chunk : chunks.values()) worldChangeQueue.enqueueChange(chunk, true);
         for (int i = entries.size() - 1; i >= 0; i--) entries.get(i).undo();
+        worldChangeQueue.waitForChanges("Undoing");
     }
     public void redo()
     {
         for (WorldHistoryChunk chunk : chunks.values()) worldChangeQueue.enqueueChange(chunk, false);
         for (IHistoryEntry entry : entries) entry.redo();
+        worldChangeQueue.waitForChanges("Redoing");
     }
     public void applyChanges()
     {
         for (WorldHistoryChunk chunk : chunks.values()) worldChangeQueue.enqueueChange(chunk, false);
+        worldChangeQueue.waitForChanges("Applying Changes");
     }
     public boolean addToUnsavedChanges()
     {
