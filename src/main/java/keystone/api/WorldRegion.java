@@ -169,7 +169,6 @@ public class WorldRegion
      * @return Whether the change was successful
      */
     public boolean setBlock(int x, int y, int z, BlockPalette palette) { return setBlock(x, y, z, palette.randomBlock()); }
-
     /**
      * Set the block at a position in the filter box to a {@link BlockType}.
      * This will only work if the position is within the filter box or
@@ -190,7 +189,7 @@ public class WorldRegion
         else return false;
     }
     /**
-     * Set the block at a position in the filter box to a {@link BlockType}.
+     * Set the block at a position in the filter box to a {@link Block}.
      * This will only work if the position is within the filter box or
      * allowBlocksOutside is true
      * @param x The x coordinate
@@ -208,6 +207,32 @@ public class WorldRegion
         }
         else return false;
     }
+    /**
+     * Set the block at a position in the filter box to a random entry in a {@link BlockPalette}.
+     * This will only work if the position is within the filter box
+     * @param pos The {@link BlockPos} to change
+     * @param palette The {@link BlockPalette} to change the position to
+     * @return Whether the change was successful
+     */
+    public boolean setBlock(BlockPos pos, BlockPalette palette) { return setBlock(pos.x, pos.y, pos.z, palette); }
+    /**
+     * Set the block at a position in the filter box to a {@link BlockType}.
+     * This will only work if the position is within the filter box or
+     * allowBlocksOutside is true
+     * @param pos The {@link BlockPos} to change
+     * @param blockType The {@link BlockType} to change the position to
+     * @return Whether the change was successful
+     */
+    public boolean setBlock(BlockPos pos, BlockType blockType) { return setBlock(pos.x, pos.y, pos.z, blockType); }
+    /**
+     * Set the block at a position in the filter box to a {@link Block}.
+     * This will only work if the position is within the filter box or
+     * allowBlocksOutside is true
+     * @param pos The {@link BlockPos} to change
+     * @param block The {@link Block} to change the position to
+     * @return Whether the change was successful
+     */
+    public boolean setBlock(BlockPos pos, Block block) { return setBlock(pos.x, pos.y, pos.z, block); }
     /**
      * Add or modify an {@link Entity} in the region
      * @param entity The {@link Entity} to add or modify

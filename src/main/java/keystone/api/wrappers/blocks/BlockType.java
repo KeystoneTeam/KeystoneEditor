@@ -4,12 +4,17 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
+import keystone.core.client.Player;
+import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Property;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -186,16 +191,29 @@ public class BlockType
      * @return Whether this block is an air block
      */
     public boolean isAir() { return this.state.isAir(); }
-
     /**
      * @return Whether this block is a liquid
      */
     public boolean isLiquid() { return this.state.getBlock() instanceof FluidBlock; }
-
     /**
      * @return Whether this block is an air block or a liquid
      */
     public boolean isAirOrLiquid() { return isAir() || isLiquid(); }
+    /**
+     * @return Whether this block is opaque
+     */
+    public boolean isOpaque() { return this.state.isOpaque(); }
+    /**
+     * @param x The x-coordinate
+     * @param y The y-coordinate
+     * @param z The z-coordinate
+     * @return Whether this block is a full cube at the given position
+     */
+    public boolean isCube(int x, int y, int z)
+    {
+        ServerWorld world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
+        return this.state.isFullCube(world, new BlockPos(x, y, z));
+    }
     //endregion
     //region Object Overrides
     @Override

@@ -10,6 +10,7 @@ import keystone.core.renderer.RenderBox;
 import keystone.core.renderer.RendererFactory;
 import keystone.core.renderer.interfaces.IColorProvider;
 import keystone.core.renderer.overlay.ComplexOverlayRenderer;
+import keystone.core.renderer.overlay.WireframeOverlayRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.util.math.Vec3d;
 
@@ -21,6 +22,7 @@ public class SelectionBoxRenderer
     private static final Color4f lightBlue =   new Color4f(new Color(0xC0C0FF));
 
     private final ComplexOverlayRenderer renderer;
+    private final WireframeOverlayRenderer gridRenderer;
     private final MouseModule mouse;
 
     public SelectionBoxRenderer()
@@ -29,6 +31,7 @@ public class SelectionBoxRenderer
                 RendererFactory.createPolygonOverlay().buildFill(),
                 RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe()
         );
+        this.gridRenderer = RendererFactory.createWireframeOverlay().buildWireframe();
         this.mouse = Keystone.getModule(MouseModule.class);
     }
 
@@ -48,22 +51,22 @@ public class SelectionBoxRenderer
         renderer.drawCuboid(box.getRenderingBox(), boxColor, direction ->
         {
             if (selectedFace != null && selectedFace.getBox().equals(box) && selectedFace.getFaceDirection() == direction) return 0.5f;
-            else return 0.125f;
+            else return 0.25f;
         });
         renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME);
         renderer.drawCuboid(box.getRenderingBox(), boxColor, direction ->
         {
             if (selectedFace != null && selectedFace.getBox().equals(box) && selectedFace.getFaceDirection() == direction) return 0.75f;
-            else return 0.25f;
+            else return 0.5f;
         });
 
         // Render Box Grid
-        renderer.lineWidth(1.0f).drawGrid(Vec3d.of(box.getMin()), box.getSize(), 1.0, boxColor, direction ->
+        gridRenderer.lineWidth(1.0f).drawGrid(Vec3d.of(box.getMin()), box.getSize(), 1.0, boxColor, direction ->
         {
-            if (selectedFace != null && selectedFace.getBox().equals(box) && selectedFace.getFaceDirection() == direction) return 0.333f;
+            if (selectedFace != null && selectedFace.getBox().equals(box) && selectedFace.getFaceDirection() == direction) return 0.75f;
             else return 0.25f;
         }, false);
-        renderer.revertLineWidth();
+        gridRenderer.revertLineWidth();
 
         // Render Corners If Selected
         if (box.getMin() != box.getMax() && selectedForNudge)
@@ -72,8 +75,8 @@ public class SelectionBoxRenderer
             RenderBox corner2 = new RenderBox(box.getCorner2(), box.getCorner2());
 
             renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL);
-            renderer.drawCuboid(corner1, Color4f.blue.withAlpha(0.125f));
-            renderer.drawCuboid(corner2, Color4f.yellow.withAlpha(0.125f));
+            renderer.drawCuboid(corner1, Color4f.blue.withAlpha(0.25f));
+            renderer.drawCuboid(corner2, Color4f.yellow.withAlpha(0.25f));
 
             renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME);
             renderer.drawCuboid(corner1, Color4f.blue);

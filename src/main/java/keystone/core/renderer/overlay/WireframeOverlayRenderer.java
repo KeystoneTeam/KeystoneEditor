@@ -19,6 +19,7 @@ import java.util.function.BiFunction;
 public class WireframeOverlayRenderer implements IOverlayRenderer
 {
     private static final Vec2f[] UNIT_CIRCLE_VERTICES = createUnitCircleVertices(90);
+    private static final Vec3d[] CIRCLE_VERTICES_BUFFER = new Vec3d[UNIT_CIRCLE_VERTICES.length];
     private static Vec2f[] createUnitCircleVertices(int resolution)
     {
         double step = 6.283185307179586D / resolution;
@@ -45,9 +46,10 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
     }
 
     public IRenderer getRenderer() { return this.renderer; }
-    public void lineWidth(float lineWidth)
+    public WireframeOverlayRenderer lineWidth(float lineWidth)
     {
         this.lineWidth = lineWidth;
+        return this;
     }
     public void revertLineWidth()
     {
@@ -407,18 +409,12 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
     //region Helpers
     private void drawCircle(Vec3d center, BiFunction<Double, Double, Vec3d> pointTransformer, Color4f color)
     {
-        renderer.lineStrip(lineWidth, VertexFormats.POSITION_COLOR);
         for (int i = 0; i < UNIT_CIRCLE_VERTICES.length; i++)
         {
             Vec2f normalA = UNIT_CIRCLE_VERTICES[i];
-            Vec2f normalB = UNIT_CIRCLE_VERTICES[(i + 1) % UNIT_CIRCLE_VERTICES.length];
-            Vec3d a = center.add(pointTransformer.apply((double)normalA.x, (double)normalA.y));
-            Vec3d b = center.add(pointTransformer.apply((double)normalB.x, (double)normalB.y));
-            Vec3d normal = b.subtract(a).normalize();
-            renderer.vertex(a).color(color).normal(normal).next();
-            renderer.vertex(b).color(color).normal(normal).next();
+            CIRCLE_VERTICES_BUFFER[i] = center.add(pointTransformer.apply((double)normalA.x, (double)normalA.y));
         }
-        renderer.draw();
+        drawLineLoop(color, CIRCLE_VERTICES_BUFFER);
     }
     //endregion
 }

@@ -201,7 +201,6 @@ public class GhostWorldRenderer
         {
             Map<ChunkPos, BufferBuilder> chunkBuffers = fluidBuffers.get(layer);
             Map<ChunkPos, SuperByteBuffer> byteBuffers = new HashMap<>();
-            for (BufferBuilder buf : chunkBuffers.values()) buf.end();
 
             for (Map.Entry<ChunkPos, BufferBuilder> entry : chunkBuffers.entrySet()) byteBuffers.put(entry.getKey(), new SuperByteBuffer(entry.getValue()));
             fluidBufferCache.put(layer, byteBuffers);

@@ -173,7 +173,7 @@ public class SelectionModule implements IKeystoneModule
         if (isEnabled() && !creatingSelection && mouseModule.getSelectedFace() == null)
         {
             RenderBox box = new RenderBox(Player.getHighlightedBlock(), Player.getHighlightedBlock());
-            highlightRenderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, Color4f.yellow.withAlpha(0.0625f));
+            highlightRenderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, Color4f.yellow.withAlpha(0.125f));
             highlightRenderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawCuboid(box, Color4f.yellow);
         }
     }

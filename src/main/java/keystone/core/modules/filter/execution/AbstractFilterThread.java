@@ -14,7 +14,7 @@ public abstract class AbstractFilterThread extends Thread
     }
 
     public abstract void threadCode();
-    public abstract void onExecutionEnded();
+    public void onExecutionEnded() {}
 
     public KeystoneFilter getFilter() { return filter; }
     public FilterExecutor getExecutor() { return executor; }

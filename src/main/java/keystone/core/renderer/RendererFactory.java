@@ -59,15 +59,15 @@ public final class RendererFactory
             return this;
         }
 
-        public IOverlayRenderer buildFill()
+        public FillOverlayRenderer buildFill()
         {
             return new FillOverlayRenderer(this);
         }
-        public IOverlayRenderer buildWireframe()
+        public WireframeOverlayRenderer buildWireframe()
         {
             return buildWireframe(2.0f);
         }
-        public IOverlayRenderer buildWireframe(float lineWidth)
+        public WireframeOverlayRenderer buildWireframe(float lineWidth)
         {
             return new WireframeOverlayRenderer(this, lineWidth);
         }
