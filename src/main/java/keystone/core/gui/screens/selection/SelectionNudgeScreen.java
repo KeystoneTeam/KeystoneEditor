@@ -23,10 +23,10 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     private static final int BUTTON_HEIGHT = 14;
     private static SelectionNudgeScreen open;
     private static SelectionBoundingBox selectedBox;
+    private static int selectionToNudge;
 
     private final SelectionModule selectionModule;
 
-    private int selectionToNudge;
     private String boxSize;
     private int x;
     private int y;
@@ -57,6 +57,16 @@ public class SelectionNudgeScreen extends KeystoneOverlay
             else open = null;
         }
     }
+    public static void setSelectedIndex(int value)
+    {
+        selectionToNudge = value;
+        if (open != null)
+        {
+            selectedBox = open.resolveSelectionIndex();
+            if (selectedBox == null) open.close();
+            else open.updateSize();
+        }
+    }
     public static void registerEvents()
     {
         KeystoneHotbarEvents.CHANGED.register(SelectionNudgeScreen::onHotbarChanged);
@@ -80,8 +90,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         else
         {
             if (selections.size() == 0) open.close();
-            else if (createdSelection && open.selectionToNudge >= selections.size() - 2) open.setSelectionToNudge(selections.size() - 1);
-            else open.setSelectionToNudge(Math.min(open.selectionToNudge, selections.size() - 1));
+            else if (createdSelection && selectionToNudge >= selections.size() - 2) setSelectedIndex(selections.size() - 1);
         }
     }
     //endregion
@@ -154,20 +163,13 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     {
         int newValue = selectionToNudge - 1;
         if (newValue < 0) newValue += selectionModule.getSelectionBoxCount();
-        setSelectionToNudge(newValue);
+        setSelectedIndex(newValue);
     }
     private void nextBox()
     {
         int newValue = selectionToNudge + 1;
         if (newValue >= selectionModule.getSelectionBoxCount()) newValue -= selectionModule.getSelectionBoxCount();
-        setSelectionToNudge(newValue);
-    }
-    private void setSelectionToNudge(int value)
-    {
-        selectionToNudge = value;
-        selectedBox = resolveSelectionIndex();
-        if (selectedBox == null) close();
-        else updateSize();
+        setSelectedIndex(newValue);
     }
     private SelectionBoundingBox resolveSelectionIndex()
     {
@@ -204,6 +206,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     }
     //endregion
     //region Getters
+    public static int getSelectionIndex() { return selectionToNudge; }
     public static SelectionBoundingBox getSelectionToNudge()
     {
         return selectedBox;
