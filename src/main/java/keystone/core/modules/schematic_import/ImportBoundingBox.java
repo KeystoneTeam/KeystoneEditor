@@ -129,16 +129,6 @@ public class ImportBoundingBox extends SelectableCuboid
             case Y: dragLockY = face.getBox().getMin().getY(); break;
             case Z: dragLockZ = face.getBox().getMin().getZ(); break;
         }
-
-        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
-        ImportModule importModule = Keystone.getModule(ImportModule.class);
-        IHistoryEntry historyEntry = importModule.makeHistoryEntry();
-        if (historyEntry != null)
-        {
-            historyModule.tryBeginHistoryEntry();
-            historyModule.pushToEntry(historyEntry);
-            historyModule.tryEndHistoryEntry();
-        }
     }
     @Override
     public void drag(SelectedFace face)
@@ -177,6 +167,14 @@ public class ImportBoundingBox extends SelectableCuboid
         if (dragLockY != Integer.MAX_VALUE) y = dragLockY;
         if (dragLockZ != Integer.MAX_VALUE) z = dragLockZ;
         face.getBox().move(new Vec3i(x, y, z));
+    }
+    @Override
+    public void endDrag(SelectedFace face)
+    {
+        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        historyModule.tryBeginHistoryEntry();
+        Keystone.getModule(ImportModule.class).addHistoryEntry();
+        historyModule.tryEndHistoryEntry();
     }
 
     @Override

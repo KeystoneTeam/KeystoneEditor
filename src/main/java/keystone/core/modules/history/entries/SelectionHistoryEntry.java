@@ -1,6 +1,7 @@
 package keystone.core.modules.history.entries;
 
 import keystone.api.Keystone;
+import keystone.core.gui.screens.selection.SelectionNudgeScreen;
 import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;
@@ -12,28 +13,23 @@ import java.util.List;
 
 public class SelectionHistoryEntry implements IHistoryEntry
 {
-    private List<SelectionBoundingBox> buffer;
-    private List<SelectionBoundingBox> restore;
+    private final SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
+    private List<SelectionBoundingBox> boxes;
 
     public SelectionHistoryEntry(NbtCompound nbt)
     {
         deserialize(nbt);
     }
-    public SelectionHistoryEntry(List<SelectionBoundingBox> selectionBoxes, boolean includeLastBox)
+    public SelectionHistoryEntry(List<SelectionBoundingBox> selectionBoxes)
     {
-        buffer = new ArrayList<>(selectionBoxes.size());
-        for (int i = 0; i < selectionBoxes.size(); i++) if (i < selectionBoxes.size() - 1 || includeLastBox) buffer.add(selectionBoxes.get(i).clone());
+        boxes = new ArrayList<>(selectionBoxes.size());
+        for (SelectionBoundingBox selectionBox : selectionBoxes) boxes.add(selectionBox.clone());
     }
 
     @Override
-    public void undo()
+    public void apply()
     {
-        restore = Keystone.getModule(SelectionModule.class).restoreSelectionBoxes(buffer);
-    }
-    @Override
-    public void redo()
-    {
-        Keystone.getModule(SelectionModule.class).restoreSelectionBoxes(restore);
+        selectionModule.setSelectionBoxes(boxes, false);
     }
     @Override
     public boolean addToUnsavedChanges()
@@ -47,8 +43,8 @@ public class SelectionHistoryEntry implements IHistoryEntry
     @Override
     public void serialize(NbtCompound nbt)
     {
-        List<Integer> bufferNBT = new ArrayList<>(buffer.size() * 6);
-        for (SelectionBoundingBox box : buffer)
+        List<Integer> bufferNBT = new ArrayList<>(boxes.size() * 6);
+        for (SelectionBoundingBox box : boxes)
         {
             bufferNBT.add(box.getCorner1().getX());
             bufferNBT.add(box.getCorner1().getY());
@@ -57,41 +53,16 @@ public class SelectionHistoryEntry implements IHistoryEntry
             bufferNBT.add(box.getCorner2().getY());
             bufferNBT.add(box.getCorner2().getZ());
         }
-        nbt.putIntArray("buffer", bufferNBT);
-
-        if (restore != null)
-        {
-            List<Integer> restoreNBT = new ArrayList<>(restore.size() * 6);
-            for (SelectionBoundingBox box : restore)
-            {
-                restoreNBT.add(box.getCorner1().getX());
-                restoreNBT.add(box.getCorner1().getY());
-                restoreNBT.add(box.getCorner1().getZ());
-                restoreNBT.add(box.getCorner2().getX());
-                restoreNBT.add(box.getCorner2().getY());
-                restoreNBT.add(box.getCorner2().getZ());
-            }
-            nbt.putIntArray("restore", restoreNBT);
-        }
+        nbt.putIntArray("boxes", bufferNBT);
     }
     @Override
     public void deserialize(NbtCompound nbt)
     {
-        int[] bufferNBT = nbt.getIntArray("buffer");
-        buffer = new ArrayList<>(bufferNBT.length / 6);
+        int[] bufferNBT = nbt.getIntArray("boxes");
+        boxes = new ArrayList<>(bufferNBT.length / 6);
         for (int i = 0; i < bufferNBT.length; i += 6)
         {
-            buffer.add(SelectionBoundingBox.create(bufferNBT[i], bufferNBT[i + 1], bufferNBT[i + 2], bufferNBT[i + 3], bufferNBT[i + 4], bufferNBT[i + 5]));
-        }
-
-        if (nbt.contains("restore", NbtElement.INT_ARRAY_TYPE))
-        {
-            int[] restoreNBT = nbt.getIntArray("restore");
-            restore = new ArrayList<>(restoreNBT.length / 6);
-            for (int i = 0; i < restoreNBT.length; i += 6)
-            {
-                restore.add(SelectionBoundingBox.create(restoreNBT[i], restoreNBT[i + 1], restoreNBT[i + 2], restoreNBT[i + 3], restoreNBT[i + 4], restoreNBT[i + 5]));
-            }
+            boxes.add(SelectionBoundingBox.create(bufferNBT[i], bufferNBT[i + 1], bufferNBT[i + 2], bufferNBT[i + 3], bufferNBT[i + 4], bufferNBT[i + 5]));
         }
     }
 }

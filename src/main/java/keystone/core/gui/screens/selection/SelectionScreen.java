@@ -27,7 +27,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.lwjgl.glfw.GLFW;
@@ -74,7 +73,7 @@ public class SelectionScreen extends KeystoneOverlay
         if (slot == KeystoneHotbarSlot.SELECTION && Keystone.getModule(SelectionModule.class).getSelectionBoxCount() > 0) open();
         else if (open != null) open.close();
     }
-    public static void onSelectionsChanged(List<SelectionBoundingBox> selections, boolean createdSelection)
+    public static void onSelectionsChanged(List<SelectionBoundingBox> selections, boolean createdSelection, boolean createHistoryEntry)
     {
         if (selections.size() > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
         else if (open != null) open.close();
@@ -143,7 +142,7 @@ public class SelectionScreen extends KeystoneOverlay
         Text label = Text.translatable(translationKey);
         int y = startY + index * (BUTTON_HEIGHT + PADDING);
         int buttonWidth = 2 * PADDING + textRenderer.getWidth(label.getString());
-        return (NudgeButton) new NudgeButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, nudgeConsumer, () -> null)
+        return (NudgeButton) new NudgeButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, nudgeConsumer, null)
         {
             @Override
             protected int getNudgeStep(Direction direction, int button)
@@ -193,7 +192,7 @@ public class SelectionScreen extends KeystoneOverlay
             BlockPos anchor = new BlockPos(selection.getMin().add(direction.getOffsetX() * newAmount, direction.getOffsetY() * newAmount, direction.getOffsetZ() * newAmount));
             schematic.place(worldModifiers, anchor);
 
-            historyModule.pushToEntry(NudgeButton.SELECTION_HISTORY_SUPPLIER.get());
+            NudgeButton.SELECTION_HISTORY_CALLBACK.run();
             selection.nudgeBox(direction, newAmount);
 
             historyModule.tryEndHistoryEntry();

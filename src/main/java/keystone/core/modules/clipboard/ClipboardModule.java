@@ -109,7 +109,7 @@ public class ClipboardModule implements IKeystoneModule
             for (KeystoneSchematic schematic : clipboard)
             {
                 Vec3i minPosition = Player.getHighlightedBlock();
-                this.importModule.importSchematic(schematic, minPosition);
+                this.importModule.importSchematic(schematic, minPosition, true);
             }
         }
     }

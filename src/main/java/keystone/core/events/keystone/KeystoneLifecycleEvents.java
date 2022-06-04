@@ -1,5 +1,6 @@
 package keystone.core.events.keystone;
 
+import keystone.core.modules.schematic_import.ImportBoundingBox;
 import keystone.core.modules.selection.SelectionBoundingBox;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
@@ -17,9 +18,13 @@ public final class KeystoneLifecycleEvents
     {
         for (final LeaveWorld listener : listeners) listener.leave();
     });
-    public static final Event<SelectionChanged> SELECTION_CHANGED = EventFactory.createArrayBacked(SelectionChanged.class, listeners -> (selectionBoxes, createdSelection) ->
+    public static final Event<SelectionChanged> SELECTION_CHANGED = EventFactory.createArrayBacked(SelectionChanged.class, listeners -> (selectionBoxes, createdSelection, createHistoryEntry) ->
     {
-        for (final SelectionChanged listener : listeners) listener.selectionChanged(selectionBoxes, createdSelection);
+        for (final SelectionChanged listener : listeners) listener.selectionChanged(selectionBoxes, createdSelection, createHistoryEntry);
+    });
+    public static final Event<ImportsChanged> IMPORTS_CHANGED = EventFactory.createArrayBacked(ImportsChanged.class, listeners -> importBoxes ->
+    {
+        for (final ImportsChanged listener : listeners) listener.importsChanged(importBoxes);
     });
 
     public interface JoinWorld
@@ -32,6 +37,10 @@ public final class KeystoneLifecycleEvents
     }
     public interface SelectionChanged
     {
-        void selectionChanged(List<SelectionBoundingBox> selectionBoxes, boolean createdSelection);
+        void selectionChanged(List<SelectionBoundingBox> selectionBoxes, boolean createdSelection, boolean createHistoryEntry);
+    }
+    public interface ImportsChanged
+    {
+        void importsChanged(List<ImportBoundingBox> importBoxes);
     }
 }

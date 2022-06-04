@@ -12,9 +12,8 @@ import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
+
 import java.util.List;
 
 public class SelectionNudgeScreen extends KeystoneOverlay
@@ -70,7 +69,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         if (slot == KeystoneHotbarSlot.SELECTION && Keystone.getModule(SelectionModule.class).getSelectionBoxCount() > 0) open();
         else if (open != null) open.close();
     }
-    public static void onSelectionsChanged(List<SelectionBoundingBox> selections, boolean createdSelection)
+    public static void onSelectionsChanged(List<SelectionBoundingBox> selections, boolean createdSelection, boolean createHistoryEntry)
     {
         if (selections.size() == 0) selectedBox = null;
 
@@ -105,17 +104,17 @@ public class SelectionNudgeScreen extends KeystoneOverlay
 
         int panelCenter = x + panelWidth / 2;
         int bottomButtonsY = y + panelHeight - MARGINS - BUTTON_HEIGHT;
-        this.nudgeBox = new NudgeButton(panelCenter - buttonWidth / 2, y + MARGINS, buttonWidth, BUTTON_HEIGHT, (direction, amount) -> selectedBox.nudgeBox(direction, amount), NudgeButton.SELECTION_HISTORY_SUPPLIER);
+        this.nudgeBox = new NudgeButton(panelCenter - buttonWidth / 2, y + MARGINS, buttonWidth, BUTTON_HEIGHT, (direction, amount) -> selectedBox.nudgeBox(direction, amount), NudgeButton.SELECTION_HISTORY_CALLBACK);
         this.nudgeCorner1 = new NudgeButton(panelCenter - PADDING - buttonWidth, bottomButtonsY, buttonWidth, BUTTON_HEIGHT, (direction, amount) ->
         {
             selectedBox.nudgeCorner1(direction, amount);
             updateSize();
-        }, NudgeButton.SELECTION_HISTORY_SUPPLIER);
+        }, NudgeButton.SELECTION_HISTORY_CALLBACK);
         this.nudgeCorner2 = new NudgeButton(panelCenter + PADDING, bottomButtonsY, buttonWidth, BUTTON_HEIGHT, (direction, amount) ->
         {
             selectedBox.nudgeCorner2(direction, amount);
             updateSize();
-        }, NudgeButton.SELECTION_HISTORY_SUPPLIER);
+        }, NudgeButton.SELECTION_HISTORY_CALLBACK);
 
         this.nudgeBox.setColors(0x80C0C0C0, 0x80C0C0C0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);
         this.nudgeCorner1.setColors(0x800000FF, 0x800000FF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF808080);

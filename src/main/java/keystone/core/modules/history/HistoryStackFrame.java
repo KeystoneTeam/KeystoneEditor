@@ -23,7 +23,8 @@ public class HistoryStackFrame
     private ServerWorldAccess world;
     private final HistoryModule historyModule;
     private final WorldChangeQueueModule worldChangeQueue;
-    private final List<IHistoryEntry> entries;
+    private final List<IHistoryEntry> revertEntries;
+    private final List<IHistoryEntry> applyEntries;
     private final Map<Vec3i, WorldHistoryChunk> chunks;
 
     public HistoryStackFrame(int index)
@@ -36,7 +37,8 @@ public class HistoryStackFrame
         this.worldChangeQueue = Keystone.getModule(WorldChangeQueueModule.class);
         this.index = index;
         this.world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
-        this.entries = Collections.synchronizedList(new ArrayList<>());
+        this.revertEntries = Collections.synchronizedList(new ArrayList<>());
+        this.applyEntries = Collections.synchronizedList(new ArrayList<>());
         this.chunks = Collections.synchronizedMap(new HashMap<>());
         if (nbt != null) deserialize(nbt);
     }
@@ -47,15 +49,25 @@ public class HistoryStackFrame
 
         nbt.putString("world", world.toServerWorld().getRegistryKey().getValue().toString());
 
-        NbtList entriesNBT = new NbtList();
-        for (IHistoryEntry entry : entries)
+        NbtList revertNBT = new NbtList();
+        for (IHistoryEntry entry : revertEntries)
         {
             NbtCompound entryNBT = new NbtCompound();
             entryNBT.putString("id", entry.id());
             entry.serialize(entryNBT);
-            entriesNBT.add(entryNBT);
+            revertNBT.add(entryNBT);
         }
-        nbt.put("entries", entriesNBT);
+        nbt.put("revert", revertNBT);
+
+        NbtList applyNBT = new NbtList();
+        for (IHistoryEntry entry : applyEntries)
+        {
+            NbtCompound entryNBT = new NbtCompound();
+            entryNBT.putString("id", entry.id());
+            entry.serialize(entryNBT);
+            applyNBT.add(entryNBT);
+        }
+        nbt.put("apply", applyNBT);
 
         NbtList chunksNBT = new NbtList();
         for (WorldHistoryChunk chunk : chunks.values()) chunksNBT.add(chunk.serialize());
@@ -68,13 +80,22 @@ public class HistoryStackFrame
         WorldCacheModule worldCacheModule = Keystone.getModule(WorldCacheModule.class);
         world = worldCacheModule.getDimensionWorld(WorldCacheModule.getDimensionKey(new Identifier(nbt.getString("world"))));
 
-        NbtList entriesNBT = nbt.getList("entries", NbtElement.COMPOUND_TYPE);
-        entries.clear();
-        for (int i = 0; i < entriesNBT.size(); i++)
+        NbtList revertNBT = nbt.getList("revert", NbtElement.COMPOUND_TYPE);
+        revertEntries.clear();
+        for (int i = 0; i < revertNBT.size(); i++)
         {
-            NbtCompound entryNBT = entriesNBT.getCompound(i);
+            NbtCompound entryNBT = revertNBT.getCompound(i);
             IHistoryEntry entry = historyModule.deserializeHistoryEntry(entryNBT);
-            entries.add(entry);
+            revertEntries.add(entry);
+        }
+
+        NbtList applyNBT = nbt.getList("apply", NbtElement.COMPOUND_TYPE);
+        applyEntries.clear();
+        for (int i = 0; i < applyNBT.size(); i++)
+        {
+            NbtCompound entryNBT = applyNBT.getCompound(i);
+            IHistoryEntry entry = historyModule.deserializeHistoryEntry(entryNBT);
+            applyEntries.add(entry);
         }
 
         NbtList chunksNBT = nbt.getList("chunks", NbtElement.COMPOUND_TYPE);
@@ -89,13 +110,13 @@ public class HistoryStackFrame
     public void undo()
     {
         for (WorldHistoryChunk chunk : chunks.values()) worldChangeQueue.enqueueChange(chunk, true);
-        for (int i = entries.size() - 1; i >= 0; i--) entries.get(i).undo();
+        for (int i = revertEntries.size() - 1; i >= 0; i--) revertEntries.get(i).apply();
         worldChangeQueue.waitForChanges("Undoing");
     }
     public void redo()
     {
         for (WorldHistoryChunk chunk : chunks.values()) worldChangeQueue.enqueueChange(chunk, false);
-        for (IHistoryEntry entry : entries) entry.redo();
+        for (IHistoryEntry entry : applyEntries) entry.apply();
         worldChangeQueue.waitForChanges("Redoing");
     }
     public void applyChanges()
@@ -106,7 +127,7 @@ public class HistoryStackFrame
     public boolean addToUnsavedChanges()
     {
         if (chunks.size() > 0) return true;
-        for (IHistoryEntry entry : entries) if (entry.addToUnsavedChanges()) return true;
+        for (IHistoryEntry entry : applyEntries) if (entry.addToUnsavedChanges()) return true;
         return false;
     }
     public void debugLog(int index)
@@ -114,14 +135,15 @@ public class HistoryStackFrame
         if (index == 0) Keystone.LOGGER.info("CURRENT");
         else Keystone.LOGGER.info(index > 0 ? "+" + index : index);
 
-        for (int i = entries.size() - 1; i >= 0; i--) Keystone.LOGGER.info("    " + entries.get(i).getClass().getSimpleName());
+        for (int i = applyEntries.size() - 1; i >= 0; i--) Keystone.LOGGER.info("    " + applyEntries.get(i).getClass().getSimpleName());
         Keystone.LOGGER.info("    " + chunks.size() + " Chunks");
     }
 
-    public void pushEntry(IHistoryEntry entry)
+    public void pushEntry(IHistoryEntry entry, IHistoryEntry revert)
     {
         entry.onPushToHistory(historyModule, true);
-        entries.add(entry);
+        applyEntries.add(entry);
+        revertEntries.add(revert);
         entry.onPushToHistory(historyModule, false);
     }
     public void setBlock(int x, int y, int z, BlockType blockType)

@@ -145,7 +145,7 @@ public class HistoryModule implements IKeystoneModule
         currentStackFrame = null;
     }
 
-    public void pushToEntry(IHistoryEntry historyEntry)
+    public void pushToEntry(IHistoryEntry historyEntry, IHistoryEntry revertEntry)
     {
         if (currentStackFrame == null)
         {
@@ -153,7 +153,7 @@ public class HistoryModule implements IKeystoneModule
             beginHistoryEntry();
         }
 
-        currentStackFrame.pushEntry(historyEntry);
+        currentStackFrame.pushEntry(historyEntry, revertEntry);
     }
     private HistoryStackFrame popFromHistory()
     {

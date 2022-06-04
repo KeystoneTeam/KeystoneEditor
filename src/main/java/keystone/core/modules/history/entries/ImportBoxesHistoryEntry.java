@@ -64,8 +64,7 @@ public class ImportBoxesHistoryEntry implements IHistoryEntry
         }
     }
 
-    private List<ImportBoxDescription> buffer;
-    private List<ImportBoxDescription> restore;
+    private List<ImportBoxDescription> boxes;
 
     public ImportBoxesHistoryEntry(NbtCompound nbt)
     {
@@ -73,27 +72,17 @@ public class ImportBoxesHistoryEntry implements IHistoryEntry
     }
     public ImportBoxesHistoryEntry(List<ImportBoundingBox> importBoxes)
     {
-        buffer = new ArrayList<>(importBoxes.size());
-        for (int i = 0; i < importBoxes.size(); i++) buffer.add(new ImportBoxDescription(importBoxes.get(i)));
+        boxes = new ArrayList<>(importBoxes.size());
+        for (int i = 0; i < importBoxes.size(); i++) boxes.add(new ImportBoxDescription(importBoxes.get(i)));
     }
 
     @Override
-    public void undo()
+    public void apply()
     {
-        List<ImportBoundingBox> pasteBoxes = new ArrayList<>(buffer.size());
-        for (ImportBoxDescription description : buffer) pasteBoxes.add(description.createImportBox());
-        List<ImportBoundingBox> oldBoxes = Keystone.getModule(ImportModule.class).restoreImportBoxes(pasteBoxes);
-        restore = new ArrayList<>(oldBoxes.size());
-        for (ImportBoundingBox oldBox : oldBoxes) restore.add(new ImportBoxDescription(oldBox));
+        List<ImportBoundingBox> pasteBoxes = new ArrayList<>(boxes.size());
+        for (ImportBoxDescription description : boxes) pasteBoxes.add(description.createImportBox());
+        Keystone.getModule(ImportModule.class).setImportBoxes(pasteBoxes);
     }
-    @Override
-    public void redo()
-    {
-        List<ImportBoundingBox> pasteBoxes = new ArrayList<>(restore.size());
-        for (ImportBoxDescription description : restore) pasteBoxes.add(description.createImportBox());
-        Keystone.getModule(ImportModule.class).restoreImportBoxes(pasteBoxes);
-    }
-
     @Override
     public String id()
     {
@@ -103,28 +92,14 @@ public class ImportBoxesHistoryEntry implements IHistoryEntry
     public void serialize(NbtCompound nbt)
     {
         NbtList bufferNBT = new NbtList();
-        for (ImportBoxDescription box : buffer) bufferNBT.add(box.serialize());
-        nbt.put("buffer", bufferNBT);
-
-        if (restore != null)
-        {
-            NbtList restoreNBT = new NbtList();
-            for (ImportBoxDescription box : restore) bufferNBT.add(box.serialize());
-            nbt.put("restore", restoreNBT);
-        }
+        for (ImportBoxDescription box : boxes) bufferNBT.add(box.serialize());
+        nbt.put("boxes", bufferNBT);
     }
     @Override
     public void deserialize(NbtCompound nbt)
     {
-        NbtList bufferNBT = nbt.getList("buffer", NbtElement.COMPOUND_TYPE);
-        buffer = new ArrayList<>(bufferNBT.size());
-        for (int i = 0; i < bufferNBT.size(); i++) buffer.add(new ImportBoxDescription(bufferNBT.getCompound(i)));
-
-        if (nbt.contains("restore"))
-        {
-            NbtList restoreNBT = nbt.getList("restore", NbtElement.COMPOUND_TYPE);
-            restore = new ArrayList<>(restoreNBT.size());
-            for (int i = 0; i < restoreNBT.size(); i++) restore.add(new ImportBoxDescription(restoreNBT.getCompound(i)));
-        }
+        NbtList bufferNBT = nbt.getList("boxes", NbtElement.COMPOUND_TYPE);
+        boxes = new ArrayList<>(bufferNBT.size());
+        for (int i = 0; i < bufferNBT.size(); i++) boxes.add(new ImportBoxDescription(bufferNBT.getCompound(i)));
     }
 }

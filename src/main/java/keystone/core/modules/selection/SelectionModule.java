@@ -37,6 +37,7 @@ public class SelectionModule implements IKeystoneModule
     private HistoryModule historyModule;
     private MouseModule mouseModule;
     private final List<SelectionBoundingBox> selectionBoxes;
+    private SelectionHistoryEntry revertHistoryEntry;
     private ComplexOverlayRenderer highlightRenderer;
     private SelectionBoxRenderer selectionBoxRenderer;
 
@@ -47,12 +48,14 @@ public class SelectionModule implements IKeystoneModule
     public SelectionModule()
     {
         selectionBoxes = Collections.synchronizedList(new ArrayList<>());
+        revertHistoryEntry = new SelectionHistoryEntry(selectionBoxes);
 
         InputEvents.KEY_PRESSED.register(this::onKeyInput);
         KeystoneInputEvents.MOUSE_CLICKED.register(this::onMouseClick);
         KeystoneInputEvents.START_MOUSE_DRAG.register(this::onMouseDragStart);
         KeystoneInputEvents.END_MOUSE_DRAG.register(this::onMouseDragEnd);
         KeystoneHotbarEvents.ALLOW_CHANGE.register(this::allowHotbarChange);
+        KeystoneLifecycleEvents.SELECTION_CHANGED.register(this::onSelectionChanged);
     }
     //region Module Implementation
     @Override
@@ -81,24 +84,15 @@ public class SelectionModule implements IKeystoneModule
     {
         if (selectionBoxes.size() > 0)
         {
-            historyModule.beginHistoryEntry();
-            historyModule.pushToEntry(new SelectionHistoryEntry(selectionBoxes, true));
-            historyModule.endHistoryEntry();
-
             selectionBoxes.clear();
-            KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, false);
+            KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, false, true);
         }
     }
-    public List<SelectionBoundingBox> restoreSelectionBoxes(List<SelectionBoundingBox> boxes)
+    public void setSelectionBoxes(List<SelectionBoundingBox> boxes, boolean createHistoryEntry)
     {
-        List<SelectionBoundingBox> old = new ArrayList<>();
-        selectionBoxes.forEach(box -> old.add(box.clone()));
-
         selectionBoxes.clear();
         boxes.forEach(box -> selectionBoxes.add(box.clone()));
-
-        KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, false);
-        return old;
+        KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, false, createHistoryEntry);
     }
     public WorldRegion[] buildRegions(boolean allowBlocksOutside)
     {
@@ -112,12 +106,9 @@ public class SelectionModule implements IKeystoneModule
     }
     public void setSelections(List<BoundingBox> boxes)
     {
-        historyModule.tryBeginHistoryEntry();
-        historyModule.pushToEntry(new SelectionHistoryEntry(selectionBoxes, true));
         selectionBoxes.clear();
         boxes.forEach(box -> selectionBoxes.add(SelectionBoundingBox.createFromBoundingBox(box)));
-        KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, false);
-        historyModule.tryEndHistoryEntry();
+        KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, false, true);
     }
     //endregion
     //region Getters
@@ -233,6 +224,13 @@ public class SelectionModule implements IKeystoneModule
     {
         return !creatingSelection;
     }
+    public void onSelectionChanged(List<SelectionBoundingBox> selections, boolean createdSelection, boolean createHistoryEntry)
+    {
+        if (!createHistoryEntry) return;
+        historyModule.beginHistoryEntry();
+        addHistoryEntry();
+        historyModule.endHistoryEntry();
+    }
     //endregion
     //region Controls
     private void startSelectionBox()
@@ -253,10 +251,6 @@ public class SelectionModule implements IKeystoneModule
 
         if (creatingSelection)
         {
-            historyModule.beginHistoryEntry();
-            historyModule.pushToEntry(new SelectionHistoryEntry(selectionBoxes, false));
-            historyModule.endHistoryEntry();
-
             if (!multiSelect)
             {
                 SelectionBoundingBox selection = selectionBoxes.get(selectionBoxes.size() - 1);
@@ -267,8 +261,14 @@ public class SelectionModule implements IKeystoneModule
             firstSelectionPoint = null;
             creatingSelection = false;
             multiSelect = false;
-            KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, true);
+            KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, true, true);
         }
+    }
+    public void addHistoryEntry()
+    {
+        SelectionHistoryEntry entry = new SelectionHistoryEntry(selectionBoxes);
+        historyModule.pushToEntry(entry, revertHistoryEntry);
+        revertHistoryEntry = entry;
     }
     //endregion
 }

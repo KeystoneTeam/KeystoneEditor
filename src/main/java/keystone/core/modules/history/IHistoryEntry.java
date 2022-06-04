@@ -4,8 +4,7 @@ import net.minecraft.nbt.NbtCompound;
 
 public interface IHistoryEntry
 {
-    void undo();
-    void redo();
+    void apply();
     String id();
     void serialize(NbtCompound nbt);
     void deserialize(NbtCompound nbt);

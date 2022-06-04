@@ -19,7 +19,6 @@ import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.history.entries.CloneImportBoxesHistoryEntry;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.mouse.MouseModule;
@@ -83,7 +82,6 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
             {
                 Keystone.LOGGER.info("Registering default Keystone history entries");
 
-                register("clone_import_boxes", CloneImportBoxesHistoryEntry::new);
                 register("import_boxes", ImportBoxesHistoryEntry::new);
                 register("selection_boxes", SelectionHistoryEntry::new);
             }

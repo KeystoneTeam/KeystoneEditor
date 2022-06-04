@@ -19,26 +19,17 @@ import org.lwjgl.glfw.GLFW;
 public class NudgeButton extends SimpleButton
 {
     public interface NudgeConsumer { void nudge(Direction direction, int amount); }
-    public interface NudgeHistorySupplier { IHistoryEntry get(); }
 
     public static final Text NUDGE = Text.translatable("keystone.nudge");
-    public static final NudgeHistorySupplier SELECTION_HISTORY_SUPPLIER = () ->
-    {
-        SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
-        return new SelectionHistoryEntry(selectionModule.getSelectionBoundingBoxes(), true);
-    };
-    public static final NudgeHistorySupplier IMPORT_HISTORY_SUPPLIER = () ->
-    {
-        ImportModule importModule = Keystone.getModule(ImportModule.class);
-        return new ImportBoxesHistoryEntry(importModule.getImportBoxes());
-    };
+    public static final Runnable SELECTION_HISTORY_CALLBACK = () -> Keystone.getModule(SelectionModule.class).addHistoryEntry();
+    public static final Runnable IMPORT_HISTORY_CALLBACK = () -> Keystone.getModule(ImportModule.class).addHistoryEntry();
 
     private static final int HOLD_DELAY = 10;
     private static final int HOLD_TICKS_BETWEEN = 5;
 
     private final GameOptions gameSettings;
     private final NudgeConsumer nudge;
-    private final NudgeHistorySupplier historySupplier;
+    private final Runnable historyCallback;
     private int nudgeButton;
     private boolean nudgeButtonDown;
 
@@ -56,12 +47,12 @@ public class NudgeButton extends SimpleButton
     private int upTime;
     private int downTime;
 
-    public NudgeButton(int x, int y, int width, int height, NudgeConsumer nudge, NudgeHistorySupplier historySupplier)
+    public NudgeButton(int x, int y, int width, int height, NudgeConsumer nudge, Runnable historyCallback)
     {
         super(x, y, width, height, NUDGE, null);
         this.gameSettings = MinecraftClient.getInstance().options;
         this.nudge = nudge;
-        this.historySupplier = historySupplier;
+        this.historyCallback = historyCallback;
     }
 
     protected int getNudgeStep(Direction direction, int button)
@@ -165,15 +156,6 @@ public class NudgeButton extends SimpleButton
                 nudgeButtonDown = button == GLFW.GLFW_MOUSE_BUTTON_LEFT || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
                 if (nudgeButtonDown)
                 {
-                    IHistoryEntry historyEntry = historySupplier.get();
-                    if (historyEntry != null)
-                    {
-                        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
-                        historyModule.tryBeginHistoryEntry();
-                        historyModule.pushToEntry(historyEntry);
-                        historyModule.tryEndHistoryEntry();
-                    }
-
                     nudgeButton = button;
                     return true;
                 }
@@ -190,6 +172,15 @@ public class NudgeButton extends SimpleButton
         {
             nudgeButton = -1;
             nudgeButtonDown = false;
+
+            if (historyCallback != null)
+            {
+                HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+                historyModule.tryBeginHistoryEntry();
+                historyCallback.run();
+                historyModule.tryEndHistoryEntry();
+            }
+
             return true;
         }
         return false;

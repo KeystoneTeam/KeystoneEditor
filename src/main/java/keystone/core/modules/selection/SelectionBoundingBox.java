@@ -50,14 +50,6 @@ public class SelectionBoundingBox extends SelectableCuboid
     @Override
     public boolean isEnabled() { return selectionModule.isEnabled(); }
     @Override
-    public void startDrag(SelectedFace face)
-    {
-        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
-        historyModule.beginHistoryEntry();
-        historyModule.pushToEntry(new SelectionHistoryEntry(selectionModule.getSelectionBoundingBoxes(), true));
-        historyModule.endHistoryEntry();
-    }
-    @Override
     public void drag(SelectedFace face)
     {
         // Get perpendicular plane through selection point
@@ -92,6 +84,14 @@ public class SelectionBoundingBox extends SelectableCuboid
         if (face.getFaceDirection() == Direction.WEST || face.getFaceDirection() == Direction.EAST) moveFace(face.getFaceDirection(), (int)projectedPoint.x);
 
         // Post event
-        KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionModule.getSelectionBoundingBoxes(), false);
+        KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionModule.getSelectionBoundingBoxes(), false, false);
+    }
+    @Override
+    public void endDrag(SelectedFace face)
+    {
+        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        historyModule.beginHistoryEntry();
+        selectionModule.addHistoryEntry();
+        historyModule.endHistoryEntry();
     }
 }
