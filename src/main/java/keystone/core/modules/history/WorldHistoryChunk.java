@@ -110,9 +110,9 @@ public class WorldHistoryChunk
         {
             Entity entity = new Entity(mcEntity);
             oldEntities.put(entity.keystoneUUID(), entity);
-            entityBuffer1.put(entity.keystoneUUID(), entity);
-            entityBuffer2.put(entity.keystoneUUID(), entity);
-            allEntities.put(entity.keystoneUUID(), entity);
+            entityBuffer1.put(entity.keystoneUUID(), entity.duplicate());
+            entityBuffer2.put(entity.keystoneUUID(), entity.duplicate());
+            allEntities.put(entity.keystoneUUID(), entity.duplicate());
         }
     }
     public WorldHistoryChunk(NbtCompound nbt)
@@ -225,6 +225,7 @@ public class WorldHistoryChunk
         entitiesNBT.put("Old", NBTSerializer.serializeEntities(oldEntities));
         entitiesNBT.put("Buffer1", NBTSerializer.serializeEntities(entityBuffer1));
         entitiesNBT.put("Buffer2", NBTSerializer.serializeEntities(entityBuffer2));
+        entitiesNBT.put("All", NBTSerializer.serializeEntities(allEntities));
         entitiesNBT.putBoolean("Swapped", this.swappedEntities);
         nbt.put("Entities", entitiesNBT);
 
@@ -393,11 +394,11 @@ public class WorldHistoryChunk
             blockStateBuffer1.set(z + y * 16 + x * 256, block.blockType().getMinecraftBlock());
         }
     }
-    public void setEntity(Entity entity)
+    public void commitEntityChanges(Entity entity)
     {
-        if (swappedEntities) entityBuffer2.put(entity.keystoneUUID(), entity);
-        else entityBuffer1.put(entity.keystoneUUID(), entity);
-        allEntities.put(entity.keystoneUUID(), entity);
+        if (swappedEntities) entityBuffer2.put(entity.keystoneUUID(), entity.duplicate());
+        else entityBuffer1.put(entity.keystoneUUID(), entity.duplicate());
+        allEntities.put(entity.keystoneUUID(), entity.duplicate());
     }
 
     public void swapBlockBuffers(boolean copy)
@@ -421,8 +422,9 @@ public class WorldHistoryChunk
         {
             Map<UUID, Entity> entitySource = swappedEntities ? entityBuffer1 : entityBuffer2;
             Map<UUID, Entity> entityDestination = swappedEntities ? entityBuffer2 : entityBuffer1;
+
             entityDestination.clear();
-            entityDestination.putAll(entitySource);
+            for (Map.Entry<UUID, Entity> entry : entitySource.entrySet()) entityDestination.put(entry.getKey(), entry.getValue().duplicate());
         }
     }
 
@@ -465,8 +467,8 @@ public class WorldHistoryChunk
                     entity.breakMinecraftEntityConnection();
                 }
             }
+            else oldEntities.get(entityID).updateMinecraftEntity(world);
         }
-        for (Entity entity : oldEntities.values()) entity.updateMinecraftEntity(world);
     }
     public void redo()
     {
@@ -511,7 +513,7 @@ public class WorldHistoryChunk
                     entity.breakMinecraftEntityConnection();
                 }
             }
+            else entities.get(entityID).updateMinecraftEntity(world);
         }
-        for (Entity entity : entities.values()) entity.updateMinecraftEntity(world);
     }
 }

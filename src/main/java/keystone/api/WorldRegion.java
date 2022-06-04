@@ -1,7 +1,6 @@
 package keystone.api;
 
 import keystone.api.enums.RetrievalMode;
-import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockPalette;
@@ -237,9 +236,9 @@ public class WorldRegion
      * Add or modify an {@link Entity} in the region
      * @param entity The {@link Entity} to add or modify
      */
-    public void setEntity(Entity entity)
+    public void commitEntityChanges(Entity entity)
     {
-        worldModifiers.entities.setEntity(entity);
+        worldModifiers.entities.commitEntityChanges(entity);
     }
 
     /**

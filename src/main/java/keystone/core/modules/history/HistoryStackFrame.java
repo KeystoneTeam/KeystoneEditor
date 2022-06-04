@@ -132,12 +132,9 @@ public class HistoryStackFrame
     {
         getOrAddChunk(x, y, z).setBlock(x, y, z, block);
     }
-    public void setEntity(Entity entity)
+    public void commitEntityChanges(Entity entity)
     {
-        int x = (int)entity.x() >> 4;
-        int y = (int)entity.y() >> 4;
-        int z = (int)entity.z() >> 4;
-        getOrAddChunk(x, y, z).setEntity(entity);
+        getOrAddChunk((int)entity.x(), (int)entity.y(), (int)entity.z()).commitEntityChanges(entity);
     }
 
     public WorldHistoryChunk getChunk(int x, int y, int z)

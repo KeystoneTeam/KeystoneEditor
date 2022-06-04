@@ -15,5 +15,6 @@ public class DeleteEntitiesTool extends KeystoneFilter
     public void processEntity(Entity entity, WorldRegion region)
     {
         entity.kill();
+        region.commitEntityChanges(entity);
     }
 }

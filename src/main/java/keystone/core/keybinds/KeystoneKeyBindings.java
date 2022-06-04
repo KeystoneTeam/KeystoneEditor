@@ -1,6 +1,7 @@
 package keystone.core.keybinds;
 
 import keystone.api.Keystone;
+import keystone.api.tools.DeleteEntitiesTool;
 import keystone.api.tools.FillTool;
 import keystone.core.KeystoneConfig;
 import keystone.core.keybinds.conflicts.DefaultKeyConditions;
@@ -36,7 +37,14 @@ public class KeystoneKeyBindings
             while (TOGGLE_KEYSTONE.wasPressed()) Keystone.toggleKeystone();
             while (INCREASE_FLY_SPEED.wasPressed()) Keystone.increaseFlySpeed(KeystoneConfig.flySpeedChangeAmount);
             while (DECREASE_FLY_SPEED.wasPressed()) Keystone.decreaseFlySpeed(KeystoneConfig.flySpeedChangeAmount);
-            while (DELETE_BLOCKS.wasPressed()) if (Keystone.isActive()) Keystone.runInternalFilter(new FillTool(Blocks.AIR.getDefaultState()));
+            while (DELETE_BLOCKS.wasPressed())
+            {
+                if (Keystone.isActive())
+                {
+                    Keystone.runInternalFilter(new FillTool(Blocks.AIR.getDefaultState()));
+                    Keystone.runInternalFilter(new DeleteEntitiesTool());
+                }
+            }
         });
     }
     public static void configureKeyConditions()

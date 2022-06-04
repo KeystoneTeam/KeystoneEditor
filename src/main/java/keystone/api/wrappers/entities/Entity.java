@@ -35,6 +35,8 @@ public class Entity
     private net.minecraft.entity.Entity previewEntity;
     private net.minecraft.entity.Entity minecraftEntity;
     private String entityType;
+
+    private UUID minecraftUUID;
     private boolean killed;
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
@@ -47,6 +49,14 @@ public class Entity
      */
     public static void setEntitiesModule(EntitiesModule entitiesModule) { Entity.entitiesModule = entitiesModule; }
 
+    private Entity(net.minecraft.entity.Entity previewEntity, net.minecraft.entity.Entity minecraftEntity, String entityType, UUID minecraftUUID, boolean killed)
+    {
+        this.previewEntity = previewEntity;
+        this.minecraftEntity = minecraftEntity;
+        this.entityType = entityType;
+        this.minecraftUUID = minecraftUUID;
+        this.killed = killed;
+    }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Create an entity wrapper for a given entity type ID
@@ -63,6 +73,7 @@ public class Entity
 
         this.previewEntity = entitiesModule.createPreviewEntity(type.get(), new NbtCompound());
         this.minecraftEntity = null;
+        this.minecraftUUID = UUID.randomUUID();
         this.entityType = id;
     }
     /**
@@ -93,17 +104,23 @@ public class Entity
         if (useMinecraftEntity)
         {
             this.minecraftEntity = entitiesModule.getMinecraftEntity(nbt);
-            if (this.minecraftEntity == null) this.previewEntity = entitiesModule.createPreviewEntity(type.get(), new NbtCompound());
+            if (this.minecraftEntity == null)
+            {
+                this.previewEntity = entitiesModule.createPreviewEntity(type.get(), new NbtCompound());
+                this.minecraftUUID = UUID.randomUUID();
+            }
             else
             {
                 NbtCompound previewNBT = EntityUtils.getEntityDataNoUuid(this.minecraftEntity);
                 this.previewEntity = entitiesModule.createPreviewEntity(type.get(), previewNBT);
+                this.minecraftUUID = this.minecraftEntity.getUuid();
             }
         }
         else
         {
             this.previewEntity = entitiesModule.createPreviewEntity(type.get(), nbt);
             this.minecraftEntity = null;
+            this.minecraftUUID = UUID.randomUUID();
         }
         this.entityType = id;
     }
@@ -119,6 +136,9 @@ public class Entity
         nbt.put("PreviewEntity", EntityUtils.getEntityDataNoUuid(this.previewEntity));
         if (this.minecraftEntity != null) nbt.put("MinecraftEntity", EntityUtils.getEntityData(this.minecraftEntity));
 
+        nbt.putUuid("MinecraftUUID", this.minecraftUUID);
+        nbt.putBoolean("Killed", this.killed);
+
         return nbt;
     }
     /**
@@ -131,13 +151,18 @@ public class Entity
         NbtCompound previewNBT = nbt.getCompound("PreviewEntity");
         NbtCompound minecraftNBT = nbt.contains("MinecraftEntity", NbtElement.COMPOUND_TYPE) ? nbt.getCompound("MinecraftEntity") : null;
 
+        Entity entity;
         if (minecraftNBT != null)
         {
-            Entity entity = new Entity(minecraftNBT, true);
+            entity = new Entity(minecraftNBT, true);
             entity.previewEntity.readNbt(previewNBT);
-            return entity;
         }
-        else return new Entity(previewNBT, false);
+        else entity = new Entity(previewNBT, false);
+
+        entity.minecraftUUID = nbt.getUuid("MinecraftUUID");
+        entity.killed = nbt.getBoolean("Killed");
+
+        return entity;
     }
 
     /**
@@ -160,6 +185,7 @@ public class Entity
     public void breakMinecraftEntityConnection()
     {
         this.minecraftEntity = null;
+        this.minecraftUUID = UUID.randomUUID();
     }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
@@ -170,8 +196,9 @@ public class Entity
     {
         if (this.minecraftEntity == null)
         {
-            this.minecraftEntity = this.previewEntity.getType().create(world.toServerWorld());;
+            this.minecraftEntity = this.previewEntity.getType().create(world.toServerWorld());
             this.minecraftEntity.readNbt(EntityUtils.getEntityDataNoUuid(this.previewEntity));
+            this.minecraftEntity.setUuid(this.minecraftUUID);
             world.spawnEntityAndPassengers(this.minecraftEntity);
         }
     }
@@ -228,6 +255,7 @@ public class Entity
      */
     public void updateMinecraftEntity(ServerWorldAccess world)
     {
+        if (this.minecraftEntity == null) this.minecraftEntity = world.toServerWorld().getEntity(this.minecraftUUID);
         if (this.minecraftEntity != null)
         {
             if (this.killed)
@@ -237,10 +265,19 @@ public class Entity
             }
             else this.minecraftEntity.readNbt(EntityUtils.getEntityDataNoUuid(this.previewEntity));
         }
-        else spawn(world);
+        else if (!this.killed) spawn(world);
     }
     //endregion
     //region API
+
+    /**
+     * Create an identical copy of this entity, including the UUID and Minecraft connection
+     * @return The duplicated entity
+     */
+    public Entity duplicate()
+    {
+        return new Entity(this.previewEntity, this.minecraftEntity, this.entityType, this.minecraftUUID, this.killed);
+    }
     /**
      * Create an identical copy of this entity, except for the UUID and Minecraft connection
      * @return The cloned entity
@@ -292,11 +329,14 @@ public class Entity
         return new NBTCompound(EntityUtils.getEntityDataNoUuid(this.previewEntity));
     }
     /**
-     * @return If this entity is linked to a Minecraft entity, the UUID of the Minecraft entity it represents, otherwise null
+     * @return The UUID of this entity in Minecraft. This is not the same as {@link Entity#keystoneUUID()},
+     * and might not correspond to an entity that is actually in the Minecraft world. If the entity is in
+     * the world, this will always be it's UUID. If the entity is not in the Minecraft world, this will be
+     * the UUID of the entity when it is spawned by calling {@link Entity#spawn(ServerWorldAccess)}
      */
-    public UUID minecraftUUID() { return this.minecraftEntity != null ? this.minecraftEntity.getUuid() : null; }
+    public UUID minecraftUUID() { return this.minecraftUUID; }
     /**
-     * @return The UUID of this entity in Keystone. This is not the same as {@link Entity#minecraftUUID}
+     * @return The UUID of this entity in Keystone. This is not the same as {@link Entity#minecraftUUID()}
      */
     public UUID keystoneUUID() { return this.previewEntity.getUuid(); }
     /**

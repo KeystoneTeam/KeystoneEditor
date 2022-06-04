@@ -103,9 +103,9 @@ public class EntitiesModule implements IKeystoneModule
         }
         return entities;
     }
-    public void setEntity(Entity entity)
+    public void commitEntityChanges(Entity entity)
     {
-        historyModule.getOpenEntry().setEntity(entity);
+        historyModule.getOpenEntry().commitEntityChanges(entity);
         listeners.forEach(listener -> listener.onChanged(entity));
     }
 }

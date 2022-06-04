@@ -302,7 +302,7 @@ public class KeystoneSchematic
         for (Entity entityTemplate : entities)
         {
             Entity oriented = entityTemplate.getOrientedEntity(Vec3d.of(anchor), rotation, mirror, size, clampedScale);
-            worldModifiers.entities.setEntity(oriented);
+            worldModifiers.entities.commitEntityChanges(oriented);
         }
 
         int i = 0;
