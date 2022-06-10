@@ -1,9 +1,7 @@
 package keystone.api.wrappers.blocks;
 
-import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
-import keystone.api.filters.KeystoneFilter;
 import keystone.core.client.Player;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
@@ -14,7 +12,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.Map;

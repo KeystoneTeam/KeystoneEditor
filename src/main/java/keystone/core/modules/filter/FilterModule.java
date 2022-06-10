@@ -2,19 +2,15 @@ package keystone.core.modules.filter;
 
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
-import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.execution.FilterExecutor;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.utils.ProgressBar;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
 
-import java.util.*;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class FilterModule implements IKeystoneModule

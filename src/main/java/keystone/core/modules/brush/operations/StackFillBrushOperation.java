@@ -7,7 +7,6 @@ import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
 
 public class StackFillBrushOperation extends BrushOperation
 {

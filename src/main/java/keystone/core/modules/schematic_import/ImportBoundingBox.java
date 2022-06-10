@@ -5,7 +5,6 @@ import keystone.core.client.Player;
 import keystone.core.math.RayTracing;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.selection.SelectableCuboid;
 import keystone.core.modules.selection.SelectedFace;
 import keystone.core.modules.world.WorldModifierModules;

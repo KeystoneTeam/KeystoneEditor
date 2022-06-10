@@ -4,7 +4,6 @@ import keystone.api.Keystone;
 import keystone.api.variables.Hook;
 import keystone.core.gui.widgets.inputs.ParsableTextWidget;
 import keystone.core.utils.AnnotationUtils;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 

@@ -5,7 +5,6 @@ import keystone.core.gui.widgets.inputs.EnumWidget;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.state.property.EnumProperty;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.StringIdentifiable;
 

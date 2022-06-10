@@ -1,8 +1,6 @@
 package keystone.core.modules.history.entries;
 
 import keystone.api.Keystone;
-import keystone.core.gui.screens.hotbar.KeystoneHotbar;
-import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.screens.selection.SelectionNudgeScreen;
 import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.selection.SelectionBoundingBox;

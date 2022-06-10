@@ -2,7 +2,6 @@ package keystone.api.wrappers;
 
 import keystone.api.Keystone;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
 
 /**
  * A wrapper for a Minecraft item stack. Contains information about the item, count, and NBT data

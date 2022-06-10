@@ -2,7 +2,7 @@ package keystone.core.gui.screens.file_browser;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
+
 import java.io.File;
 import java.util.Set;
 import java.util.function.Consumer;

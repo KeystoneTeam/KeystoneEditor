@@ -6,7 +6,6 @@ import keystone.core.client.Player;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.math.RayTracing;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;

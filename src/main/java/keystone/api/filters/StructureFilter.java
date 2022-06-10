@@ -6,10 +6,10 @@ import keystone.api.WorldRegion;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.coordinates.Vector2f;
 import keystone.core.utils.ProgressBar;
+import net.minecraft.util.math.random.Random;
 
 import java.util.List;
 import java.util.Map;
-import net.minecraft.util.math.random.Random;
 
 public abstract class StructureFilter extends KeystoneFilter
 {

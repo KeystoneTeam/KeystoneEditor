@@ -3,7 +3,7 @@ package keystone.core.gui.screens.file_browser;
 import keystone.core.gui.widgets.inputs.ParsableTextWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
+
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;

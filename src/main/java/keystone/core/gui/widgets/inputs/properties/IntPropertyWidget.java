@@ -4,7 +4,6 @@ import keystone.api.wrappers.blocks.Block;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.state.property.IntProperty;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 
 public class IntPropertyWidget extends IntegerWidget

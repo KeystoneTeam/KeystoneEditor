@@ -1,6 +1,5 @@
 package keystone.core.renderer.blocks.buffer;
 
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.render.BufferBuilder;
 
 import java.nio.ByteBuffer;

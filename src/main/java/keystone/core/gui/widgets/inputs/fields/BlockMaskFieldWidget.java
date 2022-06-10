@@ -6,7 +6,6 @@ import keystone.api.wrappers.blocks.BlockMask;
 import keystone.core.gui.widgets.inputs.BlockMaskWidget;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 

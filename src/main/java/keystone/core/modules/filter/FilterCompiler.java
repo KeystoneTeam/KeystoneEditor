@@ -4,7 +4,6 @@ import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.codehaus.commons.compiler.CompileException;

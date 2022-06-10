@@ -11,7 +11,6 @@ import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.filter.execution.AbstractFilterThread;
-import keystone.core.modules.filter.execution.FilterExecutor;
 import keystone.core.modules.ghost_blocks.GhostBlocksModule;
 import keystone.core.registries.BlockTypeRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;

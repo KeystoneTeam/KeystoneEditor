@@ -5,11 +5,12 @@ import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.tag.TagKey;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntryList;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class TagBlockProvider implements IBlockProvider
 {

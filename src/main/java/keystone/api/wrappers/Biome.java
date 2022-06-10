@@ -1,9 +1,7 @@
 package keystone.api.wrappers;
 
 import keystone.core.mixins.BiomeInvoker;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryEntry;

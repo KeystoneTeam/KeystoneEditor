@@ -5,7 +5,7 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.widgets.BlockGridWidget;
 import net.minecraft.block.BlockState;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
+
 import java.util.function.Consumer;
 
 public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen

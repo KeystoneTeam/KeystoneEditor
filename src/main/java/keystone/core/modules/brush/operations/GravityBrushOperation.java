@@ -6,7 +6,6 @@ import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
 
 public class GravityBrushOperation extends BrushOperation
 {

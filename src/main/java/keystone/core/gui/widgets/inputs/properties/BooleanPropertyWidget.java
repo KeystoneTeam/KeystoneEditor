@@ -4,7 +4,6 @@ import keystone.api.wrappers.blocks.Block;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.client.gui.widget.CheckboxWidget;
 import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 
 public class BooleanPropertyWidget extends CheckboxWidget
