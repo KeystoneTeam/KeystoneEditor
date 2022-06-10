@@ -7,7 +7,6 @@ import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.registries.BlockTypeRegistry;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
@@ -37,15 +36,15 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
     protected void init()
     {
         super.init();
-        this.palettePanel = BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 50, true, Text.translatable("keystone.mask_panel"), state ->
+        this.palettePanel = BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 50, true, Text.translatable("keystone.mask_panel"), (entry, mouseButton) ->
         {
-            BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(state);
+            BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(entry.state());
             this.palette.without(wrapper, 1);
-            this.palettePanel.removeBlock(state);
-        }, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
+            this.palettePanel.removeBlock(entry.state(), entry.tooltipBuilder());
+        }, this::disableWidgets, this::restoreWidgets, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.PASS_UNMODIFIED);
         this.palette.forEach((blockProvider, weight) ->
         {
-            for (int i = 0; i < weight; i++) palettePanel.addBlock(blockProvider.getFirst().getMinecraftBlock(), false);
+            for (int i = 0; i < weight; i++) palettePanel.addBlock(blockProvider.getFirst().getMinecraftBlock(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP, false);
         });
 
         this.palettePanel.rebuildButtons();
@@ -93,10 +92,10 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
         super.removed();
     }
     @Override
-    public void onBlockSelected(BlockState block)
+    public void onEntrySelected(BlockGridWidget.Entry entry, int mouseButton)
     {
-        BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(block);
-        this.palettePanel.addBlock(block);
+        BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(entry.state());
+        this.palettePanel.addBlock(entry.state(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
         this.palette.with(wrapper);
     }
 }

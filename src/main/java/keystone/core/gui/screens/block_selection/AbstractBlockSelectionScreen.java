@@ -22,11 +22,13 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
         super(Text.translatable(narrationTitle));
     }
 
+    public void onLeftClick(BlockGridButton button, int mouseButton, BlockState state) { BlockGridButton.PASS_UNMODIFIED.accept(button, mouseButton, state); }
+    public void onRightClick(BlockGridButton button, int mouseButton, BlockState state) { BlockGridButton.EDIT_PROPERTIES.accept(button, mouseButton, state); }
     public BlockGridWidget createMainPanel()
     {
-        return BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX(), KeystoneHotbar.getX(), KeystoneHotbar.getHeight(), KeystoneHotbar.getHeight(), false, Text.translatable("keystone.block_selection"), this::onBlockSelected, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_TOOLTIP);
+        return BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX(), KeystoneHotbar.getX(), KeystoneHotbar.getHeight(), KeystoneHotbar.getHeight(), false, Text.translatable("keystone.block_selection"), this::onEntrySelected, this::disableWidgets, this::restoreWidgets, this::onLeftClick, this::onRightClick);
     }
-    public abstract void onBlockSelected(BlockState block);
+    public abstract void onEntrySelected(BlockGridWidget.Entry entry, int mouseButton);
 
     @Override
     public boolean shouldCloseOnEsc()
@@ -39,7 +41,7 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
         this.client.keyboard.setRepeatEvents(true);
 
         this.panel = createMainPanel();
-        Registry.BLOCK.forEach(block -> this.panel.addBlock(block.getDefaultState(), false));
+        Registry.BLOCK.forEach(block -> this.panel.addBlock(block.getDefaultState(), BlockGridWidget.NAME_TOOLTIP, false));
         this.panel.rebuildButtons();
         addDrawableChild(this.panel);
 

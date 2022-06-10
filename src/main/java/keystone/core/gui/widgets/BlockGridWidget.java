@@ -18,19 +18,35 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.registry.Registry;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class BlockGridWidget extends ClickableWidget
 {
+    public record Entry(BlockState state, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
+    {
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Entry entry = (Entry) o;
+            return state.equals(entry.state) && tooltipBuilder.equals(entry.tooltipBuilder);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(state, tooltipBuilder);
+        }
+    }
+
     public static final AbstractBlockButton.IBlockTooltipBuilder NAME_TOOLTIP = (block, count, tooltip) -> tooltip.add(block.getBlock().getName());
     public static final AbstractBlockButton.IBlockTooltipBuilder NAME_AND_PROPERTIES_TOOLTIP = (block, count, tooltip) ->
     {
-        tooltip.add(block.getBlock().getName());
+        NAME_TOOLTIP.buildTooltip(block, count, tooltip);
         block.getProperties().forEach(property ->
         {
             if (property instanceof BooleanProperty)
@@ -41,12 +57,18 @@ public class BlockGridWidget extends ClickableWidget
             else tooltip.addAll(Text.literal(StringUtils.snakeCaseToTitleCase(property.getName()) + ": " + StringUtils.snakeCaseToTitleCase(block.get(property).toString())).getWithStyle(Style.EMPTY.withColor(Formatting.GRAY)));
         });
     };
+    public static final AbstractBlockButton.IBlockTooltipBuilder ANY_VARIANT_TOOLTIP = (block, count, tooltip) ->
+    {
+        NAME_TOOLTIP.buildTooltip(block, count, tooltip);
+        tooltip.add(Text.translatable("keystone.block_selection_panel.anyVariant").styled(style -> style.withColor(Formatting.GRAY)));
+    };
 
     private final boolean allowMultiples;
-    private final Consumer<BlockState> callback;
+    private final BiConsumer<Entry, Integer> callback;
     private final Consumer<ClickableWidget[]> disableWidgets;
     private final Runnable restoreWidgets;
-    private final AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder;
+    private final BlockGridButton.ClickConsumer leftClickConsumer;
+    private final BlockGridButton.ClickConsumer rightClickConsumer;
     private final Screen screen;
 
     private int blockCount;
@@ -56,20 +78,21 @@ public class BlockGridWidget extends ClickableWidget
     private int buttonsInPanel;
     private double scrollOffset;
 
-    private List<BlockState> blocks;
-    private Map<BlockState, Integer> blockCounts;
+    private List<Entry> entries;
+    private Map<Entry, Integer> blockCounts;
     private List<BlockGridButton> buttons;
     private Predicate<BlockState> filter;
 
     //region Creation
-    private BlockGridWidget(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, Consumer<BlockState> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
+    private BlockGridWidget(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
     {
         super(x, y, width, height, title);
         this.allowMultiples = allowMultiples;
         this.callback = callback;
         this.disableWidgets = disableWidgets;
         this.restoreWidgets = restoreWidgets;
-        this.tooltipBuilder = tooltipBuilder;
+        this.leftClickConsumer = leftClickConsumer;
+        this.rightClickConsumer = rightClickConsumer;
         this.screen = screen;
 
         buttonsPerRow = (width - BlockGridButton.SIZE) / BlockGridButton.SIZE;
@@ -77,11 +100,11 @@ public class BlockGridWidget extends ClickableWidget
         buttonsInPanel = buttonsPerRow * buttonsPerColumn;
         scrollOffset = 0;
 
-        blocks = new ArrayList<>();
+        entries = new ArrayList<>();
         blockCounts = new HashMap<>();
         buttons = new ArrayList<>();
     }
-    public static BlockGridWidget createWithMargins(Screen screen, int idealLeftMargin, int idealRightMargin, int idealTopMargin, int idealBottomMargin, boolean allowMultiples, Text title, Consumer<BlockState> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
+    public static BlockGridWidget createWithMargins(Screen screen, int idealLeftMargin, int idealRightMargin, int idealTopMargin, int idealBottomMargin, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
     {
         Window window = MinecraftClient.getInstance().getWindow();
 
@@ -93,19 +116,19 @@ public class BlockGridWidget extends ClickableWidget
         int panelOffsetX = (int)Math.floor((window.getScaledWidth() - panelWidth) * (idealLeftMargin / (float)(idealLeftMargin + idealRightMargin)));
         int panelOffsetY = (int)Math.floor((window.getScaledHeight() - panelHeight) * (idealTopMargin / (float)(idealTopMargin + idealBottomMargin)));
 
-        return new BlockGridWidget(screen, panelOffsetX, panelOffsetY, panelWidth, panelHeight, allowMultiples, title, callback, disableWidgets, restoreWidgets, tooltipBuilder);
+        return new BlockGridWidget(screen, panelOffsetX, panelOffsetY, panelWidth, panelHeight, allowMultiples, title, callback, disableWidgets, restoreWidgets, leftClickConsumer, rightClickConsumer);
     }
-    public static BlockGridWidget create(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, Consumer<BlockState> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
+    public static BlockGridWidget create(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
     {
         width -= width % BlockGridButton.SIZE;
         height -= height % BlockGridButton.SIZE;
-        return new BlockGridWidget(screen, x, y, width, height, allowMultiples, title, callback, disableWidgets, restoreWidgets, tooltipBuilder);
+        return new BlockGridWidget(screen, x, y, width, height, allowMultiples, title, callback, disableWidgets, restoreWidgets, leftClickConsumer, rightClickConsumer);
     }
     //endregion
 
-    public void onBlockClicked(BlockState block)
+    public void onEntryClicked(Entry entry, int mouseButton)
     {
-        if (callback != null) callback.accept(block);
+        if (callback != null) callback.accept(entry, mouseButton);
     }
 
     //region Widget Overrides
@@ -166,30 +189,32 @@ public class BlockGridWidget extends ClickableWidget
     }
     //endregion
     //region Editing
-    public void addBlock(BlockState block) { addBlock(block, true); }
-    public void addBlock(BlockState block, boolean rebuildButtons)
+    public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder) { addBlock(block, tooltipBuilder, true); }
+    public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons)
     {
-        if (!blockCounts.containsKey(block))
+        Entry entry = new Entry(block, tooltipBuilder);
+        if (!blockCounts.containsKey(entry))
         {
-            blockCounts.put(block, 1);
-            blocks.add(block);
+            blockCounts.put(entry, 1);
+            entries.add(entry);
         }
-        else if (allowMultiples) blockCounts.put(block, blockCounts.get(block) + 1);
+        else if (allowMultiples) blockCounts.put(entry, blockCounts.get(entry) + 1);
 
         if (rebuildButtons) rebuildButtons();
     }
-    public void removeBlock(BlockState block) { removeBlock(block, true); }
-    public void removeBlock(BlockState block, boolean rebuildButtons)
+    public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder) { removeBlock(block, tooltipBuilder, true); }
+    public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons)
     {
-        Integer count = blockCounts.get(block);
+        Entry entry = new Entry(block, tooltipBuilder);
+        Integer count = blockCounts.get(entry);
         if (count != null)
         {
             count--;
-            if (count > 0) blockCounts.put(block, count);
+            if (count > 0) blockCounts.put(entry, count);
             else
             {
-                blockCounts.remove(block);
-                blocks.remove(block);
+                blockCounts.remove(entry);
+                entries.remove(entry);
             }
 
             if (rebuildButtons) rebuildButtons();
@@ -232,16 +257,16 @@ public class BlockGridWidget extends ClickableWidget
 
         blockCount = 0;
         int skipCount = (int)scrollOffset * buttonsPerRow;
-        for (BlockState block : this.blocks)
+        for (Entry entry : this.entries)
         {
-            Integer count = blockCounts.get(block);
+            Integer count = blockCounts.get(entry);
 
             // Check if block isn't from Keystone and matches filter
-            if (Registry.BLOCK.getId(block.getBlock()).getNamespace().equals(KeystoneMod.MODID)) continue;
-            if (filter != null && !filter.test(block)) continue;
+            if (Registry.BLOCK.getId(entry.state.getBlock()).getNamespace().equals(KeystoneMod.MODID)) continue;
+            if (filter != null && !filter.test(entry.state)) continue;
 
             // Create button instance
-            BlockGridButton button = BlockGridButton.create(screen, this, block, count, x, y, tooltipBuilder);
+            BlockGridButton button = BlockGridButton.create(screen, this, entry.state, count, x, y, leftClickConsumer, rightClickConsumer, entry.tooltipBuilder);
             if (button == null) continue;
             else blockCount++;
 

@@ -34,15 +34,29 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
     }
 
     @Override
+    public void onLeftClick(BlockGridButton button, int mouseButton, BlockState state)
+    {
+        BlockGridButton.EDIT_PROPERTIES.accept(button, mouseButton, state);
+    }
+    @Override
+    public void onRightClick(BlockGridButton button, int mouseButton, BlockState state)
+    {
+        BlockGridButton.PASS_UNMODIFIED.accept(button, mouseButton, state);
+    }
+
+    @Override
     protected void init()
     {
         super.init();
-        this.maskPanel = BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 80, false, Text.translatable("keystone.mask_panel"), state ->
+        this.maskPanel = BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 80, false, Text.translatable("keystone.mask_panel"), (entry, mouseButton) ->
         {
-            this.mask.without(BlockTypeRegistry.fromMinecraftBlock(state));
-            this.maskPanel.removeBlock(state);
-        }, this::disableWidgets, this::restoreWidgets, BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
-        this.mask.forEach(block -> maskPanel.addBlock(block.getMinecraftBlock(), false));
+            this.mask.without(BlockTypeRegistry.fromMinecraftBlock(entry.state()));
+            this.maskPanel.removeBlock(entry.state(), entry.tooltipBuilder());
+        }, this::disableWidgets, this::restoreWidgets, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.PASS_UNMODIFIED);
+        this.mask.forEach(
+                variant -> maskPanel.addBlock(variant.getMinecraftBlock(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP, false),
+                anyVariant -> maskPanel.addBlock(anyVariant.getDefaultState(), BlockGridWidget.ANY_VARIANT_TOOLTIP, false)
+        );
         this.maskPanel.rebuildButtons();
         addDrawableChild(maskPanel);
 
@@ -98,9 +112,17 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         super.removed();
     }
     @Override
-    public void onBlockSelected(BlockState block)
+    public void onEntrySelected(BlockGridWidget.Entry entry, int mouseButton)
     {
-        this.mask.with(BlockTypeRegistry.fromMinecraftBlock(block));
-        this.maskPanel.addBlock(block);
+        if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+        {
+            this.mask.with(BlockTypeRegistry.fromMinecraftBlock(entry.state()));
+            this.maskPanel.addBlock(entry.state(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
+        }
+        else if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT)
+        {
+            this.mask.withAllVariants(BlockTypeRegistry.fromMinecraftBlock(entry.state()));
+            this.maskPanel.addBlock(entry.state(), BlockGridWidget.ANY_VARIANT_TOOLTIP);
+        }
     }
 }

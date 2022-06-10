@@ -33,7 +33,7 @@ public class FillAndReplaceScreen extends KeystoneOverlay
     protected FillAndReplaceScreen()
     {
         super(Text.translatable("keystone.screen.fill"));
-        previousMask = new BlockMask();
+        previousMask = new BlockMask().blacklist();
         previousPalette = new BlockPalette();
     }
     public static void open()

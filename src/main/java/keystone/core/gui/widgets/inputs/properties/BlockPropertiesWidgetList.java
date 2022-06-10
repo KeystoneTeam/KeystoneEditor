@@ -22,7 +22,7 @@ public class BlockPropertiesWidgetList extends WidgetList
 
     public BlockPropertiesWidgetList(Block block, int x, int y, int width, int maxHeight, int padding, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets)
     {
-        super(x, y, width, maxHeight, padding, Text.translatable("keystone.block_properties.propertiesPanel"));
+        super(x, y, width, maxHeight, padding, Text.translatable("keystone.block_selection_panel.propertiesPanel"));
 
         this.intendedWidth = width - 2 * padding;
         this.disableWidgets = disableWidgets;

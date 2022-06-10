@@ -64,7 +64,8 @@
   "keystone.filter_panel.runFilter": "Filter",
   "keystone.filter_panel.filterVariables": "Filter Variables",
 
-  "keystone.block_properties.propertiesPanel": "Block Properties",
+  "keystone.block_selection_panel.propertiesPanel": "Block Properties",
+  "keystone.block_selection_panel.anyVariant": "Any Variant",
 
   "keystone.brush.minimumSpacing": "Minimum Spacing",
   "keystone.brush.noise": "Noise",

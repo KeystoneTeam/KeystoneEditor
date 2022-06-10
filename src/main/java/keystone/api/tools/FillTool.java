@@ -22,11 +22,11 @@ public class FillTool extends KeystoneFilter
 
     public FillTool(BlockType blockType)
     {
-        this(new BlockMask(), new BlockPalette().with(blockType));
+        this(new BlockMask().blacklist(), new BlockPalette().with(blockType));
     }
     public FillTool(BlockState block)
     {
-        this(new BlockMask(), new BlockPalette().with(BlockTypeRegistry.fromMinecraftBlock(block)));
+        this(new BlockMask().blacklist(), new BlockPalette().with(BlockTypeRegistry.fromMinecraftBlock(block)));
     }
 
 

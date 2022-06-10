@@ -22,6 +22,7 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
         void buildTooltip(BlockState block, int count, List<Text> tooltip);
     }
 
+    private final IBlockTooltipBuilder tooltipBuilder;
     private final List<Text> tooltip;
 
     protected final MinecraftClient mc;
@@ -42,6 +43,7 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
 
         List<Text> tooltip = new ArrayList<>();
         tooltipBuilder.buildTooltip(block, itemStack.getCount(), tooltip);
+        this.tooltipBuilder = tooltipBuilder;
         this.tooltip = Collections.unmodifiableList(tooltip);
     }
 
@@ -80,8 +82,6 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
         return false;
     }
 
-    public BlockState getBlockState()
-    {
-        return block;
-    }
+    public BlockState getBlockState() { return block; }
+    public IBlockTooltipBuilder getTooltipBuilder() { return tooltipBuilder; }
 }
