@@ -211,7 +211,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
     private void runFilter()
     {
         for (Element element : children()) if (element instanceof TextFieldWidget textField) textField.changeFocus(false);
-        if (selectedFilterFile != null) filterModule.runFilter(filterManager.getFilter(selectedFilterFile));
+        if (selectedFilterFile != null) filterModule.runFilters(filterManager.getFilter(selectedFilterFile));
     }
     //endregion
 }

@@ -48,7 +48,6 @@ public class SelectionModule implements IKeystoneModule
     public SelectionModule()
     {
         selectionBoxes = Collections.synchronizedList(new ArrayList<>());
-        revertHistoryEntry = new SelectionHistoryEntry(selectionBoxes);
 
         InputEvents.KEY_PRESSED.register(this::onKeyInput);
         KeystoneInputEvents.MOUSE_CLICKED.register(this::onMouseClick);
@@ -63,6 +62,8 @@ public class SelectionModule implements IKeystoneModule
     {
         historyModule = Keystone.getModule(HistoryModule.class);
         mouseModule = Keystone.getModule(MouseModule.class);
+        revertHistoryEntry = new SelectionHistoryEntry(selectionBoxes);
+
         highlightRenderer = RendererFactory.createComplexOverlay(
                 RendererFactory.createPolygonOverlay().buildFill(),
                 RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe()
@@ -73,6 +74,7 @@ public class SelectionModule implements IKeystoneModule
     public void resetModule()
     {
         selectionBoxes.clear();
+        revertHistoryEntry = new SelectionHistoryEntry(selectionBoxes);
         firstSelectionPoint = null;
         creatingSelection = false;
     }
@@ -227,9 +229,7 @@ public class SelectionModule implements IKeystoneModule
     public void onSelectionChanged(List<SelectionBoundingBox> selections, boolean createdSelection, boolean createHistoryEntry)
     {
         if (!createHistoryEntry) return;
-        historyModule.beginHistoryEntry();
         addHistoryEntry();
-        historyModule.endHistoryEntry();
     }
     //endregion
     //region Controls
@@ -266,9 +266,13 @@ public class SelectionModule implements IKeystoneModule
     }
     public void addHistoryEntry()
     {
+        historyModule.tryBeginHistoryEntry();
+
         SelectionHistoryEntry entry = new SelectionHistoryEntry(selectionBoxes);
         historyModule.pushToEntry(entry, revertHistoryEntry);
         revertHistoryEntry = entry;
+
+        historyModule.tryEndHistoryEntry();
     }
     //endregion
 }

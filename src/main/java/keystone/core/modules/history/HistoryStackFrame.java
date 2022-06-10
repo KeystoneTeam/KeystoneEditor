@@ -135,8 +135,13 @@ public class HistoryStackFrame
         if (index == 0) Keystone.LOGGER.info("CURRENT");
         else Keystone.LOGGER.info(index > 0 ? "+" + index : index);
 
-        for (int i = applyEntries.size() - 1; i >= 0; i--) Keystone.LOGGER.info("    " + applyEntries.get(i).getClass().getSimpleName());
-        Keystone.LOGGER.info("    " + chunks.size() + " Chunks");
+        Keystone.LOGGER.info("  Apply:");
+        for (int i = 0; i < applyEntries.size(); i++) Keystone.LOGGER.info("    " + applyEntries.get(i).getClass().getSimpleName());
+
+        Keystone.LOGGER.info("  Revert:");
+        for (int i = revertEntries.size() - 1; i >= 0; i--) Keystone.LOGGER.info("    " + applyEntries.get(i).getClass().getSimpleName());
+
+        Keystone.LOGGER.info("  " + chunks.size() + " Chunks");
     }
 
     public void pushEntry(IHistoryEntry entry, IHistoryEntry revert)

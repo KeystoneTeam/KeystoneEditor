@@ -75,7 +75,7 @@ public class FillAndReplaceScreen extends KeystoneOverlay
                 quickFill = SingleBlockSelectionScreen.promptBlockStateChoice(blockType ->
                 {
                     quickFill = null;
-                    if (blockType != null) Keystone.runInternalFilter(new FillTool(blockType));
+                    if (blockType != null) Keystone.runInternalFilters(new FillTool(blockType));
                     KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
                 });
             }
@@ -142,7 +142,7 @@ public class FillAndReplaceScreen extends KeystoneOverlay
     private void fillButton(ButtonWidget button)
     {
         FillTool fillTool = new FillTool(mask.getMask(), palette.getPalette());
-        Keystone.runInternalFilter(fillTool);
+        Keystone.runInternalFilters(fillTool);
         close();
     }
 }

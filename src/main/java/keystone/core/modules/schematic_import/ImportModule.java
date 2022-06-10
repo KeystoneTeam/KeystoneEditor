@@ -32,7 +32,7 @@ import java.util.*;
 public class ImportModule implements IKeystoneModule
 {
     private List<ImportBoundingBox> importBoxes;
-    private ImportBoxesHistoryEntry revertEntry;
+    private ImportBoxesHistoryEntry revertHistoryEntry;
     private HistoryModule historyModule;
     private GhostBlocksModule ghostBlocksModule;
     private ImportBoxRenderer renderer;
@@ -40,7 +40,7 @@ public class ImportModule implements IKeystoneModule
     public ImportModule()
     {
         importBoxes = Collections.synchronizedList(new ArrayList<>());
-        revertEntry = new ImportBoxesHistoryEntry(importBoxes);
+        revertHistoryEntry = new ImportBoxesHistoryEntry(importBoxes);
         KeystoneHotbarEvents.CHANGED.register(this::onSlotChanged);
         KeystoneLifecycleEvents.IMPORTS_CHANGED.register(this::onImportsChanged);
     }
@@ -61,7 +61,8 @@ public class ImportModule implements IKeystoneModule
     @Override
     public void resetModule()
     {
-        clearImportBoxes(false);
+        clearImportBoxes(false, false);
+        revertHistoryEntry = new ImportBoxesHistoryEntry(importBoxes);
     }
     @Override
     public Collection<? extends SelectableCuboid> getSelectableBoxes() { return this.importBoxes; }
@@ -75,13 +76,11 @@ public class ImportModule implements IKeystoneModule
     //region Event Handlers
     private void onSlotChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
-        if (previous == KeystoneHotbarSlot.IMPORT && slot != KeystoneHotbarSlot.IMPORT) clearImportBoxes(true);
+        if (previous == KeystoneHotbarSlot.IMPORT && slot != KeystoneHotbarSlot.IMPORT && slot != KeystoneHotbarSlot.CLONE) clearImportBoxes(true, true);
     }
-    private void onImportsChanged(List<ImportBoundingBox> importBoxes)
+    private void onImportsChanged(List<ImportBoundingBox> importBoxes, boolean createHistoryEntry)
     {
-        historyModule.beginHistoryEntry();
-        addHistoryEntry();
-        historyModule.endHistoryEntry();
+        if (createHistoryEntry) addHistoryEntry();
     }
     //endregion
     //region Import Calls
@@ -90,41 +89,42 @@ public class ImportModule implements IKeystoneModule
         OpenFilesScreen.openFiles(Text.literal("Import Schematics"), SchematicLoader.getExtensions(),
                 KeystoneDirectories.getSchematicsDirectory(), true, (files) ->
         {
-            for (File schematic : files) importSchematic(schematic, minPosition, false);
+            for (File schematic : files) importSchematic(schematic, minPosition, false, false);
+            KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(this.importBoxes, true);
         });
-        KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(this.importBoxes);
     }
-    public void importSchematic(String path, Vec3i minPosition, boolean raiseEvent)
+    public void importSchematic(String path, Vec3i minPosition, boolean raiseEvent, boolean createHistoryEntry)
     {
         KeystoneSchematic schematic = SchematicLoader.loadSchematic(path);
-        importSchematic(schematic, minPosition, raiseEvent);
+        importSchematic(schematic, minPosition, raiseEvent, createHistoryEntry);
     }
-    public void importSchematic(File file, Vec3i minPosition, boolean raiseEvent)
+    public void importSchematic(File file, Vec3i minPosition, boolean raiseEvent, boolean createHistoryEntry)
     {
         KeystoneSchematic schematic = SchematicLoader.loadSchematic(file);
-        importSchematic(schematic, minPosition, raiseEvent);
+        importSchematic(schematic, minPosition, raiseEvent, createHistoryEntry);
     }
-    public void importSchematic(KeystoneSchematic schematic, Vec3i minPosition, boolean raiseEvent)
+    public void importSchematic(KeystoneSchematic schematic, Vec3i minPosition, boolean raiseEvent, boolean createHistoryEntry)
     {
         this.importBoxes.add(ImportBoundingBox.create(minPosition, schematic));
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.IMPORT);
         ImportScreen.open();
-        if (raiseEvent) KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(this.importBoxes);
+        if (raiseEvent) KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(this.importBoxes, createHistoryEntry);
     }
     //endregion
     //region Import Box Functions
     public List<ImportBoundingBox> getImportBoxes() { return importBoxes; }
-    public void setImportBoxes(List<ImportBoundingBox> boxes)
+    public void setImportBoxes(List<ImportBoundingBox> boxes, boolean raiseEvent, boolean createHistoryEntry)
     {
-        clearImportBoxes(false);
+        clearImportBoxes(false, false);
         boxes.forEach(box -> importBoxes.add(box));
+        if (raiseEvent) KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(this.importBoxes, createHistoryEntry);
 
         if (importBoxes.size() > 0) KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.IMPORT);
         else KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
     public void addCloneImportBoxes(KeystoneSchematic schematic, Vec3i minPosition, BlockRotation rotation, BlockMirror mirror, Vector3i offset, int repeat, int scale)
     {
-        clearImportBoxes(false);
+        clearImportBoxes(false, false);
 
         int dx = offset.x;
         int dy = offset.y;
@@ -142,21 +142,21 @@ public class ImportModule implements IKeystoneModule
             dz += offset.z * scale;
         }
 
-        KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(this.importBoxes);
+        KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(this.importBoxes, false);
     }
     public void rotateAll()
     {
         if (importBoxes.size() == 0) return;
 
         for (ImportBoundingBox importBox : importBoxes) importBox.cycleRotate();
-        KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(importBoxes);
+        KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(importBoxes, true);
     }
     public void mirrorAll()
     {
         if (importBoxes.size() == 0) return;
 
         for (ImportBoundingBox importBox : importBoxes) importBox.cycleMirror();
-        KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(importBoxes);
+        KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(importBoxes, true);
     }
     public void nudgeAll(Direction direction, int amount)
     {
@@ -169,46 +169,46 @@ public class ImportModule implements IKeystoneModule
         if (importBoxes.size() == 0) return;
 
         for (ImportBoundingBox importBox : importBoxes) importBox.setScale(scale);
-        KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(importBoxes);
+        KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(importBoxes, true);
     }
-    public void placeAll(Map<Identifier, Boolean> extensionsToPlace) { placeAll(extensionsToPlace, true); }
-    public void placeAll(Map<Identifier, Boolean> extensionsToPlace, boolean copyAir)
+    public void placeAll(Map<Identifier, Boolean> extensionsToPlace, boolean copyAir, boolean raiseEvent, boolean createHistoryEntry)
     {
         if (importBoxes.size() == 0) return;
+        SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
 
-        Keystone.runOnMainThread(() ->
+        historyModule.tryBeginHistoryEntry();
         {
-            SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
-
-            historyModule.tryBeginHistoryEntry();
+            // Place Import Boxes
             importBoxes.forEach(importBox -> importBox.place(extensionsToPlace, copyAir));
 
+            // Create selection box for each import box
             List<BoundingBox> boxes = new ArrayList<>(importBoxes.size());
             importBoxes.forEach(box -> boxes.add(box.getBoundingBox()));
             selectionModule.setSelections(boxes);
 
-            clearImportBoxes(true);
-            historyModule.tryEndHistoryEntry();
+            // Clear import boxes
+            clearImportBoxes(raiseEvent, createHistoryEntry);
+        }
+        historyModule.tryEndHistoryEntry();
 
-            KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
-        });
+        KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
-    public void clearImportBoxes(boolean raiseEvent)
+    public void clearImportBoxes(boolean raiseEvent, boolean createHistoryEntry)
     {
         if (importBoxes.size() == 0) return;
 
         importBoxes.forEach(importBox -> ghostBlocksModule.releaseWorld(importBox.getGhostBlocks()));
         importBoxes.clear();
 
-        if (raiseEvent) KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(this.importBoxes);
+        if (raiseEvent) KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(this.importBoxes, createHistoryEntry);
     }
     public void addHistoryEntry()
     {
         historyModule.tryBeginHistoryEntry();
 
         ImportBoxesHistoryEntry entry = new ImportBoxesHistoryEntry(importBoxes);
-        historyModule.pushToEntry(entry, revertEntry);
-        revertEntry = entry;
+        historyModule.pushToEntry(entry, revertHistoryEntry);
+        revertHistoryEntry = entry;
 
         historyModule.tryEndHistoryEntry();
     }

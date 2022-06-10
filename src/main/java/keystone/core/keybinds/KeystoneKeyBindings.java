@@ -37,14 +37,7 @@ public class KeystoneKeyBindings
             while (TOGGLE_KEYSTONE.wasPressed()) Keystone.toggleKeystone();
             while (INCREASE_FLY_SPEED.wasPressed()) Keystone.increaseFlySpeed(KeystoneConfig.flySpeedChangeAmount);
             while (DECREASE_FLY_SPEED.wasPressed()) Keystone.decreaseFlySpeed(KeystoneConfig.flySpeedChangeAmount);
-            while (DELETE_BLOCKS.wasPressed())
-            {
-                if (Keystone.isActive())
-                {
-                    Keystone.runInternalFilter(new FillTool(Blocks.AIR.getDefaultState()));
-                    Keystone.runInternalFilter(new DeleteEntitiesTool());
-                }
-            }
+            while (DELETE_BLOCKS.wasPressed()) if (Keystone.isActive()) Keystone.runInternalFilters(new FillTool(Blocks.AIR.getDefaultState()), new DeleteEntitiesTool());
         });
     }
     public static void configureKeyConditions()

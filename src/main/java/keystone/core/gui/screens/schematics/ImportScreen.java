@@ -180,7 +180,7 @@ public class ImportScreen extends KeystoneOverlay
         }
         else if (keyCode == GLFW.GLFW_KEY_ESCAPE)
         {
-            importModule.clearImportBoxes(true);
+            importModule.clearImportBoxes(true, true);
             KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
             return true;
         }
@@ -240,7 +240,7 @@ public class ImportScreen extends KeystoneOverlay
     }
     private void importButton(ButtonWidget button)
     {
-        importModule.placeAll(extensionsToPlace);
+        importModule.placeAll(extensionsToPlace, true, true, true);
     }
     //endregion
 }

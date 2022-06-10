@@ -87,7 +87,7 @@ public class ClipboardModule implements IKeystoneModule
             HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
             historyModule.tryBeginHistoryEntry();
             copy();
-            Keystone.runInternalFilter(new FillTool(Blocks.AIR.getDefaultState()));
+            Keystone.runInternalFilters(new FillTool(Blocks.AIR.getDefaultState()));
             historyModule.tryEndHistoryEntry();
         });
     }
@@ -109,7 +109,7 @@ public class ClipboardModule implements IKeystoneModule
             for (KeystoneSchematic schematic : clipboard)
             {
                 Vec3i minPosition = Player.getHighlightedBlock();
-                this.importModule.importSchematic(schematic, minPosition, true);
+                this.importModule.importSchematic(schematic, minPosition, true, true);
             }
         }
     }

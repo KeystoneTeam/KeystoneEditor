@@ -204,15 +204,15 @@ public class SelectionScreen extends KeystoneOverlay
     }
     private final void buttonDeleteBlocks(ButtonWidget button)
     {
-        Keystone.runInternalFilter(new FillTool(Blocks.AIR.getDefaultState()));
+        Keystone.runInternalFilters(new FillTool(Blocks.AIR.getDefaultState()));
     }
     private final void buttonDeleteEntities(ButtonWidget button)
     {
-        Keystone.runInternalFilter(new DeleteEntitiesTool());
+        Keystone.runInternalFilters(new DeleteEntitiesTool());
     }
     private final void buttonAnalyze(ButtonWidget button)
     {
-        Keystone.runInternalFilter(new AnalyzeTool());
+        Keystone.runInternalFilters(new AnalyzeTool());
     }
     private final void buttonCut(ButtonWidget button)
     {

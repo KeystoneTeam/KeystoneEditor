@@ -287,7 +287,7 @@ public class BrushModule implements IKeystoneModule
             if (immediateMode)
             {
                 immediateModeExecute();
-                historyModule.applyBlocksWithoutEnding();
+                historyModule.applyChunksWithoutEnding();
                 if (ending) historyModule.endHistoryEntry();
             }
             else if (ending)

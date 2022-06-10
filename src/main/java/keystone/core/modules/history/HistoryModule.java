@@ -37,6 +37,7 @@ public class HistoryModule implements IKeystoneModule
         {
             if (key == GLFW.GLFW_KEY_Z) undo();
             else if (key == GLFW.GLFW_KEY_Y) redo();
+            else if (key == GLFW.GLFW_KEY_P) logHistoryStack();
         }
     }
     private void onJoinWorld(ClientWorld world)
@@ -92,7 +93,6 @@ public class HistoryModule implements IKeystoneModule
         {
             Keystone.LOGGER.warn("Calling HistoryModule.tryEndHistoryEntry without first calling HistoryModule.beginHistoryEntry! This may cause issues");
             tryBeginHooksOpen = 0;
-            return;
         }
         else
         {
@@ -130,11 +130,11 @@ public class HistoryModule implements IKeystoneModule
         currentStackFrame = null;
         tryBeginHooksOpen = 0;
     }
-    public void applyBlocksWithoutEnding()
+    public void applyChunksWithoutEnding()
     {
         if (currentStackFrame == null)
         {
-            Keystone.LOGGER.warn("Calling HistoryModule.applyBlocksWithoutEnding without first calling HistoryModule.beginHistoryEntry! This may cause issues");
+            Keystone.LOGGER.warn("Calling HistoryModule.applyChunksWithoutEnding without first calling HistoryModule.beginHistoryEntry! This may cause issues");
             return;
         }
         currentStackFrame.applyChanges();

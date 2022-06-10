@@ -4,6 +4,7 @@ import keystone.api.Keystone;
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.entities.Entity;
+import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.utils.ProgressBar;
 import net.minecraft.util.math.BlockPos;
@@ -72,13 +73,12 @@ public class MainFilterThread extends AbstractFilterThread
         // Filter cleanup
         filter.finished(); if (executor.shouldCancel()) return;
         filter.print("Filter completed in " + (System.currentTimeMillis() - startTime) + "ms"); if (executor.shouldCancel()) return;
-        historyModule.endHistoryEntry();
         ProgressBar.finish();
     }
     @Override
     public void onExecutionEnded()
     {
-
+        Keystone.getModule(FilterModule.class).markFilterFinished();
     }
 
     private void calculateBlockPositions()

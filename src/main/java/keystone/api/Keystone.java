@@ -219,22 +219,26 @@ public final class Keystone
     //region Internal Filters
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
-     * Run an internal, hard-coded filter on the current selection boxes
-     * @param filter The {@link KeystoneFilter} to run
+     * Run one or more internal, hard-coded filters on the current selection boxes. All filters
+     * will be performed on the same history entry
+     * @param filters The {@link KeystoneFilter} to run
      */
-    public static void runInternalFilter(KeystoneFilter filter)
+    public static void runInternalFilters(KeystoneFilter... filters)
     {
-        runInternalFilter(filter, 0);
+        runInternalFilters(0, filters);
     }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
-     * Run an internal, hard-coded filter on the current selection boxes after a given tick delay
-     * @param filter The {@link KeystoneFilter} to run
+     * Run one or more internal, hard-coded filters on the current selection boxes after a given tick delay.
+     * All filters will be performed on the same history entry
      * @param ticksDelay The amount of ticks to wait before running the filter
+     * @param filters The {@link KeystoneFilter KeystoneFilters} to run
      */
-    public static void runInternalFilter(KeystoneFilter filter, int ticksDelay)
+    public static void runInternalFilters(int ticksDelay, KeystoneFilter... filters)
     {
-        filterModule.runFilter(filter.compiledSuccessfully().setName(filter.getClass().getSimpleName()), ticksDelay);
+        KeystoneFilter[] renamedFilters = new KeystoneFilter[filters.length];
+        for (int i = 0; i < filters.length; i++) renamedFilters[i] = filters[i].compiledSuccessfully().setName(filters[i].getClass().getSimpleName());
+        filterModule.runFilters(ticksDelay, renamedFilters);
     }
     //endregion
     //region API

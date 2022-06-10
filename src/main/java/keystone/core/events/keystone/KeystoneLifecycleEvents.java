@@ -22,9 +22,9 @@ public final class KeystoneLifecycleEvents
     {
         for (final SelectionChanged listener : listeners) listener.selectionChanged(selectionBoxes, createdSelection, createHistoryEntry);
     });
-    public static final Event<ImportsChanged> IMPORTS_CHANGED = EventFactory.createArrayBacked(ImportsChanged.class, listeners -> importBoxes ->
+    public static final Event<ImportsChanged> IMPORTS_CHANGED = EventFactory.createArrayBacked(ImportsChanged.class, listeners -> (importBoxes, createHistoryEntry) ->
     {
-        for (final ImportsChanged listener : listeners) listener.importsChanged(importBoxes);
+        for (final ImportsChanged listener : listeners) listener.importsChanged(importBoxes, createHistoryEntry);
     });
 
     public interface JoinWorld
@@ -41,6 +41,6 @@ public final class KeystoneLifecycleEvents
     }
     public interface ImportsChanged
     {
-        void importsChanged(List<ImportBoundingBox> importBoxes);
+        void importsChanged(List<ImportBoundingBox> importBoxes, boolean createHistoryEntry);
     }
 }

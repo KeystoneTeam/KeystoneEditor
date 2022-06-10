@@ -81,7 +81,7 @@ public class ImportBoxesHistoryEntry implements IHistoryEntry
     {
         List<ImportBoundingBox> pasteBoxes = new ArrayList<>(boxes.size());
         for (ImportBoxDescription description : boxes) pasteBoxes.add(description.createImportBox());
-        Keystone.getModule(ImportModule.class).setImportBoxes(pasteBoxes);
+        Keystone.getModule(ImportModule.class).setImportBoxes(pasteBoxes, false, false);
     }
     @Override
     public String id()
