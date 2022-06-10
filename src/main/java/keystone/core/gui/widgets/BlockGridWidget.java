@@ -4,6 +4,7 @@ import keystone.api.utils.StringUtils;
 import keystone.core.KeystoneMod;
 import keystone.core.gui.screens.block_selection.AbstractBlockButton;
 import keystone.core.gui.screens.block_selection.BlockGridButton;
+import keystone.core.gui.viewports.Viewport;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -78,6 +79,11 @@ public class BlockGridWidget extends ClickableWidget
     private int buttonsInPanel;
     private double scrollOffset;
 
+    private int buttonsX;
+    private int buttonsY;
+    private int buttonsWidth;
+    private int buttonsHeight;
+
     private List<Entry> entries;
     private Map<Entry, Integer> blockCounts;
     private List<BlockGridButton> buttons;
@@ -100,23 +106,21 @@ public class BlockGridWidget extends ClickableWidget
         buttonsInPanel = buttonsPerRow * buttonsPerColumn;
         scrollOffset = 0;
 
+        buttonsWidth = width;
+        buttonsWidth -= width % BlockGridButton.SIZE;
+        buttonsHeight = height;
+        buttonsHeight -= buttonsHeight % BlockGridButton.SIZE;
+
+        buttonsX = x + (width - buttonsWidth) / 2;
+        buttonsY = y + (height - buttonsHeight) / 2;
+
         entries = new ArrayList<>();
         blockCounts = new HashMap<>();
         buttons = new ArrayList<>();
     }
-    public static BlockGridWidget createWithMargins(Screen screen, int idealLeftMargin, int idealRightMargin, int idealTopMargin, int idealBottomMargin, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
+    public static BlockGridWidget createWithViewport(Screen screen, Viewport idealViewport, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
     {
-        Window window = MinecraftClient.getInstance().getWindow();
-
-        int panelWidth = window.getScaledWidth() - idealLeftMargin - idealRightMargin;
-        panelWidth -= panelWidth % BlockGridButton.SIZE;
-        int panelHeight = window.getScaledHeight() - idealTopMargin - idealBottomMargin;
-        panelHeight -= panelHeight % BlockGridButton.SIZE;
-
-        int panelOffsetX = (int)Math.floor((window.getScaledWidth() - panelWidth) * (idealLeftMargin / (float)(idealLeftMargin + idealRightMargin)));
-        int panelOffsetY = (int)Math.floor((window.getScaledHeight() - panelHeight) * (idealTopMargin / (float)(idealTopMargin + idealBottomMargin)));
-
-        return new BlockGridWidget(screen, panelOffsetX, panelOffsetY, panelWidth, panelHeight, allowMultiples, title, callback, disableWidgets, restoreWidgets, leftClickConsumer, rightClickConsumer);
+        return new BlockGridWidget(screen, idealViewport.getMinX(), idealViewport.getMinY(), idealViewport.getWidth(), idealViewport.getHeight(), allowMultiples, title, callback, disableWidgets, restoreWidgets, leftClickConsumer, rightClickConsumer);
     }
     public static BlockGridWidget create(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
     {
@@ -252,8 +256,8 @@ public class BlockGridWidget extends ClickableWidget
     {
         this.buttons.clear();
 
-        int x = this.x + BlockGridButton.SIZE / 2;
-        int y = this.y + BlockGridButton.SIZE / 2;
+        int x = buttonsX + BlockGridButton.SIZE / 2;
+        int y = buttonsY + BlockGridButton.SIZE / 2;
 
         blockCount = 0;
         int skipCount = (int)scrollOffset * buttonsPerRow;
@@ -276,13 +280,13 @@ public class BlockGridWidget extends ClickableWidget
                 skipCount--;
                 continue;
             }
-            if (y < this.y + height - BlockGridButton.SIZE / 2) this.buttons.add(button);
+            if (y < buttonsY + buttonsHeight - BlockGridButton.SIZE / 2) this.buttons.add(button);
 
             // Update rendering coordinates
             x += BlockGridButton.SIZE;
-            if (x >= this.x + width - BlockGridButton.SIZE / 2)
+            if (x >= buttonsX + buttonsWidth - BlockGridButton.SIZE / 2)
             {
-                x = this.x + BlockGridButton.SIZE / 2;
+                x = buttonsX + BlockGridButton.SIZE / 2;
                 y += BlockGridButton.SIZE;
             }
         }

@@ -24,4 +24,10 @@ public class KeystoneConfig
     public static float flySpeed = 0.1f;
     public static float flySmoothing = 0.0f;
     public static float flySpeedChangeAmount = 0.05f;
+
+    public static float viewportTopBorder = 0.05f;
+    public static float viewportBottomBorder = 0.075f;
+    public static float viewportLeftBorder = 0.25f;
+    public static float viewportRightBorder = 0.25f;
+    public static int viewportPadding = 5;
 }

@@ -2,6 +2,8 @@ package keystone.core.gui.screens.block_selection;
 
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
+import keystone.core.gui.viewports.ScreenViewports;
+import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
@@ -24,9 +26,10 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
 
     public void onLeftClick(BlockGridButton button, int mouseButton, BlockState state) { BlockGridButton.PASS_UNMODIFIED.accept(button, mouseButton, state); }
     public void onRightClick(BlockGridButton button, int mouseButton, BlockState state) { BlockGridButton.EDIT_PROPERTIES.accept(button, mouseButton, state); }
+    public Viewport getMainPanelViewport() { return ScreenViewports.getViewport(Viewport.MIDDLE, Viewport.MIDDLE).offset(0, 13, 0, 0); }
     public BlockGridWidget createMainPanel()
     {
-        return BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX(), KeystoneHotbar.getX(), KeystoneHotbar.getHeight(), KeystoneHotbar.getHeight(), false, Text.translatable("keystone.block_selection"), this::onEntrySelected, this::disableWidgets, this::restoreWidgets, this::onLeftClick, this::onRightClick);
+        return BlockGridWidget.createWithViewport(this, getMainPanelViewport(), false, Text.translatable("keystone.block_selection"), this::onEntrySelected, this::disableWidgets, this::restoreWidgets, this::onLeftClick, this::onRightClick);
     }
     public abstract void onEntrySelected(BlockGridWidget.Entry entry, int mouseButton);
 

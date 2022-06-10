@@ -30,6 +30,7 @@ public class IntPropertyWidget extends IntegerWidget
     @Override
     protected boolean onSetValue(Integer value)
     {
+        value = Math.max(Math.min(value, max), min);
         block.setBlockType(BlockTypeRegistry.fromMinecraftBlock(block.blockType().getMinecraftBlock().with(property, value)));
         return true;
     }

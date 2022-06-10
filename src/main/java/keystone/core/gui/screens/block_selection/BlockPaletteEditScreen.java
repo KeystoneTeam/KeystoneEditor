@@ -4,6 +4,8 @@ import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
+import keystone.core.gui.viewports.ScreenViewports;
+import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.registries.BlockTypeRegistry;
@@ -36,7 +38,7 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
     protected void init()
     {
         super.init();
-        this.palettePanel = BlockGridWidget.createWithMargins(this, KeystoneHotbar.getX() + KeystoneHotbar.getWidth(), 0, KeystoneHotbar.getHeight(), 50, true, Text.translatable("keystone.mask_panel"), (entry, mouseButton) ->
+        this.palettePanel = BlockGridWidget.createWithViewport(this, ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.RIGHT, Viewport.MIDDLE, Viewport.RIGHT).offset(0, 0, -5, -55), true, Text.translatable("keystone.mask_panel"), (entry, mouseButton) ->
         {
             BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(entry.state());
             this.palette.without(wrapper, 1);
@@ -61,13 +63,12 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
             close();
         }));
 
-        addDrawableChild(new ButtonNoHotkey(palettePanel.x, height - 20, palettePanel.getWidth(), 20, Text.translatable("keystone.cancel"), button -> close()));
+        addDrawableChild(new ButtonNoHotkey(palettePanel.x, palettePanel.y + palettePanel.getHeight() + 30, palettePanel.getWidth(), 20, Text.translatable("keystone.cancel"), button -> close()));
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
         super.render(stack, mouseX, mouseY, partialTicks);
-        this.palettePanel.render(stack, mouseX, mouseY, partialTicks);
     }
 
     @Override

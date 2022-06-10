@@ -7,6 +7,7 @@ import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.minecraft.InputEvents;
 import keystone.core.gui.screens.KeystoneOverlay;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
+import keystone.core.gui.viewports.ScreenViewports;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.minecraft.client.MinecraftClient;
@@ -141,6 +142,7 @@ public class KeystoneOverlayHandler
     public static void resize(MinecraftClient minecraft, int width, int height)
     {
         if (MinecraftClient.getInstance().currentScreen != null) return;
+        ScreenViewports.refreshViewports();
         addList.forEach(screen -> screen.resize(minecraft, width, height));
         overlays.forEach(screen -> screen.resize(minecraft, width, height));
     }

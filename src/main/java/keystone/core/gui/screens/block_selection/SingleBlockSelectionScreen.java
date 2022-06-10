@@ -2,6 +2,8 @@ package keystone.core.gui.screens.block_selection;
 
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
+import keystone.core.gui.viewports.ScreenViewports;
+import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
 import net.minecraft.block.BlockState;
 import net.minecraft.text.Text;
@@ -39,7 +41,7 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
     @Override
     public BlockGridWidget createMainPanel()
     {
-        return BlockGridWidget.createWithMargins(this, 75, 75, 25, KeystoneHotbar.getHeight(), false, Text.translatable("keystone.block_selection"), this::onEntrySelected, this::disableWidgets, this::restoreWidgets, this::onLeftClick, this::onRightClick);
+        return BlockGridWidget.createWithViewport(this, ScreenViewports.getViewport(Viewport.MIDDLE, Viewport.LEFT, Viewport.MIDDLE, Viewport.RIGHT).offset(75, 13, -75, 0), false, Text.translatable("keystone.block_selection"), this::onEntrySelected, this::disableWidgets, this::restoreWidgets, this::onLeftClick, this::onRightClick);
     }
     @Override
     public void onEntrySelected(BlockGridWidget.Entry entry, int mouseButton)
