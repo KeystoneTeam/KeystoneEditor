@@ -3,7 +3,6 @@ package keystone.core.gui.screens.block_selection;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.KeystoneOverlayHandler;
-import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;

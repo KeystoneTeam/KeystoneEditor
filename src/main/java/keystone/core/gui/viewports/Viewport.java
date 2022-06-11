@@ -30,6 +30,7 @@ public class Viewport
         this.normalizedMaxX = normalizedMaxX;
         this.normalizedMaxY = normalizedMaxY;
     }
+
     public Viewport offset(int minXOffset, int minYOffset, int maxXOffset, int maxYOffset)
     {
         this.minXOffset += minXOffset;
@@ -41,6 +42,12 @@ public class Viewport
     public Viewport clone()
     {
         return new Viewport(normalizedMinX, normalizedMinY, normalizedMaxX, normalizedMaxY).offset(minXOffset, minYOffset, maxXOffset, maxYOffset);
+    }
+    public Viewport createLeftCenteredViewport(int height)
+    {
+        float halfNormalizedHeight = height / (float)window.getScaledHeight() / 2.0f;
+        float center = (normalizedMinY + normalizedMaxY) / 2.0f;
+        return new Viewport(normalizedMinX, center - halfNormalizedHeight, normalizedMaxX, center + halfNormalizedHeight).offset(minXOffset, 0, maxXOffset, 0);
     }
 
     public int getMinX() { return (int)(normalizedMinX * window.getScaledWidth()) + minXOffset; }

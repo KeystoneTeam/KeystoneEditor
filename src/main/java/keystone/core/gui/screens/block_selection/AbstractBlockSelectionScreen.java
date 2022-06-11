@@ -1,7 +1,6 @@
 package keystone.core.gui.screens.block_selection;
 
 import keystone.core.gui.screens.KeystoneOverlay;
-import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;

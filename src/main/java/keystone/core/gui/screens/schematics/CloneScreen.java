@@ -6,10 +6,12 @@ import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
-import keystone.core.gui.screens.KeystoneOverlay;
+import keystone.core.gui.screens.KeystonePanel;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.screens.selection.SelectionNudgeScreen;
+import keystone.core.gui.viewports.ScreenViewports;
+import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.buttons.NudgeButton;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
@@ -23,7 +25,6 @@ import keystone.core.schematic.extensions.ISchematicExtension;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.CheckboxWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
@@ -37,7 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CloneScreen extends KeystoneOverlay
+public class CloneScreen extends KeystonePanel
 {
     private static final int MARGINS = 2;
     private static final int PADDING = 5;
@@ -58,9 +59,6 @@ public class CloneScreen extends KeystoneOverlay
     private final KeystoneSchematic schematic;
     private final ImportModule importModule;
     private final HistoryModule historyModule;
-    private int panelMinY;
-    private int panelMaxY;
-    private int panelWidth;
 
     private NudgeButton nudgeImports;
     private IntegerWidget offsetX;
@@ -150,14 +148,21 @@ public class CloneScreen extends KeystoneOverlay
     }
 
     @Override
-    protected void init()
+    public Viewport createViewport()
     {
+        Viewport dock = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT, Viewport.MIDDLE, Viewport.LEFT);
+
         int widgetsHeight = (3 * (BUTTON_HEIGHT + PADDING)) + OPTIONS_PADDING + IntegerWidget.getFinalHeight() + OPTIONS_PADDING;
         widgetsHeight += 2 * (IntegerWidget.getFinalHeight() + PADDING);
         widgetsHeight += (extensionsToPlace.size() + 1) * (20 + PADDING);
-        int y = (height - widgetsHeight) / 2;
-        panelMinY = y - MARGINS;
-        panelMaxY = panelMinY + widgetsHeight + MARGINS + MARGINS;
+
+        return dock.createLeftCenteredViewport(widgetsHeight + 2 * MARGINS);
+    }
+    @Override
+    protected void setupPanel()
+    {
+        int x = getViewport().getMinX() + MARGINS;
+        int y = getViewport().getMinY() + MARGINS;
 
         SimpleButton rotateButton = createButton(y, "keystone.schematic_import.rotate", this::rotateButton);
         SimpleButton mirrorButton = createButton(y, "keystone.schematic_import.mirror", this::mirrorButton);
@@ -165,7 +170,6 @@ public class CloneScreen extends KeystoneOverlay
         mirrorButton.setWidth(Math.max(rotateButton.getWidth(), mirrorButton.getWidth()));
         mirrorButton.x += rotateButton.getWidth() + PADDING;
         int idealWidth = 2 * (PADDING + rotateButton.getWidth()) - PADDING + 2 * MARGINS;
-        panelWidth = Math.min(KeystoneHotbar.getX() - 5, 200);
         y += BUTTON_HEIGHT + PADDING;
 
         nudgeImports = createNudgeButton(y, this::nudgeButton);
@@ -177,8 +181,8 @@ public class CloneScreen extends KeystoneOverlay
         addDrawableChild(nudgeImports);
 
         // Offset Fields
-        int offsetWidgetWidth = (panelWidth - 2 * (MARGINS + PADDING)) / 3;
-        offsetX = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.offsetX"), MARGINS, y, offsetWidgetWidth, offset.x, Integer.MIN_VALUE, Integer.MAX_VALUE)
+        int offsetWidgetWidth = (getViewport().getWidth() - 2 * (MARGINS + PADDING)) / 3;
+        offsetX = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.offsetX"), x, y, offsetWidgetWidth, offset.x, Integer.MIN_VALUE, Integer.MAX_VALUE)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -189,7 +193,7 @@ public class CloneScreen extends KeystoneOverlay
                 return true;
             }
         });
-        offsetY = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.offsetY"), MARGINS + offsetWidgetWidth + PADDING, y, offsetWidgetWidth, offset.y, Integer.MIN_VALUE, Integer.MAX_VALUE)
+        offsetY = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.offsetY"), x + offsetWidgetWidth + PADDING, y, offsetWidgetWidth, offset.y, Integer.MIN_VALUE, Integer.MAX_VALUE)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -200,7 +204,7 @@ public class CloneScreen extends KeystoneOverlay
                 return true;
             }
         });
-        offsetZ = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.offsetZ"), MARGINS + 2 * (offsetWidgetWidth + PADDING), y, offsetWidgetWidth, offset.z, Integer.MIN_VALUE, Integer.MAX_VALUE)
+        offsetZ = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.offsetZ"), x + 2 * (offsetWidgetWidth + PADDING), y, offsetWidgetWidth, offset.z, Integer.MIN_VALUE, Integer.MAX_VALUE)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -214,7 +218,7 @@ public class CloneScreen extends KeystoneOverlay
         y += IntegerWidget.getFinalHeight() + PADDING;
 
         // Repeat Field
-        repeatField = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.repeat"), MARGINS, y, idealWidth - 2 * MARGINS, repeat, 1, Integer.MAX_VALUE)
+        repeatField = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.repeat"), x, y, idealWidth - 2 * MARGINS, repeat, 1, Integer.MAX_VALUE)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -227,7 +231,7 @@ public class CloneScreen extends KeystoneOverlay
         y += IntegerWidget.getFinalHeight() + PADDING;
 
         // Scale Field
-        scaleField = new IntegerWidget(Text.translatable("keystone.schematic_import.scale"), MARGINS, y, idealWidth - 2 * MARGINS, scale, 1, 8)
+        scaleField = new IntegerWidget(Text.translatable("keystone.schematic_import.scale"), x, y, idealWidth - 2 * MARGINS, scale, 1, 8)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -241,7 +245,7 @@ public class CloneScreen extends KeystoneOverlay
         addDrawableChild(scaleField);
 
         // Copy Air Field
-        copyAir = new CheckboxWidget(MARGINS, y, panelWidth - 2 * MARGINS, 20, Text.translatable("keystone.clone.copyAir"), true, true);
+        copyAir = new CheckboxWidget(x, y, getViewport().getWidth() - 2 * MARGINS, 20, Text.translatable("keystone.clone.copyAir"), true, true);
         y += copyAir.getHeight() + PADDING;
         addDrawableChild(copyAir);
 
@@ -252,15 +256,15 @@ public class CloneScreen extends KeystoneOverlay
             addDrawableChild(extensionOption);
         }
 
-        rotateButton.x += (panelWidth - idealWidth) / 2;
-        mirrorButton.x += (panelWidth - idealWidth) / 2;
-        nudgeImports.x += (panelWidth - idealWidth) / 2;
-        repeatField.x += (panelWidth - idealWidth) / 2;
-        scaleField.x += (panelWidth - idealWidth) / 2;
+        rotateButton.x += (getViewport().getWidth() - idealWidth) / 2;
+        mirrorButton.x += (getViewport().getWidth() - idealWidth) / 2;
+        nudgeImports.x += (getViewport().getWidth() - idealWidth) / 2;
+        repeatField.x += (getViewport().getWidth() - idealWidth) / 2;
+        scaleField.x += (getViewport().getWidth() - idealWidth) / 2;
 
         y += OPTIONS_PADDING;
         SimpleButton cloneButton = createButton(y, "keystone.clone.clone", this::cloneButton);
-        cloneButton.x = (panelWidth - cloneButton.getWidth()) / 2;
+        cloneButton.x = (getViewport().getWidth() - cloneButton.getWidth()) / 2;
         addDrawableChild(cloneButton);
     }
 
@@ -268,13 +272,6 @@ public class CloneScreen extends KeystoneOverlay
     public void tick()
     {
         nudgeImports.tick();
-    }
-
-    @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
-    {
-        fill(matrixStack, 0, panelMinY, panelWidth, panelMaxY, 0x80000000);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
 
     @Override
@@ -342,11 +339,11 @@ public class CloneScreen extends KeystoneOverlay
         tooltip.add(Text.translatable(translationKey + ".tooltip"));
 
         int buttonWidth = 2 * PADDING + textRenderer.getWidth(label.getString());
-        return new SimpleButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, (stack, mouseX, mouseY, partialTicks) -> renderTooltip(stack, tooltip, mouseX, mouseY));
+        return new SimpleButton(getViewport().getMinX() + MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, (stack, mouseX, mouseY, partialTicks) -> renderTooltip(stack, tooltip, mouseX, mouseY));
     }
     private CheckboxWidget createExtensionOption(int y, Identifier extensionID)
     {
-        return new CheckboxWidget(MARGINS, y, panelWidth - 2 * MARGINS, 20, Text.translatable(extensionID.getNamespace() + "." + extensionID.getPath() + ".shouldPlace"), extensionsToPlace.get(extensionID), true)
+        return new CheckboxWidget(getViewport().getMinX() + MARGINS, y, getViewport().getWidth() - 2 * MARGINS, 20, Text.translatable(extensionID.getNamespace() + "." + extensionID.getPath() + ".shouldPlace"), extensionsToPlace.get(extensionID), true)
         {
             @Override
             public void onPress()

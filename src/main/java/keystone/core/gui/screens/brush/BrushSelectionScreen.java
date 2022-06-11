@@ -4,9 +4,10 @@ import keystone.api.Keystone;
 import keystone.core.KeystoneConfig;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
-import keystone.core.gui.screens.KeystoneOverlay;
-import keystone.core.gui.screens.hotbar.KeystoneHotbar;
+import keystone.core.gui.screens.KeystonePanel;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
+import keystone.core.gui.viewports.ScreenViewports;
+import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
@@ -14,15 +15,11 @@ import keystone.core.modules.brush.BrushModule;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
-public class BrushSelectionScreen extends KeystoneOverlay
+public class BrushSelectionScreen extends KeystonePanel
 {
     public static final int PADDING = 5;
     private static BrushSelectionScreen open;
     private static BrushModule brushModule;
-
-    private int panelMinY;
-    private int panelMaxX;
-    private int panelMaxY;
 
     private Text immediateMode;
     private Text deferredMode;
@@ -63,29 +60,32 @@ public class BrushSelectionScreen extends KeystoneOverlay
     }
 
     @Override
-    protected void init()
+    protected Viewport createViewport()
     {
-        brushModule = Keystone.getModule(BrushModule.class);
+        Viewport dock = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT, Viewport.MIDDLE, Viewport.LEFT);
 
         // Calculate panel size
-        panelMaxX = Math.min(KeystoneHotbar.getX() - 5, 280);
+        brushModule = Keystone.getModule(BrushModule.class);
         int maxPanelHeight = client.getWindow().getScaledHeight() - (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getFinalHeight() + PADDING) + PADDING);
-        brushVariablesList = new FieldWidgetList(Text.translatable("keystone.brush.brushVariables"), brushModule::getBrushOperation, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
+        brushVariablesList = new FieldWidgetList(Text.translatable("keystone.brush.brushVariables"), brushModule::getBrushOperation, 0, 0, dock.getWidth(), maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
         brushVariablesList.bake();
-        int centerHeight = height / 2;
-        int halfPanelHeight = (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getFinalHeight() + PADDING) + PADDING + brushVariablesList.getHeight()) / 2;
-        panelMinY = centerHeight - halfPanelHeight;
-        panelMaxY = centerHeight + halfPanelHeight;
+        int panelHeight = PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getFinalHeight() + PADDING) + PADDING + brushVariablesList.getHeight();
 
-        int y = panelMinY + PADDING;
+        return dock.createLeftCenteredViewport(panelHeight);
+    }
+
+    @Override
+    protected void setupPanel()
+    {
+        int y = getViewport().getMinY() + PADDING;
 
         // Change Operation Button and Toggle Immediate Mode Button
-        addDrawableChild(new ButtonNoHotkey(PADDING, y, panelMaxX - 2 * PADDING - 20, 20, brushModule.getBrushOperation().getName(), (button) ->
+        addDrawableChild(new ButtonNoHotkey(PADDING, y, getViewport().getWidth() - 2 * PADDING - 20, 20, brushModule.getBrushOperation().getName(), (button) ->
         {
             brushModule.setBrushOperation(brushModule.getBrushOperation().getNextOperation());
             init(client, width, height);
         }));
-        addDrawableChild(new ButtonNoHotkey(panelMaxX - 20 - PADDING, y, 20, 20, brushModule.isImmediateMode() ? immediateMode : deferredMode, (button) ->
+        addDrawableChild(new ButtonNoHotkey(getViewport().getMaxX() - 20 - PADDING, y, 20, 20, brushModule.isImmediateMode() ? immediateMode : deferredMode, (button) ->
         {
             brushModule.setImmediateMode(!brushModule.isImmediateMode());
             init(client, width, height);
@@ -93,7 +93,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
         y += 20 + PADDING;
 
         // Change Shape Button
-        addDrawableChild(new ButtonNoHotkey(PADDING, y, panelMaxX - 2 * PADDING, 20, brushModule.getBrushShape().getName(), (button) ->
+        addDrawableChild(new ButtonNoHotkey(PADDING, y, getViewport().getWidth() - 2 * PADDING, 20, brushModule.getBrushShape().getName(), (button) ->
         {
             brushModule.setBrushShape(brushModule.getBrushShape().getNextShape());
             init(client, width, height);
@@ -101,7 +101,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
         y += 20 + PADDING;
 
         // Size Fields
-        int sizeDimensionWidth = (panelMaxX - PADDING) / 3 - PADDING;
+        int sizeDimensionWidth = (getViewport().getWidth() - PADDING) / 3 - PADDING;
         addDrawableChild(new IntegerWidget(Text.translatable("keystone.width"), PADDING, y, sizeDimensionWidth, brushModule.getBrushSize()[0], 1, KeystoneConfig.maxBrushSize)
         {
             @Override
@@ -135,7 +135,7 @@ public class BrushSelectionScreen extends KeystoneOverlay
         y += IntegerWidget.getFinalHeight() + PADDING;
 
         // Spacing and Noise
-        int spacingNoiseWidth = (panelMaxX - PADDING) / 2 - PADDING;
+        int spacingNoiseWidth = (getViewport().getWidth() - PADDING) / 2 - PADDING;
         addDrawableChild(new IntegerWidget(Text.translatable("keystone.brush.minimumSpacing"), PADDING, y, spacingNoiseWidth, brushModule.getMinSpacing(), 1, Integer.MAX_VALUE)
         {
             @Override
@@ -166,8 +166,6 @@ public class BrushSelectionScreen extends KeystoneOverlay
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
         if (brushModule.getBrushOperation().isEditorDirtied()) init(client, width, height);
-
-        fill(matrixStack, 0, panelMinY, panelMaxX, panelMaxY, 0x80000000);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
     //endregion

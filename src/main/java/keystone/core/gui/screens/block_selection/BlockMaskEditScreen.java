@@ -2,7 +2,6 @@ package keystone.core.gui.screens.block_selection;
 
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.core.gui.KeystoneOverlayHandler;
-import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
@@ -10,7 +9,6 @@ import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.widget.CheckboxWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 

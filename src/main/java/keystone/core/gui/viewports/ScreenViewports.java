@@ -22,14 +22,14 @@ public class ScreenViewports
         };
     }
 
-    public static Viewport getViewport(int column, int row)
+    public static Viewport getViewport(int row, int column)
     {
-        return viewports[column][row].clone();
+        return viewports[row][column].clone();
     }
-    public static Viewport getViewport(int minColumn, int minRow, int maxColumn, int maxRow)
+    public static Viewport getViewport(int minRow, int minColumn, int maxRow, int maxColumn)
     {
-        Viewport min = getViewport(minColumn, minRow);
-        Viewport max = getViewport(maxColumn, maxRow);
+        Viewport min = getViewport(minRow, minColumn);
+        Viewport max = getViewport(maxRow, maxColumn);
 
         float minX = Math.min(min.getNormalizedMinX(), max.getNormalizedMinX());
         float minY = Math.min(min.getNormalizedMinY(), max.getNormalizedMinY());

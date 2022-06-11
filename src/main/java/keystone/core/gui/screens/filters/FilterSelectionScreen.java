@@ -5,9 +5,10 @@ import keystone.api.KeystoneDirectories;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
-import keystone.core.gui.screens.KeystoneOverlay;
-import keystone.core.gui.screens.hotbar.KeystoneHotbar;
+import keystone.core.gui.screens.KeystonePanel;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
+import keystone.core.gui.viewports.ScreenViewports;
+import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.TextDisplayWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.buttons.TextClickButton;
@@ -27,7 +28,7 @@ import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FilterSelectionScreen extends KeystoneOverlay
+public class FilterSelectionScreen extends KeystonePanel
 {
     private static final int PADDING = 5;
     private static FilterSelectionScreen open;
@@ -36,9 +37,6 @@ public class FilterSelectionScreen extends KeystoneOverlay
 
     private FilterModule filterModule;
     private FilterDirectoryManager filterManager;
-    private int panelMinY;
-    private int panelMaxX;
-    private int panelMaxY;
 
     private ButtonWidget selectFilterButton;
     private Dropdown<File> dropdown;
@@ -82,14 +80,20 @@ public class FilterSelectionScreen extends KeystoneOverlay
         open = null;
     }
     @Override
-    public void init()
+    protected Viewport createViewport()
+    {
+        Viewport dock = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT, Viewport.MIDDLE, Viewport.LEFT);
+        return dock.createLeftCenteredViewport(40 + 4 * PADDING + filterVariablesList.getHeight());
+    }
+    @Override
+    protected void init()
     {
         if (selectedFilterFile == null) selectedFilterFile = filterManager.getInstalledFilters()[0];
+        Viewport dock = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT, Viewport.MIDDLE, Viewport.LEFT);
 
         // Build Filter Variable Widgets
-        panelMaxX = Math.min(KeystoneHotbar.getX() - 5, 280);
         int maxPanelHeight = client.getWindow().getScaledHeight() - 50 - 2 * PADDING;
-        filterVariablesList = new FieldWidgetList(Text.translatable("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, panelMaxX, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
+        filterVariablesList = new FieldWidgetList(Text.translatable("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, dock.getWidth(), maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
 
         // Error Display
         KeystoneFilter selectedFilter = filterManager.getFilter(selectedFilterFile);
@@ -116,18 +120,15 @@ public class FilterSelectionScreen extends KeystoneOverlay
             filterVariablesList.add(compileErrorDisplay);
         }
 
-        // Calculate Panel Size
+        // Finalize Size
         filterVariablesList.bake();
-        int centerHeight = height / 2;
-        int halfPanelHeight = 25 + PADDING + filterVariablesList.getHeight() / 2;
-        panelMinY = centerHeight - halfPanelHeight;
-        panelMaxY = centerHeight + halfPanelHeight;
+        setupViewport();
 
         // Select Filter Button
-        TextClickButton filterLabel = new TextClickButton(5, panelMinY + 11, Text.translatable("keystone.filter_panel.select"), 0x8080FF, button -> Util.getOperatingSystem().open(KeystoneDirectories.getFilterDirectory()));
+        TextClickButton filterLabel = new TextClickButton(getViewport().getMinX() + 5, getViewport().getMinY() + 11, Text.translatable("keystone.filter_panel.select"), 0x8080FF, button -> Util.getOperatingSystem().open(KeystoneDirectories.getFilterDirectory()));
         addDrawableChild(filterLabel);
         int selectButtonX = filterLabel.x + filterLabel.getWidth();
-        this.selectFilterButton = new ButtonNoHotkey(selectButtonX, panelMinY + 5, panelMaxX - selectButtonX - 5, 20, Text.literal("!ERROR!"), (button) ->
+        this.selectFilterButton = new ButtonNoHotkey(selectButtonX, getViewport().getMinY() + 5, getViewport().getMaxX() - selectButtonX - 5, 20, Text.literal("!ERROR!"), (button) ->
         {
             disableWidgets(this.dropdown);
             this.dropdown.visible = true;
@@ -165,8 +166,8 @@ public class FilterSelectionScreen extends KeystoneOverlay
 
         // Run Filter Button
         int buttonWidth = textRenderer.getWidth(Text.translatable("keystone.filter_panel.runFilter").getString()) + 10;
-        int panelCenter = panelMaxX / 2;
-        ButtonNoHotkey runFilterButton = new ButtonNoHotkey(panelCenter - buttonWidth / 2, panelMaxY - 25, buttonWidth, 20, Text.translatable("keystone.filter_panel.runFilter"), button -> runFilter());
+        int panelCenter = getViewport().getMinX() + getViewport().getWidth() / 2;
+        ButtonNoHotkey runFilterButton = new ButtonNoHotkey(panelCenter - buttonWidth / 2, getViewport().getMaxY() - 25, buttonWidth, 20, Text.translatable("keystone.filter_panel.runFilter"), button -> runFilter());
 
         // Add buttons
         this.selectFilterButton.setMessage(this.dropdown.getSelectedEntryTitle());
@@ -175,7 +176,7 @@ public class FilterSelectionScreen extends KeystoneOverlay
         addDrawableChild(dropdown);
 
         // Create Filter Variables
-        filterVariablesList.offset(0, panelMinY + ((panelMaxY - panelMinY) / 2) - (filterVariablesList.getHeight() / 2));
+        filterVariablesList.offset(getViewport().getMinX(), getViewport().getMinY() + (getViewport().getHeight() / 2) - (filterVariablesList.getHeight() / 2));
         addDrawableChild(filterVariablesList);
         filterManager.getFilter(selectedFilterFile).undirtyEditor();
     }
@@ -195,8 +196,6 @@ public class FilterSelectionScreen extends KeystoneOverlay
             init(client, width, height);
             dirtied = false;
         }
-
-        fill(stack, 0, panelMinY, panelMaxX, panelMaxY, 0x80000000);
 
         super.render(stack, mouseX, mouseY, partialTicks);
         this.dropdown.render(stack, mouseX, mouseY, partialTicks);

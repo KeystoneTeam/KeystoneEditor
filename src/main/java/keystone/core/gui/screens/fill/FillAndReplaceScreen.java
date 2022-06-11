@@ -6,20 +6,21 @@ import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
-import keystone.core.gui.screens.KeystoneOverlay;
+import keystone.core.gui.screens.KeystonePanel;
 import keystone.core.gui.screens.block_selection.SingleBlockSelectionScreen;
 import keystone.core.gui.screens.hotbar.KeystoneHotbar;
 import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
+import keystone.core.gui.viewports.ScreenViewports;
+import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.BlockMaskWidget;
 import keystone.core.gui.widgets.inputs.BlockPaletteWidget;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
-public class FillAndReplaceScreen extends KeystoneOverlay
+public class FillAndReplaceScreen extends KeystonePanel
 {
     private static final int PADDING = 5;
 
@@ -50,9 +51,6 @@ public class FillAndReplaceScreen extends KeystoneOverlay
     }
     //endregion
 
-    private int panelMinY;
-    private int panelMaxY;
-    private int panelMaxX;
     private BlockMaskWidget mask;
     private BlockPaletteWidget palette;
 
@@ -90,36 +88,32 @@ public class FillAndReplaceScreen extends KeystoneOverlay
         previousPalette = palette.getPalette();
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
-    @Override
-    protected void init()
-    {
-        int centerY = height >> 1;
-        int widgetSize = BlockMaskWidget.getFinalHeight() + BlockPaletteWidget.getFinalHeight() + 20 + 2 * PADDING;
-        panelMinY = centerY - (widgetSize >> 1) - PADDING;
-        panelMaxY = panelMinY + widgetSize + 2 * PADDING;
-        panelMaxX = Math.min(KeystoneHotbar.getX() - 5, 280);
 
-        int y = panelMinY + PADDING;
-        int width = panelMaxX - 2 * PADDING;
+    @Override
+    protected Viewport createViewport()
+    {
+        Viewport dock = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT, Viewport.MIDDLE, Viewport.LEFT);
+        int widgetSize = BlockMaskWidget.getFinalHeight() + BlockPaletteWidget.getFinalHeight() + 20 + 2 * PADDING;
+        return dock.createLeftCenteredViewport(widgetSize + 2 * PADDING);
+    }
+    @Override
+    protected void setupPanel()
+    {
+        int y = getViewport().getMinY() + PADDING;
+        int width = getViewport().getWidth() - 2 * PADDING;
         mask = new BlockMaskWidget(Text.translatable("keystone.fill.mask"), PADDING, y, width, previousMask, this::disableWidgets, this::restoreWidgets);
         y += mask.getHeight() + PADDING;
         palette = new BlockPaletteWidget(Text.translatable("keystone.fill.palette"), PADDING, y, width, previousPalette, this::disableWidgets, this::restoreWidgets);
         y += palette.getHeight() + PADDING;
 
-        int buttonWidth = (panelMaxX - 3 * PADDING) >> 1;
+        int buttonWidth = (getViewport().getWidth() - 3 * PADDING) >> 1;
         ButtonNoHotkey fillButton = new ButtonNoHotkey(PADDING, y, buttonWidth, 20, Text.translatable("keystone.fill.fill"), this::fillButton);
-        ButtonNoHotkey cancelButton = new ButtonNoHotkey(panelMaxX - PADDING - buttonWidth, y, buttonWidth, 20, Text.translatable("keystone.cancel"), button -> close());
+        ButtonNoHotkey cancelButton = new ButtonNoHotkey(getViewport().getMaxX() - PADDING - buttonWidth, y, buttonWidth, 20, Text.translatable("keystone.cancel"), button -> close());
 
         addDrawableChild(mask);
         addDrawableChild(palette);
         addDrawableChild(fillButton);
         addDrawableChild(cancelButton);
-    }
-    @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
-    {
-        fill(matrixStack, 0, panelMinY, panelMaxX, panelMaxY, 0x80000000);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
