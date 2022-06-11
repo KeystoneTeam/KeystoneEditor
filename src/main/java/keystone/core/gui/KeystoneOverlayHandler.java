@@ -60,7 +60,7 @@ public class KeystoneOverlayHandler
             overlays.clear();
             addList.clear();
             removeList.clear();
-            addOverlay(new KeystoneHotbar());
+            addOverlay(KeystoneHotbar.INSTANCE);
         });
         KeystoneLifecycleEvents.LEAVE.register(() ->
         {

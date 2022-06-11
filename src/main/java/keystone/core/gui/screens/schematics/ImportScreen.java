@@ -15,6 +15,7 @@ import keystone.core.modules.schematic_import.ImportBoundingBox;
 import keystone.core.modules.schematic_import.ImportModule;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.CheckboxWidget;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
@@ -146,13 +147,17 @@ public class ImportScreen extends KeystonePanel
         importButton.x = (getViewport().getWidth() - importButton.getWidth()) / 2;
         addDrawableChild(importButton);
     }
-
+    @Override
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    {
+        fillPanel(matrixStack, 0x80000000);
+        super.render(matrixStack, mouseX, mouseY, partialTicks);
+    }
     @Override
     public void tick()
     {
         nudgeImports.tick();
     }
-
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {

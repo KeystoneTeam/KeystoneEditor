@@ -197,6 +197,7 @@ public class FilterSelectionScreen extends KeystonePanel
             dirtied = false;
         }
 
+        fillPanel(stack, 0x80000000);
         super.render(stack, mouseX, mouseY, partialTicks);
         this.dropdown.render(stack, mouseX, mouseY, partialTicks);
     }

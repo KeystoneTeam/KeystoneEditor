@@ -187,7 +187,7 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         buttonWidth = panelWidth / 2 - MARGINS - PADDING / 2;
         panelHeight = 2 * MARGINS + 2 * BUTTON_HEIGHT + 2 * PADDING + 10;
         x = (width - panelWidth) / 2;
-        y = KeystoneHotbar.getY() - PADDING - panelHeight;
+        y = (int)(KeystoneHotbar.INSTANCE.getViewport().getMinY() * KeystoneHotbar.INSTANCE.getViewport().getScale()) - PADDING - panelHeight;
         sizeStrY = y + panelHeight / 2 - 3;
 
         // Move buttons

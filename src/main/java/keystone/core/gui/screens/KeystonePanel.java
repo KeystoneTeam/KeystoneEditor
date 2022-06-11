@@ -23,13 +23,10 @@ public abstract class KeystonePanel extends KeystoneOverlay
         setupPanel();
     }
 
-    @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
-    {
-        fill(matrixStack, viewport.getMinX(), viewport.getMinY(), viewport.getMaxX(), viewport.getMaxY(), 0x80000000);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
-    }
-
     public final void setupViewport() { this.viewport = createViewport(); }
     public final Viewport getViewport() { return viewport; }
+    protected final void fillPanel(MatrixStack matrixStack, int color)
+    {
+        fill(matrixStack, viewport.getMinX(), viewport.getMinY(), viewport.getMaxX(), viewport.getMaxY(), 0x80000000);
+    }
 }

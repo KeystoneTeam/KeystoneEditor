@@ -17,6 +17,7 @@ import keystone.core.gui.widgets.inputs.BlockMaskWidget;
 import keystone.core.gui.widgets.inputs.BlockPaletteWidget;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
@@ -114,6 +115,12 @@ public class FillAndReplaceScreen extends KeystonePanel
         addDrawableChild(palette);
         addDrawableChild(fillButton);
         addDrawableChild(cancelButton);
+    }
+    @Override
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    {
+        fillPanel(matrixStack, 0x80000000);
+        super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)

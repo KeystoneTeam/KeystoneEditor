@@ -10,7 +10,6 @@ import java.util.function.Supplier;
 
 public class HotbarButton extends ButtonNoHotkey
 {
-    public static final float SCALE = 2f;
     private static final Identifier selectionTexture = new Identifier("keystone:textures/gui/hotbar.png");
 
     private MinecraftClient mc;
@@ -27,7 +26,7 @@ public class HotbarButton extends ButtonNoHotkey
     }
     public HotbarButton(KeystoneHotbar parent, KeystoneHotbarSlot slot, int x, int y, Supplier<Boolean> enabledSupplier)
     {
-        super((int)(x * SCALE), (int)(y * SCALE), (int)(16 * SCALE), (int)(16 * SCALE), slot.getTitle(), (button) -> ((HotbarButton)button).onSlotClicked(), (stack, mouseX, mouseY, partialTicks) -> parent.renderToolName(stack, slot.getTitle(), mouseX, mouseY));
+        super((int)(x * parent.getViewport().getScale()), (int)(y * parent.getViewport().getScale()), (int)(16 * parent.getViewport().getScale()), (int)(16 * parent.getViewport().getScale()), slot.getTitle(), (button) -> ((HotbarButton)button).onSlotClicked(), (stack, mouseX, mouseY, partialTicks) -> parent.renderToolName(stack, slot.getTitle(), mouseX, mouseY));
 
         this.unscaledX = x;
         this.unscaledY = y;

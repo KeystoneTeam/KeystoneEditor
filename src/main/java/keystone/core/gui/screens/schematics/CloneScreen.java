@@ -25,6 +25,7 @@ import keystone.core.schematic.extensions.ISchematicExtension;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.CheckboxWidget;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
@@ -267,13 +268,17 @@ public class CloneScreen extends KeystonePanel
         cloneButton.x = (getViewport().getWidth() - cloneButton.getWidth()) / 2;
         addDrawableChild(cloneButton);
     }
-
+    @Override
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    {
+        fillPanel(matrixStack, 0x80000000);
+        super.render(matrixStack, mouseX, mouseY, partialTicks);
+    }
     @Override
     public void tick()
     {
         nudgeImports.tick();
     }
-
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {

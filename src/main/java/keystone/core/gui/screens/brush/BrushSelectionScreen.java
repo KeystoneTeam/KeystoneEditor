@@ -166,6 +166,7 @@ public class BrushSelectionScreen extends KeystonePanel
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
         if (brushModule.getBrushOperation().isEditorDirtied()) init(client, width, height);
+        fillPanel(matrixStack, 0x80000000);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
     //endregion
