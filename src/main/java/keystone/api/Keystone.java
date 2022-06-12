@@ -7,7 +7,6 @@ import keystone.core.KeystoneGlobalState;
 import keystone.core.client.Player;
 import keystone.core.events.minecraft.ClientPlayerEvents;
 import keystone.core.events.minecraft.ServerPlayerEvents;
-import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.filter.execution.AbstractFilterThread;
@@ -47,7 +46,6 @@ public final class Keystone
     private static boolean enabled;
     private static boolean revertPlayer;
     private static float flySpeed = KeystoneConfig.flySpeed;
-    private static int revertGuiScale;
 
     /**
      * Toggle whether Keystone is enabled
@@ -69,10 +67,7 @@ public final class Keystone
         KeystoneGlobalState.AllowPlayerLook = false;
         minecraft.mouse.unlockCursor();
 
-        revertGuiScale = minecraft.options.getGuiScale().getValue();
-        minecraft.options.getGuiScale().setValue(3);
         minecraft.onResolutionChanged();
-        KeystoneOverlayHandler.resize(minecraft, minecraft.getWindow().getScaledWidth(), minecraft.getWindow().getScaledHeight());
     }
     /**
      * Disable Keystone if it isn't already
@@ -86,9 +81,7 @@ public final class Keystone
         minecraft.mouse.lockCursor();
         revertPlayer = true;
 
-        minecraft.options.getGuiScale().setValue(revertGuiScale);
         minecraft.onResolutionChanged();
-        KeystoneOverlayHandler.resize(minecraft, minecraft.getWindow().getScaledWidth(), minecraft.getWindow().getScaledHeight());
     }
     /**
      * @return If Keystone is active and a world is loaded
