@@ -17,6 +17,7 @@ public class WindowMixin
 
     /**
      * @author CodeCracked
+     * @reason Implementing Smart GUI Scale in Keystone mode
      */
     @Overwrite
     public void setScaleFactor(double scaleFactor)

@@ -6,6 +6,7 @@ import keystone.api.tools.FillTool;
 import keystone.core.KeystoneConfig;
 import keystone.core.keybinds.conflicts.DefaultKeyConditions;
 import keystone.core.keybinds.conflicts.IKeyCondition;
+import keystone.core.modules.session.SessionModule;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.block.Blocks;
@@ -21,6 +22,7 @@ public class KeystoneKeyBindings
     public static final KeyBinding INCREASE_FLY_SPEED = new KeyBinding("key.fly_speed.increase", GLFW.GLFW_KEY_UP, "key.categories.keystone");
     public static final KeyBinding DECREASE_FLY_SPEED = new KeyBinding("key.fly_speed.decrease", GLFW.GLFW_KEY_DOWN, "key.categories.keystone");
     public static final KeyBinding DELETE_BLOCKS = new KeyBinding("key.delete_blocks", GLFW.GLFW_KEY_DELETE, "key.categories.keystone");
+    public static final KeyBinding FEATURE_TEST = new KeyBinding("key.feature_test", GLFW.GLFW_KEY_O, "key.categories.keystone");
 
     private static boolean addedConditions = false;
 
@@ -31,6 +33,7 @@ public class KeystoneKeyBindings
         KeyBindingHelper.registerKeyBinding(INCREASE_FLY_SPEED);
         KeyBindingHelper.registerKeyBinding(DECREASE_FLY_SPEED);
         KeyBindingHelper.registerKeyBinding(DELETE_BLOCKS);
+        KeyBindingHelper.registerKeyBinding(FEATURE_TEST);
 
         ClientTickEvents.END_CLIENT_TICK.register(client ->
         {
@@ -38,6 +41,13 @@ public class KeystoneKeyBindings
             while (INCREASE_FLY_SPEED.wasPressed()) Keystone.increaseFlySpeed(KeystoneConfig.flySpeedChangeAmount);
             while (DECREASE_FLY_SPEED.wasPressed()) Keystone.decreaseFlySpeed(KeystoneConfig.flySpeedChangeAmount);
             while (DELETE_BLOCKS.wasPressed()) if (Keystone.isActive()) Keystone.runInternalFilters(new FillTool(Blocks.AIR.getDefaultState()), new DeleteEntitiesTool());
+            while (FEATURE_TEST.wasPressed())
+            {
+                if (Keystone.isActive())
+                {
+                    Keystone.getModule(SessionModule.class).revertChanges();
+                }
+            }
         });
     }
     public static void configureKeyConditions()

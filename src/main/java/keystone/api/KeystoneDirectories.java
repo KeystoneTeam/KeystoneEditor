@@ -7,6 +7,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.world.World;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 public class KeystoneDirectories
 {
@@ -17,8 +19,9 @@ public class KeystoneDirectories
     private static File filterDirectory;
     private static File schematicsDirectory;
     private static File stockFilterCache;
+    private static File sessionDirectory;
 
-    public static void init()
+    public static void init() throws IOException
     {
         keystoneDirectory = MinecraftClient.getInstance().runDirectory.toPath().resolve(KeystoneConfig.keystoneDirectory).toFile();
         if (!keystoneDirectory.exists()) keystoneDirectory.mkdirs();
@@ -27,6 +30,8 @@ public class KeystoneDirectories
         filterDirectory = getKeystoneSubdirectory(KeystoneConfig.filtersDirectory);
         schematicsDirectory = getKeystoneSubdirectory(KeystoneConfig.schematicsDirectory);
         stockFilterCache = getKeystoneSubdirectory(KeystoneConfig.stockFilterCache);
+        sessionDirectory = getKeystoneSubdirectory(KeystoneConfig.sessionDirectory);
+        Files.setAttribute(sessionDirectory.toPath(), "dos:hidden", true);
     }
 
     public static File getKeystoneDirectory() { return keystoneDirectory; }
@@ -41,7 +46,15 @@ public class KeystoneDirectories
     public static File getFilterDirectory() { return filterDirectory; }
     public static File getSchematicsDirectory() { return schematicsDirectory; }
     public static File getStockFilterCache() { return stockFilterCache; }
+    public static File getSessionDirectory() { return sessionDirectory; }
 
+    public static File getWorldDirectory()
+    {
+        if (worldCache == null) worldCache = Keystone.getModule(WorldCacheModule.class);
+        File file = ((PersistentStateManagerAccessor)worldCache.getDimensionWorld(World.OVERWORLD).getPersistentStateManager()).getDirectory().getParentFile();
+        if (!file.exists()) file.mkdirs();
+        return file;
+    }
     public static File getWorldCacheDirectory()
     {
         if (worldCache == null) worldCache = Keystone.getModule(WorldCacheModule.class);

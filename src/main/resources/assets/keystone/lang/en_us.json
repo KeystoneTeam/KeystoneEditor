@@ -59,6 +59,8 @@
   "keystone.selection_panel.copy.tooltip": "Copy all blocks in the selection. Shortcut: Ctrl+C",
   "keystone.selection_panel.paste.tooltip": "Import the last item taken by Cut or Copy. Shortcut: Ctrl+P",
   "keystone.selection_panel.export.tooltip": "Save highlighted selection as a schematic",
+  
+  "keystone.session.revertingChanges": "Reverting Changes...",
 
   "keystone.filter_panel.select": "Filter: ",
   "keystone.filter_panel.runFilter": "Filter",

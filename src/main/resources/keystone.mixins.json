@@ -9,7 +9,8 @@
 		"PersistentStateManagerAccessor",
 		"ServerPlayerEntityMixin",
 		"WindowMixin",
-		"WorldAccessor"
+		"WorldAccessor",
+		"WorldEntryMixin"
 	],
 	"client": [
 		"ClientPlayerEntityMixin",

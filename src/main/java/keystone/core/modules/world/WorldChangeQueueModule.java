@@ -1,9 +1,11 @@
 package keystone.core.modules.world;
 
+import keystone.api.Keystone;
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.WorldHistoryChunk;
+import keystone.core.modules.session.SessionModule;
 import keystone.core.utils.ProgressBar;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
@@ -13,16 +15,18 @@ import java.util.Queue;
 
 public class WorldChangeQueueModule implements IKeystoneModule
 {
-    private static record WorldChange(WorldHistoryChunk chunk, boolean undo)
+    private static record WorldChange(SessionModule session, WorldHistoryChunk chunk, boolean undo)
     {
         public void apply()
         {
+            session.registerChange(chunk);
             if (undo) chunk.undo();
             else chunk.redo();
         }
     }
 
     private final Queue<WorldChange> changeQueue = new ArrayDeque<>();
+    private SessionModule session;
     private boolean waitingForChanges;
     private int cooldown;
 
@@ -31,6 +35,7 @@ public class WorldChangeQueueModule implements IKeystoneModule
     @Override
     public void postInit()
     {
+        session = Keystone.getModule(SessionModule.class);
         ServerTickEvents.START_SERVER_TICK.register(this::onServerTick);
     }
 
@@ -60,7 +65,7 @@ public class WorldChangeQueueModule implements IKeystoneModule
 
     public void enqueueChange(WorldHistoryChunk change, boolean undo)
     {
-        this.changeQueue.add(new WorldChange(change, undo));
+        this.changeQueue.add(new WorldChange(session, change, undo));
     }
     public void waitForChanges(String progressBarTitle)
     {

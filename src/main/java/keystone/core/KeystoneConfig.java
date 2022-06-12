@@ -7,6 +7,7 @@ public class KeystoneConfig
     public static String filtersDirectory = "filters";
     public static String schematicsDirectory = "schematics";
     public static String stockFilterCache = "stock_filters";
+    public static String sessionDirectory = ".session";
 
     public static String historyDirectory = "history";
 

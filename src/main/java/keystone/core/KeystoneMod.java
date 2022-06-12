@@ -25,6 +25,7 @@ import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionModule;
+import keystone.core.modules.session.SessionModule;
 import keystone.core.modules.world.BiomesModule;
 import keystone.core.modules.world.BlocksModule;
 import keystone.core.modules.world.EntitiesModule;
@@ -44,6 +45,8 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 
+import java.io.IOException;
+
 public class KeystoneMod implements ModInitializer, ClientModInitializer
 {
     public static final String MODID = "keystone";
@@ -54,7 +57,14 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
     @Override
     public void onInitialize()
     {
-        KeystoneDirectories.init();
+        try
+        {
+            KeystoneDirectories.init();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
 
         KeystoneRegistryEvents.MODULES.register(registry ->
         {
@@ -69,6 +79,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
             registry.accept(new HistoryModule());
             registry.accept(new ClipboardModule());
             registry.accept(new WorldChangeQueueModule());
+            registry.accept(new SessionModule());
 
             registry.accept(new SelectionModule());
             registry.accept(new BrushModule());
@@ -163,9 +174,9 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         if (screen instanceof TitleScreen && inWorld)
         {
             inWorld = false;
+
             Keystone.disableKeystone();
             Keystone.forEachModule(module -> module.resetModule());
-
             KeystoneLifecycleEvents.LEAVE.invoker().leave();
         }
     }
