@@ -2,8 +2,8 @@ package keystone.core.gui.widgets;
 
 import keystone.api.utils.StringUtils;
 import keystone.core.KeystoneMod;
-import keystone.core.gui.screens.block_selection.AbstractBlockButton;
-import keystone.core.gui.screens.block_selection.BlockGridButton;
+import keystone.core.gui.overlays.block_selection.AbstractBlockButton;
+import keystone.core.gui.overlays.block_selection.BlockGridButton;
 import keystone.core.gui.viewports.Viewport;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.screen.Screen;

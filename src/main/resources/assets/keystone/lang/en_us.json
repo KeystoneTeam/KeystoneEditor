@@ -61,7 +61,10 @@
   "keystone.selection_panel.export.tooltip": "Save highlighted selection as a schematic",
   
   "keystone.session.revertingChanges": "Reverting Changes...",
-
+  "keystone.session.promptUncommitted": "You have unsaved changes in this world. Would you like to save them?",
+  "keystone.session.commitButton": "Save Changes",
+  "keystone.session.revertButton": "Discard Changes",
+  
   "keystone.filter_panel.select": "Filter: ",
   "keystone.filter_panel.runFilter": "Filter",
   "keystone.filter_panel.filterVariables": "Filter Variables",

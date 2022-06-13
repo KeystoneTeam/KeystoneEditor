@@ -45,7 +45,7 @@ public class KeystoneKeyBindings
             {
                 if (Keystone.isActive())
                 {
-                    Keystone.getModule(SessionModule.class).revertChanges();
+                    Keystone.getModule(SessionModule.class).promptUncommittedChanges(null, null, null);
                 }
             }
         });

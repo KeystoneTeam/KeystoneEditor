@@ -1,7 +1,7 @@
 package keystone.core.utils;
 
 import keystone.api.Keystone;
-import keystone.core.gui.screens.block_selection.AbstractBlockSelectionScreen;
+import keystone.core.gui.overlays.block_selection.AbstractBlockSelectionScreen;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;

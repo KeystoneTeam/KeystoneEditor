@@ -13,17 +13,17 @@
 		"WorldEntryMixin"
 	],
 	"client": [
-		"ClientPlayerEntityMixin",
-		"ClientPlayerInteractionManagerMixin",
-		"DrawableHelperMixin",
-		"GameRendererInvoker",
-		"GameRendererMixin",
-		"InGameHudMixin",
-		"KeyBindingMixin",
-		"KeyboardMixin",
-		"MinecraftClientMixin",
-		"MouseMixin",
-		"SpectatorHudMixin"
+		"client.ClientPlayerEntityMixin",
+		"client.ClientPlayerInteractionManagerMixin",
+		"client.DrawableHelperMixin",
+		"client.GameRendererInvoker",
+		"client.GameRendererMixin",
+		"client.InGameHudMixin",
+		"client.KeyBindingMixin",
+		"client.KeyboardMixin",
+		"client.MinecraftClientMixin",
+		"client.MouseMixin",
+		"client.SpectatorHudMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

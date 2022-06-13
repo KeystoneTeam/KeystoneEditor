@@ -1,6 +1,6 @@
 package keystone.core.math;
 
-import keystone.core.mixins.GameRendererInvoker;
+import keystone.core.mixins.client.GameRendererInvoker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;

@@ -1,7 +1,7 @@
 package keystone.core.modules.history.entries;
 
 import keystone.api.Keystone;
-import keystone.core.gui.screens.selection.SelectionNudgeScreen;
+import keystone.core.gui.overlays.selection.SelectionNudgeScreen;
 import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;

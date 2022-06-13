@@ -1,9 +1,9 @@
 package keystone.core.modules.selection;
 
 import keystone.api.Keystone;
-import keystone.core.gui.screens.hotbar.KeystoneHotbar;
-import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
-import keystone.core.gui.screens.selection.SelectionNudgeScreen;
+import keystone.core.gui.overlays.hotbar.KeystoneHotbar;
+import keystone.core.gui.overlays.hotbar.KeystoneHotbarSlot;
+import keystone.core.gui.overlays.selection.SelectionNudgeScreen;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.renderer.Color4f;
 import keystone.core.renderer.RenderBox;

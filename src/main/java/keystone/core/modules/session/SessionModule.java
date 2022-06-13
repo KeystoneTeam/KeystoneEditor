@@ -2,6 +2,7 @@ package keystone.core.modules.session;
 
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
+import keystone.core.gui.screens.PromptQuestionScreen;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.WorldHistoryChunk;
 import keystone.core.utils.FileUtils;
@@ -37,6 +38,8 @@ public class SessionModule implements IKeystoneModule
     @Override
     public void resetModule()
     {
+        this.dirty = false;
+        this.revertingSessionChanges = false;
         FileUtils.deleteRecursively(KeystoneDirectories.getSessionDirectory(), true);
     }
 
@@ -96,6 +99,22 @@ public class SessionModule implements IKeystoneModule
             this.revertingSessionChanges = false;
             this.dirty = false;
         }
+    }
+    public void commitChanges()
+    {
+        resetModule();
+    }
+    public void promptUncommittedChanges(Runnable committed, Runnable reverted, Runnable cancelled)
+    {
+        if (!dirty)
+        {
+            if (committed != null) committed.run();
+        }
+        else MinecraftClient.getInstance().setScreenAndRender(new PromptQuestionScreen(null, Text.translatable("keystone.session.promptUncommitted"),
+                Text.translatable("keystone.session.commitButton"), () -> { commitChanges(); if (committed != null) committed.run(); })
+                .addDenyButton(Text.translatable("keystone.session.revertButton"), () -> { revertChanges(); if (reverted != null) reverted.run(); })
+                .addCancelButton(Text.translatable("keystone.cancel"), () -> { if (cancelled != null) cancelled.run(); })
+        );
     }
 
     public boolean isDirty() { return this.dirty; }

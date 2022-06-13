@@ -3,7 +3,7 @@ package keystone.core.modules.filter;
 import keystone.api.KeystoneDirectories;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.utils.StringUtils;
-import keystone.core.gui.screens.filters.FilterSelectionScreen;
+import keystone.core.gui.overlays.filters.FilterSelectionScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;

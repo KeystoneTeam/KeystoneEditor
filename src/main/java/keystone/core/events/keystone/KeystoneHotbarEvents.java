@@ -1,6 +1,6 @@
 package keystone.core.events.keystone;
 
-import keystone.core.gui.screens.hotbar.KeystoneHotbarSlot;
+import keystone.core.gui.overlays.hotbar.KeystoneHotbarSlot;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 

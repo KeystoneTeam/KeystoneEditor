@@ -1,8 +1,8 @@
 package keystone.core.gui.widgets.inputs;
 
 import keystone.api.wrappers.blocks.BlockPalette;
-import keystone.core.gui.screens.KeystoneOverlay;
-import keystone.core.gui.screens.block_selection.BlockPaletteEditScreen;
+import keystone.core.gui.overlays.KeystoneOverlay;
+import keystone.core.gui.overlays.block_selection.BlockPaletteEditScreen;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.utils.BlockUtils;
 import net.minecraft.client.MinecraftClient;

@@ -1,6 +1,6 @@
 package keystone.core.utils;
 
-import keystone.core.gui.screens.ProgressBarOverlay;
+import keystone.core.gui.overlays.ProgressBarOverlay;
 
 public class ProgressBar
 {

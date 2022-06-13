@@ -3,7 +3,7 @@ package keystone.core.modules.history.entries;
 import keystone.api.Keystone;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3i;
-import keystone.core.gui.screens.schematics.CloneScreen;
+import keystone.core.gui.overlays.schematics.CloneScreen;
 import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.schematic.KeystoneSchematic;
