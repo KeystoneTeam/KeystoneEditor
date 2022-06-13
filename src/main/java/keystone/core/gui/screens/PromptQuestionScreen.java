@@ -117,7 +117,7 @@ public class PromptQuestionScreen extends Screen
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta)
     {
-        fill(matrices, 0, 0, width, height, 0x80000000);
+        fill(matrices, 0, 0, width, height, 0xB0000000);
         super.render(matrices, mouseX, mouseY, delta);
         drawCenteredTextWithShadow(matrices, client.textRenderer, question, width >> 1, questionY, 0xFFFFFFFF);
     }

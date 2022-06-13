@@ -6,7 +6,6 @@ import keystone.api.tools.FillTool;
 import keystone.core.KeystoneConfig;
 import keystone.core.keybinds.conflicts.DefaultKeyConditions;
 import keystone.core.keybinds.conflicts.IKeyCondition;
-import keystone.core.modules.session.SessionModule;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.block.Blocks;
@@ -45,7 +44,6 @@ public class KeystoneKeyBindings
             {
                 if (Keystone.isActive())
                 {
-                    Keystone.getModule(SessionModule.class).promptUncommittedChanges(null, null, null);
                 }
             }
         });

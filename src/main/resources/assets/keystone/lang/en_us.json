@@ -1,4 +1,6 @@
 {
+  "title.multiplayer.disabled": "Keystone does not support Multiplayer. Please use a different profile without Keystone.",
+  
   "keystone.version_check.outdated": "You are using an outdated version of Keystone!",
   "keystone.version_check.currentVersion": "You are using %s, the current version is %s",
   "keystone.version_check.releasesLink": "To download the update, click",

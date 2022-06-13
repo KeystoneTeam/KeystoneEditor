@@ -16,6 +16,7 @@
 		"client.ClientPlayerEntityMixin",
 		"client.ClientPlayerInteractionManagerMixin",
 		"client.DrawableHelperMixin",
+		"client.GameMenuScreenMixin",
 		"client.GameRendererInvoker",
 		"client.GameRendererMixin",
 		"client.InGameHudMixin",

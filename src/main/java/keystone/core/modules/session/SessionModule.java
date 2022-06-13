@@ -67,7 +67,7 @@ public class SessionModule implements IKeystoneModule
 
     public void markDirty() { dirty = true; }
     public void setLevel(LevelSummary level) { this.level = level; }
-    public void revertChanges()
+    public void revertChanges(boolean closeWorld)
     {
         if (this.revertingSessionChanges) return;
         this.revertingSessionChanges = true;
@@ -92,8 +92,11 @@ public class SessionModule implements IKeystoneModule
         finally
         {
             // Re-open world
-            client.createIntegratedServerLoader().start(new SelectWorldScreen(new TitleScreen()), level.getName());
-            if (keystoneEnabled) Keystone.enableKeystone();
+            if (!closeWorld)
+            {
+                client.createIntegratedServerLoader().start(new SelectWorldScreen(new TitleScreen()), level.getName());
+                if (keystoneEnabled) Keystone.enableKeystone();
+            }
             Keystone.LOGGER.info("Done Reverting Session");
 
             this.revertingSessionChanges = false;
@@ -104,6 +107,7 @@ public class SessionModule implements IKeystoneModule
     {
         resetModule();
     }
+    public void promptUncommittedChanges() { promptUncommittedChanges(this::commitChanges, () -> revertChanges(false), null); }
     public void promptUncommittedChanges(Runnable committed, Runnable reverted, Runnable cancelled)
     {
         if (!dirty)
@@ -111,8 +115,8 @@ public class SessionModule implements IKeystoneModule
             if (committed != null) committed.run();
         }
         else MinecraftClient.getInstance().setScreenAndRender(new PromptQuestionScreen(null, Text.translatable("keystone.session.promptUncommitted"),
-                Text.translatable("keystone.session.commitButton"), () -> { commitChanges(); if (committed != null) committed.run(); })
-                .addDenyButton(Text.translatable("keystone.session.revertButton"), () -> { revertChanges(); if (reverted != null) reverted.run(); })
+                Text.translatable("keystone.session.commitButton"), () -> { if (committed != null) committed.run(); })
+                .addDenyButton(Text.translatable("keystone.session.revertButton"), () -> { if (reverted != null) reverted.run(); })
                 .addCancelButton(Text.translatable("keystone.cancel"), () -> { if (cancelled != null) cancelled.run(); })
         );
     }

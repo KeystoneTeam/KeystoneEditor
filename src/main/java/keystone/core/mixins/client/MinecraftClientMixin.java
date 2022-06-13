@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MinecraftClient.class)
 public class MinecraftClientMixin
@@ -27,5 +28,17 @@ public class MinecraftClientMixin
     public void resizeDisplay(CallbackInfo callback)
     {
         KeystoneOverlayHandler.resize(MinecraftClient.getInstance(), this.window.getScaledWidth(), this.window.getScaledHeight());
+    }
+
+    @Inject(method = "isMultiplayerEnabled", at = @At("HEAD"), cancellable = true)
+    public void isMultiplayerAllowed(CallbackInfoReturnable<Boolean> callback)
+    {
+        callback.setReturnValue(false);
+    }
+
+    @Inject(method = "isRealmsEnabled", at = @At("HEAD"), cancellable = true)
+    public void isRealmsEnabled(CallbackInfoReturnable<Boolean> callback)
+    {
+        callback.setReturnValue(false);
     }
 }
