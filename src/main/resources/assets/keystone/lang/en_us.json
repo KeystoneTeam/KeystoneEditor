@@ -66,6 +66,7 @@
   "keystone.session.promptUncommitted": "You have unsaved changes in this world. Would you like to save them?",
   "keystone.session.commitButton": "Save Changes",
   "keystone.session.revertButton": "Discard Changes",
+  "keystone.session.unsavedChanges": "%s Unsaved Changes",
   
   "keystone.filter_panel.select": "Filter: ",
   "keystone.filter_panel.runFilter": "Filter",

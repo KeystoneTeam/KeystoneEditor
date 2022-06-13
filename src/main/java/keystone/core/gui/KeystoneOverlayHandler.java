@@ -5,6 +5,7 @@ import keystone.core.KeystoneGlobalState;
 import keystone.core.events.keystone.KeystoneInputEvents;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.minecraft.InputEvents;
+import keystone.core.gui.overlays.KeystoneHudOverlay;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.overlays.hotbar.KeystoneHotbar;
 import keystone.core.gui.viewports.ScreenViewports;
@@ -61,6 +62,7 @@ public class KeystoneOverlayHandler
             addList.clear();
             removeList.clear();
             addOverlay(KeystoneHotbar.INSTANCE);
+            addOverlay(new KeystoneHudOverlay());
         });
         KeystoneLifecycleEvents.LEAVE.register(() ->
         {

@@ -60,6 +60,9 @@ public class HistoryModule implements IKeystoneModule
         unsavedChanges = 0;
     }
 
+    public int getUnsavedChanges() { return unsavedChanges; }
+    public void onChangesCommitted() { unsavedChanges = 0; }
+
     //region Deserializers
     public void registerDeserializer(String id, KeystoneRegistryEvents.RegisterHistoryEntriesListener.HistoryEntryDeserializer deserializer)
     {
@@ -208,7 +211,7 @@ public class HistoryModule implements IKeystoneModule
             {
                 historyStackFrame.undo();
                 addHistoryEntry(historyStackFrame);
-                if (historyStackFrame.addToUnsavedChanges()) unsavedChanges++;
+                if (historyStackFrame.addToUnsavedChanges()) unsavedChanges--;
             }
 
             if (KeystoneConfig.debugHistoryLog) logHistoryStack();
@@ -260,6 +263,7 @@ public class HistoryModule implements IKeystoneModule
             if (entryFile.exists()) entryFile.delete();
         }
         historyStackSize = currentHistoryIndex + 1;
+        unsavedChanges = Math.abs(unsavedChanges);
     }
     private void addHistoryEntry(HistoryStackFrame stackFrame)
     {

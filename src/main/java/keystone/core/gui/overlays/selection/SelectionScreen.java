@@ -44,6 +44,7 @@ public class SelectionScreen extends KeystoneOverlay
     private static SelectionScreen open;
 
     private final SelectionModule selectionModule;
+    private final HistoryModule historyModule;
     private int panelMinY;
     private int panelMaxY;
     private int panelWidth;
@@ -53,6 +54,7 @@ public class SelectionScreen extends KeystoneOverlay
     {
         super(Text.literal("keystone.screen.selection"));
         selectionModule = Keystone.getModule(SelectionModule.class);
+        historyModule = Keystone.getModule(HistoryModule.class);
     }
     public static void open()
     {

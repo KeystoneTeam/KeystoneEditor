@@ -9,6 +9,6 @@ public interface IHistoryEntry
     void serialize(NbtCompound nbt);
     void deserialize(NbtCompound nbt);
 
-    default boolean addToUnsavedChanges() { return true; }
+    default boolean addToUnsavedChanges() { return false; }
     default void onPushToHistory(HistoryModule history, boolean beforePush) {  }
 }

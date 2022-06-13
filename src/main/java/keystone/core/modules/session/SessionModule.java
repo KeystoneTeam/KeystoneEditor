@@ -2,8 +2,10 @@ package keystone.core.modules.session;
 
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
+import keystone.core.events.minecraft.InputEvents;
 import keystone.core.gui.screens.PromptQuestionScreen;
 import keystone.core.modules.IKeystoneModule;
+import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.WorldHistoryChunk;
 import keystone.core.utils.FileUtils;
 import net.minecraft.client.MinecraftClient;
@@ -15,6 +17,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraft.world.storage.RegionBasedStorage;
+import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,7 +28,7 @@ public class SessionModule implements IKeystoneModule
 {
     private MinecraftClient client;
     private LevelSummary level;
-    private boolean dirty;
+    private HistoryModule historyModule;
     private boolean revertingSessionChanges;
 
     @Override public boolean isEnabled() { return true; }
@@ -33,20 +36,29 @@ public class SessionModule implements IKeystoneModule
     public void postInit()
     {
         client = MinecraftClient.getInstance();
+        historyModule = Keystone.getModule(HistoryModule.class);
+
+        InputEvents.KEY_PRESSED.register(this::onKeyPressed);
+
         resetModule();
     }
     @Override
     public void resetModule()
     {
-        this.dirty = false;
         this.revertingSessionChanges = false;
         FileUtils.deleteRecursively(KeystoneDirectories.getSessionDirectory(), true);
     }
 
+    private void onKeyPressed(int key, int action, int scancode, int modifiers)
+    {
+        if (action == GLFW.GLFW_PRESS && key == GLFW.GLFW_KEY_S && modifiers == GLFW.GLFW_MOD_CONTROL)
+        {
+            commitChanges();
+        }
+    }
+
     public void registerChange(WorldHistoryChunk chunk)
     {
-        this.dirty = true;
-
         ChunkPos chunkPos = new ChunkPos(chunk.chunkX, chunk.chunkZ);
         String fileName = "r." + chunkPos.getRegionX() + "." + chunkPos.getRegionZ() + RegionBasedStorage.MCA_EXTENSION;
         Path sourcePath = DimensionType.getSaveDirectory(chunk.getRegistryKey(), KeystoneDirectories.getWorldDirectory().toPath()).resolve("region").resolve(fileName);
@@ -65,7 +77,6 @@ public class SessionModule implements IKeystoneModule
         }
     }
 
-    public void markDirty() { dirty = true; }
     public void setLevel(LevelSummary level) { this.level = level; }
     public void revertChanges(boolean closeWorld)
     {
@@ -100,17 +111,18 @@ public class SessionModule implements IKeystoneModule
             Keystone.LOGGER.info("Done Reverting Session");
 
             this.revertingSessionChanges = false;
-            this.dirty = false;
+            historyModule.onChangesCommitted();
         }
     }
     public void commitChanges()
     {
         resetModule();
+        historyModule.onChangesCommitted();
     }
     public void promptUncommittedChanges() { promptUncommittedChanges(this::commitChanges, () -> revertChanges(false), null); }
     public void promptUncommittedChanges(Runnable committed, Runnable reverted, Runnable cancelled)
     {
-        if (!dirty)
+        if (historyModule.getUnsavedChanges() == 0)
         {
             if (committed != null) committed.run();
         }
@@ -121,6 +133,5 @@ public class SessionModule implements IKeystoneModule
         );
     }
 
-    public boolean isDirty() { return this.dirty; }
     public boolean isRevertingSessionChanges() { return this.revertingSessionChanges; }
 }
