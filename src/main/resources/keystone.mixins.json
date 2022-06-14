@@ -20,6 +20,7 @@
 		"client.GameRendererInvoker",
 		"client.GameRendererMixin",
 		"client.InGameHudMixin",
+		"client.IntegratedServerLoaderMixin",
 		"client.KeyBindingMixin",
 		"client.KeyboardMixin",
 		"client.MinecraftClientMixin",
