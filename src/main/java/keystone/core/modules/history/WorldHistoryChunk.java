@@ -8,6 +8,7 @@ import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
+import keystone.core.KeystoneGlobalState;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.NBTSerializer;
@@ -447,7 +448,7 @@ public class WorldHistoryChunk
                     BlockPos pos = start.add(x, y, z);
                     BlockState state = oldBlockStates.get(z + y * 16 + x * 256);
 
-                    world.toServerWorld().setBlockState(pos, state);
+                    world.toServerWorld().setBlockState(pos, state, KeystoneGlobalState.SuppressingBlockTicks ? net.minecraft.block.Block.NOTIFY_LISTENERS : net.minecraft.block.Block.NOTIFY_ALL);
                     NBTCompound blockData = oldTileEntities.getOrDefault(pos, null);
                     if (blockData != null)
                     {
@@ -493,7 +494,7 @@ public class WorldHistoryChunk
                     BlockPos pos = start.add(x, y, z);
                     BlockState state = blockStates.get(z + y * 16 + x * 256);
 
-                    world.toServerWorld().setBlockState(pos, state);
+                    world.toServerWorld().setBlockState(pos, state, KeystoneGlobalState.SuppressingBlockTicks ? net.minecraft.block.Block.NOTIFY_LISTENERS : net.minecraft.block.Block.NOTIFY_ALL);
                     NBTCompound blockData = tileEntities.getOrDefault(pos, null);
                     if (blockData != null)
                     {

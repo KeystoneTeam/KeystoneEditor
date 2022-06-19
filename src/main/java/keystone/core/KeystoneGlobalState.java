@@ -1,5 +1,7 @@
 package keystone.core;
 
+import keystone.core.modules.world.WorldChangeQueueModule;
+
 public class KeystoneGlobalState
 {
     /**
@@ -12,11 +14,11 @@ public class KeystoneGlobalState
      * in front of the player that will be targeted
      */
     public static double CloseSelectionDistance = 4.0;
-
     /**
      * Whether mouse movement should move the player camera
      */
     public static boolean AllowPlayerLook = false;
+
     /**
      * Whether the mouse is hovering over an interactable overlay widget
      */
@@ -29,9 +31,16 @@ public class KeystoneGlobalState
     public static boolean GuiConsumingKeys = false;
     /**
      * If true, all keybinds will be disabled. This is used to force the player to wait for
-     * something, such as flushing the {@link keystone.core.modules.world.WorldChangeQueueModule}
+     * something, such as flushing the {@link WorldChangeQueueModule}
      */
     public static boolean BlockingKeys = false;
+
+    /**
+     * If true, all block ticks will be ignored. This is manually changed by the player for
+     * things like ignoring block gravity
+     */
+    public static boolean SuppressingBlockTicks = false;
+
     /**
      * If true, selection boxes will not be rendered
      */

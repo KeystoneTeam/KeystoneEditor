@@ -31,11 +31,13 @@
   "keystone.height": "Height",
 
   "key.categories.keystone": "Keystone",
-  "key.toggle_keystone": "Toggle Keystone",
-  "key.multiselect": "Multi-Select",
-  "key.fly_speed.increase": "Increase Fly Speed",
-  "key.fly_speed.decrease": "Decrease Fly Speed",
-  "key.delete_blocks": "Delete Selection",
+  "keystone.key.toggleKeystone": "Toggle Keystone",
+  "keystone.key.multiselect": "Multi-Select",
+  "keystone.key.fly_speed.increase": "Increase Fly Speed",
+  "keystone.key.fly_speed.decrease": "Decrease Fly Speed",
+  "keystone.key.deleteSelection": "Delete Selection",
+  "keystone.key.toggleUpdates": "Toggle Block Updates",
+  "keystone.key.featureTest": "WIP Feature Test",
 
   "keystone.hotbar.selection": "Selection",
   "keystone.hotbar.brush": "Brush",
@@ -66,7 +68,6 @@
   "keystone.session.promptUncommitted": "You have unsaved changes in this world. Would you like to save them?",
   "keystone.session.commitButton": "Save Changes",
   "keystone.session.revertButton": "Discard Changes",
-  "keystone.session.unsavedChanges": "%s Unsaved Changes",
   
   "keystone.filter_panel.select": "Filter: ",
   "keystone.filter_panel.runFilter": "Filter",
@@ -117,5 +118,10 @@
   "keystone.file_browser.fileName": "File Name",
   "keystone.file_browser.saveFile": "Save File",
   "keystone.file_browser.open": "Open",
-  "keystone.file_browser.save": "Save"
+  "keystone.file_browser.save": "Save",
+  
+  "keystone.hud.block_updates.label": "Block Updates: ",
+  "keystone.hud.block_updates.on": "ON",
+  "keystone.hud.block_updates.off": "OFF",
+  "keystone.hud.unsavedChanges": "%s Unsaved Changes"
 }
