@@ -9,6 +9,7 @@ public class ProgressBar
     private static int steps;
     private static int completedSteps;
     private static Runnable cancelledCallback;
+    private static boolean isFinished;
 
     public static void start(String title, int iterations) { start(title, iterations, null); }
     public static void start(String title, int iterations, Runnable cancelledCallback)
@@ -18,6 +19,7 @@ public class ProgressBar
         completedIterations = 0;
         completedSteps = 0;
         ProgressBar.cancelledCallback = cancelledCallback;
+        isFinished = false;
         ProgressBarOverlay.open(title);
     }
     public static void beginIteration(int steps)
@@ -40,8 +42,7 @@ public class ProgressBar
         steps = 1;
         completedIterations = 0;
         completedSteps = 0;
-
-        ProgressBarOverlay.closeOverlay();
+        isFinished = true;
     }
     public static void cancel()
     {
@@ -55,4 +56,5 @@ public class ProgressBar
     public static int getSteps() { return steps; }
     public static int getCompletedSteps() { return completedSteps; }
     public static boolean isCancellable() { return cancelledCallback != null; }
+    public static boolean isFinished() { return isFinished; }
 }

@@ -18,7 +18,6 @@ import org.lwjgl.glfw.GLFW;
 public class KeystoneKeyBindings
 {
     public static final KeyBinding TOGGLE_KEYSTONE = new KeyBinding("keystone.key.toggleKeystone", GLFW.GLFW_KEY_K, "key.categories.keystone");
-    public static final KeyBinding MULTI_SELECT = new KeyBinding("keystone.key.multiselect", GLFW.GLFW_KEY_LEFT_CONTROL, "key.categories.keystone");
     public static final KeyBinding INCREASE_FLY_SPEED = new KeyBinding("keystone.key.fly_speed.increase", GLFW.GLFW_KEY_UP, "key.categories.keystone");
     public static final KeyBinding DECREASE_FLY_SPEED = new KeyBinding("keystone.key.fly_speed.decrease", GLFW.GLFW_KEY_DOWN, "key.categories.keystone");
     public static final KeyBinding DELETE_SELECTION = new KeyBinding("keystone.key.deleteSelection", GLFW.GLFW_KEY_DELETE, "key.categories.keystone");
@@ -30,7 +29,6 @@ public class KeystoneKeyBindings
     public static void register()
     {
         KeyBindingHelper.registerKeyBinding(TOGGLE_KEYSTONE);
-        KeyBindingHelper.registerKeyBinding(MULTI_SELECT);
         KeyBindingHelper.registerKeyBinding(INCREASE_FLY_SPEED);
         KeyBindingHelper.registerKeyBinding(DECREASE_FLY_SPEED);
         KeyBindingHelper.registerKeyBinding(DELETE_SELECTION);
@@ -64,11 +62,12 @@ public class KeystoneKeyBindings
         IKeyCondition keystoneInactive = DefaultKeyConditions.KEYSTONE_INACTIVE;
         IKeyCondition keystoneActive = DefaultKeyConditions.KEYSTONE_ACTIVE;
 
-        KeyBindingUtils.addConditions(INCREASE_FLY_SPEED, keystoneActive);
-        KeyBindingUtils.addConditions(DECREASE_FLY_SPEED, keystoneActive);
-        KeyBindingUtils.addConditions(DELETE_SELECTION, keystoneActive);
-        KeyBindingUtils.addConditions(TOGGLE_UPDATES, keystoneActive);
-        KeyBindingUtils.addConditions(FEATURE_TEST, keystoneActive);
+        KeyBindingUtils.addConditions(TOGGLE_KEYSTONE, noGuiOpen);
+        KeyBindingUtils.addConditions(INCREASE_FLY_SPEED, keystoneActive, noGuiOpen);
+        KeyBindingUtils.addConditions(DECREASE_FLY_SPEED, keystoneActive, noGuiOpen);
+        KeyBindingUtils.addConditions(DELETE_SELECTION, keystoneActive, noGuiOpen);
+        KeyBindingUtils.addConditions(TOGGLE_UPDATES, keystoneActive, noGuiOpen);
+        KeyBindingUtils.addConditions(FEATURE_TEST, keystoneActive, noGuiOpen);
 
         KeyBindingUtils.addConditions(options.forwardKey, noGuiOpen);
         KeyBindingUtils.addConditions(options.leftKey, noGuiOpen);

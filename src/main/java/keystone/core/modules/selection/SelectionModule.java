@@ -11,7 +11,6 @@ import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.minecraft.InputEvents;
 import keystone.core.gui.overlays.hotbar.KeystoneHotbar;
 import keystone.core.gui.overlays.hotbar.KeystoneHotbarSlot;
-import keystone.core.keybinds.KeystoneKeyBindings;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
@@ -22,6 +21,7 @@ import keystone.core.renderer.RendererFactory;
 import keystone.core.renderer.overlay.ComplexOverlayRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.util.math.Vec3i;
@@ -241,7 +241,7 @@ public class SelectionModule implements IKeystoneModule
         {
             firstSelectionPoint = Player.getHighlightedBlock();
             creatingSelection = true;
-            multiSelect = KeystoneKeyBindings.MULTI_SELECT.isPressed();
+            multiSelect = Screen.hasControlDown();
             selectionBoxes.add(SelectionBoundingBox.startNew(firstSelectionPoint));
         }
     }

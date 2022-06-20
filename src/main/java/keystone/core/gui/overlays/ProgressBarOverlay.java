@@ -25,10 +25,6 @@ public class ProgressBarOverlay extends KeystoneOverlay
             open = true;
         }
     }
-    public static void closeOverlay()
-    {
-        if (open) overlay.close();
-    }
 
 
     private String barTitle;
@@ -77,5 +73,7 @@ public class ProgressBarOverlay extends KeystoneOverlay
         String string = ProgressBar.getIterations() > 1 ? barTitle + " (" + ProgressBar.getCompletedIterations() + "/" + ProgressBar.getIterations() + ")" : barTitle;
         drawCenteredText(matrixStack, textRenderer, string, centerX, centerY - (HEIGHT >> 1) - 11, 0xFFFFFF00);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
+
+        if (ProgressBar.isFinished()) close();
     }
 }
