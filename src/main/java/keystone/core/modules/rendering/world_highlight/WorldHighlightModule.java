@@ -1,6 +1,7 @@
 package keystone.core.modules.rendering.world_highlight;
 
 import keystone.api.Keystone;
+import keystone.core.KeystoneGlobalState;
 import keystone.core.client.Player;
 import keystone.core.mixins.ThreadedAnvilChunkStorageInvoker;
 import keystone.core.modules.IKeystoneModule;
@@ -34,20 +35,23 @@ public class WorldHighlightModule implements IKeystoneModule
     @Override
     public void renderWhenEnabled(WorldRenderContext context)
     {
-        ThreadedAnvilChunkStorage storage = worldCache.getDimensionWorld(Player.getDimension()).getChunkManager().threadedAnvilChunkStorage;
-        ThreadedAnvilChunkStorageInvoker invoker = (ThreadedAnvilChunkStorageInvoker)storage;
-
-        invoker.getEntryIterator().forEach(holder ->
+        if (KeystoneGlobalState.HighlightTileEntities)
         {
-            if (holder != null && holder.getWorldChunk() != null)
+            ThreadedAnvilChunkStorage storage = worldCache.getDimensionWorld(Player.getDimension()).getChunkManager().threadedAnvilChunkStorage;
+            ThreadedAnvilChunkStorageInvoker invoker = (ThreadedAnvilChunkStorageInvoker)storage;
+
+            invoker.getEntryIterator().forEach(holder ->
             {
-                for (BlockPos pos : holder.getWorldChunk().getBlockEntityPositions())
+                if (holder != null && holder.getWorldChunk() != null)
                 {
-                    RenderBox box = new RenderBox(pos);
-                    this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, tileEntityFill);
-                    this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawCuboid(box, tileEntityOutline);
+                    for (BlockPos pos : holder.getWorldChunk().getBlockEntityPositions())
+                    {
+                        RenderBox box = new RenderBox(pos);
+                        this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, tileEntityFill);
+                        this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawCuboid(box, tileEntityOutline);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 }

@@ -36,6 +36,7 @@
   "keystone.key.fly_speed.decrease": "Decrease Fly Speed",
   "keystone.key.deleteSelection": "Delete Selection",
   "keystone.key.toggleUpdates": "Toggle Block Updates",
+  "keystone.key.highlightTileEntities": "Highlight Tile Entities",
   "keystone.key.featureTest": "WIP Feature Test",
 
   "keystone.hotbar.selection": "Selection",

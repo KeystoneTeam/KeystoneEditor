@@ -45,4 +45,8 @@ public class KeystoneGlobalState
      * If true, selection boxes will not be rendered
      */
     public static boolean HideSelectionBoxes = false;
+    /**
+     * If true, tile entities will be highlighted with a yellow box
+     */
+    public static boolean HighlightTileEntities = false;
 }
