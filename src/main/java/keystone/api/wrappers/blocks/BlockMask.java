@@ -24,6 +24,11 @@ public class BlockMask
 {
     private static final Map<BlockType, BlockType[]> forcedBlockAdditions = new HashMap<>();
 
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Create the forced block additions list. Currently, this is used to bind all variants
+     * of air together.
+     */
     public static void buildForcedAdditionsList()
     {
         forcedBlockAdditions.put(BlockTypeRegistry.AIR, new BlockType[]

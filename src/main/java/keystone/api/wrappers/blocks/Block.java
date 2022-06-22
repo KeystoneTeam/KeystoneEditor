@@ -2,6 +2,7 @@ package keystone.api.wrappers.blocks;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
+import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
@@ -23,6 +24,11 @@ public class Block
     private NBTCompound tileEntity;
 
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * @param block A string representing a block. Must be valid for {@link KeystoneFilter#block(String)}
+     * @return The created block wrapper
+     */
     public static Block create(String block)
     {
         BlockState state = Blocks.RED_STAINED_GLASS.getDefaultState();

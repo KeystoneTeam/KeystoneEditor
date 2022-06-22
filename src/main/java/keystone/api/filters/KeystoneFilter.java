@@ -123,7 +123,6 @@ public class KeystoneFilter extends EditableObject
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Set the current pass of this filter
      * @param pass The current pass number
-     * @return The modified filter instance
      */
     public final void setPass(int pass)
     {
@@ -415,6 +414,7 @@ public class KeystoneFilter extends EditableObject
      * Create a {@link Block} from a block ID and tile entity. Any ID that is a valid ID
      * for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param block The block ID
+     * @param tileEntity The tile entity
      * @return The generated {@link Block}
      */
     public final Block block(String block, NBTCompound tileEntity)
