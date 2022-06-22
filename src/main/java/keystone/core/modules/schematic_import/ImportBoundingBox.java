@@ -3,7 +3,7 @@ package keystone.core.modules.schematic_import;
 import keystone.api.Keystone;
 import keystone.core.client.Player;
 import keystone.core.math.RayTracing;
-import keystone.core.modules.ghost_blocks.GhostBlocksModule;
+import keystone.core.modules.rendering.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectableCuboid;
 import keystone.core.modules.selection.SelectedFace;

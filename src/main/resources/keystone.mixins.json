@@ -9,6 +9,7 @@
 		"PersistentStateManagerAccessor",
 		"ServerPlayerEntityMixin",
 		"ServerWorldMixin",
+		"ThreadedAnvilChunkStorageInvoker",
 		"WindowMixin",
 		"WorldAccessor",
 		"WorldEntryMixin"

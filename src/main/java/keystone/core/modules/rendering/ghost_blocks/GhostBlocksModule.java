@@ -1,4 +1,4 @@
-package keystone.core.modules.ghost_blocks;
+package keystone.core.modules.rendering.ghost_blocks;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;

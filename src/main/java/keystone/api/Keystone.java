@@ -10,7 +10,7 @@ import keystone.core.events.minecraft.ServerPlayerEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.filter.execution.AbstractFilterThread;
-import keystone.core.modules.ghost_blocks.GhostBlocksModule;
+import keystone.core.modules.rendering.ghost_blocks.GhostBlocksModule;
 import keystone.core.registries.BlockTypeRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;

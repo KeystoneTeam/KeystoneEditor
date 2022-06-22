@@ -11,7 +11,7 @@ import keystone.core.gui.overlays.hotbar.KeystoneHotbar;
 import keystone.core.gui.overlays.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.overlays.schematics.ImportScreen;
 import keystone.core.modules.IKeystoneModule;
-import keystone.core.modules.ghost_blocks.GhostBlocksModule;
+import keystone.core.modules.rendering.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
 import keystone.core.modules.selection.SelectableCuboid;
