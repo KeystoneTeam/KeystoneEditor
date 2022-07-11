@@ -42,7 +42,7 @@ public class WorldHighlightModule implements IKeystoneModule
 
             invoker.getEntryIterator().forEach(holder ->
             {
-                if (holder != null && holder.getWorldChunk() != null)
+                if (holder != null && holder.getWorldChunk() != null && holder.getWorldChunk().getBlockEntityPositions() != null)
                 {
                     for (BlockPos pos : holder.getWorldChunk().getBlockEntityPositions())
                     {

@@ -19,11 +19,11 @@ import keystone.core.gui.widgets.inputs.fields.EditableObject;
 import keystone.core.modules.filter.execution.AbstractFilterThread;
 import keystone.core.modules.filter.execution.CustomFilterThread;
 import keystone.core.modules.filter.execution.FilterExecutor;
-import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
+import keystone.core.utils.WorldRegistries;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
@@ -33,7 +33,6 @@ import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.BuiltinRegistries;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 
@@ -96,27 +95,27 @@ public class KeystoneFilter extends EditableObject
     public final KeystoneFilter setWorldRegions(WorldRegion[] regions)
     {
         this.regions = regions;
-        HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
-        for (WorldRegion region : regions)
-        {
-            int minChunkX = region.min.x >> 4;
-            int minChunkY = region.min.y >> 4;
-            int minChunkZ = region.min.z >> 4;
-            int maxChunkX = minChunkX + (int)Math.ceil(region.size.x / 16.0f);
-            int maxChunkY = minChunkY + (int)Math.ceil(region.size.y / 16.0f);
-            int maxChunkZ = minChunkZ + (int)Math.ceil(region.size.z / 16.0f);
-
-            for (int chunkX = minChunkX; chunkX < maxChunkX; chunkX++)
-            {
-                for (int chunkY = minChunkY; chunkY < maxChunkY; chunkY++)
-                {
-                    for (int chunkZ = minChunkZ; chunkZ < maxChunkZ; chunkZ++)
-                    {
-                        historyModule.getOpenEntry().preloadChunk(chunkX, chunkY, chunkZ);
-                    }
-                }
-            }
-        }
+        //HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
+        //for (WorldRegion region : regions)
+        //{
+        //    int minChunkX = region.min.x >> 4;
+        //    int minChunkY = region.min.y >> 4;
+        //    int minChunkZ = region.min.z >> 4;
+        //    int maxChunkX = minChunkX + (int)Math.ceil(region.size.x / 16.0f);
+        //    int maxChunkY = minChunkY + (int)Math.ceil(region.size.y / 16.0f);
+        //    int maxChunkZ = minChunkZ + (int)Math.ceil(region.size.z / 16.0f);
+        //
+        //    for (int chunkX = minChunkX; chunkX < maxChunkX; chunkX++)
+        //    {
+        //        for (int chunkY = minChunkY; chunkY < maxChunkY; chunkY++)
+        //        {
+        //            for (int chunkZ = minChunkZ; chunkZ < maxChunkZ; chunkZ++)
+        //            {
+        //                historyModule.getOpenEntry().preloadChunk(chunkX, chunkY, chunkZ);
+        //            }
+        //        }
+        //    }
+        //}
         return this;
     }
     /**
@@ -490,11 +489,12 @@ public class KeystoneFilter extends EditableObject
      */
     public final Biome biome(String id)
     {
-        Optional<net.minecraft.world.biome.Biome> optionalBiome = BuiltinRegistries.BIOME.getOrEmpty(new Identifier(id));
+        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.getBiomeRegistry();
+        Optional<net.minecraft.world.biome.Biome> optionalBiome = biomeRegistry.getOrEmpty(new Identifier(id));
         if (optionalBiome.isPresent())
         {
-            Optional<RegistryKey<net.minecraft.world.biome.Biome>> optionalBiomeKey = BuiltinRegistries.BIOME.getKey(optionalBiome.get());
-            if (optionalBiome.isPresent()) return new Biome(BuiltinRegistries.BIOME.getEntry(optionalBiomeKey.get()).get());
+            Optional<RegistryKey<net.minecraft.world.biome.Biome>> optionalBiomeKey = biomeRegistry.getKey(optionalBiome.get());
+            if (optionalBiomeKey.isPresent()) return new Biome(biomeRegistry.getEntry(optionalBiomeKey.get()).get());
             else
             {
                 getExecutor().cancel("Invalid biome entry ID: '" + id + "'!");

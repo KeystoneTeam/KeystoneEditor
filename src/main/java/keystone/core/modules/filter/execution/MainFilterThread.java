@@ -85,6 +85,12 @@ public class MainFilterThread extends AbstractFilterThread
     {
         if (processBlocks)
         {
+            // Configure Progress Bar
+            int possiblePositions = 0;
+            for (WorldRegion region : executor.getRegions()) possiblePositions += region.size.x * region.size.y * region.size.z;
+            ProgressBar.start("Preparing Filter", 1, () -> executor.cancel("Filter cancelled"));
+            ProgressBar.beginIteration(possiblePositions);
+
             if (ignoreRepeatBlocks)
             {
                 for (WorldRegion region : executor.getRegions())
@@ -98,6 +104,7 @@ public class MainFilterThread extends AbstractFilterThread
                             allBlockPositions.add(pos);
                             regionBlockSet.add(pos);
                         }
+                        ProgressBar.nextStep();
                     });
                     blockPositionsByRegion.put(region, regionBlockSet);
                 }
@@ -110,9 +117,12 @@ public class MainFilterThread extends AbstractFilterThread
                     BlockPos pos = new BlockPos(x, y, z);
                     allBlockPositions.add(pos);
                     regionBlockSet.add(pos);
+                    ProgressBar.nextStep();
                 });
                 blockPositionsByRegion.put(region, regionBlockSet);
             }
+
+            ProgressBar.nextIteration();
         }
     }
     private void calculateEntities()
@@ -215,6 +225,7 @@ public class MainFilterThread extends AbstractFilterThread
         if (iteration < iterations - 1)
         {
             historyModule.swapBlockBuffers(true);
+            historyModule.swapBiomeBuffers(true);
             historyModule.swapEntityBuffers(true);
         }
         ProgressBar.nextIteration();

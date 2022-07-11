@@ -185,6 +185,16 @@ public class HistoryModule implements IKeystoneModule
 
         currentStackFrame.swapBlockBuffers(copy);
     }
+    public void swapBiomeBuffers(boolean copy)
+    {
+        if (currentStackFrame == null)
+        {
+            Keystone.LOGGER.error("Cannot call HistoryModule.swapBiomeBuffers without an open history entry!");
+            return;
+        }
+
+        currentStackFrame.swapBiomeBuffers(copy);
+    }
     public void swapEntityBuffers(boolean copy)
     {
         if (currentStackFrame == null)

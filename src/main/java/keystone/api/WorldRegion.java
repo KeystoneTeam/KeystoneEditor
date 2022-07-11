@@ -151,13 +151,50 @@ public class WorldRegion
      * @param x The x coordinate
      * @param y The y coordinate
      * @param z The z coordinate
+     * @return The biome at the given coordinates
+     */
+    public Biome getBiome(int x, int y, int z)
+    {
+        return worldModifiers.biomes.getBiome(x, y, z, RetrievalMode.LAST_SWAPPED, true);
+    }
+    /**
+     * Get the biome at a position in the filter box
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
      * @param retrievalMode The {@link RetrievalMode} to use when getting the biome
      * @return The biome at the given coordinates
      */
     public Biome getBiome(int x, int y, int z, RetrievalMode retrievalMode)
     {
-        return worldModifiers.biomes.getBiome(x, y, z, retrievalMode);
+        return worldModifiers.biomes.getBiome(x, y, z, retrievalMode, true);
     }
+    /**
+     * Get the biome at a position in the filter box
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     * @param smooth Whether to smooth the biomes
+     * @return The biome at the given coordinates
+     */
+    public Biome getBiome(int x, int y, int z, boolean smooth)
+    {
+        return worldModifiers.biomes.getBiome(x, y, z, RetrievalMode.LAST_SWAPPED, smooth);
+    }
+    /**
+     * Get the biome at a position in the filter box
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     * @param retrievalMode The {@link RetrievalMode} to use when getting the biome
+     * @param smooth Whether to smooth the biomes
+     * @return The biome at the given coordinates
+     */
+    public Biome getBiome(int x, int y, int z, RetrievalMode retrievalMode, boolean smooth)
+    {
+        return worldModifiers.biomes.getBiome(x, y, z, retrievalMode, smooth);
+    }
+
     /**
      * Set the block at a position in the filter box to a random entry in a {@link BlockPalette}.
      * This will only work if the position is within the filter box
@@ -232,6 +269,25 @@ public class WorldRegion
      * @return Whether the change was successful
      */
     public boolean setBlock(BlockPos pos, Block block) { return setBlock(pos.x, pos.y, pos.z, block); }
+    /**
+     * Set the biome at a position in the filter box to a {@link Biome}.
+     * This will only work if the position is within the filter box or
+     * allowBlocksOutside is true
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     * @param biome The {@link Biome} to change the position to
+     * @return Whether the change was successful
+     */
+    public boolean setBiome(int x, int y, int z, Biome biome)
+    {
+        if (allowBlocksOutside || isPositionInBox(x, y, z))
+        {
+            worldModifiers.biomes.setBiome(x, y, z, biome);
+            return true;
+        }
+        else return false;
+    }
     /**
      * Add or modify an {@link Entity} in the region
      * @param entity The {@link Entity} to add or modify

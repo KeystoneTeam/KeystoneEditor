@@ -6,13 +6,18 @@ import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.world.BlocksModule;
+import keystone.core.modules.world.WorldModifierModules;
+import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import keystone.core.schematic.KeystoneSchematic;
+import keystone.core.utils.WorldRegistries;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.*;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.util.registry.BuiltinRegistries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
@@ -99,19 +104,20 @@ public class BiomesExtension implements ISchematicExtension
         // Load Biome Palette
         List<RegistryEntry<Biome>> palette = new ArrayList<>();
         NbtList paletteNBT = nbt.getList("palette", NbtElement.STRING_TYPE);
+        Registry<Biome> biomeRegistry = WorldRegistries.getBiomeRegistry();
         for (int i = 0; i < paletteNBT.size(); i++)
         {
             String biomeID = paletteNBT.getString(i);
-            Biome biome = BuiltinRegistries.BIOME.get(new Identifier(biomeID));
-            if (biome == null)
+            Optional<Biome> biome = biomeRegistry.getOrEmpty(new Identifier(biomeID));
+            if (biome.isEmpty())
             {
                 Keystone.LOGGER.warn("Trying to load schematic with unregistered biome '" + biomeID + "'!");
                 return null;
             }
             else
             {
-                Optional<RegistryKey<Biome>> biomeKey = BuiltinRegistries.BIOME.getKey(biome);
-                if (biomeKey.isPresent()) palette.add(BuiltinRegistries.BIOME.getEntry(biomeKey.get()).get());
+                Optional<RegistryKey<Biome>> biomeKey = biomeRegistry.getKey(biome.get());
+                if (biomeKey.isPresent()) palette.add(biomeRegistry.getEntry(biomeKey.get()).get());
                 else
                 {
                     Keystone.LOGGER.warn("Trying to load schematic with unregistered biome entry '" + biomeID + "'!");
@@ -138,5 +144,5 @@ public class BiomesExtension implements ISchematicExtension
     }
 
     @Override
-    public boolean canPlace() { return false; }
+    public boolean canPlace() { return true; }
 }

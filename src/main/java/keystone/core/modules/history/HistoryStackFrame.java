@@ -1,6 +1,7 @@
 package keystone.core.modules.history;
 
 import keystone.api.Keystone;
+import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
@@ -159,6 +160,10 @@ public class HistoryStackFrame
     {
         getOrAddChunk(x, y, z).setBlock(x, y, z, block);
     }
+    public void setBiome(int x, int y, int z, Biome biome)
+    {
+        getOrAddChunk(x, y, z).setBiome(x, y, z, biome);
+    }
     public void commitEntityChanges(Entity entity)
     {
         getOrAddChunk((int)entity.x(), (int)entity.y(), (int)entity.z()).commitEntityChanges(entity);
@@ -188,6 +193,10 @@ public class HistoryStackFrame
     public void swapBlockBuffers(boolean copy)
     {
         for (WorldHistoryChunk chunk : chunks.values()) chunk.swapBlockBuffers(copy);
+    }
+    public void swapBiomeBuffers(boolean copy)
+    {
+        for (WorldHistoryChunk chunk : chunks.values()) chunk.swapBiomeBuffers(copy);
     }
     public void swapEntityBuffers(boolean copy)
     {
