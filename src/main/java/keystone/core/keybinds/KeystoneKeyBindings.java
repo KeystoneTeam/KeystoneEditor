@@ -7,6 +7,7 @@ import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.keybinds.conflicts.DefaultKeyConditions;
 import keystone.core.keybinds.conflicts.IKeyCondition;
+import keystone.core.modules.selection.SelectionModule;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.block.Blocks;

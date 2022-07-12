@@ -7,27 +7,22 @@ import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.utils.ProgressBar;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
 
 public class MainFilterThread extends AbstractFilterThread
 {
     private final HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
-
-    private long startTime;
+    private final FilterModule filterModule = Keystone.getModule(FilterModule.class);
 
     private int iterations;
-    private boolean ignoreRepeatBlocks;
     private boolean ignoreRepeatEntities;
 
     private boolean processRegions;
     private boolean processBlocks;
     private boolean processEntities;
 
-    private final Set<BlockPos> allBlockPositions = new HashSet<>();
     private final Set<UUID> allEntities = new HashSet<>();
-    private final Map<WorldRegion, Set<BlockPos>> blockPositionsByRegion = new HashMap<>();
     private final Map<WorldRegion, Set<Entity>> entitiesByRegion = new HashMap<>();
 
     public MainFilterThread(FilterExecutor executor)
@@ -54,15 +49,11 @@ public class MainFilterThread extends AbstractFilterThread
     public void threadCode()
     {
         // Initialize filter and get execution properties
-        startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         filter.setWorldRegions(executor.getRegions());
         filter.initialize(); if (executor.shouldCancel()) return;
         iterations = filter.iterations(); if (executor.shouldCancel()) return;
-        ignoreRepeatBlocks = filter.ignoreRepeatBlocks(); if (executor.shouldCancel()) return;
         ignoreRepeatEntities = filter.ignoreRepeatEntities(); if (executor.shouldCancel()) return;
-
-        // Calculate block positions
-        calculateBlockPositions();
 
         // Start progress bar
         ProgressBar.start(filter.getName(), iterations, () -> executor.cancel("Filter cancelled"));
@@ -78,53 +69,9 @@ public class MainFilterThread extends AbstractFilterThread
     @Override
     public void onExecutionEnded()
     {
-        Keystone.getModule(FilterModule.class).markFilterFinished();
+        filterModule.markFilterFinished();
     }
 
-    private void calculateBlockPositions()
-    {
-        if (processBlocks)
-        {
-            // Configure Progress Bar
-            int possiblePositions = 0;
-            for (WorldRegion region : executor.getRegions()) possiblePositions += region.size.x * region.size.y * region.size.z;
-            ProgressBar.start("Preparing Filter", 1, () -> executor.cancel("Filter cancelled"));
-            ProgressBar.beginIteration(possiblePositions);
-
-            if (ignoreRepeatBlocks)
-            {
-                for (WorldRegion region : executor.getRegions())
-                {
-                    Set<BlockPos> regionBlockSet = new HashSet<>();
-                    region.forEachBlock((x, y, z, blockType) ->
-                    {
-                        BlockPos pos = new BlockPos(x, y, z);
-                        if (!allBlockPositions.contains(pos))
-                        {
-                            allBlockPositions.add(pos);
-                            regionBlockSet.add(pos);
-                        }
-                        ProgressBar.nextStep();
-                    });
-                    blockPositionsByRegion.put(region, regionBlockSet);
-                }
-            }
-            else for (WorldRegion region : executor.getRegions())
-            {
-                Set<BlockPos> regionBlockSet = new HashSet<>();
-                region.forEachBlock((x, y, z, blockType) ->
-                {
-                    BlockPos pos = new BlockPos(x, y, z);
-                    allBlockPositions.add(pos);
-                    regionBlockSet.add(pos);
-                    ProgressBar.nextStep();
-                });
-                blockPositionsByRegion.put(region, regionBlockSet);
-            }
-
-            ProgressBar.nextIteration();
-        }
-    }
     private void calculateEntities()
     {
         // Calculate Entities
@@ -174,9 +121,10 @@ public class MainFilterThread extends AbstractFilterThread
         }
 
         // Configure Progress Bar
-        int progressBarSteps = allBlockPositions.size() + allEntities.size();
+        int progressBarSteps = allEntities.size();
         for (WorldRegion region : executor.getRegions())
         {
+            progressBarSteps += region.size.x * region.size.y * region.size.z;
             progressBarSteps += filter.getRegionSteps(region);
             if (executor.shouldCancel()) return;
         }
@@ -195,14 +143,9 @@ public class MainFilterThread extends AbstractFilterThread
         // Process Blocks
         if (processBlocks)
         {
-            for (Map.Entry<WorldRegion, Set<BlockPos>> entry : blockPositionsByRegion.entrySet())
+            for (WorldRegion region : executor.getRegions())
             {
-                for (BlockPos pos : entry.getValue())
-                {
-                    filter.processBlock(pos.getX(), pos.getY(), pos.getZ(), entry.getKey());
-                    if (executor.shouldCancel()) return;
-                    else ProgressBar.nextStep();
-                }
+                region.forEachBlock((x, y, z, blockType) -> filter.processBlock(x, y, z, region));
             }
         }
 

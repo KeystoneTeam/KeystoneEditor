@@ -34,7 +34,7 @@ public class FilterExecutor
     private FilterExecutor(KeystoneFilter filter)
     {
         this.filter = filter;
-        this.regions = selectionModule.buildRegions(filter.allowBlocksOutsideRegion());
+        this.regions = selectionModule.buildRegions(filter.allowBlocksOutsideRegion(), filter.ignoreRepeatBlocks());
         this.mainThread = new MainFilterThread(this);
         this.threads = new HashSet<>();
         this.threads.add(this.mainThread);

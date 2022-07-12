@@ -96,12 +96,21 @@ public class SelectionModule implements IKeystoneModule
         boxes.forEach(box -> selectionBoxes.add(box.clone()));
         KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionBoxes, false, createHistoryEntry);
     }
-    public WorldRegion[] buildRegions(boolean allowBlocksOutside)
+    public WorldRegion[] buildRegions(boolean allowBlocksOutside, boolean splitIntersections)
     {
-        WorldRegion[] regions = new WorldRegion[selectionBoxes.size()];
+        List<SelectionBoundingBox> filterBoxes = selectionBoxes;
+        if (splitIntersections)
+        {
+            NonIntersectingCuboidList<SelectionBoundingBox> splitList = new NonIntersectingCuboidList<>(((minX, minY, minZ, maxX, maxY, maxZ) -> new SelectionBoundingBox(new Vec3i(minX, minY, minZ), new Vec3i(maxX, maxY, maxZ))));
+            splitList.addAll(selectionBoxes);
+            splitList.finish();
+            filterBoxes = splitList.getContents();
+        }
+
+        WorldRegion[] regions = new WorldRegion[filterBoxes.size()];
         for (int i = 0; i < regions.length; i++)
         {
-            regions[i] = new WorldRegion(selectionBoxes.get(i).getMin(), selectionBoxes.get(i).getMax());
+            regions[i] = new WorldRegion(filterBoxes.get(i).getMin(), filterBoxes.get(i).getMax());
             regions[i].allowBlocksOutside = allowBlocksOutside;
         }
         return regions;
