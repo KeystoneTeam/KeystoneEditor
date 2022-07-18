@@ -88,7 +88,7 @@ public class Forester extends StructureFilter
         @Override
         public void makeTrunk(WorldRegion region)
         {
-            for (int i = 0; i < height && !isCanceled(); i++) region.setBlock(x, y + i, z, log);
+            for (int i = 0; i < height && !isCancelled(); i++) region.setBlock(x, y + i, z, log);
         }
     }
     public class NormalTree extends StickTree
@@ -109,7 +109,7 @@ public class Forester extends StructureFilter
                 {
                     for (int dz = -radius; dz <= radius; dz++)
                     {
-                        if (isCanceled()) break;
+                        if (isCancelled()) break;
 
                         // Randomly ignore edges of blob
                         if (Math.abs(dx) == Math.abs(dz) && Math.abs(dx) == radius && forester.random.nextFloat() > 0.618f) continue;
@@ -130,7 +130,7 @@ public class Forester extends StructureFilter
             {
                 for (int i = 0; i < 2; i++)
                 {
-                    if (isCanceled()) break;
+                    if (isCancelled()) break;
 
                     int dx = forester.random.nextBoolean() ? -1 : 1;
                     int dz = forester.random.nextBoolean() ? -1 : 1;
@@ -171,7 +171,7 @@ public class Forester extends StructureFilter
             {
                 for (float j = -radius + 0.5f; j <= radius + 0.5f; j++)
                 {
-                    if (isCanceled()) break;
+                    if (isCancelled()) break;
 
                     float distSqr = i * i + j * j;
                     if (distSqr > radius * radius) continue;
@@ -200,7 +200,7 @@ public class Forester extends StructureFilter
         {
             for (int layer = 0; layer < foliageLayerRadii.length; layer++)
             {
-                if (isCanceled()) break;
+                if (isCancelled()) break;
                 placeCrossSection(centerX, centerY + layer, centerZ, foliageLayerRadii[layer], Axis.Y, foliage, region);
             }
         }
@@ -254,7 +254,7 @@ public class Forester extends StructureFilter
             float[] center = new float[3];
             for (int primaryOffset = 0; endOffset < 0 ? primaryOffset > endOffset : primaryOffset < endOffset; primaryOffset += maxDeltaSign)
             {
-                if (isCanceled()) break;
+                if (isCancelled()) break;
                 switch (axis)
                 {
                     case X:
@@ -283,13 +283,13 @@ public class Forester extends StructureFilter
         {
             for (Object obj : foliageCenters)
             {
-                if (isCanceled()) break;
+                if (isCancelled()) break;
                 float[] center = (float[])obj;
                 placeFoliageCluster(center[0], center[1], center[2], region);
             }
             for (Object obj : foliageCenters)
             {
-                if (isCanceled()) break;
+                if (isCancelled()) break;
                 float[] center = (float[])obj;
                 region.setBlock((int)Math.floor(center[0]), (int)Math.floor(center[1]), (int)Math.floor(center[2]), foliage);
             }
@@ -303,7 +303,7 @@ public class Forester extends StructureFilter
 
             for (Object obj : foliageCenters)
             {
-                if (isCanceled()) break;
+                if (isCancelled()) break;
 
                 float[] foliageCenter = (float[])obj;
                 float distance = (float)Math.sqrt((foliageCenter[0] - x) * (foliageCenter[0] - x) + (foliageCenter[2] - z) * (foliageCenter[2] - z));
@@ -342,7 +342,7 @@ public class Forester extends StructureFilter
             // Root amount is proportional to foliage amount
             for (Object obj : foliageCenters)
             {
-                if (isCanceled()) break;
+                if (isCancelled()) break;
 
                 float[] foliageCenter = (float[])obj;
                 float distance = (float)Math.sqrt((foliageCenter[0] - x) * (foliageCenter[0] - x) + (foliageCenter[2] - z) * (foliageCenter[2] - z));
@@ -457,7 +457,7 @@ public class Forester extends StructureFilter
 
                 for (int i = 0; i < buttressCount; i++)
                 {
-                    if (isCanceled()) break;
+                    if (isCancelled()) break;
 
                     float angle = (float)(forester.random.nextFloat() * 2 * Math.PI);
                     float thisPosRadius = posRadius * (0.9f + forester.random.nextFloat() * 0.2f);
@@ -524,7 +524,7 @@ public class Forester extends StructureFilter
             {
                 for (int cluster = 0; cluster < foliageClustersPerLayer; cluster++)
                 {
-                    if (isCanceled()) break;
+                    if (isCancelled()) break;
 
                     float foliageRadius = getFoliageRadius(layer - y);
                     if (Float.isNaN(foliageRadius)) continue;
@@ -693,7 +693,7 @@ public class Forester extends StructureFilter
     {
         for (Object obj : trees)
         {
-            if (isCanceled()) break;
+            if (isCancelled()) break;
 
             Tree tree = (Tree)obj;
 
@@ -706,7 +706,7 @@ public class Forester extends StructureFilter
 
         for (Object obj : trees)
         {
-            if (isCanceled()) break;
+            if (isCancelled()) break;
 
             Tree tree = (Tree)obj;
             tree.makeTrunk(region);
@@ -723,7 +723,7 @@ public class Forester extends StructureFilter
 
         while (true)
         {
-            if (isCanceled()) break;
+            if (isCancelled()) break;
 
             int x = (int)Math.floor(currentX);
             int y = (int)Math.floor(currentY);

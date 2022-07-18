@@ -42,7 +42,11 @@ import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.PalettedContainer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class WorldHistoryChunk
 {
@@ -57,18 +61,18 @@ public class WorldHistoryChunk
     private PalettedArray<BlockState> blockStateBuffer1;
     private PalettedArray<BlockState> blockStateBuffer2;
 
-    private final Map<BlockPos, NBTCompound> oldTileEntities;
-    private final Map<BlockPos, NBTCompound> tileEntityBuffer1;
-    private final Map<BlockPos, NBTCompound> tileEntityBuffer2;
+    private final ConcurrentHashMap<BlockPos, NBTCompound> oldTileEntities;
+    private final ConcurrentHashMap<BlockPos, NBTCompound> tileEntityBuffer1;
+    private final ConcurrentHashMap<BlockPos, NBTCompound> tileEntityBuffer2;
 
     private final PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> oldBiomes;
     private PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> biomeBuffer1;
     private PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> biomeBuffer2;
 
-    private final Map<UUID, Entity> oldEntities;
-    private final Map<UUID, Entity> entityBuffer1;
-    private final Map<UUID, Entity> entityBuffer2;
-    private final Map<UUID, Entity> allEntities;
+    private final ConcurrentHashMap<UUID, Entity> oldEntities;
+    private final ConcurrentHashMap<UUID, Entity> entityBuffer1;
+    private final ConcurrentHashMap<UUID, Entity> entityBuffer2;
+    private final ConcurrentHashMap<UUID, Entity> allEntities;
 
     private boolean swappedBlocks;
     private boolean swappedEntities;
@@ -90,9 +94,9 @@ public class WorldHistoryChunk
             this.blockStateBuffer1 = this.oldBlockStates.copy();
             this.blockStateBuffer2 = this.oldBlockStates.copy();
 
-            this.oldTileEntities = new HashMap<>();
-            this.tileEntityBuffer1 = new HashMap<>();
-            this.tileEntityBuffer2 = new HashMap<>();
+            this.oldTileEntities = new ConcurrentHashMap<>();
+            this.tileEntityBuffer1 = new ConcurrentHashMap<>();
+            this.tileEntityBuffer2 = new ConcurrentHashMap<>();
 
             Set<BlockPos> tileEntityPositions = chunk.getBlockEntityPositions();
             for (BlockPos pos : tileEntityPositions)
@@ -111,19 +115,19 @@ public class WorldHistoryChunk
             this.blockStateBuffer1 = new PalettedArray<>(4096, 1, Blocks.AIR.getDefaultState());
             this.blockStateBuffer2 = new PalettedArray<>(4096, 1, Blocks.AIR.getDefaultState());
 
-            this.oldTileEntities = new HashMap<>();
-            this.tileEntityBuffer1 = new HashMap<>();
-            this.tileEntityBuffer2 = new HashMap<>();
+            this.oldTileEntities = new ConcurrentHashMap<>();
+            this.tileEntityBuffer1 = new ConcurrentHashMap<>();
+            this.tileEntityBuffer2 = new ConcurrentHashMap<>();
         }
 
         this.oldBiomes = copyContainer(chunkSection.getBiomeContainer() instanceof PalettedContainer<RegistryEntry<net.minecraft.world.biome.Biome>> container ? container : chunkSection.getBiomeContainer().method_44350(), 4, 4, 4);
         this.biomeBuffer1 = this.oldBiomes.copy();
         this.biomeBuffer2 = this.oldBiomes.copy();
 
-        oldEntities = new HashMap<>();
-        entityBuffer1 = new HashMap<>();
-        entityBuffer2 = new HashMap<>();
-        allEntities = new HashMap<>();
+        oldEntities = new ConcurrentHashMap<>();
+        entityBuffer1 = new ConcurrentHashMap<>();
+        entityBuffer2 = new ConcurrentHashMap<>();
+        allEntities = new ConcurrentHashMap<>();
 
         int startX = chunkX << 4;
         int startY = chunkY << 4;
@@ -178,15 +182,15 @@ public class WorldHistoryChunk
         {
             NbtCompound tileEntitiesNBT = nbt.getCompound("TileEntities");
 
-            this.oldTileEntities = NBTSerializer.deserializeTileEntities(tileEntitiesNBT.getList("Old", NbtElement.COMPOUND_TYPE));
-            this.tileEntityBuffer1 = NBTSerializer.deserializeTileEntities(tileEntitiesNBT.getList("Buffer1", NbtElement.COMPOUND_TYPE));
-            this.tileEntityBuffer2 = NBTSerializer.deserializeTileEntities(tileEntitiesNBT.getList("Buffer2", NbtElement.COMPOUND_TYPE));
+            this.oldTileEntities = new ConcurrentHashMap<>(NBTSerializer.deserializeTileEntities(tileEntitiesNBT.getList("Old", NbtElement.COMPOUND_TYPE)));
+            this.tileEntityBuffer1 = new ConcurrentHashMap<>(NBTSerializer.deserializeTileEntities(tileEntitiesNBT.getList("Buffer1", NbtElement.COMPOUND_TYPE)));
+            this.tileEntityBuffer2 = new ConcurrentHashMap<>(NBTSerializer.deserializeTileEntities(tileEntitiesNBT.getList("Buffer2", NbtElement.COMPOUND_TYPE)));
         }
         else
         {
-            this.oldTileEntities = new HashMap<>();
-            this.tileEntityBuffer1 = new HashMap<>();
-            this.tileEntityBuffer2 = new HashMap<>();
+            this.oldTileEntities = new ConcurrentHashMap<>();
+            this.tileEntityBuffer1 = new ConcurrentHashMap<>();
+            this.tileEntityBuffer2 = new ConcurrentHashMap<>();
         }
 
         if (nbt.contains("Biomes", NbtElement.COMPOUND_TYPE))
@@ -229,19 +233,19 @@ public class WorldHistoryChunk
         {
             NbtCompound entitiesNBT = nbt.getCompound("Entities");
 
-            this.oldEntities = NBTSerializer.deserializeEntities(entitiesNBT.getCompound("Old"));
-            this.entityBuffer1 = NBTSerializer.deserializeEntities(entitiesNBT.getCompound("Buffer1"));
-            this.entityBuffer2 = NBTSerializer.deserializeEntities(entitiesNBT.getCompound("Buffer2"));
-            this.allEntities = NBTSerializer.deserializeEntities(entitiesNBT.getCompound("All"));
+            this.oldEntities = new ConcurrentHashMap<>(NBTSerializer.deserializeEntities(entitiesNBT.getCompound("Old")));
+            this.entityBuffer1 = new ConcurrentHashMap<>(NBTSerializer.deserializeEntities(entitiesNBT.getCompound("Buffer1")));
+            this.entityBuffer2 = new ConcurrentHashMap<>(NBTSerializer.deserializeEntities(entitiesNBT.getCompound("Buffer2")));
+            this.allEntities = new ConcurrentHashMap<>(NBTSerializer.deserializeEntities(entitiesNBT.getCompound("All")));
 
             this.swappedEntities = nbt.getBoolean("Swapped");
         }
         else
         {
-            this.oldEntities = new HashMap<>();
-            this.entityBuffer1 = new HashMap<>();
-            this.entityBuffer2 = new HashMap<>();
-            this.allEntities = new HashMap<>();
+            this.oldEntities = new ConcurrentHashMap<>();
+            this.entityBuffer1 = new ConcurrentHashMap<>();
+            this.entityBuffer2 = new ConcurrentHashMap<>();
+            this.allEntities = new ConcurrentHashMap<>();
 
             this.swappedEntities = false;
         }
@@ -572,19 +576,15 @@ public class WorldHistoryChunk
     public void undo()
     {
         // Apply Biomes
-        for (int x = 0; x < 4; x++)
+        var biomeContainer = createBiomeContainer(oldBiomes);
+        ((ChunkSectionAccessor)chunkSection).setBiomeStorage(biomeContainer);
+        if (MinecraftClient.getInstance().world.getDimension().equals(world.getDimension()))
         {
-            for (int y = 0; y < 4; y++)
-            {
-                for (int z = 0; z < 4; z++)
-                {
-                    int index = z + y * 4 + x * 16;
-                    RegistryEntry<net.minecraft.world.biome.Biome> biome = oldBiomes.get(index);
-                    this.chunkSection.getBiomeContainer().method_44350().swapUnsafe(x, y, z, biome);
-                }
-            }
+            ClientWorld world = MinecraftClient.getInstance().world;
+            Chunk chunk = world.getChunk(chunkX, chunkZ);
+            ChunkSection chunkSection = world.getChunk(chunkX, chunkZ).getSection(chunk.getSectionIndex(chunkY << 4));
+            ((ChunkSectionAccessor)chunkSection).setBiomeStorage(biomeContainer.copy());
         }
-        // TODO: Check if re-render is necessary
 
         // Apply Blocks
         BlockPos start = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
@@ -627,6 +627,8 @@ public class WorldHistoryChunk
             }
             else oldEntities.get(entityID).updateMinecraftEntity(world);
         }
+
+        // TODO: Re-render biomes
     }
     public void redo()
     {
@@ -638,7 +640,7 @@ public class WorldHistoryChunk
 
         // Apply Biomes
         var biomeContainer = createBiomeContainer(biomes);
-        ((ChunkSectionAccessor)chunkSection).setBiomeStorage(createBiomeContainer(biomes));
+        ((ChunkSectionAccessor)chunkSection).setBiomeStorage(biomeContainer);
         if (MinecraftClient.getInstance().world.getDimension().equals(world.getDimension()))
         {
             ClientWorld world = MinecraftClient.getInstance().world;
@@ -646,24 +648,6 @@ public class WorldHistoryChunk
             ChunkSection chunkSection = world.getChunk(chunkX, chunkZ).getSection(chunk.getSectionIndex(chunkY << 4));
             ((ChunkSectionAccessor)chunkSection).setBiomeStorage(biomeContainer.copy());
         }
-        //if (this.chunkSection.getBiomeContainer() instanceof PalettedContainer<RegistryEntry<net.minecraft.world.biome.Biome>> biomeStorage)
-        //{
-        //    for (int x = 0; x < 4; x++)
-        //    {
-        //        for (int y = 0; y < 4; y++)
-        //        {
-        //            for (int z = 0; z < 4; z++)
-        //            {
-        //                int index = z + y * 4 + x * 16;
-        //                RegistryEntry<net.minecraft.world.biome.Biome> biome = biomes.get(index);
-        //                biomeStorage.swapUnsafe(x, y, z, biome);
-        //
-        //            }
-        //        }
-        //    }
-        //}
-        //else Keystone.LOGGER.warn("ChunkSection's BiomeStorage is not a PalettedContainer!");
-        // TODO: Check if re-render is necessary
 
         // Apply Blocks
         for (int x = 0; x < 16; x++)
@@ -705,5 +689,7 @@ public class WorldHistoryChunk
             }
             else entities.get(entityID).updateMinecraftEntity(world);
         }
+
+        // TODO: Re-Render Biomes
     }
 }

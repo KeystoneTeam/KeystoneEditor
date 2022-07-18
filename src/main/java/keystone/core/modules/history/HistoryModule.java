@@ -108,7 +108,7 @@ public class HistoryModule implements IKeystoneModule
         if (currentStackFrame != null)
         {
             Keystone.LOGGER.warn("Calling HistoryModule.beginHistoryEntry without first calling HistoryModule.endHistoryEntry! This may cause issues");
-            endHistoryEntry();
+            return;
         }
 
         currentStackFrame = new HistoryStackFrame(currentHistoryIndex + 1);
@@ -146,6 +146,7 @@ public class HistoryModule implements IKeystoneModule
     {
         currentStackFrame.undo();
         currentStackFrame = null;
+        tryBeginHooksOpen = 0;
     }
 
     public void pushToEntry(IHistoryEntry historyEntry, IHistoryEntry revertEntry)

@@ -23,7 +23,6 @@ public abstract class StructureFilter extends KeystoneFilter
     public void processStructure(Vector2f coordinate, WorldRegion region) {}
     public void postProcessStructures(WorldRegion region) {}
 
-    @Override public boolean allowBlocksOutsideRegion() { return true; }
     @Override public void initialize()
     {
         this.random = seed == 0 ? Keystone.RANDOM : Random.create(seed);
@@ -47,7 +46,7 @@ public abstract class StructureFilter extends KeystoneFilter
         List<Vector2f> regionCoordinates = coordinates.get(region);
         for (Vector2f coordinate : regionCoordinates)
         {
-            if (isCanceled()) break;
+            if (isCancelled()) break;
 
             processStructure(coordinate, region);
             ProgressBar.nextStep();

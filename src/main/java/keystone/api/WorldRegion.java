@@ -13,6 +13,10 @@ import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import net.minecraft.util.math.Vec3i;
 
+import java.util.Iterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 public class WorldRegion
 {
     //region Function Types
@@ -295,6 +299,82 @@ public class WorldRegion
     public void commitEntityChanges(Entity entity)
     {
         worldModifiers.entities.commitEntityChanges(entity);
+    }
+
+    /**
+     * Create a {@link Stream} of all {@link BlockPos block positions} within the region
+     * @return The {@link Stream} of {@link BlockPos}
+     */
+    public Stream<BlockPos> streamBlocks()
+    {
+        return StreamSupport.stream(iterateBlocks(min, max).spliterator(), false);
+    }
+
+    /**
+     * Create a {@link Stream} of all {@link BlockPos block positions} within a rectangular
+     * region defined by a pair of corners
+     * @param min The minimum {@link BlockPos}
+     * @param max The maximum {@link BlockPos}
+     * @return The {@link Stream} of {@link BlockPos}
+     */
+    public static Stream<BlockPos> streamBlocks(BlockPos min, BlockPos max)
+    {
+        return StreamSupport.stream(iterateBlocks(min, max).spliterator(), false);
+    }
+    /**
+     * Create a {@link Iterable} of all {@link BlockPos block positions} within a rectangular
+     * region defined by a pair of corners
+     * @param min The minimum {@link BlockPos}
+     * @param max The maximum {@link BlockPos}
+     * @return The {@link Iterable} of {@link BlockPos}
+     */
+    public static Iterable<BlockPos> iterateBlocks(BlockPos min, BlockPos max)
+    {
+        return () -> new Iterator<>()
+        {
+            private final BlockPos size = new BlockPos(max.x - min.x + 1, max.y - min.y + 1, max.z - min.z + 1);
+            private final int volume = size.x * size.y * size.z;
+            private int index = 0;
+            private int x = min.x;
+            private int y = min.y;
+            private int z = min.z;
+
+            @Override
+            public boolean hasNext()
+            {
+                return index < volume;
+            }
+
+            @Override
+            public synchronized BlockPos next()
+            {
+                if (index >= volume)
+                {
+                    return null;
+                }
+
+                BlockPos pos = new BlockPos(x, y, z);
+
+                index++;
+                z++;
+                if (z > max.z)
+                {
+                    z = min.z;
+                    x++;
+                    if (x > max.x)
+                    {
+                        x = min.x;
+                        y++;
+                        if (y > max.y)
+                        {
+                            y = min.y;
+                        }
+                    }
+                }
+
+                return pos;
+            }
+        };
     }
 
     /**

@@ -3,12 +3,14 @@ package keystone.core.modules.filter.execution;
 import keystone.api.Keystone;
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.utils.ProgressBar;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public class MainFilterThread extends AbstractFilterThread
 {
@@ -50,10 +52,9 @@ public class MainFilterThread extends AbstractFilterThread
     {
         // Initialize filter and get execution properties
         long startTime = System.currentTimeMillis();
-        filter.setWorldRegions(executor.getRegions());
-        filter.initialize(); if (executor.shouldCancel()) return;
-        iterations = filter.iterations(); if (executor.shouldCancel()) return;
-        ignoreRepeatEntities = filter.ignoreRepeatEntities(); if (executor.shouldCancel()) return;
+        filter.initialize(); if (executor.isCancelled()) return;
+        iterations = filter.iterations(); if (executor.isCancelled()) return;
+        ignoreRepeatEntities = settings.ignoreRepeatEntities;
 
         // Start progress bar
         ProgressBar.start(filter.getName(), iterations, () -> executor.cancel("Filter cancelled"));
@@ -62,8 +63,8 @@ public class MainFilterThread extends AbstractFilterThread
         for (int iteration = 0; iteration < iterations; iteration++) performIteration(iteration);
 
         // Filter cleanup
-        filter.finished(); if (executor.shouldCancel()) return;
-        filter.print("Filter completed in " + (System.currentTimeMillis() - startTime) + "ms"); if (executor.shouldCancel()) return;
+        filter.finished(); if (executor.isCancelled()) return;
+        filter.print("Filter completed in " + (System.currentTimeMillis() - startTime) + "ms"); if (executor.isCancelled()) return;
         ProgressBar.finish();
     }
     @Override
@@ -109,15 +110,15 @@ public class MainFilterThread extends AbstractFilterThread
     private void performIteration(int iteration)
     {
         // Initialize Pass
-        filter.setPass(iteration); if (executor.shouldCancel()) return;
-        filter.preparePass(); if (executor.shouldCancel()) return;
+        filter.setPass(iteration); if (executor.isCancelled()) return;
+        filter.preparePass(); if (executor.isCancelled()) return;
         calculateEntities();
 
         // Prepare Regions
         for (WorldRegion region : executor.getRegions())
         {
             filter.prepareRegion(region);
-            if (executor.shouldCancel()) return;
+            if (executor.isCancelled()) return;
         }
 
         // Configure Progress Bar
@@ -126,45 +127,45 @@ public class MainFilterThread extends AbstractFilterThread
         {
             progressBarSteps += region.size.x * region.size.y * region.size.z;
             progressBarSteps += filter.getRegionSteps(region);
-            if (executor.shouldCancel()) return;
+            if (executor.isCancelled()) return;
         }
         ProgressBar.beginIteration(progressBarSteps);
 
         // Process Regions
         if (processRegions)
         {
-            for (WorldRegion region : executor.getRegions())
-            {
-                filter.processRegion(region);
-                if (executor.shouldCancel()) return;
-            }
+            Stream<WorldRegion> regionStream = Arrays.stream(executor.getRegions());
+            regionStream.forEach(filter::processRegion);
         }
 
         // Process Blocks
         if (processBlocks)
         {
-            for (WorldRegion region : executor.getRegions())
+            Stream<WorldRegion> regionStream = Arrays.stream(executor.getRegions());
+            regionStream.forEach(region ->
             {
-                region.forEachBlock((x, y, z, blockType) -> filter.processBlock(x, y, z, region));
-            }
+                Stream<BlockPos> blockStream = region.streamBlocks();
+                blockStream.forEach(pos ->
+                {
+                    filter.processBlock(pos.x, pos.y, pos.z, region);
+                    ProgressBar.nextStep();
+                });
+            });
         }
 
         // Process Entities
         if (processEntities)
         {
-            for (Map.Entry<WorldRegion, Set<Entity>> entry : entitiesByRegion.entrySet())
+            Stream<WorldRegion> regionStream = entitiesByRegion.keySet().stream();
+            regionStream.forEach(region ->
             {
-                for (Entity entity : entry.getValue())
-                {
-                    filter.processEntity(entity, entry.getKey());
-                    if (executor.shouldCancel()) return;
-                    else ProgressBar.nextStep();
-                }
-            }
+                Stream<Entity> entityStream = entitiesByRegion.get(region).stream();
+                entityStream.forEach(entity -> filter.processEntity(entity, region));
+            });
         }
 
         // Complete Iteration
-        filter.finishPass(); if (executor.shouldCancel()) return;
+        filter.finishPass(); if (executor.isCancelled()) return;
         if (iteration < iterations - 1)
         {
             historyModule.swapBlockBuffers(true);

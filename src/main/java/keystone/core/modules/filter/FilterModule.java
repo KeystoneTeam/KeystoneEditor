@@ -7,8 +7,11 @@ import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.execution.FilterExecutor;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
+import keystone.core.utils.ProgressBar;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -60,11 +63,23 @@ public class FilterModule implements IKeystoneModule
 
     public void markFilterFinished()
     {
-        currentExecutorIndex++;
-        if (currentExecutorIndex >= currentExecutorGroup.length)
+        FilterExecutor executor = currentExecutorGroup[currentExecutorIndex];
+        if (executor.isCancelled())
         {
+            for (Text reasonPart : executor.getFilterError()) MinecraftClient.getInstance().player.sendMessage(reasonPart, false);
+            ProgressBar.finish();
+
             currentExecutorGroup = null;
-            historyModule.endHistoryEntry();
+            historyModule.abortHistoryEntry();
+        }
+        else
+        {
+            currentExecutorIndex++;
+            if (currentExecutorIndex >= currentExecutorGroup.length)
+            {
+                currentExecutorGroup = null;
+                historyModule.endHistoryEntry();
+            }
         }
         this.executingFilter = false;
     }

@@ -2,11 +2,9 @@ package keystone.core.modules.filter.execution;
 
 import keystone.api.Keystone;
 import keystone.api.WorldRegion;
+import keystone.api.filters.FilterExecutionSettings;
 import keystone.api.filters.KeystoneFilter;
-import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
-import keystone.core.utils.ProgressBar;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -20,21 +18,23 @@ import java.util.Set;
 
 public class FilterExecutor
 {
-    private final HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
     private final SelectionModule selectionModule = Keystone.getModule(SelectionModule.class);
 
     private final KeystoneFilter filter;
+    private final FilterExecutionSettings settings;
     private final WorldRegion[] regions;
 
     private final MainFilterThread mainThread;
-    private final Set<AbstractFilterThread> threads;
+    private final Set<IFilterThread> threads;
 
     private Text[] filterError;
 
     private FilterExecutor(KeystoneFilter filter)
     {
         this.filter = filter;
-        this.regions = selectionModule.buildRegions(filter.allowBlocksOutsideRegion(), filter.ignoreRepeatBlocks());
+        this.settings = new FilterExecutionSettings();
+        this.filter.createExecutionSettings(settings);
+        this.regions = selectionModule.buildRegions(settings.allowBlocksOutsideRegion, settings.splitWorldRegions);
         this.mainThread = new MainFilterThread(this);
         this.threads = new HashSet<>();
         this.threads.add(this.mainThread);
@@ -58,31 +58,22 @@ public class FilterExecutor
         return thread;
     }
 
-
     //region Getters
     public KeystoneFilter getFilter() { return this.filter; }
+    public FilterExecutionSettings getSettings() { return this.settings; }
     public WorldRegion[] getRegions() { return this.regions; }
     //endregion
     //region Error API
     /**
-     * @return True if the filter was canceled, false otherwise
+     * @return True if the filter was cancelled, false otherwise
      */
-    public boolean isCanceled() { return filterError != null; }
+    public boolean isCancelled() { return filterError != null; }
+
     /**
-     * Checks if the filter should cancel, and prints the error message if it was
-     * @return True if the filter was aborted, false otherwise
+     * @return If the filter was cancelled or had an error, the error
+     * message that was raised, null otherwise
      */
-    public boolean shouldCancel()
-    {
-        if (filterError != null)
-        {
-            for (Text reasonPart : filterError) MinecraftClient.getInstance().player.sendMessage(reasonPart, false);
-            historyModule.abortHistoryEntry();
-            ProgressBar.finish();
-            return true;
-        }
-        else return false;
-    }
+    public Text[] getFilterError() { return filterError; }
 
     /**
      * Abort filter execution

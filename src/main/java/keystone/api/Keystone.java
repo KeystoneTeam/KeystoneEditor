@@ -9,7 +9,7 @@ import keystone.core.events.minecraft.ClientPlayerEvents;
 import keystone.core.events.minecraft.ServerPlayerEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
-import keystone.core.modules.filter.execution.AbstractFilterThread;
+import keystone.core.modules.filter.execution.IFilterThread;
 import keystone.core.modules.rendering.ghost_blocks.GhostBlocksModule;
 import keystone.core.registries.BlockTypeRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 public final class Keystone
 {
     public static final Logger LOGGER = LogManager.getLogger();
-    public static final Random RANDOM = Random.create();
+    public static final Random RANDOM = Random.createThreadSafe();
 
     private static FilterModule filterModule;
     private static GhostBlocksModule ghostBlocksModule;
@@ -269,7 +269,7 @@ public final class Keystone
     }
     public static boolean tryCancelFilter(String... reason)
     {
-        if (Thread.currentThread() instanceof AbstractFilterThread filterThread)
+        if (Thread.currentThread() instanceof IFilterThread filterThread)
         {
             filterThread.getExecutor().cancel(reason);
             return true;

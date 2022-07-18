@@ -64,7 +64,7 @@ public class CreateSchematics extends KeystoneFilter
         frontier.push(new BlockPos(x, y, z));
         while (!frontier.isEmpty() && iterations > 0)
         {
-            if (isCanceled()) break;
+            if (isCancelled()) break;
             iterations--;
 
             BlockPos pos = (BlockPos)frontier.remove();

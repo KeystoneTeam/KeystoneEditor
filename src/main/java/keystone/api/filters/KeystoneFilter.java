@@ -16,9 +16,9 @@ import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.gui.widgets.inputs.fields.EditableObject;
-import keystone.core.modules.filter.execution.AbstractFilterThread;
 import keystone.core.modules.filter.execution.CustomFilterThread;
 import keystone.core.modules.filter.execution.FilterExecutor;
+import keystone.core.modules.filter.execution.IFilterThread;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.registries.BlockTypeRegistry;
@@ -49,7 +49,6 @@ public class KeystoneFilter extends EditableObject
     private String name;
     private boolean compiledSuccessfully;
     private Throwable compilerException;
-    private WorldRegion[] regions;
     private int iteration;
 
     //region Static
@@ -88,38 +87,6 @@ public class KeystoneFilter extends EditableObject
     public final Throwable getCompilerException() { return this.compilerException; }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
-     * Set the {@link WorldRegion WorldRegions} this filter is being run on
-     * @param regions The regions that the filter is modifying
-     * @return The modified filter instance
-     */
-    public final KeystoneFilter setWorldRegions(WorldRegion[] regions)
-    {
-        this.regions = regions;
-        //HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
-        //for (WorldRegion region : regions)
-        //{
-        //    int minChunkX = region.min.x >> 4;
-        //    int minChunkY = region.min.y >> 4;
-        //    int minChunkZ = region.min.z >> 4;
-        //    int maxChunkX = minChunkX + (int)Math.ceil(region.size.x / 16.0f);
-        //    int maxChunkY = minChunkY + (int)Math.ceil(region.size.y / 16.0f);
-        //    int maxChunkZ = minChunkZ + (int)Math.ceil(region.size.z / 16.0f);
-        //
-        //    for (int chunkX = minChunkX; chunkX < maxChunkX; chunkX++)
-        //    {
-        //        for (int chunkY = minChunkY; chunkY < maxChunkY; chunkY++)
-        //        {
-        //            for (int chunkZ = minChunkZ; chunkZ < maxChunkZ; chunkZ++)
-        //            {
-        //                historyModule.getOpenEntry().preloadChunk(chunkX, chunkY, chunkZ);
-        //            }
-        //        }
-        //    }
-        //}
-        return this;
-    }
-    /**
-     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Set the current pass of this filter
      * @param pass The current pass number
      */
@@ -127,7 +94,6 @@ public class KeystoneFilter extends EditableObject
     {
         this.iteration = pass;
     }
-
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * This must be called from a filter thread. If it is not, it will return null
@@ -135,25 +101,16 @@ public class KeystoneFilter extends EditableObject
      */
     private FilterExecutor getExecutor()
     {
-        if (Thread.currentThread() instanceof AbstractFilterThread filterThread) return filterThread.getExecutor();
+        if (Thread.currentThread() instanceof IFilterThread filterThread) return filterThread.getExecutor();
         else return null;
     }
     //endregion
     //region Filter Steps
     /**
-     * @return Whether to ignore blocks that have already been processed in another {@link WorldRegion}
+     * Ran at before filter execution. Use this to tell Keystone how this filter is meant to be run
+     * @param settings
      */
-    public boolean ignoreRepeatBlocks() { return true; }
-    /**
-     * @return Whether to ignore entities that have already been processed in another {@link WorldRegion}
-     */
-    public boolean ignoreRepeatEntities() { return false; }
-    /**
-     * @return Whether to allow placing blocks outside the current {@link WorldRegion} the filter is
-     * modifying. You should only enable this if the filter is meant for population, such as foresting
-     */
-    public boolean allowBlocksOutsideRegion() { return false; }
-
+    public void createExecutionSettings(FilterExecutionSettings settings) { }
     /**
      * Ran at the very beginning of filter execution, before calculating iterations or processing region content. Use
      * this to do any initialization that cannot be done in the constructor
@@ -252,10 +209,10 @@ public class KeystoneFilter extends EditableObject
 
     /**
      * When writing loops with no guaranteed stopping point, always add a check for this at the beginning of each
-     * iteration, to ensure the cancel button works. [e.g. if(isCanceled()) break;]
-     * @return True if the filter was canceled, false otherwise
+     * iteration, to ensure the cancel button works. [e.g. if(isCancelled()) break;]
+     * @return True if the filter was cancelled, false otherwise
      */
-    public final boolean isCanceled() { return getExecutor().isCanceled(); }
+    public final boolean isCancelled() { return getExecutor().isCancelled(); }
     /**
      * @return The number of {@link WorldRegion FilterBoxes} that the filter is modifying
      */
