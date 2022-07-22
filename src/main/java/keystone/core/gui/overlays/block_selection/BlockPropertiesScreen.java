@@ -62,7 +62,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
         panelY = (height - panelHeight) / 2;
 
         // Block Properties
-        propertiesList.offset(panelX, panelY + PADDING);
+        propertiesList.move(panelX, panelY + PADDING);
         addDrawableChild(propertiesList);
 
         // Done Button

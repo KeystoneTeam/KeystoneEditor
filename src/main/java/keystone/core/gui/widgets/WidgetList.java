@@ -13,9 +13,12 @@ public class WidgetList extends ClickableWidget
 {
     private int scrollIndex;
     private int maxScrollIndex;
+    private int offsetX;
+    private int offsetY;
+
+    protected int maxHeight;
 
     private final int padding;
-    private final int maxHeight;
     private final List<ClickableWidget> currentWidgets = new ArrayList<>();
     private final List<ClickableWidget> widgets = new ArrayList<>();
     private final List<ClickableWidget> queuedWidgets = new ArrayList<>();
@@ -35,6 +38,12 @@ public class WidgetList extends ClickableWidget
         if (queued) queuedWidgets.add(widget);
         else widgets.add(widget);
     }
+    public void clear()
+    {
+        this.currentWidgets.clear();
+        this.widgets.clear();
+        this.queuedWidgets.clear();
+    }
 
     public void bake()
     {
@@ -45,34 +54,24 @@ public class WidgetList extends ClickableWidget
         }
 
         scrollIndex = 0;
-        while (true)
-        {
-            updateCurrentWidgets();
-            if (currentWidgets.size() + scrollIndex >= widgets.size())
-            {
-                maxScrollIndex = scrollIndex;
-                break;
-            }
-            else scrollIndex++;
-        }
-        scrollIndex = 0;
-        if (maxScrollIndex > 0) width += 2;
         updateCurrentWidgets();
     }
-    public void offset(int x, int y)
+    public void move(int x, int y)
     {
-        this.x += x;
-        this.y += y;
-        for (ClickableWidget widget : widgets)
-        {
-            widget.x += x;
-            widget.y += y;
-        }
         for (ClickableWidget widget : queuedWidgets)
         {
             widget.x += x;
             widget.y += y;
         }
+        this.x += x;
+        this.y += y;
+        updateCurrentWidgets();
+    }
+    public void setElementsOffset(int x, int y)
+    {
+        offsetX = x;
+        offsetY = y;
+        updateCurrentWidgets();
     }
 
     public void forEach(Consumer<ClickableWidget> consumer)
@@ -97,18 +96,21 @@ public class WidgetList extends ClickableWidget
         }
         return false;
     }
-    private void updateCurrentWidgets()
+    private void updateWidgetLocations()
     {
         currentWidgets.clear();
         height = 0;
 
-        int y = this.y;
+        int x = this.x + offsetX;
+        int y = this.y + offsetY;
         int i = scrollIndex;
 
+        // Update Widget Locations
         while (i < widgets.size())
         {
             ClickableWidget widget = widgets.get(i);
             if (height + widget.getHeight() > maxHeight) break;
+            widget.x = x;
             widget.y = y;
 
             y += widget.getHeight() + padding;
@@ -116,6 +118,34 @@ public class WidgetList extends ClickableWidget
             currentWidgets.add(widget);
             i++;
         }
+    }
+
+    protected void updateCurrentWidgets()
+    {
+        // Update Child Lists
+        for (ClickableWidget widget : queuedWidgets) if (widget instanceof WidgetList list) list.updateCurrentWidgets();
+        for (ClickableWidget widget : currentWidgets) if (widget instanceof WidgetList list) list.updateCurrentWidgets();
+
+        // Update Max Scroll Index
+        int restoreScrollIndex = scrollIndex;
+        boolean hadScrollbar = maxScrollIndex > 0;
+        scrollIndex = 0;
+        maxScrollIndex = 0;
+        while (true)
+        {
+            updateWidgetLocations();
+            if (currentWidgets.size() + scrollIndex >= widgets.size())
+            {
+                maxScrollIndex = scrollIndex;
+                break;
+            }
+            else scrollIndex++;
+        }
+        scrollIndex = restoreScrollIndex;
+        if (maxScrollIndex > 0 && !hadScrollbar) width += 2;
+        else if (maxScrollIndex == 0 && hadScrollbar) width -= 2;
+
+        updateWidgetLocations();
     }
     //region Widget Overrides
     @Override

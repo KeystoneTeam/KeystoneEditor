@@ -278,21 +278,24 @@ public class KeystoneOverlayHandler
     }
     //endregion
     //region Helpers
-    public static void forEachElement(Consumer<Element> consumer, boolean acceptLists)
+    public static void forEachElement(Set<Element> ignoreSet, Consumer<Element> consumer, boolean acceptLists)
     {
         overlays.forEach(overlay -> overlay.children().forEach(element ->
         {
-            if (element instanceof WidgetList list)
+            if (!ignoreSet.contains(element))
             {
-                list.forEach(consumer::accept);
-                if (acceptLists) consumer.accept(list);
+                if (element instanceof WidgetList list)
+                {
+                    list.forEach(consumer::accept);
+                    if (acceptLists) consumer.accept(list);
+                }
+                else consumer.accept(element);
             }
-            else consumer.accept(element);
         }));
     }
-    public static void forEachClickable(Consumer<ClickableWidget> consumer, boolean acceptLists)
+    public static void forEachClickable(Set<Element> ignoreSet, Consumer<ClickableWidget> consumer, boolean acceptLists)
     {
-        forEachElement(element -> { if (element instanceof ClickableWidget clickable) consumer.accept(clickable); }, acceptLists);
+        forEachElement(ignoreSet, element -> { if (element instanceof ClickableWidget clickable) consumer.accept(clickable); }, acceptLists);
     }
     //endregion
 }

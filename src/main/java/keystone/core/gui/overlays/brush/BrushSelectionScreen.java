@@ -157,7 +157,8 @@ public class BrushSelectionScreen extends KeystonePanel
         y += IntegerWidget.getFinalHeight() + PADDING;
 
         // Brush variables
-        brushVariablesList.offset(0, y);
+        brushVariablesList.move(0, y);
+        brushVariablesList.setElementsOffset(5, 0);
         addDrawableChild(brushVariablesList);
 
         brushModule.getBrushOperation().undirtyEditor();

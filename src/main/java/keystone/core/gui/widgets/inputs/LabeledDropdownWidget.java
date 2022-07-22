@@ -32,7 +32,7 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
             LabeledDropdownWidget<?> widget = (LabeledDropdownWidget<?>)button;
             widget.widgetDisabler.disableAll();
             widget.dropdown.y = widget.y + widget.getDropdownOffset() + 20;
-            widget.dropdown.visible = true;
+            widget.dropdown.show();
         });
 
         this.mc = MinecraftClient.getInstance();
@@ -73,7 +73,7 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
                 this.value = option.value();
 
                 widgetDisabler.restoreAll();
-                dropdown.visible = false;
+                dropdown.hide();
             }, optionsList);
             this.dropdown.setSelectedOption(this.value, false);
             widgetDisabler = new WidgetDisabler(dropdown);

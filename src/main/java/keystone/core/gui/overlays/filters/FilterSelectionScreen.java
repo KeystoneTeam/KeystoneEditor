@@ -139,6 +139,7 @@ public class FilterSelectionScreen extends KeystonePanel
         {
             widgetDisabler.disableAll();
             this.dropdown.visible = true;
+            this.dropdown.active = true;
         });
 
         // Filter selection dropdown
@@ -187,7 +188,8 @@ public class FilterSelectionScreen extends KeystonePanel
         addDrawableChild(dropdown);
 
         // Create Filter Variables
-        filterVariablesList.offset(getViewport().getMinX(), getViewport().getMinY() + (getViewport().getHeight() / 2) - (filterVariablesList.getHeight() / 2));
+        filterVariablesList.move(getViewport().getMinX(), getViewport().getMinY() + (getViewport().getHeight() / 2) - (filterVariablesList.getHeight() / 2));
+        filterVariablesList.setElementsOffset(5, 0);
         addDrawableChild(filterVariablesList);
         filterManager.getFilter(selectedFilterFile).undirtyEditor();
     }
