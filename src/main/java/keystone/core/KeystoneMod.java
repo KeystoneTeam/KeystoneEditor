@@ -169,7 +169,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
             }
 
             KeystoneKeyBindings.configureKeyConditions();
-            KeystoneLifecycleEvents.JOIN.invoker().join(world);
+            KeystoneLifecycleEvents.OPEN_WORLD.invoker().join(world);
         }
     }
     private void onWorldLeft(MinecraftClient client, Screen screen, int scaledWidth, int scaledHeight)
@@ -180,7 +180,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
 
             Keystone.disableKeystone();
             Keystone.forEachModule(module -> module.resetModule());
-            KeystoneLifecycleEvents.LEAVE.invoker().leave();
+            KeystoneLifecycleEvents.CLOSE_WORLD.invoker().leave();
         }
     }
 }

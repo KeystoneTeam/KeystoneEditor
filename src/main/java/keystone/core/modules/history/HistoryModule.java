@@ -28,7 +28,7 @@ public class HistoryModule implements IKeystoneModule
     public HistoryModule()
     {
         InputEvents.KEY_PRESSED.register(this::onKeyboardInput);
-        KeystoneLifecycleEvents.JOIN.register(this::onJoinWorld);
+        KeystoneLifecycleEvents.OPEN_WORLD.register(this::onJoinWorld);
     }
 
     private void onKeyboardInput(int key, int action, int scancode, int modifiers)

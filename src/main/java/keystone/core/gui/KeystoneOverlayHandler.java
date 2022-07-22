@@ -59,7 +59,7 @@ public class KeystoneOverlayHandler
 
     public static void registerEvents()
     {
-        KeystoneLifecycleEvents.JOIN.register(world ->
+        KeystoneLifecycleEvents.OPEN_WORLD.register(world ->
         {
             overlays.clear();
             addList.clear();
@@ -67,7 +67,7 @@ public class KeystoneOverlayHandler
             addOverlay(KeystoneHotbar.INSTANCE);
             addOverlay(new KeystoneHudOverlay());
         });
-        KeystoneLifecycleEvents.LEAVE.register(() ->
+        KeystoneLifecycleEvents.CLOSE_WORLD.register(() ->
         {
             overlays.clear();
             addList.clear();

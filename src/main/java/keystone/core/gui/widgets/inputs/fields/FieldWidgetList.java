@@ -3,6 +3,7 @@ package keystone.core.gui.widgets.inputs.fields;
 import keystone.api.Keystone;
 import keystone.api.variables.Hook;
 import keystone.api.variables.Variable;
+import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.core.gui.widgets.WidgetList;
@@ -115,6 +116,13 @@ public class FieldWidgetList extends WidgetList
         {
             add(new EnumFieldWidget(instance, field, hook, name, 0, y, intendedWidth, addDropdown));
             return EnumFieldWidget.getFinalHeight();
+        }
+        //endregion
+        //region Biome
+        else if (type == Biome.class)
+        {
+            add(new BiomeFieldWidget(instance, field, hook, name, 0, y, intendedWidth, addDropdown));
+            return BiomeFieldWidget.getFinalHeight();
         }
         //endregion
 

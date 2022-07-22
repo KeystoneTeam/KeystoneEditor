@@ -9,6 +9,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -44,7 +45,8 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
         if (autoBuild()) build();
     }
 
-    public abstract void buildOptionsList(List<Dropdown.Option<T>> options);
+    protected abstract void buildOptionsList(List<Dropdown.Option<T>> options);
+    protected Comparator<Dropdown.Option<T>> getOptionsListComparator() { return null; }
 
     public int getDropdownOffset() { return 11; }
     public static int getFinalHeight()
@@ -60,6 +62,8 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
 
             List<Dropdown.Option<T>> optionsList = new ArrayList<>();
             buildOptionsList(optionsList);
+            Comparator<Dropdown.Option<T>> comparator = getOptionsListComparator();
+            if (comparator != null) optionsList.sort(comparator);
 
             widgetDisabler.restoreAll();
             this.dropdown = new Dropdown<>(x, y + getDropdownOffset() + 20, width, getMessage(), option ->

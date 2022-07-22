@@ -3,8 +3,10 @@ package keystone.core.modules.filter;
 import keystone.api.KeystoneDirectories;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.utils.StringUtils;
+import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.gui.overlays.filters.FilterSelectionScreen;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
@@ -35,10 +37,16 @@ public class FilterDirectoryManager
         this.compiledFilters = new HashMap<>();
 
         loadStockFilters();
-        recompileAllFilters();
-
         this.listenerThread.start();
+
+        KeystoneLifecycleEvents.OPEN_WORLD.register(this::onJoinWorld);
     }
+
+    private void onJoinWorld(ClientWorld world)
+    {
+        recompileAllFilters();
+    }
+
     public static FilterDirectoryManager create(File... directories)
     {
         try

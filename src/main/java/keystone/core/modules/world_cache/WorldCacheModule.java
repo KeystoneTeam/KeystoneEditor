@@ -27,7 +27,7 @@ public class WorldCacheModule implements IKeystoneModule
         ghostWorlds = new HashMap<>();
 
         ServerWorldEvents.LOAD.register(this::onWorldLoaded);
-        KeystoneLifecycleEvents.LEAVE.register(this::onSaveUnloaded);
+        KeystoneLifecycleEvents.CLOSE_WORLD.register(this::onSaveUnloaded);
     }
 
     @Override

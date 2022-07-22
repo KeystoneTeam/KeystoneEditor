@@ -10,13 +10,13 @@ import java.util.List;
 
 public final class KeystoneLifecycleEvents
 {
-    public static final Event<JoinWorld> JOIN = EventFactory.createArrayBacked(JoinWorld.class, listeners -> world ->
+    public static final Event<OpenWorld> OPEN_WORLD = EventFactory.createArrayBacked(OpenWorld.class, listeners -> world ->
     {
-        for (final JoinWorld listener : listeners) listener.join(world);
+        for (final OpenWorld listener : listeners) listener.join(world);
     });
-    public static final Event<LeaveWorld> LEAVE = EventFactory.createArrayBacked(LeaveWorld.class, listeners -> () ->
+    public static final Event<CloseWorld> CLOSE_WORLD = EventFactory.createArrayBacked(CloseWorld.class, listeners -> () ->
     {
-        for (final LeaveWorld listener : listeners) listener.leave();
+        for (final CloseWorld listener : listeners) listener.leave();
     });
     public static final Event<SelectionChanged> SELECTION_CHANGED = EventFactory.createArrayBacked(SelectionChanged.class, listeners -> (selectionBoxes, createdSelection, createHistoryEntry) ->
     {
@@ -27,11 +27,11 @@ public final class KeystoneLifecycleEvents
         for (final ImportsChanged listener : listeners) listener.importsChanged(importBoxes, createHistoryEntry);
     });
 
-    public interface JoinWorld
+    public interface OpenWorld
     {
         void join(ClientWorld world);
     }
-    public interface LeaveWorld
+    public interface CloseWorld
     {
         void leave();
     }
