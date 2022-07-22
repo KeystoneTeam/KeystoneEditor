@@ -60,7 +60,6 @@ public class Dropdown<T> extends WidgetList
     private final List<Option<T>> options;
     private final Consumer<Option<T>> selectionChangedCallback;
     private Option<T> selectedOption;
-    private boolean searchable;
     private Predicate<Option<T>> search = option -> true;
 
     public Dropdown(int x, int y, int width, Text title, Consumer<Option<T>> callback, Option<T>... options)
@@ -69,7 +68,7 @@ public class Dropdown<T> extends WidgetList
     }
     public Dropdown(int x, int y, int width, Text title, Consumer<Option<T>> callback, Collection<Option<T>> options)
     {
-        super(x, y, width, MinecraftClient.getInstance().getWindow().getScaledHeight() - y, PADDING, title);
+        super(x, y, width, MinecraftClient.getInstance().getWindow().getScaledHeight() - y - 5, PADDING, title);
 
         this.options = List.copyOf(options);
         this.selectionChangedCallback = callback;
@@ -77,11 +76,6 @@ public class Dropdown<T> extends WidgetList
 
         build();
         hide();
-    }
-    public Dropdown<T> setSearchable(boolean searchable)
-    {
-        this.searchable = searchable;
-        return this;
     }
 
     @Override
@@ -111,7 +105,7 @@ public class Dropdown<T> extends WidgetList
         
     }
 
-    private void build()
+    public void build()
     {
         clear();
         options.forEach(option -> { if (search.test(option)) add(new DropdownOptionButton<>(this, option)); });
@@ -119,7 +113,6 @@ public class Dropdown<T> extends WidgetList
         bake();
     }
 
-    public boolean isSearchable() { return searchable; }
     public Predicate<Option<T>> getSearch() { return search; }
     public int size() { return options.size(); }
     public Option<T> getOption(int index) { return options.get(index); }

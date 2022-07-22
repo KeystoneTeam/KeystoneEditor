@@ -15,6 +15,7 @@ public class BiomeWidget extends LabeledDropdownWidget<Biome>
     public BiomeWidget(Text name, int x, int y, int width, Biome value, BiConsumer<ClickableWidget, Boolean> addDropdown)
     {
         super(name, x, y, width, value, addDropdown);
+        setSearchable(true);
     }
 
     @Override

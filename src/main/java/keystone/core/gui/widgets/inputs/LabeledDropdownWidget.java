@@ -5,6 +5,7 @@ import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -21,8 +22,11 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
     private final Text name;
     private WidgetDisabler widgetDisabler;
 
+    private boolean searchable;
     private boolean built;
     private T value;
+
+    private TextFieldWidget searchBar;
     private Dropdown<T> dropdown;
 
     public LabeledDropdownWidget(Text name, int x, int y, int width, T value, BiConsumer<ClickableWidget, Boolean> addDropdown)
@@ -31,7 +35,8 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
         {
             LabeledDropdownWidget<?> widget = (LabeledDropdownWidget<?>)button;
             widget.widgetDisabler.disableAll();
-            widget.dropdown.y = widget.y + widget.getDropdownOffset() + 20;
+            widget.dropdown.y = widget.y + widget.getDropdownOffset() + (widget.searchable ? 12 : 20);
+
             widget.dropdown.show();
         });
 
@@ -44,9 +49,17 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
 
         if (autoBuild()) build();
     }
+    public LabeledDropdownWidget<T> setSearchable(boolean searchable)
+    {
+        this.searchable = searchable;
+        built = false;
+        build();
+        return this;
+    }
 
     protected abstract void buildOptionsList(List<Dropdown.Option<T>> options);
     protected Comparator<Dropdown.Option<T>> getOptionsListComparator() { return null; }
+    protected void configureDropdown(Dropdown<T> dropdown) { }
 
     public int getDropdownOffset() { return 11; }
     public static int getFinalHeight()
@@ -66,7 +79,14 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
             if (comparator != null) optionsList.sort(comparator);
 
             widgetDisabler.restoreAll();
-            this.dropdown = new Dropdown<>(x, y + getDropdownOffset() + 20, width, getMessage(), option ->
+
+            searchBar = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, x + 1, y + 12, width, 12, Text.translatable("keystone.search"));
+            searchBar.setMaxLength(256);
+            searchBar.setDrawsBackground(true);
+            searchBar.setText("");
+            searchBar.setChangedListener(str -> dropdown.search(option -> option.label().getString().toLowerCase().contains(str.toLowerCase())));
+
+            this.dropdown = new Dropdown<>(x, y + getDropdownOffset() + (searchable ? 12 : 20), width, getMessage(), option ->
             {
                 setMessage(option.label());
                 onSetValue(option.value());
@@ -74,12 +94,36 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
 
                 widgetDisabler.restoreAll();
                 dropdown.hide();
-            }, optionsList);
+            }, optionsList)
+            {
+                @Override
+                public void show()
+                {
+                    super.show();
+                    if (searchable)
+                    {
+                        searchBar.visible = true;
+                        searchBar.active = true;
+                        searchBar.setTextFieldFocused(true);
+                    }
+                }
+
+                @Override
+                public void hide()
+                {
+                    super.hide();
+                    searchBar.visible = false;
+                    searchBar.active = false;
+                }
+            };
             this.dropdown.setSelectedOption(this.value, false);
-            widgetDisabler = new WidgetDisabler(dropdown);
+            configureDropdown(dropdown);
+
+            widgetDisabler = new WidgetDisabler(dropdown, searchBar);
 
             setMessage(this.dropdown.getSelectedOption().label());
             addDropdown.accept(this.dropdown, true);
+            if (searchable) addDropdown.accept(this.searchBar, true);
         }
     }
 

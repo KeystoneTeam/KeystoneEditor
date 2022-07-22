@@ -24,6 +24,7 @@ public class BiomeFieldWidget extends BiomeWidget
     {
         super(Text.literal(name), x, y, width, (Biome)field.get(instance.get()), addDropdown);
 
+
         this.instance = instance;
         this.field = field;
         this.hook = hook;
