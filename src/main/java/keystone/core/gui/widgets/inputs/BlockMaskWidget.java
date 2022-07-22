@@ -1,42 +1,40 @@
 package keystone.core.gui.widgets.inputs;
 
 import keystone.api.wrappers.blocks.BlockMask;
+import keystone.core.gui.WidgetDisabler;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.overlays.block_selection.BlockMaskEditScreen;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.utils.BlockUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class BlockMaskWidget extends ButtonNoHotkey
 {
     protected final MinecraftClient mc;
     protected final TextRenderer font;
-    protected final Consumer<ClickableWidget[]> disableWidgets;
-    protected final Runnable restoreWidgets;
+    protected final WidgetDisabler widgetDisabler;
 
     private BlockMask mask;
 
     private final List<ItemStack> stacks;
 
-    public BlockMaskWidget(Text name, int x, int y, int width, BlockMask value, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets)
+    public BlockMaskWidget(Text name, int x, int y, int width, BlockMask value)
     {
         super(x, y, width, getFinalHeight(), name, (button) ->
         {
             BlockMaskWidget maskWidget = (BlockMaskWidget)button;
 
-            maskWidget.disableWidgets.accept(null);
+            maskWidget.widgetDisabler.disableAll();
             BlockMaskEditScreen.editBlockMask(maskWidget.mask, (mask) ->
             {
-                maskWidget.restoreWidgets.run();
+                maskWidget.widgetDisabler.restoreAll();
                 if (mask == null) return;
 
                 maskWidget.mask = mask;
@@ -46,13 +44,11 @@ public class BlockMaskWidget extends ButtonNoHotkey
             });
         });
 
-        this.restoreWidgets = restoreWidgets;
-        this.disableWidgets = disableWidgets;
-
         this.mc = MinecraftClient.getInstance();
         this.font = mc.textRenderer;
-        this.mask = value;
+        this.widgetDisabler = new WidgetDisabler();
 
+        this.mask = value;
         this.stacks = new ArrayList<>();
         rebuildStacks();
     }

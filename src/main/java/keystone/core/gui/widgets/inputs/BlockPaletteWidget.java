@@ -1,42 +1,40 @@
 package keystone.core.gui.widgets.inputs;
 
 import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.core.gui.WidgetDisabler;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.overlays.block_selection.BlockPaletteEditScreen;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.utils.BlockUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class BlockPaletteWidget extends ButtonNoHotkey
 {
     protected final MinecraftClient mc;
     protected final TextRenderer font;
-    protected final Consumer<ClickableWidget[]> disableWidgets;
-    protected final Runnable restoreWidgets;
+    protected final WidgetDisabler widgetDisabler;
 
     private BlockPalette palette;
 
     private final List<ItemStack> stacks;
 
-    public BlockPaletteWidget(Text name, int x, int y, int width, BlockPalette value, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets)
+    public BlockPaletteWidget(Text name, int x, int y, int width, BlockPalette value)
     {
         super(x, y, width, getFinalHeight(), name, (button) ->
         {
             BlockPaletteWidget paletteWidget = (BlockPaletteWidget)button;
 
-            paletteWidget.disableWidgets.accept(null);
+            paletteWidget.widgetDisabler.disableAll();
             BlockPaletteEditScreen.editBlockPalette(paletteWidget.palette, (palette) ->
             {
-                paletteWidget.restoreWidgets.run();
+                paletteWidget.widgetDisabler.restoreAll();
                 if (palette == null) return;
 
                 paletteWidget.palette = palette;
@@ -46,13 +44,11 @@ public class BlockPaletteWidget extends ButtonNoHotkey
             });
         });
 
-        this.disableWidgets = disableWidgets;
-        this.restoreWidgets = restoreWidgets;
-
         this.mc = MinecraftClient.getInstance();
         this.font = mc.textRenderer;
-        this.palette = value;
+        this.widgetDisabler = new WidgetDisabler();
 
+        this.palette = value;
         this.stacks = new ArrayList<>();
         rebuildStacks();
     }

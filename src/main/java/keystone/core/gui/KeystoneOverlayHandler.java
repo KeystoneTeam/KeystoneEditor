@@ -9,11 +9,13 @@ import keystone.core.gui.overlays.KeystoneHudOverlay;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.overlays.hotbar.KeystoneHotbar;
 import keystone.core.gui.viewports.ScreenViewports;
+import keystone.core.gui.widgets.WidgetList;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -21,6 +23,7 @@ import net.minecraft.server.world.ServerWorld;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class KeystoneOverlayHandler
 {
@@ -272,6 +275,24 @@ public class KeystoneOverlayHandler
         if (MinecraftClient.getInstance().currentScreen != null) return;
 
         overlays.forEach(screen -> screen.mouseMoved(xPos, mouseY));
+    }
+    //endregion
+    //region Helpers
+    public static void forEachElement(Consumer<Element> consumer, boolean acceptLists)
+    {
+        overlays.forEach(overlay -> overlay.children().forEach(element ->
+        {
+            if (element instanceof WidgetList list)
+            {
+                list.forEach(consumer::accept);
+                if (acceptLists) consumer.accept(list);
+            }
+            else consumer.accept(element);
+        }));
+    }
+    public static void forEachClickable(Consumer<ClickableWidget> consumer, boolean acceptLists)
+    {
+        forEachElement(element -> { if (element instanceof ClickableWidget clickable) consumer.accept(clickable); }, acceptLists);
     }
     //endregion
 }

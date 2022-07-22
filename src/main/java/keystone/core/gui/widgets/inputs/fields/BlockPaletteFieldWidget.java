@@ -6,12 +6,10 @@ import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.core.gui.widgets.inputs.BlockPaletteWidget;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.lang.reflect.Field;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class BlockPaletteFieldWidget extends BlockPaletteWidget
@@ -20,9 +18,9 @@ public class BlockPaletteFieldWidget extends BlockPaletteWidget
     private final Field field;
     private final Hook hook;
 
-    public BlockPaletteFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets) throws IllegalAccessException
+    public BlockPaletteFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(Text.literal(name), x, y, width, (BlockPalette)field.get(instance.get()), disableWidgets, restoreWidgets);
+        super(Text.literal(name), x, y, width, (BlockPalette)field.get(instance.get()));
 
         this.instance = instance;
         this.field = field;

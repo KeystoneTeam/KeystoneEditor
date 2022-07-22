@@ -11,22 +11,17 @@ import net.minecraft.text.Text;
 
 import java.util.Collection;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class BlockPropertiesWidgetList extends WidgetList
 {
     protected final int intendedWidth;
-    protected final Consumer<ClickableWidget[]> disableWidgets;
-    protected final Runnable restoreWidgets;
     protected final BiConsumer<ClickableWidget, Boolean> addDropdown;
 
-    public BlockPropertiesWidgetList(Block block, int x, int y, int width, int maxHeight, int padding, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets)
+    public BlockPropertiesWidgetList(Block block, int x, int y, int width, int maxHeight, int padding)
     {
         super(x, y, width, maxHeight, padding, Text.translatable("keystone.block_selection_panel.propertiesPanel"));
 
         this.intendedWidth = width - 2 * padding;
-        this.disableWidgets = disableWidgets;
-        this.restoreWidgets = restoreWidgets;
         this.addDropdown = this::add;
 
         int propertyY = 0;
@@ -51,7 +46,7 @@ public class BlockPropertiesWidgetList extends WidgetList
         }
         if (property instanceof EnumProperty)
         {
-            add(new EnumPropertyWidget(block, (EnumProperty)property, 0, y, intendedWidth, disableWidgets, restoreWidgets, addDropdown));
+            add(new EnumPropertyWidget(block, (EnumProperty)property, 0, y, intendedWidth, addDropdown));
             return EnumPropertyWidget.getFinalHeight();
         }
 

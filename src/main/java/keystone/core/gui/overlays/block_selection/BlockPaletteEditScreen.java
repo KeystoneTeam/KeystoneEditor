@@ -42,7 +42,7 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
             BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(entry.state());
             this.palette.without(wrapper, 1);
             this.palettePanel.removeBlock(entry.state(), entry.tooltipBuilder());
-        }, this::disableWidgets, this::restoreWidgets, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.PASS_UNMODIFIED);
+        }, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.PASS_UNMODIFIED);
         this.palette.forEach((blockProvider, weight) ->
         {
             for (int i = 0; i < weight; i++) palettePanel.addBlock(blockProvider.getFirst().getMinecraftBlock(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP, false);

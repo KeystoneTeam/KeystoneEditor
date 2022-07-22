@@ -28,7 +28,7 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
     public Viewport getMainPanelViewport() { return ScreenViewports.getViewport(Viewport.MIDDLE, Viewport.MIDDLE).offset(0, 13, 0, 0); }
     public BlockGridWidget createMainPanel()
     {
-        return BlockGridWidget.createWithViewport(this, getMainPanelViewport(), false, Text.translatable("keystone.block_selection"), this::onEntrySelected, this::disableWidgets, this::restoreWidgets, this::onLeftClick, this::onRightClick);
+        return BlockGridWidget.createWithViewport(this, getMainPanelViewport(), false, Text.translatable("keystone.block_selection"), this::onEntrySelected, this::onLeftClick, this::onRightClick);
     }
     public abstract void onEntrySelected(BlockGridWidget.Entry entry, int mouseButton);
 

@@ -62,7 +62,6 @@ public class HotbarButton extends ButtonNoHotkey
             }
             else colorSlot(stack, 0x80FF0000);
         }
-        else if (isHovered()) renderTooltip(stack, mouseX, mouseY);
     }
     @Override
     public boolean isHovered() { return hovered && enabledSupplier.get(); }

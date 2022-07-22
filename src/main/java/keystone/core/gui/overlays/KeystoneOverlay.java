@@ -14,17 +14,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class KeystoneOverlay extends Screen
 {
     private static final Identifier ROUNDED_BOX = new Identifier("keystone:textures/gui/rounded_box.png");
 
     private static int itemOffsetY = 0;
-
-    private Map<ClickableWidget, Boolean> widgetsActive = new HashMap<>();
-    private boolean restoreWidgets = false;
 
     protected KeystoneOverlay(Text titleIn)
     {
@@ -41,17 +35,6 @@ public class KeystoneOverlay extends Screen
     public void close()
     {
         KeystoneOverlayHandler.removeOverlay(this);
-    }
-
-    @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
-    {
-        if (restoreWidgets)
-        {
-            for (Map.Entry<ClickableWidget, Boolean> entry : widgetsActive.entrySet()) entry.getKey().active = entry.getValue();
-            restoreWidgets = false;
-        }
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
     @Override
     public void tick()
@@ -114,32 +97,6 @@ public class KeystoneOverlay extends Screen
     public static void drawTooltip(IKeystoneTooltip tooltip)
     {
         KeystoneOverlayHandler.addTooltip(tooltip);
-    }
-    //endregion
-    //region Widgets
-    public void disableWidgets(ClickableWidget... keepActive)
-    {
-        this.widgetsActive.clear();
-        for (Element element : children())
-        {
-            if (element instanceof ClickableWidget widget)
-            {
-                widgetsActive.put(widget, widget.active);
-                widget.active = false;
-            }
-        }
-        if (keepActive != null)
-        {
-            for (ClickableWidget widget : keepActive)
-            {
-                widgetsActive.put(widget, true);
-                widget.active = true;
-            }
-        }
-    }
-    public void restoreWidgets()
-    {
-        this.restoreWidgets = true;
     }
     //endregion
 }

@@ -102,9 +102,9 @@ public class FillAndReplaceScreen extends KeystonePanel
     {
         int y = getViewport().getMinY() + PADDING;
         int width = getViewport().getWidth() - 2 * PADDING;
-        mask = new BlockMaskWidget(Text.translatable("keystone.fill.mask"), PADDING, y, width, previousMask, this::disableWidgets, this::restoreWidgets);
+        mask = new BlockMaskWidget(Text.translatable("keystone.fill.mask"), PADDING, y, width, previousMask);
         y += mask.getHeight() + PADDING;
-        palette = new BlockPaletteWidget(Text.translatable("keystone.fill.palette"), PADDING, y, width, previousPalette, this::disableWidgets, this::restoreWidgets);
+        palette = new BlockPaletteWidget(Text.translatable("keystone.fill.palette"), PADDING, y, width, previousPalette);
         y += palette.getHeight() + PADDING;
 
         int buttonWidth = (getViewport().getWidth() - 3 * PADDING) >> 1;

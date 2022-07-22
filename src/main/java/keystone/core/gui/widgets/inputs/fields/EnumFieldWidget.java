@@ -11,7 +11,6 @@ import net.minecraft.util.Formatting;
 
 import java.lang.reflect.Field;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class EnumFieldWidget<T extends Enum<T>> extends EnumWidget<T>
@@ -20,9 +19,9 @@ public class EnumFieldWidget<T extends Enum<T>> extends EnumWidget<T>
     private final Field field;
     private final Hook hook;
 
-    public EnumFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BiConsumer<ClickableWidget, Boolean> addDropdown) throws IllegalAccessException
+    public EnumFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width, BiConsumer<ClickableWidget, Boolean> addDropdown) throws IllegalAccessException
     {
-        super(Text.literal(name), x, y, width, (T)field.get(instance.get()), disableWidgets, restoreWidgets, addDropdown);
+        super(Text.literal(name), x, y, width, (T)field.get(instance.get()), addDropdown);
 
         this.instance = instance;
         this.field = field;

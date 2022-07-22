@@ -14,27 +14,22 @@ import net.minecraft.util.Formatting;
 
 import java.lang.reflect.Field;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class FieldWidgetList extends WidgetList
 {
     protected final Supplier<Object> instance;
     protected final int intendedWidth;
-    protected final Consumer<ClickableWidget[]> disableWidgets;
-    protected final Runnable restoreWidgets;
     protected final BiConsumer<ClickableWidget, Boolean> addDropdown;
 
     protected int nextWidgetY;
 
-    public FieldWidgetList(Text label, Supplier<Object> instance, int x, int y, int width, int maxHeight, int padding, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets)
+    public FieldWidgetList(Text label, Supplier<Object> instance, int x, int y, int width, int maxHeight, int padding)
     {
         super(x, y, width, maxHeight, padding, label);
 
         this.instance = instance;
         this.intendedWidth = width - 2 * padding;
-        this.disableWidgets = disableWidgets;
-        this.restoreWidgets = restoreWidgets;
         this.addDropdown = this::add;
         this.nextWidgetY = 0;
 
@@ -76,14 +71,14 @@ public class FieldWidgetList extends WidgetList
         //region Block Palette
         if (type == BlockPalette.class)
         {
-            add(new BlockPaletteFieldWidget(instance, field, hook, name, 0, y, intendedWidth, disableWidgets, restoreWidgets));
+            add(new BlockPaletteFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
             return BlockPaletteFieldWidget.getFinalHeight();
         }
         //endregion
         //region Block Mask
         if (type == BlockMask.class)
         {
-            add(new BlockMaskFieldWidget(instance, field, hook, name, 0, y, intendedWidth, disableWidgets, restoreWidgets));
+            add(new BlockMaskFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
             return BlockMaskFieldWidget.getFinalHeight();
         }
         //endregion
@@ -118,7 +113,7 @@ public class FieldWidgetList extends WidgetList
         //region Enum
         else if (Enum.class.isAssignableFrom(type))
         {
-            add(new EnumFieldWidget(instance, field, hook, name, 0, y, intendedWidth, disableWidgets, restoreWidgets, addDropdown));
+            add(new EnumFieldWidget(instance, field, hook, name, 0, y, intendedWidth, addDropdown));
             return EnumFieldWidget.getFinalHeight();
         }
         //endregion

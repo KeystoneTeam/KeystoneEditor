@@ -2,6 +2,7 @@ package keystone.core.gui.widgets;
 
 import keystone.api.utils.StringUtils;
 import keystone.core.KeystoneMod;
+import keystone.core.gui.WidgetDisabler;
 import keystone.core.gui.overlays.block_selection.AbstractBlockButton;
 import keystone.core.gui.overlays.block_selection.BlockGridButton;
 import keystone.core.gui.viewports.Viewport;
@@ -19,7 +20,6 @@ import net.minecraft.util.registry.Registry;
 
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class BlockGridWidget extends ClickableWidget
@@ -64,8 +64,7 @@ public class BlockGridWidget extends ClickableWidget
 
     private final boolean allowMultiples;
     private final BiConsumer<Entry, Integer> callback;
-    private final Consumer<ClickableWidget[]> disableWidgets;
-    private final Runnable restoreWidgets;
+    private final WidgetDisabler widgetDisabler;
     private final BlockGridButton.ClickConsumer leftClickConsumer;
     private final BlockGridButton.ClickConsumer rightClickConsumer;
     private final Screen screen;
@@ -88,13 +87,12 @@ public class BlockGridWidget extends ClickableWidget
     private Predicate<BlockState> filter;
 
     //region Creation
-    private BlockGridWidget(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
+    private BlockGridWidget(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
     {
         super(x, y, width, height, title);
         this.allowMultiples = allowMultiples;
         this.callback = callback;
-        this.disableWidgets = disableWidgets;
-        this.restoreWidgets = restoreWidgets;
+        this.widgetDisabler = new WidgetDisabler();
         this.leftClickConsumer = leftClickConsumer;
         this.rightClickConsumer = rightClickConsumer;
         this.screen = screen;
@@ -116,15 +114,15 @@ public class BlockGridWidget extends ClickableWidget
         blockCounts = new HashMap<>();
         buttons = new ArrayList<>();
     }
-    public static BlockGridWidget createWithViewport(Screen screen, Viewport idealViewport, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
+    public static BlockGridWidget createWithViewport(Screen screen, Viewport idealViewport, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
     {
-        return new BlockGridWidget(screen, idealViewport.getMinX(), idealViewport.getMinY(), idealViewport.getWidth(), idealViewport.getHeight(), allowMultiples, title, callback, disableWidgets, restoreWidgets, leftClickConsumer, rightClickConsumer);
+        return new BlockGridWidget(screen, idealViewport.getMinX(), idealViewport.getMinY(), idealViewport.getWidth(), idealViewport.getHeight(), allowMultiples, title, callback, leftClickConsumer, rightClickConsumer);
     }
-    public static BlockGridWidget create(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
+    public static BlockGridWidget create(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
     {
         width -= width % BlockGridButton.SIZE;
         height -= height % BlockGridButton.SIZE;
-        return new BlockGridWidget(screen, x, y, width, height, allowMultiples, title, callback, disableWidgets, restoreWidgets, leftClickConsumer, rightClickConsumer);
+        return new BlockGridWidget(screen, x, y, width, height, allowMultiples, title, callback, leftClickConsumer, rightClickConsumer);
     }
     //endregion
 
@@ -242,13 +240,13 @@ public class BlockGridWidget extends ClickableWidget
     }
     //endregion
     //region Helpers
-    public void disableWidgets(ClickableWidget... widgets)
+    public void disableWidgets()
     {
-        disableWidgets.accept(widgets);
+        widgetDisabler.disableAll();
     }
     public void restoreWidgets()
     {
-        restoreWidgets.run();
+        widgetDisabler.restoreAll();
     }
     public void rebuildButtons()
     {

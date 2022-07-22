@@ -5,12 +5,10 @@ import keystone.api.variables.Hook;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.core.gui.widgets.inputs.BlockMaskWidget;
 import keystone.core.utils.AnnotationUtils;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.lang.reflect.Field;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class BlockMaskFieldWidget extends BlockMaskWidget
@@ -19,9 +17,9 @@ public class BlockMaskFieldWidget extends BlockMaskWidget
     private final Field field;
     private final Hook hook;
 
-    public BlockMaskFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets) throws IllegalAccessException
+    public BlockMaskFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(Text.literal(name), x, y, width, (BlockMask)field.get(instance.get()), disableWidgets, restoreWidgets);
+        super(Text.literal(name), x, y, width, (BlockMask)field.get(instance.get()));
 
         this.instance = instance;
         this.field = field;

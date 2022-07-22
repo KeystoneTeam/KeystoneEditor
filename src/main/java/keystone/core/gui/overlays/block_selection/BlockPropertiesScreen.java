@@ -56,7 +56,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
         panelWidth = width / 4;
         panelX = (width - panelWidth) / 2;
         int maxPanelHeight = height - 60 - 3 * PADDING;
-        propertiesList = new BlockPropertiesWidgetList(block, 0, 0, panelWidth, maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
+        propertiesList = new BlockPropertiesWidgetList(block, 0, 0, panelWidth, maxPanelHeight, PADDING);
         propertiesList.bake();
         panelHeight = PADDING + propertiesList.getHeight() + PADDING + 20 + PADDING;
         panelY = (height - panelHeight) / 2;

@@ -40,7 +40,7 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
     @Override
     public BlockGridWidget createMainPanel()
     {
-        return BlockGridWidget.createWithViewport(this, ScreenViewports.getViewport(Viewport.MIDDLE, Viewport.LEFT, Viewport.MIDDLE, Viewport.RIGHT).offset(75, 13, -75, 0), false, Text.translatable("keystone.block_selection"), this::onEntrySelected, this::disableWidgets, this::restoreWidgets, this::onLeftClick, this::onRightClick);
+        return BlockGridWidget.createWithViewport(this, ScreenViewports.getViewport(Viewport.MIDDLE, Viewport.LEFT, Viewport.MIDDLE, Viewport.RIGHT).offset(75, 13, -75, 0), false, Text.translatable("keystone.block_selection"), this::onEntrySelected, this::onLeftClick, this::onRightClick);
     }
     @Override
     public void onEntrySelected(BlockGridWidget.Entry entry, int mouseButton)

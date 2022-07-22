@@ -5,6 +5,7 @@ import keystone.api.KeystoneDirectories;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
+import keystone.core.gui.WidgetDisabler;
 import keystone.core.gui.overlays.KeystonePanel;
 import keystone.core.gui.overlays.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.viewports.ScreenViewports;
@@ -20,11 +21,14 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,6 +45,7 @@ public class FilterSelectionScreen extends KeystonePanel
     private ButtonWidget selectFilterButton;
     private Dropdown<File> dropdown;
     private FieldWidgetList filterVariablesList;
+    private WidgetDisabler widgetDisabler;
 
     protected FilterSelectionScreen()
     {
@@ -88,12 +93,14 @@ public class FilterSelectionScreen extends KeystonePanel
     @Override
     protected void init()
     {
+        if (widgetDisabler != null) widgetDisabler.restoreAll();
+
         if (selectedFilterFile == null) selectedFilterFile = filterManager.getInstalledFilters()[0];
         Viewport dock = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT, Viewport.MIDDLE, Viewport.LEFT);
 
         // Build Filter Variable Widgets
         int maxPanelHeight = client.getWindow().getScaledHeight() - 50 - 2 * PADDING;
-        filterVariablesList = new FieldWidgetList(Text.translatable("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, dock.getWidth(), maxPanelHeight, PADDING, this::disableWidgets, this::restoreWidgets);
+        filterVariablesList = new FieldWidgetList(Text.translatable("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, dock.getWidth(), maxPanelHeight, PADDING);
 
         // Error Display
         KeystoneFilter selectedFilter = filterManager.getFilter(selectedFilterFile);
@@ -130,35 +137,39 @@ public class FilterSelectionScreen extends KeystonePanel
         int selectButtonX = filterLabel.x + filterLabel.getWidth();
         this.selectFilterButton = new ButtonNoHotkey(selectButtonX, getViewport().getMinY() + 5, getViewport().getMaxX() - selectButtonX - 5, 20, Text.literal("!ERROR!"), (button) ->
         {
-            disableWidgets(this.dropdown);
+            widgetDisabler.disableAll();
             this.dropdown.visible = true;
         });
 
         // Filter selection dropdown
-        this.dropdown = new Dropdown<>(selectFilterButton.x, selectFilterButton.y, selectFilterButton.getWidth(), Text.literal("keystone.tool.filter.dropdown"),
-                filterFile ->
+        List<Dropdown.Option<File>> dropdownOptions = new ArrayList<>();
+        for (File filterFile : filterManager.getInstalledFilters())
+        {
+            KeystoneFilter filter = filterManager.getFilter(filterFile);
+            MutableText label = Text.literal(filter.getName());
+            if (!filter.isCompiledSuccessfully()) label = label.styled(style -> style.withColor(Formatting.RED));
+            dropdownOptions.add(new Dropdown.Option<>(filterFile, label));
+        }
+
+        this.dropdown = new Dropdown<>(selectFilterButton.x, selectFilterButton.y, selectFilterButton.getWidth(), Text.translatable("keystone.tool.filter.dropdown"),
+                option ->
                 {
-                    KeystoneFilter filter = filterManager.getFilter(filterFile);
-                    if (filter.isCompiledSuccessfully()) return Text.literal(filter.getName());
-                    else return Text.literal(filter.getName()).styled(style -> style.withColor(Formatting.RED));
-                },
-                (filterFile, title) ->
-                {
-                    restoreWidgets();
-                    selectedFilterFile = filterFile;
+                    widgetDisabler.restoreAll();
+                    selectedFilterFile = option.value();
 
                     this.selectFilterButton.setMessage(title);
                     this.init(client, width, height);
-                }, filterManager.getInstalledFilters());
+                }, dropdownOptions);
+        this.widgetDisabler = new WidgetDisabler(this.dropdown);
 
         if (selectedFilterFile != null)
         {
             for (int i = 0; i < dropdown.size(); i++)
             {
-                File filterFile = dropdown.getEntry(i);
+                File filterFile = dropdown.getValue(i);
                 if (filterFile.equals(selectedFilterFile))
                 {
-                    dropdown.setSelectedEntry(filterFile, false);
+                    dropdown.setSelectedOption(filterFile, false);
                     break;
                 }
             }
@@ -170,7 +181,7 @@ public class FilterSelectionScreen extends KeystonePanel
         ButtonNoHotkey runFilterButton = new ButtonNoHotkey(panelCenter - buttonWidth / 2, getViewport().getMaxY() - 25, buttonWidth, 20, Text.translatable("keystone.filter_panel.runFilter"), button -> runFilter());
 
         // Add buttons
-        this.selectFilterButton.setMessage(this.dropdown.getSelectedEntryTitle());
+        this.selectFilterButton.setMessage(this.dropdown.getSelectedOption().label());
         addDrawableChild(selectFilterButton);
         addDrawableChild(runFilterButton);
         addDrawableChild(dropdown);

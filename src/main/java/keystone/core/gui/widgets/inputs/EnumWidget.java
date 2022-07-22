@@ -1,103 +1,23 @@
 package keystone.core.gui.widgets.inputs;
 
-import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
-import keystone.core.utils.AnnotationUtils;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
+import keystone.api.utils.StringUtils;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
-public class EnumWidget<T extends Enum<T>> extends ButtonNoHotkey
+public class EnumWidget<T extends Enum<T>> extends LabeledDropdownWidget<T>
 {
-    private final MinecraftClient mc;
-    private final TextRenderer font;
-    private final Runnable restoreWidgets;
-    private final BiConsumer<ClickableWidget, Boolean> addDropdown;
-    private final Text name;
-
-    private boolean built;
-    private T value;
-    private Dropdown<T> dropdown;
-
-    public EnumWidget(Text name, int x, int y, int width, T value, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BiConsumer<ClickableWidget, Boolean> addDropdown)
+    public EnumWidget(Text name, int x, int y, int width, T value, BiConsumer<ClickableWidget, Boolean> addDropdown)
     {
-        super(x, y, width, getFinalHeight(), name, (button) ->
-        {
-            EnumWidget enumWidget = (EnumWidget)button;
-
-            disableWidgets.accept(new ClickableWidget[] { enumWidget.dropdown });
-            enumWidget.dropdown.y = enumWidget.y + getEnumOffset() + 20;
-            enumWidget.dropdown.visible = true;
-        });
-
-        this.mc = MinecraftClient.getInstance();
-        this.font = mc.textRenderer;
-        this.value = value;
-        this.restoreWidgets = restoreWidgets;
-        this.addDropdown = addDropdown;
-        this.name = name;
-
-        if (autoBuild()) build();
+        super(name, x, y, width, value, addDropdown);
     }
-    public static int getEnumOffset() { return 11; }
-    public static int getFinalHeight()
-    {
-        return 31;
-    }
-
-    protected final void build()
-    {
-        if (!built)
-        {
-            built = true;
-
-            Class<? extends Enum> enumClass = value.getClass().asSubclass(Enum.class);
-            List<T> valuesList = new ArrayList<>();
-            for (Enum test : enumClass.getEnumConstants()) if (isValueAllowed((T)test)) valuesList.add((T)test);
-
-            this.dropdown = null;
-            this.dropdown = new Dropdown<>(x, y + getEnumOffset() + 20, width, getMessage(), entry -> Text.literal(AnnotationUtils.getEnumValueName(entry)), (entry, title) ->
-            {
-                setMessage(title);
-                onSetValue(entry);
-                this.value = entry;
-
-                restoreWidgets.run();
-                dropdown.visible = false;
-            }, valuesList);
-            this.dropdown.setSelectedEntry(this.value, false);
-            setMessage(this.dropdown.getSelectedEntryTitle());
-            addDropdown.accept(this.dropdown, true);
-        }
-    }
-
-    protected boolean autoBuild() { return true; }
-    protected boolean isValueAllowed(T value) { return true; }
-    protected void onSetValue(T value) {  }
 
     @Override
-    public int getHeight()
+    public void buildOptionsList(List<Dropdown.Option<T>> options)
     {
-        return getFinalHeight();
+        Class<? extends Enum> enumClass = getValue().getClass().asSubclass(Enum.class);
+        for (Enum test : enumClass.getEnumConstants()) if (isValueAllowed((T)test)) options.add(new Dropdown.Option<>((T)test, Text.literal(StringUtils.enumCaseToTitleCase(test.name()))));
     }
-    @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
-    {
-        drawCenteredText(matrixStack, font, name, x + width / 2, y, 0xFFFFFF);
-        matrixStack.push();
-        y += getEnumOffset();
-        height -= getEnumOffset();
-        super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
-        height += getEnumOffset();
-        y -= getEnumOffset();
-        matrixStack.pop();
-    }
-
-    public T getValue() { return value; }
 }

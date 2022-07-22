@@ -9,16 +9,15 @@ import net.minecraft.text.Text;
 import net.minecraft.util.StringIdentifiable;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class EnumPropertyWidget<T extends Enum<T> & StringIdentifiable> extends EnumWidget<T>
 {
     private final Block block;
     private final EnumProperty<T> property;
 
-    public EnumPropertyWidget(Block block, EnumProperty<T> property, int x, int y, int width, Consumer<ClickableWidget[]> disableWidgets, Runnable restoreWidgets, BiConsumer<ClickableWidget, Boolean> addDropdown)
+    public EnumPropertyWidget(Block block, EnumProperty<T> property, int x, int y, int width, BiConsumer<ClickableWidget, Boolean> addDropdown)
     {
-        super(Text.literal(property.getName()), x, y, width, block.blockType().getMinecraftBlock().get(property), disableWidgets, restoreWidgets, addDropdown);
+        super(Text.literal(property.getName()), x, y, width, block.blockType().getMinecraftBlock().get(property), addDropdown);
 
         this.block = block;
         this.property = property;
