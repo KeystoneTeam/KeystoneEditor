@@ -169,12 +169,14 @@ public class BlockGridWidget extends ClickableWidget
     {
         if (isHovered())
         {
+            // Try to scroll buttons
+            for (BlockGridButton blockButton : buttons) if (blockButton.mouseScrolled(mouseX, mouseY, delta)) return true;
+    
+            // Scroll panel
             int rows = (int)Math.ceil(blockCount / (double)buttonsPerRow);
-
             scrollOffset -= delta;
             if (scrollOffset < 0) scrollOffset = 0;
             else if (scrollOffset + buttonsPerColumn > rows) scrollOffset = rows - buttonsPerColumn;
-
             rebuildButtons();
             return true;
         }
@@ -189,27 +191,31 @@ public class BlockGridWidget extends ClickableWidget
     }
     //endregion
     //region Editing
-    public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder) { addBlock(block, tooltipBuilder, true); }
-    public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons)
+    public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder) { addBlock(block, tooltipBuilder, 1, true); }
+    public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount) { addBlock(block, tooltipBuilder, amount, true); }
+    public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons) { addBlock(block, tooltipBuilder, 1, rebuildButtons); }
+    public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount, boolean rebuildButtons)
     {
         Entry entry = new Entry(block, tooltipBuilder);
         if (!blockCounts.containsKey(entry))
         {
-            blockCounts.put(entry, 1);
+            blockCounts.put(entry, allowMultiples ? amount : 1);
             entries.add(entry);
         }
-        else if (allowMultiples) blockCounts.put(entry, blockCounts.get(entry) + 1);
+        else if (allowMultiples) blockCounts.put(entry, blockCounts.get(entry) + amount);
 
         if (rebuildButtons) rebuildButtons();
     }
     public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder) { removeBlock(block, tooltipBuilder, true); }
-    public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons)
+    public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount) { removeBlock(block, tooltipBuilder, amount, true); }
+    public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons) { removeBlock(block, tooltipBuilder, 1, true); }
+    public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount, boolean rebuildButtons)
     {
         Entry entry = new Entry(block, tooltipBuilder);
         Integer count = blockCounts.get(entry);
         if (count != null)
         {
-            count--;
+            count -= amount;
             if (count > 0) blockCounts.put(entry, count);
             else
             {

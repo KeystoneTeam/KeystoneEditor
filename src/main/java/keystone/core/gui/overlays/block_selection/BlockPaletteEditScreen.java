@@ -40,8 +40,8 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
         this.palettePanel = BlockGridWidget.createWithViewport(this, ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.RIGHT, Viewport.MIDDLE, Viewport.RIGHT).offset(0, 0, -5, -55), true, Text.translatable("keystone.mask_panel"), (entry, mouseButton) ->
         {
             BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(entry.state());
-            this.palette.without(wrapper, 1);
-            this.palettePanel.removeBlock(entry.state(), entry.tooltipBuilder());
+            this.palette.without(wrapper, 1000000000);
+            this.palettePanel.removeBlock(entry.state(), entry.tooltipBuilder(), 1000000000);
         }, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.PASS_UNMODIFIED);
         this.palette.forEach((blockProvider, weight) ->
         {
