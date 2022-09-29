@@ -120,7 +120,7 @@ public class WorldHistoryChunk
             this.tileEntityBuffer2 = new ConcurrentHashMap<>();
         }
 
-        this.oldBiomes = copyContainer(chunkSection.getBiomeContainer() instanceof PalettedContainer<RegistryEntry<net.minecraft.world.biome.Biome>> container ? container : chunkSection.getBiomeContainer().method_44350(), 4, 4, 4);
+        this.oldBiomes = copyContainer(chunkSection.getBiomeContainer() instanceof PalettedContainer<RegistryEntry<net.minecraft.world.biome.Biome>> container ? container : chunkSection.getBiomeContainer().slice(), 4, 4, 4);
         this.biomeBuffer1 = this.oldBiomes.copy();
         this.biomeBuffer2 = this.oldBiomes.copy();
 

@@ -11,8 +11,8 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.registry.Registry;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
@@ -51,30 +51,30 @@ public class Block
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param state The Minecraft BlockState
      */
-    public Block(@Nonnull BlockState state) { this(BlockTypeRegistry.fromMinecraftBlock(state), null); }
+    public Block(@NotNull BlockState state) { this(BlockTypeRegistry.fromMinecraftBlock(state), null); }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param state The Minecraft BlockState
      * @param tileEntity The Minecraft BlockEntity
      */
-    public Block(@Nonnull BlockState state, BlockEntity tileEntity) { this(BlockTypeRegistry.fromMinecraftBlock(state), tileEntity == null ? null : new NBTCompound(tileEntity.createNbt())); }
+    public Block(@NotNull BlockState state, BlockEntity tileEntity) { this(BlockTypeRegistry.fromMinecraftBlock(state), tileEntity == null ? null : new NBTCompound(tileEntity.createNbt())); }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param state The Minecraft BlockState
      * @param tileEntity The Minecraft NbtCompound representing the tile entity
      */
-    public Block(@Nonnull BlockState state, NbtCompound tileEntity) { this(BlockTypeRegistry.fromMinecraftBlock(state), tileEntity == null ? null : new NBTCompound(tileEntity)); }
+    public Block(@NotNull BlockState state, NbtCompound tileEntity) { this(BlockTypeRegistry.fromMinecraftBlock(state), tileEntity == null ? null : new NBTCompound(tileEntity)); }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param blockType The {@link BlockType}
      */
-    public Block(@Nonnull BlockType blockType) { this(blockType, null); }
+    public Block(@NotNull BlockType blockType) { this(blockType, null); }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param blockType The {@link BlockType}
      * @param tileEntity The {@link NBTCompound} representing the tile entity
      */
-    public Block(@Nonnull BlockType blockType, NBTCompound tileEntity)
+    public Block(@NotNull BlockType blockType, NBTCompound tileEntity)
     {
         this.blockType = blockType;
         this.tileEntity = tileEntity;
@@ -101,7 +101,7 @@ public class Block
      * @param type The new {@link BlockType}
      * @return This Block instance, for use in function chaining
      */
-    public Block setBlockType(@Nonnull BlockType type) { this.blockType = type; return this; }
+    public Block setBlockType(@NotNull BlockType type) { this.blockType = type; return this; }
     /**
      * Set this block's tile entity data
      * @param tileEntity The {@link NBTCompound} representing this tile entity

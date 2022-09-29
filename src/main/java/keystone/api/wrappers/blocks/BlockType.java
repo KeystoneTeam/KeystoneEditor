@@ -12,8 +12,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Function;

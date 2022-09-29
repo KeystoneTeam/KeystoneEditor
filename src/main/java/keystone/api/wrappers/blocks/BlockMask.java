@@ -8,8 +8,8 @@ import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.util.registry.RegistryEntryList;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -257,13 +257,13 @@ public class BlockMask
      * @param block The {@link Block} to check
      * @return Whether the {@link Block} is matched by this mask
      */
-    public boolean valid(@Nonnull Block block) { return valid(block.blockType()); }
+    public boolean valid(@NotNull Block block) { return valid(block.blockType()); }
     /**
      * Check if a {@link BlockType} is matched by this mask
      * @param blockType The {@link BlockType} to check
      * @return Whether the {@link BlockType} is matched by this mask
      */
-    public boolean valid(@Nonnull BlockType blockType)
+    public boolean valid(@NotNull BlockType blockType)
     {
         boolean matches = mask.contains(blockType) || anyVariantMask.contains(blockType.getMinecraftBlock().getBlock());
         return matches != blacklist;

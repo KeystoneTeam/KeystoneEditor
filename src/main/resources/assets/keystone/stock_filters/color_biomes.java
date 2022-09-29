@@ -1,10 +1,7 @@
 import keystone.api.WorldRegion;
-import keystone.api.enums.RetrievalMode;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.Biome;
-import keystone.api.wrappers.blocks.Block;
-import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockType;
 
 import java.util.ArrayList;

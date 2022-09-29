@@ -26,13 +26,10 @@ import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.QueryableTickScheduler;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collections;
 import java.util.List;
 
 @MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public class WrappedWorld extends World
 {
     protected World world;
@@ -72,7 +69,7 @@ public class WrappedWorld extends World
     @Override public Scoreboard getScoreboard() { return world.getScoreboard(); }
     @Override public int getNextMapId() { return world.getNextMapId(); }
     @Override public LightingProvider getLightingProvider() { return world.getLightingProvider(); }
-    @Override public BlockState getBlockState(@Nullable BlockPos pos)
+    @Override public BlockState getBlockState(BlockPos pos)
     {
         return world.getBlockState(pos);
     }
