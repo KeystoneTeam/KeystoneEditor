@@ -11,11 +11,39 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 
 public class WorldChangeQueueModule implements IKeystoneModule
 {
-    private static record WorldChange(SessionModule session, WorldHistoryChunk chunk, boolean undo)
+    private interface IWorldChange
+    {
+        default int size() { return 1; }
+        void apply();
+    }
+    private static class WorldChangeSet implements IWorldChange
+    {
+        private final SessionModule session;
+        private final List<ChunkChange> changes;
+        private final boolean undo;
+
+        protected WorldChangeSet(SessionModule session, boolean undo)
+        {
+            this.session = session;
+            this.changes = new ArrayList<>();
+            this.undo = undo;
+        }
+        public WorldChangeSet addChunk(WorldHistoryChunk chunk)
+        {
+            changes.add(new ChunkChange(session, chunk, undo));
+            return this;
+        }
+
+        @Override public int size() { return changes.size(); }
+        public void apply() { for (ChunkChange change : changes) change.apply(); }
+    }
+    private record ChunkChange(SessionModule session, WorldHistoryChunk chunk, boolean undo) implements IWorldChange
     {
         public void apply()
         {
@@ -25,7 +53,7 @@ public class WorldChangeQueueModule implements IKeystoneModule
         }
     }
 
-    private final Queue<WorldChange> changeQueue = new ArrayDeque<>();
+    private final Queue<IWorldChange> changeQueue = new ArrayDeque<>();
     private SessionModule session;
     private boolean waitingForChanges;
     private int cooldown;
@@ -47,10 +75,11 @@ public class WorldChangeQueueModule implements IKeystoneModule
             int updatesLeft = KeystoneConfig.maxChunkUpdatesPerTick;
             while (this.changeQueue.size() > 0 && updatesLeft > 0)
             {
-                this.changeQueue.remove().apply();
+                IWorldChange change = this.changeQueue.remove();
+                change.apply();
                 if (waitingForChanges) ProgressBar.nextStep();
 
-                updatesLeft--;
+                updatesLeft -= change.size();
             }
 
             if (waitingForChanges && this.changeQueue.size() <= 0)
@@ -65,7 +94,7 @@ public class WorldChangeQueueModule implements IKeystoneModule
 
     public void enqueueChange(WorldHistoryChunk change, boolean undo)
     {
-        this.changeQueue.add(new WorldChange(session, change, undo));
+        this.changeQueue.add(new ChunkChange(session, change, undo));
     }
     public void waitForChanges(String progressBarTitle)
     {
