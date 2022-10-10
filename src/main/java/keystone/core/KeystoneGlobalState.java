@@ -40,6 +40,12 @@ public class KeystoneGlobalState
      * things like ignoring block gravity
      */
     public static boolean SuppressingBlockTicks = false;
+    
+    /**
+     * If true, block states will not check if they can be placed at a location before being
+     * placed in the world
+     */
+    public static boolean SuppressPlacementChecks = false;
 
     /**
      * If true, selection boxes will not be rendered

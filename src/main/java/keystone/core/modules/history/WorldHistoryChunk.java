@@ -573,71 +573,20 @@ public class WorldHistoryChunk
         }
     }
 
-    public void undo()
+    public void revertBlocks()
     {
-        // Apply Biomes
-        var biomeContainer = createBiomeContainer(oldBiomes);
-        ((ChunkSectionAccessor)chunkSection).setBiomeStorage(biomeContainer);
-        if (MinecraftClient.getInstance().world.getDimension().equals(world.getDimension()))
-        {
-            ClientWorld world = MinecraftClient.getInstance().world;
-            Chunk chunk = world.getChunk(chunkX, chunkZ);
-            ChunkSection chunkSection = world.getChunk(chunkX, chunkZ).getSection(chunk.getSectionIndex(chunkY << 4));
-            ((ChunkSectionAccessor)chunkSection).setBiomeStorage(biomeContainer.copy());
-        }
-
-        // Apply Blocks
-        BlockPos start = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
-        for (int x = 0; x < 16; x++)
-        {
-            for (int y = 0; y < 16; y++)
-            {
-                for (int z = 0; z < 16; z++)
-                {
-                    BlockPos pos = start.add(x, y, z);
-                    BlockState state = oldBlockStates.get(z + y * 16 + x * 256);
-
-                    world.toServerWorld().setBlockState(pos, state, KeystoneGlobalState.SuppressingBlockTicks ? net.minecraft.block.Block.NOTIFY_LISTENERS : net.minecraft.block.Block.NOTIFY_ALL);
-                    NBTCompound blockData = oldTileEntities.getOrDefault(pos, null);
-                    if (blockData != null)
-                    {
-                        NbtCompound tileEntityData = blockData.getMinecraftNBT().copy();
-                        tileEntityData.putInt("x", x);
-                        tileEntityData.putInt("y", y);
-                        tileEntityData.putInt("z", z);
-                        BlockEntity tileEntity = world.getBlockEntity(pos);
-                        if (tileEntity != null) tileEntity.readNbt(tileEntityData);
-                    }
-                }
-            }
-        }
-
-        // Apply Entities
-        for (UUID entityID : allEntities.keySet())
-        {
-            if (!oldEntities.containsKey(entityID))
-            {
-                Entity entity = allEntities.get(entityID);
-                net.minecraft.entity.Entity mcEntity = world.toServerWorld().getEntity(entity.minecraftUUID());
-                if (mcEntity != null)
-                {
-                    mcEntity.discard();
-                    entity.breakMinecraftEntityConnection();
-                }
-            }
-            else oldEntities.get(entityID).updateMinecraftEntity(world);
-        }
-
-        // TODO: Re-render biomes
+        apply(oldBlockStates, oldTileEntities, oldBiomes, oldEntities);
     }
-    public void redo()
+    public void placeBlocks()
     {
-        BlockPos start = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
         PalettedArray<BlockState> blockStates = swappedBlocks ? blockStateBuffer2 : blockStateBuffer1;
         Map<BlockPos, NBTCompound> tileEntities = swappedEntities ? tileEntityBuffer2 : tileEntityBuffer1;
         PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> biomes = swappedBiomes ? biomeBuffer2 : biomeBuffer1;
         Map<UUID, Entity> entities = swappedEntities ? entityBuffer2 : entityBuffer1;
-
+        apply(blockStates, tileEntities, biomes, entities);
+    }
+    private void apply(PalettedArray<BlockState> blockStates, Map<BlockPos, NBTCompound> tileEntities, PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> biomes, Map<UUID, Entity> entities)
+    {
         // Apply Biomes
         var biomeContainer = createBiomeContainer(biomes);
         ((ChunkSectionAccessor)chunkSection).setBiomeStorage(biomeContainer);
@@ -648,8 +597,9 @@ public class WorldHistoryChunk
             ChunkSection chunkSection = world.getChunk(chunkX, chunkZ).getSection(chunk.getSectionIndex(chunkY << 4));
             ((ChunkSectionAccessor)chunkSection).setBiomeStorage(biomeContainer.copy());
         }
-
+    
         // Apply Blocks
+        BlockPos start = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
         for (int x = 0; x < 16; x++)
         {
             for (int y = 0; y < 16; y++)
@@ -658,8 +608,8 @@ public class WorldHistoryChunk
                 {
                     BlockPos pos = start.add(x, y, z);
                     BlockState state = blockStates.get(z + y * 16 + x * 256);
-
-                    world.toServerWorld().setBlockState(pos, state, KeystoneGlobalState.SuppressingBlockTicks ? net.minecraft.block.Block.NOTIFY_LISTENERS : net.minecraft.block.Block.NOTIFY_ALL);
+                
+                    world.toServerWorld().setBlockState(pos, state, net.minecraft.block.Block.NOTIFY_LISTENERS);
                     NBTCompound blockData = tileEntities.getOrDefault(pos, null);
                     if (blockData != null)
                     {
@@ -673,7 +623,7 @@ public class WorldHistoryChunk
                 }
             }
         }
-
+    
         // Apply Entities
         for (UUID entityID : allEntities.keySet())
         {
@@ -689,7 +639,28 @@ public class WorldHistoryChunk
             }
             else entities.get(entityID).updateMinecraftEntity(world);
         }
-
+    
         // TODO: Re-Render Biomes
+    }
+    public void processUpdates(boolean undoing)
+    {
+        PalettedArray<BlockState> oldBlocks = undoing ? (swappedBlocks ? blockStateBuffer2 : blockStateBuffer1) : oldBlockStates;
+        PalettedArray<BlockState> newBlocks = undoing ? oldBlockStates : (swappedBlocks ? blockStateBuffer2 : blockStateBuffer1);
+    
+        BlockPos start = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
+        int index = 0;
+        for (int x = 0; x < 16; x++)
+        {
+            for (int y = 0; y < 16; y++)
+            {
+                for (int z = 0; z < 16; z++)
+                {
+                    BlockState oldState = oldBlocks.get(index);
+                    BlockState newState = newBlocks.get(index);
+                    if (!oldState.equals(newState)) world.updateNeighbors(start.add(x, y, z), newState.getBlock());
+                    index++;
+                }
+            }
+        }
     }
 }

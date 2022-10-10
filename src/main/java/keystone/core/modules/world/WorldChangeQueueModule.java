@@ -10,50 +10,39 @@ import keystone.core.utils.ProgressBar;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 public class WorldChangeQueueModule implements IKeystoneModule
 {
-    private interface IWorldChange
+    private enum QueueState
     {
-        default int size() { return 1; }
-        void apply();
+        IDLE,
+        PLACING_BLOCKS,
+        PROCESSING_UPDATES
     }
-    private static class WorldChangeSet implements IWorldChange
+    private record WorldChange(SessionModule session, WorldHistoryChunk chunk, boolean undo)
     {
-        private final SessionModule session;
-        private final List<ChunkChange> changes;
-        private final boolean undo;
-
-        protected WorldChangeSet(SessionModule session, boolean undo)
+        public void apply(QueueState queueState)
         {
-            this.session = session;
-            this.changes = new ArrayList<>();
-            this.undo = undo;
+            if (queueState == QueueState.PLACING_BLOCKS) applyChanges();
+            else if (queueState == QueueState.PROCESSING_UPDATES) applyUpdates();
         }
-        public WorldChangeSet addChunk(WorldHistoryChunk chunk)
-        {
-            changes.add(new ChunkChange(session, chunk, undo));
-            return this;
-        }
-
-        @Override public int size() { return changes.size(); }
-        public void apply() { for (ChunkChange change : changes) change.apply(); }
-    }
-    private record ChunkChange(SessionModule session, WorldHistoryChunk chunk, boolean undo) implements IWorldChange
-    {
-        public void apply()
+        public void applyChanges()
         {
             session.registerChange(chunk);
-            if (undo) chunk.undo();
-            else chunk.redo();
+            if (undo) chunk.revertBlocks();
+            else chunk.placeBlocks();
+        }
+        public void applyUpdates()
+        {
+            chunk.processUpdates(undo);
         }
     }
 
-    private final Queue<IWorldChange> changeQueue = new ArrayDeque<>();
+    private final List<WorldChange> changeQueue = Collections.synchronizedList(new ArrayList<>());
+    private int queueIndex;
+    private QueueState state;
+    
     private SessionModule session;
     private boolean waitingForChanges;
     private int cooldown;
@@ -64,44 +53,74 @@ public class WorldChangeQueueModule implements IKeystoneModule
     public void postInit()
     {
         session = Keystone.getModule(SessionModule.class);
+        queueIndex = 0;
+        state = QueueState.IDLE;
         ServerTickEvents.START_SERVER_TICK.register(this::onServerTick);
     }
 
     private void onServerTick(MinecraftServer server)
     {
         if (cooldown > 0) cooldown--;
-        else
+        
+        if (state == QueueState.PLACING_BLOCKS || state == QueueState.PROCESSING_UPDATES)
         {
+            // Process a number of changes equal to KeystoneConfig.maxChunkUpdatesPerTick
             int updatesLeft = KeystoneConfig.maxChunkUpdatesPerTick;
-            while (this.changeQueue.size() > 0 && updatesLeft > 0)
+            while (queueIndex < changeQueue.size() && updatesLeft > 0)
             {
-                IWorldChange change = this.changeQueue.remove();
-                change.apply();
+                WorldChange change = this.changeQueue.get(queueIndex++);
+                change.apply(state);
                 if (waitingForChanges) ProgressBar.nextStep();
-
-                updatesLeft -= change.size();
+        
+                updatesLeft--;
             }
-
-            if (waitingForChanges && this.changeQueue.size() <= 0)
+            
+            // Check if the end of the queue was reached
+            if (queueIndex >= changeQueue.size())
             {
-                waitingForChanges = false;
-                KeystoneGlobalState.BlockingKeys = false;
-                ProgressBar.finish();
+                queueIndex = 0;
+                
+                // If queue was placing blocks, transition to processing updates
+                if (state == QueueState.PLACING_BLOCKS)
+                {
+                    state = QueueState.PROCESSING_UPDATES;
+                    KeystoneGlobalState.SuppressPlacementChecks = false;
+                }
+                
+                // If queue was processing updates, finalize changes and transition to idle
+                else if (state == QueueState.PROCESSING_UPDATES)
+                {
+                    state = QueueState.IDLE;
+                    changeQueue.clear();
+                    
+                    if (waitingForChanges)
+                    {
+                        waitingForChanges = false;
+                        KeystoneGlobalState.BlockingKeys = false;
+                        ProgressBar.finish();
+                    }
+                }
             }
-            cooldown = KeystoneConfig.chunkUpdateCooldownTicks;
+            else cooldown = KeystoneConfig.chunkUpdateCooldownTicks;
         }
     }
 
     public void enqueueChange(WorldHistoryChunk change, boolean undo)
     {
-        this.changeQueue.add(new ChunkChange(session, change, undo));
+        if (state != QueueState.IDLE) throw new IllegalStateException("Trying to call WorldChangeQueueModule.enqueueChange while queue is not idle! This is not supported and will cause issues!");
+        this.changeQueue.add(new WorldChange(session, change, undo));
     }
     public void waitForChanges(String progressBarTitle)
     {
+        if (state != QueueState.IDLE) throw new IllegalStateException("Trying to call WorldChangeQueueModule.waitForChanges while queue is not idle! This is not supported and will cause issues!");
         if (this.changeQueue.size() > 0)
         {
             KeystoneGlobalState.BlockingKeys = true;
             this.waitingForChanges = true;
+    
+            KeystoneGlobalState.SuppressPlacementChecks = true;
+            this.queueIndex = 0;
+            this.state = QueueState.PLACING_BLOCKS;
 
             ProgressBar.start(progressBarTitle, 1);
             ProgressBar.beginIteration(this.changeQueue.size());
