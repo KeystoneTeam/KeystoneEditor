@@ -8,7 +8,6 @@ import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
-import keystone.core.KeystoneGlobalState;
 import keystone.core.mixins.ChunkSectionAccessor;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
@@ -644,9 +643,8 @@ public class WorldHistoryChunk
     }
     public void processUpdates(boolean undoing)
     {
-        PalettedArray<BlockState> oldBlocks = undoing ? (swappedBlocks ? blockStateBuffer2 : blockStateBuffer1) : oldBlockStates;
         PalettedArray<BlockState> newBlocks = undoing ? oldBlockStates : (swappedBlocks ? blockStateBuffer2 : blockStateBuffer1);
-    
+        
         BlockPos start = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
         int index = 0;
         for (int x = 0; x < 16; x++)
@@ -655,9 +653,10 @@ public class WorldHistoryChunk
             {
                 for (int z = 0; z < 16; z++)
                 {
-                    BlockState oldState = oldBlocks.get(index);
                     BlockState newState = newBlocks.get(index);
-                    if (!oldState.equals(newState)) world.updateNeighbors(start.add(x, y, z), newState.getBlock());
+                    BlockPos pos = start.add(x, y, z);
+                    world.updateNeighbors(pos, newState.getBlock());
+                    newState.updateNeighbors(world, pos, net.minecraft.block.Block.NOTIFY_ALL);
                     index++;
                 }
             }

@@ -22,7 +22,7 @@ public abstract class GameMenuScreenMixin extends Screen
         super(title);
     }
 
-    @Inject(method = "initWidgets", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/GameMenuScreen;addDrawableChild(Lnet/minecraft/client/gui/Element;)Lnet/minecraft/client/gui/Element;", ordinal = 7), cancellable = true)
+    @Inject(method = "initWidgets", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/GameMenuScreen;addDrawableChild(Lnet/minecraft/client/gui/Element;)Lnet/minecraft/client/gui/Element;", ordinal = 8), cancellable = true)
     private void initWidgets(CallbackInfo callback)
     {
         GameMenuScreen _this = (GameMenuScreen)(Object)this;

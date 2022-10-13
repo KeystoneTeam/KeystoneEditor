@@ -10,7 +10,9 @@ import keystone.core.utils.ProgressBar;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class WorldChangeQueueModule implements IKeystoneModule
 {
@@ -81,27 +83,33 @@ public class WorldChangeQueueModule implements IKeystoneModule
                 queueIndex = 0;
                 
                 // If queue was placing blocks, transition to processing updates
-                if (state == QueueState.PLACING_BLOCKS)
-                {
-                    state = QueueState.PROCESSING_UPDATES;
-                    KeystoneGlobalState.SuppressPlacementChecks = false;
-                }
+                if (state == QueueState.PLACING_BLOCKS) transitionToUpdates();
                 
                 // If queue was processing updates, finalize changes and transition to idle
-                else if (state == QueueState.PROCESSING_UPDATES)
-                {
-                    state = QueueState.IDLE;
-                    changeQueue.clear();
-                    
-                    if (waitingForChanges)
-                    {
-                        waitingForChanges = false;
-                        KeystoneGlobalState.BlockingKeys = false;
-                        ProgressBar.finish();
-                    }
-                }
+                else if (state == QueueState.PROCESSING_UPDATES) transitionToIdle();
             }
             else cooldown = KeystoneConfig.chunkUpdateCooldownTicks;
+        }
+    }
+    private void transitionToUpdates()
+    {
+        if (KeystoneGlobalState.SuppressingBlockTicks) transitionToIdle();
+        else
+        {
+            state = QueueState.PROCESSING_UPDATES;
+            KeystoneGlobalState.SuppressPlacementChecks = false;
+        }
+    }
+    private void transitionToIdle()
+    {
+        state = QueueState.IDLE;
+        changeQueue.clear();
+    
+        if (waitingForChanges)
+        {
+            waitingForChanges = false;
+            KeystoneGlobalState.BlockingKeys = false;
+            ProgressBar.finish();
         }
     }
 
