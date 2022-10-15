@@ -31,12 +31,14 @@ import net.minecraft.command.CommandRegistryWrapper;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -58,7 +60,6 @@ public class KeystoneFilter extends EditableObject
         else return filterFile.getName().replaceFirst("[.][^.]+$", "");
     }
     //endregion
-
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
@@ -169,7 +170,10 @@ public class KeystoneFilter extends EditableObject
      */
     public void finished() {}
     //endregion
+    
     //region API
+    
+    //region Filter Data Getters
     /**
      * @return The name of the filter
      */
@@ -178,21 +182,22 @@ public class KeystoneFilter extends EditableObject
      * @return Whether the filter was compiled successfully
      */
     public final boolean isCompiledSuccessfully() { return compiledSuccessfully; }
-
     /**
      * @return The current iteration this filter is processing
      */
     public final int iteration() { return iteration; }
-
     /**
-     * Send a message to the player in in-game chat
-     * @param message The message to send
+     * When writing loops with no guaranteed stopping point, always add a check for this at the beginning of each
+     * iteration, to ensure the cancel button works. [e.g. if(isCancelled()) break;]
+     * @return True if the filter was cancelled, false otherwise
      */
-    public final void print(Object message)
-    {
-        if (message == null) message = "null";
-        MinecraftClient.getInstance().player.sendMessage(Text.literal(message.toString()), false);
-    }
+    public final boolean isCancelled() { return getExecutor().isCancelled(); }
+    /**
+     * @return The number of {@link WorldRegion FilterBoxes} that the filter is modifying
+     */
+    public final int regionCount() { return Keystone.getModule(SelectionModule.class).getSelectionBoxCount(); }
+    //endregion
+    //region Cancellation
     /**
      * Cancel filter execution
      * @param reasons The reason the filter cannot be completed
@@ -206,18 +211,34 @@ public class KeystoneFilter extends EditableObject
      * @param throwable The throwable to be thrown
      */
     public final void throwException(Throwable throwable) { getExecutor().throwException(throwable); }
-
+    //endregion
+    //region Misc Utils
     /**
-     * When writing loops with no guaranteed stopping point, always add a check for this at the beginning of each
-     * iteration, to ensure the cancel button works. [e.g. if(isCancelled()) break;]
-     * @return True if the filter was cancelled, false otherwise
+     * Send a message to the player in in-game chat
+     * @param message The message to send
      */
-    public final boolean isCancelled() { return getExecutor().isCancelled(); }
+    public final void print(Object message)
+    {
+        if (message == null) message = "null";
+        MinecraftClient.getInstance().player.sendMessage(Text.literal(message.toString()), false);
+    }
     /**
-     * @return The number of {@link WorldRegion FilterBoxes} that the filter is modifying
+     * Calculate the entry of multiple {@link BlockPalette BlockPalettes} at the same
+     * random index. Use this matching related blocks, such as randomly selecting a log and leaf combo
+     * @param palettes A list of {@link BlockPalette BlockPalettes}
+     * @return An array containing the resolved {@link BlockType Blocks}, in the same order as the provided {@link BlockPalette BlockPalettes}
      */
-    public final int regionCount() { return Keystone.getModule(SelectionModule.class).getSelectionBoxCount(); }
-
+    public final BlockType[] resolvePalettes(BlockPalette... palettes)
+    {
+        BlockType[] ret = new BlockType[palettes.length];
+        if (palettes.length == 0) return ret;
+        
+        int index = palettes[0].randomIndex();
+        for (int i = 0; i < ret.length; i++) ret[i] = palettes[i].getBlockType(index);
+        return ret;
+    }
+    //endregion
+    //region Multithreading
     /**
      * Create a new filter thread for running custom code
      * @param threadCode The code to run on the thread
@@ -246,7 +267,8 @@ public class KeystoneFilter extends EditableObject
      * @return The created thread
      */
     public CustomFilterThread thread(Runnable threadCode, Runnable onExecutionEnded, boolean start) { return getExecutor().newThread(threadCode, onExecutionEnded, start); }
-
+    //endregion
+    //region Wrapper Creation
     /**
      * Create a {@link BlockPalette} from multiple block IDs. Any ID that is a valid ID
      * for the /setblock command will work. Add a number after the ID to specify the block's weight in the
@@ -280,7 +302,6 @@ public class KeystoneFilter extends EditableObject
         }
         return palette;
     }
-
     /**
      * Create a {@link BlockPalette} from multiple {@link BlockType Blocks}
      * @param blockTypes A list of {@link BlockType Blocks}
@@ -292,7 +313,6 @@ public class KeystoneFilter extends EditableObject
         for (BlockType blockType : blockTypes) palette = palette.with(blockType);
         return palette;
     }
-
     /**
      * Create an empty blacklist {@link BlockMask}
      * @return The blacklist {@link BlockMask}
@@ -339,23 +359,6 @@ public class KeystoneFilter extends EditableObject
         for (BlockType blockType : blockTypes) mask = mask.with(blockType);
         return mask;
     }
-
-    /**
-     * Calculate the entry of multiple {@link BlockPalette BlockPalettes} at the same
-     * random index. Use this matching related blocks, such as randomly selecting a log and leaf combo
-     * @param palettes A list of {@link BlockPalette BlockPalettes}
-     * @return An array containing the resolved {@link BlockType Blocks}, in the same order as the provided {@link BlockPalette BlockPalettes}
-     */
-    public final BlockType[] resolvePalettes(BlockPalette... palettes)
-    {
-        BlockType[] ret = new BlockType[palettes.length];
-        if (palettes.length == 0) return ret;
-
-        int index = palettes[0].randomIndex();
-        for (int i = 0; i < ret.length; i++) ret[i] = palettes[i].getBlockType(index);
-        return ret;
-    }
-
     /**
      * Create a {@link Block} from a block ID. Any ID that is a valid ID for the
      * /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
@@ -464,6 +467,8 @@ public class KeystoneFilter extends EditableObject
             return null;
         }
     }
+    //endregion
+    //region Schematic Creation
     /**
      * Create a schematic from two corners
      * @param corner1 The first corner
@@ -539,5 +544,37 @@ public class KeystoneFilter extends EditableObject
         BlockPos corner2 = new BlockPos((int)bounds.maxX, (int)bounds.maxY, (int)bounds.maxZ);
         return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode, structureVoid.getMinecraftBlock());
     }
+    //endregion
+    //region Input/Output Utils
+    /**
+     * Read an NBT file at a given path
+     * @param path The path of the NBT file
+     * @return The {@link NBTCompound} that was read from the file
+     */
+    public NBTCompound readNBT(String path)
+    {
+        File file = new File(path);
+        if (!file.exists()) return null;
+        
+        try { return new NBTCompound(NbtIo.read(file)); }
+        catch (IOException e)
+        {
+            throwException(e);
+            return null;
+        }
+    }
+    /**
+     * Write an {@link NBTCompound} to a file at a given path
+     * @param nbt The NBT compound to write
+     * @param path The path of the file to write to
+     */
+    public void writeNBT(NBTCompound nbt, String path)
+    {
+        File file = new File(path);
+        try { NbtIo.write(nbt.getMinecraftNBT(), file); }
+        catch (IOException e) { throwException(e); }
+    }
+    //endregion
+    
     //endregion
 }

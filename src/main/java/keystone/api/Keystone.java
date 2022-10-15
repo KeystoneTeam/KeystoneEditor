@@ -267,6 +267,31 @@ public final class Keystone
         flySpeed -= amount;
         flySpeed = Math.max(0, flySpeed);
     }
+    
+    /**
+     * Try to throw an exception from within a {@link KeystoneFilter}
+     * @param exception The exception to throw
+     * @return True if this method was called from within a filter thread, false otherwise
+     */
+    public static boolean tryThrowFilterException(Throwable exception)
+    {
+        if (Thread.currentThread() instanceof IFilterThread filterThread)
+        {
+            filterThread.getExecutor().throwException(exception);
+            return true;
+        }
+        else
+        {
+            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+            player.sendMessage(Text.literal(exception.getMessage()).styled(style -> style.withColor(Formatting.RED)), false);
+            return false;
+        }
+    }
+    /**
+     * Try to cancel the {@link KeystoneFilter} that is being run in the current thread
+     * @param reason The reason the filter was canceled
+     * @return True if this method was called from within a filter thread, false otherwise
+     */
     public static boolean tryCancelFilter(String... reason)
     {
         if (Thread.currentThread() instanceof IFilterThread filterThread)

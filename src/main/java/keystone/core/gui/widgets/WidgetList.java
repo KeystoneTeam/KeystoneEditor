@@ -47,10 +47,20 @@ public class WidgetList extends ClickableWidget
 
     public void bake()
     {
+        // Check for empty list
         if (widgets.size() == 0 && queuedWidgets.size() == 0)
         {
             height = 0;
             return;
+        }
+        
+        // Add listeners to all changing height widgets
+        for (ClickableWidget widget : widgets)
+        {
+            if (widget instanceof IChangingHeightWidget changingHeightWidget)
+            {
+                changingHeightWidget.addListener((w, height) -> updateCurrentWidgets());
+            }
         }
 
         scrollIndex = 0;
@@ -73,7 +83,6 @@ public class WidgetList extends ClickableWidget
         offsetY = y;
         updateCurrentWidgets();
     }
-
     public void forEach(Consumer<ClickableWidget> consumer)
     {
         currentWidgets.forEach(clickable ->
@@ -95,29 +104,6 @@ public class WidgetList extends ClickableWidget
             return true;
         }
         return false;
-    }
-    private void updateWidgetLocations()
-    {
-        currentWidgets.clear();
-        height = 0;
-
-        int x = this.x + offsetX;
-        int y = this.y + offsetY;
-        int i = scrollIndex;
-
-        // Update Widget Locations
-        while (i < widgets.size())
-        {
-            ClickableWidget widget = widgets.get(i);
-            if (height + widget.getHeight() > maxHeight) break;
-            widget.x = x;
-            widget.y = y;
-
-            y += widget.getHeight() + padding;
-            height += widget.getHeight() + padding;
-            currentWidgets.add(widget);
-            i++;
-        }
     }
 
     protected void updateCurrentWidgets()
@@ -147,6 +133,30 @@ public class WidgetList extends ClickableWidget
 
         updateWidgetLocations();
     }
+    private void updateWidgetLocations()
+    {
+        currentWidgets.clear();
+        height = 0;
+        
+        int x = this.x + offsetX;
+        int y = this.y + offsetY;
+        int i = scrollIndex;
+        
+        // Update Widget Locations
+        while (i < widgets.size())
+        {
+            ClickableWidget widget = widgets.get(i);
+            if (height + widget.getHeight() > maxHeight) break;
+            widget.x = x;
+            widget.y = y;
+            
+            y += widget.getHeight() + padding;
+            height += widget.getHeight() + padding;
+            currentWidgets.add(widget);
+            i++;
+        }
+    }
+    
     //region Widget Overrides
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
