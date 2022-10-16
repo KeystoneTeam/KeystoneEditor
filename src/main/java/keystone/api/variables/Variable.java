@@ -13,6 +13,7 @@ import java.lang.annotation.Target;
  * the filter selection panel. Supported types are int, float, boolean, enum, String, {@link BlockMask BlockMask},
  * and {@link BlockPalette BlockPalette}
  */
+//TODO: Add support for custom types through collapsable widget sub-lists
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Variable
