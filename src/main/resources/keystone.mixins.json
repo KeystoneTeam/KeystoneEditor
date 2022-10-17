@@ -10,6 +10,7 @@
     "LivingEntityMixin",
     "PersistentStateManagerAccessor",
     "ServerPlayerEntityMixin",
+    "ServerPlayerInteractionManagerMixin",
     "ServerWorldMixin",
     "ThreadedAnvilChunkStorageInvoker",
     "WindowMixin",
@@ -30,7 +31,8 @@
     "client.KeyboardMixin",
     "client.MinecraftClientMixin",
     "client.MouseMixin",
-    "client.SpectatorHudMixin"
+    "client.SpectatorHudMixin",
+    "client.WorldEntryMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -9,17 +9,18 @@ import net.minecraft.world.World;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class KeystoneDirectories
 {
     private static WorldCacheModule worldCache;
     private static File keystoneDirectory;
+    private static File currentSaveDirectory;
 
     private static File analysesDirectory;
     private static File filterDirectory;
     private static File schematicsDirectory;
     private static File stockFilterCache;
-    private static File sessionDirectory;
 
     public static void init() throws IOException
     {
@@ -30,8 +31,11 @@ public class KeystoneDirectories
         filterDirectory = getKeystoneSubdirectory(KeystoneConfig.filtersDirectory);
         schematicsDirectory = getKeystoneSubdirectory(KeystoneConfig.schematicsDirectory);
         stockFilterCache = getKeystoneSubdirectory(KeystoneConfig.stockFilterCache);
-        sessionDirectory = getKeystoneSubdirectory(KeystoneConfig.sessionDirectory);
-        Files.setAttribute(sessionDirectory.toPath(), "dos:hidden", true);
+    }
+    public static void setCurrentSaveDirectory(File currentSaveDirectory)
+    {
+        KeystoneDirectories.currentSaveDirectory = currentSaveDirectory;
+        if (!currentSaveDirectory.exists()) currentSaveDirectory.mkdirs();
     }
 
     public static File getKeystoneDirectory() { return keystoneDirectory; }
@@ -46,19 +50,15 @@ public class KeystoneDirectories
     public static File getFilterDirectory() { return filterDirectory; }
     public static File getSchematicsDirectory() { return schematicsDirectory; }
     public static File getStockFilterCache() { return stockFilterCache; }
-    public static File getSessionDirectory() { return sessionDirectory; }
 
     public static File getWorldDirectory()
     {
-        if (worldCache == null) worldCache = Keystone.getModule(WorldCacheModule.class);
-        File file = ((PersistentStateManagerAccessor)worldCache.getDimensionWorld(World.OVERWORLD).getPersistentStateManager()).getDirectory().getParentFile();
-        if (!file.exists()) file.mkdirs();
-        return file;
+        return currentSaveDirectory;
     }
     public static File getWorldCacheDirectory()
     {
         if (worldCache == null) worldCache = Keystone.getModule(WorldCacheModule.class);
-        File file = ((PersistentStateManagerAccessor)worldCache.getDimensionWorld(World.OVERWORLD).getPersistentStateManager()).getDirectory().getParentFile().toPath().resolve("##KEYSTONE.TEMP##").toFile();
+        File file = currentSaveDirectory.toPath().resolve("##KEYSTONE.TEMP##").toFile();
         if (!file.exists()) file.mkdirs();
         return file;
     }
@@ -70,4 +70,6 @@ public class KeystoneDirectories
     }
 
     public static File getHistoryDirectory() { return getWorldCacheSubdirectory(KeystoneConfig.historyDirectory); }
+    public static File getWorldSessionDirectory() { return getWorldCacheSubdirectory(KeystoneConfig.sessionDirectory); }
+    public static File getWorldBackupDirectory() { return getWorldCacheSubdirectory(KeystoneConfig.backupDirectory); }
 }

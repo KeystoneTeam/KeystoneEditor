@@ -15,6 +15,7 @@ import org.lwjgl.glfw.GLFW;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class HistoryModule implements IKeystoneModule
 {
@@ -24,11 +25,16 @@ public class HistoryModule implements IKeystoneModule
     private int tryBeginHooksOpen = 0;
     private int currentHistoryIndex = -1;
     private int unsavedChanges = 0;
+    private boolean skipClearOnLoad = false;
 
     public HistoryModule()
     {
         InputEvents.KEY_PRESSED.register(this::onKeyboardInput);
         KeystoneLifecycleEvents.OPEN_WORLD.register(this::onJoinWorld);
+        KeystoneLifecycleEvents.SAVE_SESSION_INFO.register(this::saveSession);
+        KeystoneLifecycleEvents.REPAIR_SESSION.register(this::repairSession);
+        KeystoneLifecycleEvents.COMMIT_SESSION.register(this::commitOrRevertSession);
+        KeystoneLifecycleEvents.REVERT_SESSION.register(this::commitOrRevertSession);
     }
 
     private void onKeyboardInput(int key, int action, int scancode, int modifiers)
@@ -42,7 +48,8 @@ public class HistoryModule implements IKeystoneModule
     }
     private void onJoinWorld(ClientWorld world)
     {
-        Keystone.getModule(HistoryModule.class).clearHistory();
+        if (skipClearOnLoad) skipClearOnLoad = false;
+        else Keystone.getModule(HistoryModule.class).clearHistory();
     }
 
     @Override
@@ -61,8 +68,23 @@ public class HistoryModule implements IKeystoneModule
     }
 
     public int getUnsavedChanges() { return unsavedChanges; }
-    public void onChangesCommitted() { unsavedChanges = 0; }
-
+    
+    public void commitOrRevertSession()
+    {
+        unsavedChanges = 0;
+    }
+    public void saveSession(Properties sessionInfo)
+    {
+        sessionInfo.setProperty("unsaved_changes", Integer.toString(unsavedChanges));
+        sessionInfo.setProperty("current_history_index", Integer.toString(currentHistoryIndex));
+    }
+    public void repairSession(Properties sessionInfo)
+    {
+        this.unsavedChanges = Integer.parseInt(sessionInfo.getProperty("unsaved_changes"));
+        this.currentHistoryIndex = Integer.parseInt(sessionInfo.getProperty("current_history_index"));
+        this.skipClearOnLoad = true;
+    }
+    
     //region Deserializers
     public void registerDeserializer(String id, KeystoneRegistryEvents.RegisterHistoryEntriesListener.HistoryEntryDeserializer deserializer)
     {
