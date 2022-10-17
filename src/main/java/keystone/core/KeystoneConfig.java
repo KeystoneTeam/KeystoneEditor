@@ -8,7 +8,6 @@ public class KeystoneConfig
     public static String schematicsDirectory = "schematics";
     public static String stockFilterCache = "stock_filters";
     public static String sessionDirectory = ".session";
-
     public static String historyDirectory = "history";
 
     public static boolean startActive = false;
@@ -21,6 +20,7 @@ public class KeystoneConfig
     public static int maxBrushSize = 512;
     public static int maxChunkUpdatesPerTick = 64;
     public static int chunkUpdateCooldownTicks = 0;
+    public static int guiScrollSpeed = 10;
 
     public static float flySpeed = 0.1f;
     public static float flySmoothing = 0.0f;

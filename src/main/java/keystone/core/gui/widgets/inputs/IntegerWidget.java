@@ -1,5 +1,6 @@
 package keystone.core.gui.widgets.inputs;
 
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
 public class IntegerWidget extends ParsableTextWidget<Integer>
@@ -36,7 +37,7 @@ public class IntegerWidget extends ParsableTextWidget<Integer>
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta)
     {
-        if (isHovered() && active)
+        if (isHovered() && active && Screen.hasControlDown())
         {
             if (delta > 0) setTypedValue(getTypedValue() + step);
             else if (delta < 0) setTypedValue(getTypedValue() - step);

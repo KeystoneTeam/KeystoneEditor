@@ -2,6 +2,7 @@ package keystone.core.gui.widgets.inputs.fields;
 
 import keystone.api.variables.Hook;
 import keystone.api.variables.IntRange;
+import net.minecraft.client.gui.screen.Screen;
 
 import java.lang.reflect.Field;
 import java.util.function.Supplier;
@@ -35,7 +36,7 @@ public class IntegerFieldWidget extends ParsableTextFieldWidget<Integer>
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta)
     {
-        if (isHovered())
+        if (isHovered() && active && Screen.hasControlDown())
         {
             int step = this.range != null ? this.range.scrollStep() : 1;
 

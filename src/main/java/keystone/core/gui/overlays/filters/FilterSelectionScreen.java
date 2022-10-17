@@ -87,7 +87,7 @@ public class FilterSelectionScreen extends KeystonePanel
     @Override
     protected Viewport createViewport()
     {
-        Viewport dock = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT, Viewport.MIDDLE, Viewport.LEFT);
+        Viewport dock = ScreenViewports.getViewport(Viewport.MIDDLE, Viewport.LEFT);
         return dock.createLeftCenteredViewport(40 + 4 * PADDING + filterVariablesList.getHeight());
     }
     @Override
@@ -96,10 +96,10 @@ public class FilterSelectionScreen extends KeystonePanel
         if (widgetDisabler != null) widgetDisabler.restoreAll();
 
         if (selectedFilterFile == null) selectedFilterFile = filterManager.getInstalledFilters()[0];
-        Viewport dock = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT, Viewport.MIDDLE, Viewport.LEFT);
+        Viewport dock = ScreenViewports.getViewport(Viewport.MIDDLE, Viewport.LEFT); //ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT, Viewport.MIDDLE, Viewport.LEFT);
 
         // Build Filter Variable Widgets
-        int maxPanelHeight = client.getWindow().getScaledHeight() - 50 - 2 * PADDING;
+        int maxPanelHeight = dock.getHeight() - 40 - 4 * PADDING;
         filterVariablesList = new FieldWidgetList(Text.translatable("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, dock.getWidth(), maxPanelHeight, PADDING);
 
         // Error Display
