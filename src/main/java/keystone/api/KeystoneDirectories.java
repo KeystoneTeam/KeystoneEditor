@@ -1,15 +1,11 @@
 package keystone.api;
 
 import keystone.core.KeystoneConfig;
-import keystone.core.mixins.PersistentStateManagerAccessor;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.world.World;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class KeystoneDirectories
 {

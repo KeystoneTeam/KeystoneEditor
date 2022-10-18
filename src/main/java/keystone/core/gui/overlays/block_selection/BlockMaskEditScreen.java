@@ -52,7 +52,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         {
             this.mask.without(BlockTypeRegistry.fromMinecraftBlock(entry.state()));
             this.maskPanel.removeBlock(entry.state(), entry.tooltipBuilder());
-        }, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.PASS_UNMODIFIED);
+        }, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.NO_SCROLLING);
         this.mask.forEach(
                 variant -> maskPanel.addBlock(variant.getMinecraftBlock(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP, false),
                 anyVariant -> maskPanel.addBlock(anyVariant.getDefaultState(), BlockGridWidget.ANY_VARIANT_TOOLTIP, false)

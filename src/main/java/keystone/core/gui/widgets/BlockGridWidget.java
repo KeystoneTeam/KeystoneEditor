@@ -67,6 +67,7 @@ public class BlockGridWidget extends ClickableWidget
     private final WidgetDisabler widgetDisabler;
     private final BlockGridButton.ClickConsumer leftClickConsumer;
     private final BlockGridButton.ClickConsumer rightClickConsumer;
+    private final BlockGridButton.ScrollConsumer scrollConsumer;
     private final Screen screen;
 
     private int blockCount;
@@ -87,7 +88,7 @@ public class BlockGridWidget extends ClickableWidget
     private Predicate<BlockState> filter;
 
     //region Creation
-    private BlockGridWidget(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
+    private BlockGridWidget(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer, BlockGridButton.ScrollConsumer scrollConsumer)
     {
         super(x, y, width, height, title);
         this.allowMultiples = allowMultiples;
@@ -95,6 +96,7 @@ public class BlockGridWidget extends ClickableWidget
         this.widgetDisabler = new WidgetDisabler();
         this.leftClickConsumer = leftClickConsumer;
         this.rightClickConsumer = rightClickConsumer;
+        this.scrollConsumer = scrollConsumer;
         this.screen = screen;
 
         buttonsPerRow = (width - BlockGridButton.SIZE) / BlockGridButton.SIZE;
@@ -114,15 +116,15 @@ public class BlockGridWidget extends ClickableWidget
         blockCounts = new HashMap<>();
         buttons = new ArrayList<>();
     }
-    public static BlockGridWidget createWithViewport(Screen screen, Viewport idealViewport, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
+    public static BlockGridWidget createWithViewport(Screen screen, Viewport idealViewport, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer, BlockGridButton.ScrollConsumer scrollConsumer)
     {
-        return new BlockGridWidget(screen, idealViewport.getMinX(), idealViewport.getMinY(), idealViewport.getWidth(), idealViewport.getHeight(), allowMultiples, title, callback, leftClickConsumer, rightClickConsumer);
+        return new BlockGridWidget(screen, idealViewport.getMinX(), idealViewport.getMinY(), idealViewport.getWidth(), idealViewport.getHeight(), allowMultiples, title, callback, leftClickConsumer, rightClickConsumer, scrollConsumer);
     }
-    public static BlockGridWidget create(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer)
+    public static BlockGridWidget create(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer, BlockGridButton.ScrollConsumer scrollConsumer)
     {
         width -= width % BlockGridButton.SIZE;
         height -= height % BlockGridButton.SIZE;
-        return new BlockGridWidget(screen, x, y, width, height, allowMultiples, title, callback, leftClickConsumer, rightClickConsumer);
+        return new BlockGridWidget(screen, x, y, width, height, allowMultiples, title, callback, leftClickConsumer, rightClickConsumer, scrollConsumer);
     }
     //endregion
 
@@ -272,7 +274,7 @@ public class BlockGridWidget extends ClickableWidget
             if (filter != null && !filter.test(entry.state)) continue;
 
             // Create button instance
-            BlockGridButton button = BlockGridButton.create(screen, this, entry.state, count, x, y, leftClickConsumer, rightClickConsumer, entry.tooltipBuilder);
+            BlockGridButton button = BlockGridButton.create(screen, this, entry.state, count, x, y, leftClickConsumer, rightClickConsumer, scrollConsumer, entry.tooltipBuilder);
             if (button == null) continue;
             else blockCount++;
 
