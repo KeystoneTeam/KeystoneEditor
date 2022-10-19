@@ -42,18 +42,13 @@ public class Dropdown<T> extends WidgetList
         {
             Text label = getMessage();
 
-            if (isHovered())
-            {
-                fill(stack, this.x, this.y, this.x + this.width, this.y + 12, 0xFFFFFFFF);
-                int color = (label.getStyle().getColor() != null) ? label.getStyle().getColor().getRgb() : 0x404040;
-                font.draw(stack, label.getString(), this.x + 2, this.y + 2, color);
-            }
-            else
-            {
-                fill(stack, this.x, this.y, this.x + this.width, this.y + 12, 0xFF404040);
-                int color = (label.getStyle().getColor() != null) ? label.getStyle().getColor().getRgb() : 0xFFFFFF;
-                font.draw(stack, label.getString(), this.x + 2, this.y + 3, color);
-            }
+            int fillColor = 0x404040;
+            int textColor = (label.getStyle().getColor() != null) ? label.getStyle().getColor().getRgb() : 0xFFFFFFFF;
+            
+            if (isHovered()) fillColor *= 2;
+            
+            fill(stack, this.x, this.y, this.x + this.width, this.y + 12, 0xFF000000 | fillColor);
+            font.draw(stack, label.getString(), this.x + 2, this.y + 3, textColor);
         }
     }
 
