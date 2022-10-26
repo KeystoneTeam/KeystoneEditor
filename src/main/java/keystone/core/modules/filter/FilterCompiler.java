@@ -85,8 +85,11 @@ public class FilterCompiler
             }
             catch (CompileException | InternalCompilerException e)
             {
+                Pattern lineNumberPattern = Pattern.compile("Line ([0-9]+)");
+                
+                // Error Logging
                 String error = "Unable to compile filter '" + oldClassName + "': " + e.getLocalizedMessage();
-                Matcher matcher = Pattern.compile("Line ([0-9]+)").matcher(error);
+                Matcher matcher = lineNumberPattern.matcher(error);
                 String fixedError = error;
                 while (matcher.find())
                 {
@@ -94,10 +97,20 @@ public class FilterCompiler
                     int line = Integer.parseInt(group.split(" ")[1]) - imports.lineOffset;
                     fixedError = fixedError.replace(matcher.group(), "Line " + line);
                 }
-
                 Keystone.LOGGER.error(fixedError);
                 sendErrorMessage(fixedError);
-                return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false)).setCompilerException(e);
+                
+                // Remap Exception Line
+                String exceptionMessage = e.getMessage();
+                matcher = lineNumberPattern.matcher(error);
+                while (matcher.find())
+                {
+                    String group = matcher.group();
+                    int line = Integer.parseInt(group.split(" ")[1]) - imports.lineOffset;
+                    exceptionMessage = exceptionMessage.replace(matcher.group(), "Line " + line);
+                }
+                
+                return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false)).setCompilerException(new IllegalArgumentException(exceptionMessage));
             }
         }
         catch (FileNotFoundException e)

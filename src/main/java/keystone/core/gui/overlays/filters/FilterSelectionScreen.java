@@ -147,6 +147,8 @@ public class FilterSelectionScreen extends KeystonePanel
         for (File filterFile : filterManager.getInstalledFilters())
         {
             KeystoneFilter filter = filterManager.getFilter(filterFile);
+            if (filter == null) continue;
+            
             MutableText label = Text.literal(filter.getName());
             if (!filter.isCompiledSuccessfully()) label = label.styled(style -> style.withColor(Formatting.RED));
             dropdownOptions.add(new Dropdown.Option<>(filterFile, label));

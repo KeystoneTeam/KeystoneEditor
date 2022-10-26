@@ -20,6 +20,7 @@
   "client": [
     "client.ClientPlayerEntityMixin",
     "client.ClientPlayerInteractionManagerMixin",
+    "client.CreateWorldScreenMixin",
     "client.DrawableHelperMixin",
     "client.FramebufferMixin",
     "client.GameMenuScreenMixin",

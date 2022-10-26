@@ -37,6 +37,7 @@ public final class Keystone
 {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final Random RANDOM = Random.createThreadSafe();
+    public static final java.util.Random FILTER_RANDOM = new java.util.Random();
 
     private static FilterModule filterModule;
     private static GhostBlocksModule ghostBlocksModule;

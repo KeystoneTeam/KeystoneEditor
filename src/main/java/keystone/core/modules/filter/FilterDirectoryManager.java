@@ -23,21 +23,21 @@ import static java.nio.file.StandardWatchEventKinds.*;
 
 public class FilterDirectoryManager
 {
-    private Thread listenerThread;
-    private WatchService watchService;
-    private Map<WatchKey, Path> paths;
-    private Map<File, KeystoneFilter> compiledFilters;
+    private final WatchService watchService;
+    private final Map<WatchKey, Path> paths;
+    private final Map<File, KeystoneFilter> compiledFilters;
 
     //region Creation
     protected FilterDirectoryManager(WatchService watchService)
     {
-        this.listenerThread = new Thread(this::startThread, "Filter Directory Manager");
         this.watchService = watchService;
         this.paths = new HashMap<>();
         this.compiledFilters = new HashMap<>();
 
         loadStockFilters();
-        this.listenerThread.start();
+    
+        Thread listenerThread = new Thread(this::startThread, "Filter Directory Manager");
+        listenerThread.start();
 
         KeystoneLifecycleEvents.OPEN_WORLD.register(this::onJoinWorld);
     }
@@ -105,10 +105,11 @@ public class FilterDirectoryManager
     {
         File file = path.toFile();
 
-        VariableContainer variableContainer = new VariableContainer(compiledFilters.get(file));
-        KeystoneFilter filter = FilterCompiler.compileFilter(file);
-        variableContainer.apply(filter);
-        compiledFilters.put(file, filter);
+        KeystoneFilter existingFilter = compiledFilters.getOrDefault(file, null);
+        VariableContainer variableContainer = existingFilter != null ? new VariableContainer(existingFilter) : null;
+        KeystoneFilter recompiled = FilterCompiler.compileFilter(file);
+        if (variableContainer != null) variableContainer.apply(recompiled);
+        compiledFilters.put(file, recompiled);
 
         FilterSelectionScreen.dirty();
     }
