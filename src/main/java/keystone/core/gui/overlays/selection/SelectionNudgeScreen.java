@@ -90,7 +90,11 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         else
         {
             if (selections.size() == 0) open.close();
-            else if (createdSelection && selectionToNudge >= selections.size() - 2) setSelectedIndex(selections.size() - 1);
+            else
+            {
+                if (createdSelection && selectionToNudge >= selections.size() - 2) setSelectedIndex(selections.size() - 1);
+                open.updateSize();
+            }
         }
     }
     //endregion

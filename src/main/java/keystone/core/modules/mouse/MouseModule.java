@@ -10,6 +10,7 @@ import keystone.core.modules.selection.SelectedFace;
 import keystone.core.modules.selection.SelectionModule;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -47,11 +48,22 @@ public class MouseModule implements IKeystoneModule
     @Override
     public void preRender(WorldRenderContext context)
     {
+        // Don't select faces if creating a selection
         if (selectionModule.isCreatingSelection()) selectedFace = null;
+        
         else
         {
+            // If no box is being dragged
             if (!draggingBox)
             {
+                // If in close selection mode and no face is being dragged, don't select faces
+                if (KeystoneGlobalState.CloseSelection)
+                {
+                    selectedFace = null;
+                    return;
+                }
+                
+                // Calculate a list of all selected faces sorted from closest to furthest
                 orderedSelectedFaces.clear();
                 Keystone.forEachModule(module ->
                 {
@@ -63,16 +75,21 @@ public class MouseModule implements IKeystoneModule
                         }
                     });
                 });
+                
+                // If there is at least one face, select the closest or furthest face depending on if Alt is held down
                 if (orderedSelectedFaces.size() > 0)
                 {
                     orderedSelectedFaces.sort(Comparator.comparingDouble(SelectedFace::getDistance));
-                    selectedFace = orderedSelectedFaces.get(0);
+                    selectedFace = Screen.hasAltDown() ? orderedSelectedFaces.get(orderedSelectedFaces.size() - 1) : orderedSelectedFaces.get(0);
 
-                    double threshold = Math.min(KeystoneConfig.selectFaceSkipThreshold, 0.125 * selectedFace.getClosestEdgeLength());
-                    if (selectedFace.getInternalDistance() < threshold && orderedSelectedFaces.size() > 1) selectedFace = orderedSelectedFaces.get(1);
+                    // TODO: Fix edge threshold face selecting
+                    //double threshold = Math.min(KeystoneConfig.selectFaceSkipThreshold, 0.125 * selectedFace.getClosestEdgeLength());
+                    //if (selectedFace.getInternalDistance() < threshold && orderedSelectedFaces.size() > 1) selectedFace = orderedSelectedFaces.get(1);
                 }
                 else selectedFace = null;
             }
+            
+            // If a box is being dragged and a face is selected, drag the face
             else if (selectedFace != null) selectedFace.getBox().drag(selectedFace);
         }
     }
