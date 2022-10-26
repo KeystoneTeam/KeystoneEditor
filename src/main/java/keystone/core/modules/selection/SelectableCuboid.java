@@ -25,7 +25,7 @@ public abstract class SelectableCuboid extends Cuboid
     public int getPriority() { return 0; }
     public abstract boolean isEnabled();
     public void startDrag(SelectedFace face) {}
-    public abstract void drag(SelectedFace face);
+    public abstract boolean drag(SelectedFace face);
     public void endDrag(SelectedFace face) {}
 
     public void getSelectedFaces(List<SelectedFace> result)

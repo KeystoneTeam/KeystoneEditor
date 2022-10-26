@@ -130,10 +130,10 @@ public class ImportBoundingBox extends SelectableCuboid
         }
     }
     @Override
-    public void drag(SelectedFace face)
+    public boolean drag(SelectedFace face)
     {
         Vec3d pointOnPlane = RayTracing.rayPlaneIntersection(Player.getEyePosition(), Player.getLookDirection(), face.getBox().getMin(), face.getBox().getMax(), face.getFaceDirection());
-        if (pointOnPlane == null) return;
+        if (pointOnPlane == null) return false;
 
         double x = pointOnPlane.x;
         double y = pointOnPlane.y;
@@ -166,6 +166,7 @@ public class ImportBoundingBox extends SelectableCuboid
         if (dragLockY != Integer.MAX_VALUE) y = dragLockY;
         if (dragLockZ != Integer.MAX_VALUE) z = dragLockZ;
         face.getBox().move(new Vec3i(x, y, z));
+        return false;
     }
     @Override
     public void endDrag(SelectedFace face)

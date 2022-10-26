@@ -1,7 +1,6 @@
 package keystone.core.modules.mouse;
 
 import keystone.api.Keystone;
-import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.keystone.KeystoneInputEvents;
 import keystone.core.events.minecraft.InputEvents;
@@ -90,7 +89,11 @@ public class MouseModule implements IKeystoneModule
             }
             
             // If a box is being dragged and a face is selected, drag the face
-            else if (selectedFace != null) selectedFace.getBox().drag(selectedFace);
+            else if (selectedFace != null)
+            {
+                boolean cornersSwapped = selectedFace.getBox().drag(selectedFace);
+                if (cornersSwapped) selectedFace.swapFaceDirection();
+            }
         }
     }
     //endregion

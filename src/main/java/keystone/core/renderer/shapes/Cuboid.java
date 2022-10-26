@@ -157,36 +157,44 @@ public class Cuboid
         refreshMinMax();
     }
 
-    public void moveFace(Direction direction, int newPosition)
+    public boolean moveFace(Direction direction, int newPosition)
     {
+        boolean cornersSwapped = false;
         switch (direction)
         {
             case UP:
                 if (corner1.getY() == max.getY()) corner1 = new Vec3i(corner1.getX(), newPosition, corner1.getZ());
                 else corner2 = new Vec3i(corner2.getX(), newPosition, corner2.getZ());
+                cornersSwapped = newPosition < min.getY();
                 break;
             case DOWN:
                 if (corner1.getY() == min.getY()) corner1 = new Vec3i(corner1.getX(), newPosition, corner1.getZ());
                 else corner2 = new Vec3i(corner2.getX(), newPosition, corner2.getZ());
+                cornersSwapped = newPosition > max.getY();
                 break;
             case NORTH:
                 if (corner1.getZ() == min.getZ()) corner1 = new Vec3i(corner1.getX(), corner1.getY(), newPosition);
                 else corner2 = new Vec3i(corner2.getX(), corner2.getY(), newPosition);
+                cornersSwapped = newPosition > max.getZ();
                 break;
             case SOUTH:
                 if (corner1.getZ() == max.getZ()) corner1 = new Vec3i(corner1.getX(), corner1.getY(), newPosition);
                 else corner2 = new Vec3i(corner2.getX(), corner2.getY(), newPosition);
+                cornersSwapped = newPosition < min.getZ();
                 break;
             case WEST:
                 if (corner1.getX() == min.getX()) corner1 = new Vec3i(newPosition, corner1.getY(), corner1.getZ());
                 else corner2 = new Vec3i(newPosition, corner2.getY(), corner2.getZ());
+                cornersSwapped = newPosition > max.getX();
                 break;
             case EAST:
                 if (corner1.getX() == max.getX()) corner1 = new Vec3i(newPosition, corner1.getY(), corner1.getZ());
                 else corner2 = new Vec3i(newPosition, corner2.getY(), corner2.getZ());
+                cornersSwapped = newPosition < min.getX();
                 break;
         }
         refreshMinMax();
+        return cornersSwapped;
     }
     public void move(Vec3i newMin)
     {

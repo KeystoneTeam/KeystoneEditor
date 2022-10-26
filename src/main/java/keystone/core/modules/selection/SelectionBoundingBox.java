@@ -49,7 +49,7 @@ public class SelectionBoundingBox extends SelectableCuboid
     @Override
     public boolean isEnabled() { return selectionModule.isEnabled(); }
     @Override
-    public void drag(SelectedFace face)
+    public boolean drag(SelectedFace face)
     {
         // Get perpendicular plane through selection point
         Vec3d point = face.getSelectionPoint();
@@ -75,15 +75,17 @@ public class SelectionBoundingBox extends SelectableCuboid
 
         // Cast ray onto plane
         Vec3d projectedPoint = RayTracing.rayPlaneIntersection(Player.getEyePosition(), Player.getLookDirection(), point, normal);
-        if (projectedPoint == null) return;
+        if (projectedPoint == null) return false;
 
         // Do dragging
-        if (face.getFaceDirection() == Direction.UP || face.getFaceDirection() == Direction.DOWN) moveFace(face.getFaceDirection(), (int)projectedPoint.y);
-        if (face.getFaceDirection() == Direction.NORTH || face.getFaceDirection() == Direction.SOUTH) moveFace(face.getFaceDirection(), (int)projectedPoint.z);
-        if (face.getFaceDirection() == Direction.WEST || face.getFaceDirection() == Direction.EAST) moveFace(face.getFaceDirection(), (int)projectedPoint.x);
+        boolean cornersSwapped = false;
+        if (face.getFaceDirection() == Direction.UP || face.getFaceDirection() == Direction.DOWN) cornersSwapped = moveFace(face.getFaceDirection(), (int)projectedPoint.y);
+        else if (face.getFaceDirection() == Direction.NORTH || face.getFaceDirection() == Direction.SOUTH) cornersSwapped = moveFace(face.getFaceDirection(), (int)projectedPoint.z);
+        else if (face.getFaceDirection() == Direction.WEST || face.getFaceDirection() == Direction.EAST) cornersSwapped = moveFace(face.getFaceDirection(), (int)projectedPoint.x);
 
         // Post event
         KeystoneLifecycleEvents.SELECTION_CHANGED.invoker().selectionChanged(selectionModule.getSelectionBoundingBoxes(), false, false);
+        return cornersSwapped;
     }
     @Override
     public void endDrag(SelectedFace face)

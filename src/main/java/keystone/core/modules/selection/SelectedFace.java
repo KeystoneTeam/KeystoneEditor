@@ -84,7 +84,8 @@ public class SelectedFace
 
     public void startDrag() { this.isDraggingFace = true; }
     public void endDrag() { this.isDraggingFace = false; }
-
+    public void swapFaceDirection() { faceDirection = faceDirection.getOpposite(); }
+    
     public Direction getFaceDirection() { return faceDirection; }
     public SelectableCuboid getBox() { return box; }
     public Vec3i getRelativeSelectedBlock() { return relativeSelectedBlock; }
