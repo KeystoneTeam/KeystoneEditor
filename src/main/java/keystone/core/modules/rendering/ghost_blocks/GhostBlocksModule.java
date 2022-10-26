@@ -56,7 +56,7 @@ public class GhostBlocksModule implements IKeystoneModule
         stack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
         RenderSystem.enablePolygonOffset();
-        RenderSystem.polygonOffset(-0.1f, -0.3f);
+        RenderSystem.polygonOffset(-0.1f, -0.2f);
 
         RenderSystem.setShader(GameRenderer::getBlockShader);
         SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();

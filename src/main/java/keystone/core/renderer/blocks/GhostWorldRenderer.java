@@ -14,7 +14,7 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 
@@ -29,9 +29,9 @@ public class GhostWorldRenderer
     private final Map<RenderLayer, SuperByteBuffer> bufferCache = new HashMap<>(getLayerCount());
     private final Set<RenderLayer> usedBlockRenderLayers = new HashSet<>(getLayerCount());
     private final Set<RenderLayer> startedBufferBuilders = new HashSet<>(getLayerCount());
-    private final Map<RenderLayer, Map<ChunkPos, SuperByteBuffer>> fluidBufferCache = new HashMap<>(getLayerCount());
+    private final Map<RenderLayer, Map<ChunkSectionPos, SuperByteBuffer>> fluidBufferCache = new HashMap<>(getLayerCount());
     private final Set<RenderLayer> usedFluidRenderLayers = new HashSet<>(getLayerCount());
-    private final Map<RenderLayer, Set<ChunkPos>> startedFluidBufferBuilders = new HashMap<>(getLayerCount());
+    private final Map<RenderLayer, Set<ChunkSectionPos>> startedFluidBufferBuilders = new HashMap<>(getLayerCount());
     private boolean changed;
 
     protected GhostBlocksWorld ghostBlocks;
@@ -110,21 +110,7 @@ public class GhostWorldRenderer
             // TODO: Check if this needs pitch somehow
             entityRenderer.render(entity, entity.getX(), entity.getY(), entity.getZ(), entity.getYaw(), 0, ms, buffer, light);
         });
-
-        // Dispatch Ghost World Fluid Rendering
-        for (RenderLayer layer : RenderLayer.getBlockLayers())
-        {
-            if (!usedFluidRenderLayers.contains(layer)) continue;
-            Map<ChunkPos, SuperByteBuffer> fluidChunks = fluidBufferCache.get(layer);
-            for (Map.Entry<ChunkPos, SuperByteBuffer> entry : fluidChunks.entrySet())
-            {
-                ms.push();
-                ms.translate(entry.getKey().getStartX(), 0, entry.getKey().getStartZ());
-                entry.getValue().renderInto(ms, buffer.getBuffer(layer));
-                ms.pop();
-            }
-        }
-
+    
         // Dispatch Ghost World Block Rendering
         for (RenderLayer layer : RenderLayer.getBlockLayers())
         {
@@ -133,6 +119,20 @@ public class GhostWorldRenderer
             superByteBuffer.renderInto(ms, buffer.getBuffer(layer));
         }
         TileEntityRenderHelper.renderTileEntities(ghostBlocks, ghostBlocks.getRenderedTileEntities(), ms, new MatrixStack(), buffer, partialTicks);
+        
+        // Dispatch Ghost World Fluid Rendering
+        for (RenderLayer layer : RenderLayer.getBlockLayers())
+        {
+            if (!usedFluidRenderLayers.contains(layer)) continue;
+            Map<ChunkSectionPos, SuperByteBuffer> fluidChunks = fluidBufferCache.get(layer);
+            for (Map.Entry<ChunkSectionPos, SuperByteBuffer> entry : fluidChunks.entrySet())
+            {
+                ms.push();
+                ms.translate(entry.getKey().getMinX(), entry.getKey().getMinY(), entry.getKey().getMinZ());
+                entry.getValue().renderInto(ms, buffer.getBuffer(layer));
+                ms.pop();
+            }
+        }
 
         ms.pop();
     }
@@ -149,7 +149,7 @@ public class GhostWorldRenderer
         final BlockRenderManager blockRendererDispatcher = minecraft.getBlockRenderManager();
 
         Map<RenderLayer, BufferBuilder> blockBuffers = new HashMap<>();
-        Map<RenderLayer, Map<ChunkPos, BufferBuilder>> fluidBuffers = new HashMap<>();
+        Map<RenderLayer, Map<ChunkSectionPos, BufferBuilder>> fluidBuffers = new HashMap<>();
         MatrixStack ms = new MatrixStack();
 
         BlockPos.stream(blockAccess.getBounds()).forEach(localPos ->
@@ -157,7 +157,7 @@ public class GhostWorldRenderer
             ms.push();
             ms.translate(localPos.getX(), localPos.getY(), localPos.getZ());
 
-            ChunkPos chunkPos = new ChunkPos(localPos);
+            ChunkSectionPos chunkSectionPos = ChunkSectionPos.from(localPos);
             BlockState blockState = blockAccess.getBlockState(localPos);
             FluidState fluidState = blockState.getFluidState();
 
@@ -169,11 +169,11 @@ public class GhostWorldRenderer
             {
                 renderLayer = RenderLayers.getFluidLayer(fluidState);
                 if (!fluidBuffers.containsKey(renderLayer)) fluidBuffers.put(renderLayer, new HashMap<>());
-                if (!fluidBuffers.get(renderLayer).containsKey(chunkPos)) fluidBuffers.get(renderLayer).put(chunkPos, new BufferBuilder(VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL.getVertexSizeInteger()));
-                bufferBuilder = fluidBuffers.get(renderLayer).get(chunkPos);
+                if (!fluidBuffers.get(renderLayer).containsKey(chunkSectionPos)) fluidBuffers.get(renderLayer).put(chunkSectionPos, new BufferBuilder(VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL.getVertexSizeInteger()));
+                bufferBuilder = fluidBuffers.get(renderLayer).get(chunkSectionPos);
 
                 if (!startedFluidBufferBuilders.containsKey(renderLayer)) startedFluidBufferBuilders.put(renderLayer, new HashSet<>());
-                if (startedFluidBufferBuilders.get(renderLayer).add(chunkPos)) bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
+                if (startedFluidBufferBuilders.get(renderLayer).add(chunkSectionPos)) bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
 
                 // TODO: Check if I need to find a way to re-implement the if statement before adding the layer to usedFluidRendersLayers
                 blockRendererDispatcher.renderFluid(localPos, blockAccess, bufferBuilder, blockState, fluidState);
@@ -199,10 +199,10 @@ public class GhostWorldRenderer
         // Finish Drawing Fluids
         for (RenderLayer layer : startedFluidBufferBuilders.keySet())
         {
-            Map<ChunkPos, BufferBuilder> chunkBuffers = fluidBuffers.get(layer);
-            Map<ChunkPos, SuperByteBuffer> byteBuffers = new HashMap<>();
+            Map<ChunkSectionPos, BufferBuilder> chunkBuffers = fluidBuffers.get(layer);
+            Map<ChunkSectionPos, SuperByteBuffer> byteBuffers = new HashMap<>();
 
-            for (Map.Entry<ChunkPos, BufferBuilder> entry : chunkBuffers.entrySet()) byteBuffers.put(entry.getKey(), new SuperByteBuffer(entry.getValue()));
+            for (Map.Entry<ChunkSectionPos, BufferBuilder> entry : chunkBuffers.entrySet()) byteBuffers.put(entry.getKey(), new SuperByteBuffer(entry.getValue()));
             fluidBufferCache.put(layer, byteBuffers);
         }
 
