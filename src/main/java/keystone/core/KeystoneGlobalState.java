@@ -1,6 +1,6 @@
 package keystone.core;
 
-import keystone.core.modules.world.WorldChangeQueueModule;
+import keystone.core.modules.world.change_queue.WorldChangeQueueModule;
 
 public class KeystoneGlobalState
 {

@@ -9,6 +9,7 @@ import keystone.core.gui.overlays.hotbar.KeystoneHotbarSlot;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.world.WorldModifierModules;
+import keystone.core.modules.world.change_queue.FlushMode;
 import keystone.core.renderer.Color4f;
 import keystone.core.renderer.RenderBox;
 import keystone.core.renderer.RendererFactory;
@@ -16,7 +17,9 @@ import keystone.core.renderer.overlay.ComplexOverlayRenderer;
 import keystone.core.utils.ProgressBar;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -44,11 +47,11 @@ public class BrushModule implements IKeystoneModule
     private final List<Vec3i> brushPositions = Collections.synchronizedList(new ArrayList<>());
 
     private boolean immediateMode;
-    private Vec3i immediateModePosition;
     private Vec3i lastImmediateModePosition;
     private int immediateModeCooldown;
     private ShapeMask immediateModeShapeMask;
     private final List<Vec3i> lastImmediateModeChanges = new ArrayList<>();
+    private boolean immediateModeDirty;
 
     private boolean dragging = false;
     private boolean executionCancelled = false;
@@ -67,6 +70,7 @@ public class BrushModule implements IKeystoneModule
         KeystoneInputEvents.START_MOUSE_DRAG.register(this::onMouseDragStart);
         ClientTickEvents.START_CLIENT_TICK.register(this::onTick);
         KeystoneInputEvents.END_MOUSE_DRAG.register(this::onMouseDragEnd);
+        ServerTickEvents.START_SERVER_TICK.register(this::onServerTick);
 
         this.renderer = RendererFactory.createComplexOverlay(
                 RendererFactory.createSmartPolygonOverlay(this::isCameraInsideShape).buildFill(),
@@ -85,6 +89,7 @@ public class BrushModule implements IKeystoneModule
     {
         brushPositions.clear();
         lastImmediateModeChanges.clear();
+        immediateModeDirty = false;
 
         setMinSpacing(1);
         setNoise(100);
@@ -107,7 +112,7 @@ public class BrushModule implements IKeystoneModule
             {
                 if (immediateModeCooldown <= 0 || (KeystoneGlobalState.CloseSelection && pos != lastCheckedPosition))
                 {
-                    if (addBrushPosition(pos)) if (immediateMode) executeBrush(false, false);
+                    if (addBrushPosition(pos)) if (immediateMode) immediateModeDirty = true;
                     lastCheckedPosition = pos;
                 }
             }
@@ -121,6 +126,12 @@ public class BrushModule implements IKeystoneModule
             }
         }
     }
+    
+    private void onServerTick(MinecraftServer server)
+    {
+        if (immediateModeDirty) executeBrush(false, false);
+        immediateModeDirty = false;
+    }
 
     private boolean isCameraInsideShape()
     {
@@ -133,11 +144,14 @@ public class BrushModule implements IKeystoneModule
     public void renderWhenEnabled(WorldRenderContext context)
     {
         // Render Brush Positions
-        this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME);
-        for (int i = 0; i < brushPositions.size(); i++)
+        if (!immediateMode)
         {
-            RenderBox box = new RenderBox(brushPositions.get(i)).nudge();
-            this.renderer.drawCuboid(box, Color4f.yellow);
+            this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME);
+            for (Vec3i brushPosition : brushPositions)
+            {
+                RenderBox box = new RenderBox(brushPosition);//.nudge();
+                this.renderer.drawCuboid(box, Color4f.yellow);
+            }
         }
 
         // Render Brush Preview
@@ -246,7 +260,6 @@ public class BrushModule implements IKeystoneModule
     public void prepareBrush()
     {
         brushPositions.clear();
-        immediateModePosition = null;
         lastImmediateModePosition = null;
         immediateModeShapeMask = immediateMode ? this.brushShape.getShapeMask(brushSize[0], brushSize[1], brushSize[2]) : null;
     }
@@ -258,12 +271,8 @@ public class BrushModule implements IKeystoneModule
 
         if (force || getPositionSpacingSqr(position) >= minSpacingSqr)
         {
-            if (immediateMode) immediateModePosition = position;
-            else
-            {
-                brushPositions.add(position);
-            }
-
+            brushPositions.add(position);
+            if (immediateMode) lastImmediateModePosition = position;
             return true;
         }
         else return false;
@@ -287,7 +296,7 @@ public class BrushModule implements IKeystoneModule
             if (immediateMode)
             {
                 immediateModeExecute();
-                historyModule.applyChunksWithoutEnding();
+                historyModule.applyChunksWithoutEnding(FlushMode.IMMEDIATE, null, null);
                 if (ending) historyModule.endHistoryEntry();
             }
             else if (ending)
@@ -309,15 +318,21 @@ public class BrushModule implements IKeystoneModule
         List<BlockPos> processedBlocks = new ArrayList<>();
 
         int iterations = brushOperation.iterations();
-        for (int iteration = 0; iteration < iterations; iteration++)
+        Vec3i[] positions = brushPositions.toArray(Vec3i[]::new);
+    
+        for (Vec3i position : positions)
         {
-            Vec3i min = immediateModePosition.subtract(new Vec3i(brushSize[0] >> 1, brushSize[1] >> 1, brushSize[2] >> 1));
-            Vec3i max = min.add(brushSize[0] - 1, brushSize[1] - 1, brushSize[2] - 1);
-            executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, immediateModeShapeMask, iteration, false);
-            if (iteration < iterations - 1) worldModifiers.blocks.swapBuffers(true);
+            for (int iteration = 0; iteration < iterations; iteration++)
+            {
+                Vec3i min = position.subtract(new Vec3i(brushSize[0] >> 1, brushSize[1] >> 1, brushSize[2] >> 1));
+                Vec3i max = min.add(brushSize[0] - 1, brushSize[1] - 1, brushSize[2] - 1);
+                executeBrush(new BlockPos(min.getX(), min.getY(), min.getZ()), new BlockPos(max.getX(), max.getY(), max.getZ()), processedBlocks, immediateModeShapeMask, iteration, false);
+                if (iteration < iterations - 1) worldModifiers.blocks.swapBuffers(true);
+                processedBlocks.clear();
+            }
         }
-
-        lastImmediateModePosition = immediateModePosition;
+        
+        brushPositions.clear();
         immediateModeCooldown = IMMEDIATE_MODE_COOLDOWN_TICKS;
     }
     private boolean deferredModeExecute()

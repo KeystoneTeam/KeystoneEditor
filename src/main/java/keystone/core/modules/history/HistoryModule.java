@@ -7,6 +7,7 @@ import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.keystone.KeystoneRegistryEvents;
 import keystone.core.events.minecraft.InputEvents;
 import keystone.core.modules.IKeystoneModule;
+import keystone.core.modules.world.change_queue.FlushMode;
 import keystone.core.utils.NBTSerializer;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.NbtCompound;
@@ -151,18 +152,18 @@ public class HistoryModule implements IKeystoneModule
         if (currentStackFrame.addToUnsavedChanges()) unsavedChanges++;
         if (KeystoneConfig.debugHistoryLog) logHistoryStack();
 
-        currentStackFrame.applyChanges();
+        currentStackFrame.applyChanges(FlushMode.BLOCKING, null, "Applying Changes");
         currentStackFrame = null;
         tryBeginHooksOpen = 0;
     }
-    public void applyChunksWithoutEnding()
+    public void applyChunksWithoutEnding(FlushMode flushMode, Runnable callback, String progressBarTitle)
     {
         if (currentStackFrame == null)
         {
             Keystone.LOGGER.warn("Calling HistoryModule.applyChunksWithoutEnding without first calling HistoryModule.beginHistoryEntry! This may cause issues");
             return;
         }
-        currentStackFrame.applyChanges();
+        currentStackFrame.applyChanges(flushMode, callback, progressBarTitle);
     }
     public void abortHistoryEntry()
     {

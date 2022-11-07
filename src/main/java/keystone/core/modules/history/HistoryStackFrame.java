@@ -6,7 +6,8 @@ import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.client.Player;
-import keystone.core.modules.world.WorldChangeQueueModule;
+import keystone.core.modules.world.change_queue.FlushMode;
+import keystone.core.modules.world.change_queue.WorldChangeQueueModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -27,6 +28,7 @@ public class HistoryStackFrame
     private final List<IHistoryEntry> revertEntries;
     private final List<IHistoryEntry> applyEntries;
     private final Map<Vec3i, WorldHistoryChunk> chunks;
+    private final Set<WorldHistoryChunk> dirtyChunks;
 
     public HistoryStackFrame(int index)
     {
@@ -41,6 +43,7 @@ public class HistoryStackFrame
         this.revertEntries = Collections.synchronizedList(new ArrayList<>());
         this.applyEntries = Collections.synchronizedList(new ArrayList<>());
         this.chunks = Collections.synchronizedMap(new HashMap<>());
+        this.dirtyChunks = Collections.synchronizedSet(new HashSet<>());
         if (nbt != null) deserialize(nbt);
     }
 
@@ -103,28 +106,37 @@ public class HistoryStackFrame
         chunks.clear();
         for (int i = 0; i < chunksNBT.size(); i++)
         {
-            WorldHistoryChunk chunk = new WorldHistoryChunk(chunksNBT.getCompound(i));
+            WorldHistoryChunk chunk = new WorldHistoryChunk(this, chunksNBT.getCompound(i));
             chunks.put(new Vec3i(chunk.chunkX, chunk.chunkY, chunk.chunkZ), chunk);
         }
+        
+        dirtyChunks.clear();
+        dirtyChunks.addAll(chunks.values());
     }
 
     public void undo()
     {
-        for (WorldHistoryChunk chunk : chunks.values()) worldChangeQueue.enqueueChange(chunk, true);
+        uploadDirtyChunks(true);
         for (int i = revertEntries.size() - 1; i >= 0; i--) revertEntries.get(i).apply();
-        worldChangeQueue.waitForChanges("Undoing");
+        worldChangeQueue.flushBlocking("Undoing");
     }
     public void redo()
     {
-        for (WorldHistoryChunk chunk : chunks.values()) worldChangeQueue.enqueueChange(chunk, false);
+        uploadDirtyChunks(false);
         for (IHistoryEntry entry : applyEntries) entry.apply();
-        worldChangeQueue.waitForChanges("Redoing");
+        worldChangeQueue.flushBlocking("Redoing");
     }
-    public void applyChanges()
+    public void applyChanges(FlushMode flushMode, Runnable callback, String progressBarTitle)
     {
-        for (WorldHistoryChunk chunk : chunks.values()) worldChangeQueue.enqueueChange(chunk, false);
-        worldChangeQueue.waitForChanges("Applying Changes");
+        uploadDirtyChunks(false);
+        worldChangeQueue.flush(flushMode, callback, progressBarTitle);
     }
+    private void uploadDirtyChunks(boolean undoing)
+    {
+        for (WorldHistoryChunk chunk : dirtyChunks) worldChangeQueue.enqueueChange(chunk, undoing);
+        dirtyChunks.clear();
+    }
+    
     public boolean addToUnsavedChanges()
     {
         if (chunks.size() > 0) return true;
@@ -180,7 +192,7 @@ public class HistoryStackFrame
         WorldHistoryChunk chunk = chunks.getOrDefault(chunkPosition, null);
         if (chunk == null)
         {
-            chunk = new WorldHistoryChunk(chunkPosition, world);
+            chunk = new WorldHistoryChunk(this, chunkPosition, world);
             chunks.put(chunkPosition, chunk);
         }
         return chunk;
@@ -188,8 +200,13 @@ public class HistoryStackFrame
     public void preloadChunk(int chunkX, int chunkY, int chunkZ)
     {
         Vec3i chunkPosition = new Vec3i(chunkX, chunkY, chunkZ);
-        if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new WorldHistoryChunk(chunkPosition, world));
+        if (!chunks.containsKey(chunkPosition)) chunks.put(chunkPosition, new WorldHistoryChunk(this, chunkPosition, world));
     }
+    public void dirtyChunk(WorldHistoryChunk chunk)
+    {
+        this.dirtyChunks.add(chunk);
+    }
+    
     public void swapBlockBuffers(boolean copy)
     {
         for (WorldHistoryChunk chunk : chunks.values()) chunk.swapBlockBuffers(copy);

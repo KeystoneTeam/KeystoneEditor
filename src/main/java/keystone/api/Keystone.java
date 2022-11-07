@@ -11,6 +11,7 @@ import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.filter.execution.IFilterThread;
 import keystone.core.modules.rendering.ghost_blocks.GhostBlocksModule;
+import keystone.core.modules.world.change_queue.WorldChangeQueueModule;
 import keystone.core.registries.BlockTypeRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -86,7 +87,7 @@ public final class Keystone
     }
     /**
      * @return If Keystone is enabled, a world is loaded, and Keystone is not waiting for
-     * {@link keystone.core.modules.world.WorldChangeQueueModule} changes to finish
+     * {@link WorldChangeQueueModule} changes to finish
      */
     public static boolean isActive()
     {
