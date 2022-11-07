@@ -158,7 +158,7 @@ public class KeystoneOverlayHandler
         int mouseY = (int)(mc.mouse.getY() * mc.getWindow().getScaledHeight() / mc.getWindow().getHeight());
 
         KeystoneGlobalState.MouseOverGUI = mc.currentScreen != null;
-        if (Keystone.isActive())
+        if (Keystone.isEnabled())
         {
             rendering = true;
             addList.forEach(add -> overlays.add(add));

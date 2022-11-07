@@ -15,7 +15,7 @@ public class WindowMixin
     @ModifyVariable(method = "setScaleFactor", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private double smartScaleFactor(double initialValue)
     {
-        if (Keystone.isActive()) return Math.max(1, Math.round(this.framebufferHeight / 720.0));
+        if (Keystone.isEnabled()) return Math.max(1, Math.round(this.framebufferHeight / 720.0));
         else return initialValue;
     }
 }

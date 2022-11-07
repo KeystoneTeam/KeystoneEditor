@@ -64,7 +64,7 @@ public class KeyBindingMixin implements IKeyConditionContainer
     @Override
     public boolean testConditions()
     {
-        if (KeystoneGlobalState.BlockingKeys) return false;
+        if (KeystoneGlobalState.WaitingForChangeQueue) return false;
         for (IKeyCondition condition : conditions) if (!condition.test()) return false;
         return true;
     }

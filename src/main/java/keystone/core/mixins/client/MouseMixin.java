@@ -33,13 +33,13 @@ public class MouseMixin
     @Inject(method = "lockCursor", at = @At("HEAD"), cancellable = true)
     public void grabMouseHead(CallbackInfo callback)
     {
-        if (Keystone.isActive() && !KeystoneGlobalState.AllowPlayerLook) callback.cancel();
+        if (Keystone.isEnabled() && !KeystoneGlobalState.AllowPlayerLook) callback.cancel();
     }
 
     @Inject(method = "lockCursor", at = @At("TAIL"))
     public void grabMouseTail(CallbackInfo callback)
     {
-        if (Keystone.isActive())
+        if (Keystone.isEnabled())
         {
             if (leftButtonClicked) KeystoneInputHandler.setLeftClickLocation(x, y);
             if (middleButtonClicked) KeystoneInputHandler.setMiddleClickLocation(x, y);
@@ -91,6 +91,6 @@ public class MouseMixin
     @Inject(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerAbilities;setFlySpeed(F)V"), cancellable = true)
     public void cancelFlySpeed(long handle, double scrollX, double scrollY, CallbackInfo callback)
     {
-        if (Keystone.isActive()) callback.cancel();
+        if (Keystone.isEnabled()) callback.cancel();
     }
 }

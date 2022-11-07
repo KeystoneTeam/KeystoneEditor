@@ -183,7 +183,7 @@ public class SelectionModule implements IKeystoneModule
     //region Events
     private void onKeyInput(int key, int action, int scancode, int modifiers)
     {
-        if (!Keystone.isActive() || MinecraftClient.getInstance().currentScreen != null) return;
+        if (!Keystone.isEnabled() || MinecraftClient.getInstance().currentScreen != null) return;
 
         if (key == GLFW.GLFW_KEY_D && modifiers == GLFW.GLFW_MOD_CONTROL)
         {
@@ -202,7 +202,7 @@ public class SelectionModule implements IKeystoneModule
     }
     private void onMouseClick(int button, int modifiers, double mouseX, double mouseY, boolean gui)
     {
-        if (!Keystone.isActive() || MinecraftClient.getInstance().currentScreen != null || gui) return;
+        if (!Keystone.isEnabled() || MinecraftClient.getInstance().currentScreen != null || gui) return;
 
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
@@ -215,7 +215,7 @@ public class SelectionModule implements IKeystoneModule
     }
     private void onMouseDragStart(int button, double mouseX, double mouseY, boolean gui)
     {
-        if (!Keystone.isActive() || MinecraftClient.getInstance().currentScreen != null || gui) return;
+        if (!Keystone.isEnabled() || MinecraftClient.getInstance().currentScreen != null || gui) return;
 
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
@@ -224,7 +224,7 @@ public class SelectionModule implements IKeystoneModule
     }
     public void onMouseDragEnd(int button, double mouseX, double mouseY, boolean gui)
     {
-        if (!Keystone.isActive() || MinecraftClient.getInstance().currentScreen != null || gui) return;
+        if (!Keystone.isEnabled() || MinecraftClient.getInstance().currentScreen != null || gui) return;
 
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {

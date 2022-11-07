@@ -108,7 +108,7 @@ public class WorldChangeQueueModule implements IKeystoneModule
         if (waitingForChanges)
         {
             waitingForChanges = false;
-            KeystoneGlobalState.BlockingKeys = false;
+            KeystoneGlobalState.WaitingForChangeQueue = false;
             ProgressBar.finish();
         }
     }
@@ -123,7 +123,7 @@ public class WorldChangeQueueModule implements IKeystoneModule
         if (state != QueueState.IDLE) throw new IllegalStateException("Trying to call WorldChangeQueueModule.waitForChanges while queue is not idle! This is not supported and will cause issues!");
         if (this.changeQueue.size() > 0)
         {
-            KeystoneGlobalState.BlockingKeys = true;
+            KeystoneGlobalState.WaitingForChangeQueue = true;
             this.waitingForChanges = true;
     
             KeystoneGlobalState.SuppressPlacementChecks = true;

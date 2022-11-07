@@ -16,12 +16,12 @@ public class InGameHudMixin
     @Inject(method = "render", at = @At("HEAD"))
     public void preRender(MatrixStack matrices, float tickDelta, CallbackInfo callback)
     {
-        if (Keystone.isActive()) KeystoneOverlayHandler.onPreRenderGui();
+        if (Keystone.isEnabled()) KeystoneOverlayHandler.onPreRenderGui();
     }
 
     @Inject(method = "renderVignetteOverlay", at = @At("HEAD"), cancellable = true)
     public void cancelVignette(Entity entity, CallbackInfo callback)
     {
-        if (Keystone.isActive()) callback.cancel();
+        if (Keystone.isEnabled()) callback.cancel();
     }
 }

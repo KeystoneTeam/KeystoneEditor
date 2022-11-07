@@ -18,7 +18,7 @@ public class LivingEntityMixin
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void disableTicking(CallbackInfo callback)
     {
-        if (Keystone.isActive() && !(((Object)this) instanceof PlayerEntity))
+        if (Keystone.isEnabled() && !(((Object)this) instanceof PlayerEntity))
         {
             callback.cancel();
         }
@@ -27,7 +27,7 @@ public class LivingEntityMixin
     @Inject(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;tickFallFlying()V"))
     private void applyCustomDeceleration(CallbackInfo callback)
     {
-        if (Keystone.isActive() && (Object)this == MinecraftClient.getInstance().player)
+        if (Keystone.isEnabled() && (Object)this == MinecraftClient.getInstance().player)
         {
             MinecraftClient mc = MinecraftClient.getInstance();
             ClientPlayerEntity player = mc.player;

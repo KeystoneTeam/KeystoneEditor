@@ -21,7 +21,7 @@ public class MinecraftClientMixin
     @Inject(method = "openPauseMenu", at = @At(value = "HEAD"), cancellable = true)
     public void pauseGame(boolean pauseOnly, CallbackInfo callback)
     {
-        if (Keystone.isActive() && KeystoneConfig.disableInGameMenu) callback.cancel();
+        if (Keystone.isEnabled() && KeystoneConfig.disableInGameMenu) callback.cancel();
     }
 
     @Inject(method = "onResolutionChanged", at = @At("RETURN"))

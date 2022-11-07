@@ -28,7 +28,7 @@ public class KeyboardMixin
     {
         if (windowPointer == client.getWindow().getHandle()) InputEvents.KEY_PRESSED.invoker().keyPressed(key, action, scanCode, modifiers);
 
-        if (Keystone.isActive())
+        if (Keystone.isEnabled())
         {
             if (action != GLFW.GLFW_PRESS && (action != GLFW.GLFW_REPEAT || !repeatEvents))
             {
@@ -43,7 +43,7 @@ public class KeyboardMixin
     {
         if (windowPointer == client.getWindow().getHandle()) InputEvents.CHAR_TYPED.invoker().charTyped(codePoint, modifiers);
 
-        if (Keystone.isActive() && windowPointer == client.getWindow().getHandle())
+        if (Keystone.isEnabled() && windowPointer == client.getWindow().getHandle())
         {
             if (Character.charCount(codePoint) == 1) KeystoneOverlayHandler.charTyped((char)codePoint, modifiers);
             else for (char c : Character.toChars(codePoint)) KeystoneOverlayHandler.charTyped(c, modifiers);

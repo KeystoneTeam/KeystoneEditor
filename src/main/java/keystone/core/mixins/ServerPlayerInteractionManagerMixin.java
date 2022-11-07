@@ -21,7 +21,7 @@ public class ServerPlayerInteractionManagerMixin
     @Inject(method = "changeGameMode", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;setGameMode(Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V", shift = At.Shift.BEFORE), cancellable = true)
     public void changeGameMode(GameMode gameMode, CallbackInfoReturnable<Boolean> callback)
     {
-        if (Keystone.isActive() && gameMode != GameMode.SPECTATOR)
+        if (Keystone.isEnabled() && gameMode != GameMode.SPECTATOR)
         {
             callback.setReturnValue(true);
         }

@@ -16,6 +16,6 @@ public class ServerWorldMixin
     @Inject(method = "tickBlock", at = @At("HEAD"), cancellable = true)
     private void tickBlock(BlockPos pos, Block block, CallbackInfo callback)
     {
-        if (Keystone.isActive() && KeystoneGlobalState.SuppressingBlockTicks) callback.cancel();
+        if (Keystone.isEnabled() && KeystoneGlobalState.SuppressingBlockTicks) callback.cancel();
     }
 }

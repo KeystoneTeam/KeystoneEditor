@@ -85,9 +85,17 @@ public final class Keystone
         minecraft.onResolutionChanged();
     }
     /**
-     * @return If Keystone is active and a world is loaded
+     * @return If Keystone is enabled, a world is loaded, and Keystone is not waiting for
+     * {@link keystone.core.modules.world.WorldChangeQueueModule} changes to finish
      */
     public static boolean isActive()
+    {
+        return isEnabled() && !KeystoneGlobalState.WaitingForChangeQueue;
+    }
+    /**
+     * @return If Keystone is enabled and a world is loaded
+     */
+    public static boolean isEnabled()
     {
         return enabled && MinecraftClient.getInstance().world != null;
     }
@@ -131,9 +139,10 @@ public final class Keystone
      */
     private static class DelayedRunnable
     {
+        private final Runnable runnable;
         private int delay;
-        private Runnable runnable;
         private boolean executed;
+        private boolean tickWhileNotActive;
 
         /**
          * @param delay The amount of ticks to delay until running
@@ -144,18 +153,29 @@ public final class Keystone
             this.delay = delay;
             this.runnable = runnable;
             this.executed = false;
+            this.tickWhileNotActive = false;
         }
+        public DelayedRunnable tickWhileNotActive() { return setTickWhileNotActive(true); }
+        public DelayedRunnable setTickWhileNotActive(boolean tickWhileNotActive)
+        {
+            this.tickWhileNotActive = tickWhileNotActive;
+            return this;
+        }
+        
         /**
          * Executed once per tick to track timing
          */
         public void tick()
         {
-            if (delay <= 0)
+            if (tickWhileNotActive || Keystone.isActive())
             {
-                runnable.run();
-                executed = true;
+                if (delay <= 0)
+                {
+                    runnable.run();
+                    executed = true;
+                }
+                else delay--;
             }
-            else delay--;
         }
         /**
          * @return Whether the {@link java.lang.Runnable} was executed
@@ -318,7 +338,7 @@ public final class Keystone
         WorldRenderEvents.LAST.register(context ->
         {
             Player.update(context.tickDelta(), MinecraftClient.getInstance().player);
-            if (Keystone.isActive())
+            if (Keystone.isEnabled())
             {
                 ghostBlocksModule.renderGhostBlocks(context);
                 for (IKeystoneModule module : modules.values()) if (module.isEnabled()) module.preRender(context);
@@ -357,7 +377,7 @@ public final class Keystone
      */
     private static void onServerTick(MinecraftServer server)
     {
-        if (Keystone.isActive())
+        if (Keystone.isEnabled())
         {
             serverThread = Thread.currentThread();
 
@@ -378,7 +398,7 @@ public final class Keystone
         ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
         if (clientPlayer == null) return;
 
-        if (Keystone.isActive())
+        if (Keystone.isEnabled())
         {
             if (player.getAbilities().getFlySpeed() != flySpeed)
             {
@@ -386,11 +406,6 @@ public final class Keystone
                 MinecraftClient.getInstance().player.getAbilities().setFlySpeed(flySpeed);
             }
             if (player.interactionManager.getGameMode() != GameMode.SPECTATOR) player.changeGameMode(GameMode.SPECTATOR);
-
-            if (player.getUuid().equals(clientPlayer.getUuid()))
-            {
-
-            }
         }
         else if (revertPlayer)
         {

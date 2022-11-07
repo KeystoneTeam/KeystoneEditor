@@ -40,17 +40,18 @@ public class KeystoneKeyBindings
         ClientTickEvents.END_CLIENT_TICK.register(client ->
         {
             while (TOGGLE_KEYSTONE.wasPressed()) Keystone.toggleKeystone();
-            while (INCREASE_FLY_SPEED.wasPressed()) Keystone.increaseFlySpeed(KeystoneConfig.flySpeedChangeAmount);
-            while (DECREASE_FLY_SPEED.wasPressed()) Keystone.decreaseFlySpeed(KeystoneConfig.flySpeedChangeAmount);
-            while (DELETE_SELECTION.wasPressed()) Keystone.runInternalFilters(new FillTool(Blocks.AIR.getDefaultState()), new DeleteEntitiesTool());
-            while (TOGGLE_UPDATES.wasPressed()) KeystoneGlobalState.SuppressingBlockTicks = !KeystoneGlobalState.SuppressingBlockTicks;
-            while (HIGHLIGHT_TILE_ENTITIES.wasPressed()) KeystoneGlobalState.HighlightTileEntities = !KeystoneGlobalState.HighlightTileEntities;
-
-            while (FEATURE_TEST.wasPressed())
+            
+            if (Keystone.isActive())
             {
-                if (Keystone.isActive())
+                while (INCREASE_FLY_SPEED.wasPressed()) Keystone.increaseFlySpeed(KeystoneConfig.flySpeedChangeAmount);
+                while (DECREASE_FLY_SPEED.wasPressed()) Keystone.decreaseFlySpeed(KeystoneConfig.flySpeedChangeAmount);
+                while (DELETE_SELECTION.wasPressed()) Keystone.runInternalFilters(new FillTool(Blocks.AIR.getDefaultState()), new DeleteEntitiesTool());
+                while (TOGGLE_UPDATES.wasPressed()) KeystoneGlobalState.SuppressingBlockTicks = !KeystoneGlobalState.SuppressingBlockTicks;
+                while (HIGHLIGHT_TILE_ENTITIES.wasPressed()) KeystoneGlobalState.HighlightTileEntities = !KeystoneGlobalState.HighlightTileEntities;
+    
+                while (FEATURE_TEST.wasPressed())
                 {
-
+        
                 }
             }
         });

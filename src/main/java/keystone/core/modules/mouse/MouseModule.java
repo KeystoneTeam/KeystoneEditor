@@ -112,11 +112,11 @@ public class MouseModule implements IKeystoneModule
     
     private void onMouseClick(int button, int modifiers, double mouseX, double mouseY, boolean gui)
     {
-        if (Keystone.isActive() && MinecraftClient.getInstance().currentScreen == null && !gui && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(!KeystoneGlobalState.AllowPlayerLook);
+        if (Keystone.isEnabled() && MinecraftClient.getInstance().currentScreen == null && !gui && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(!KeystoneGlobalState.AllowPlayerLook);
     }
     private void onMouseDragStart(int button, double mouseX, double mouseY, boolean gui)
     {
-        if (Keystone.isActive() && MinecraftClient.getInstance().currentScreen == null && !gui)
+        if (Keystone.isEnabled() && MinecraftClient.getInstance().currentScreen == null && !gui)
         {
             if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(true);
             else if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && selectedFace != null) startDraggingBox();
@@ -124,7 +124,7 @@ public class MouseModule implements IKeystoneModule
     }
     private void onMouseDragEnd(int button, double mouseX, double mouseY, boolean gui)
     {
-        if (Keystone.isActive() && MinecraftClient.getInstance().currentScreen == null && !gui)
+        if (Keystone.isEnabled() && MinecraftClient.getInstance().currentScreen == null && !gui)
         {
             if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) setLookEnabled(false);
             else if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) endDraggingBox();
@@ -132,7 +132,7 @@ public class MouseModule implements IKeystoneModule
     }
     private void onScroll(double offsetX, double offsetY)
     {
-        if (Keystone.isActive() && !KeystoneGlobalState.MouseOverGUI && KeystoneGlobalState.CloseSelection)
+        if (Keystone.isEnabled() && !KeystoneGlobalState.MouseOverGUI && KeystoneGlobalState.CloseSelection)
         {
             KeystoneGlobalState.CloseSelectionDistance += offsetY;
             if (KeystoneGlobalState.CloseSelectionDistance < 0) KeystoneGlobalState.CloseSelectionDistance = 0;

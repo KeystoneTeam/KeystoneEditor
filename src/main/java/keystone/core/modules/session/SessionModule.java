@@ -108,7 +108,7 @@ public class SessionModule implements IKeystoneModule
         Keystone.LOGGER.info("Reverting Session...");
 
         // Close World
-        boolean keystoneEnabled = Keystone.isActive();
+        boolean keystoneEnabled = Keystone.isEnabled();
         Keystone.disableKeystone();
         client.world.disconnect();
         client.disconnect(new MessageScreen(Text.translatable("keystone.session.revertingChanges")));

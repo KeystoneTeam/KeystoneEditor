@@ -14,6 +14,6 @@ public class SpectatorHudMixin
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     public void render(MatrixStack matrices, CallbackInfo callback)
     {
-        if (Keystone.isActive()) callback.cancel();
+        if (Keystone.isEnabled()) callback.cancel();
     }
 }

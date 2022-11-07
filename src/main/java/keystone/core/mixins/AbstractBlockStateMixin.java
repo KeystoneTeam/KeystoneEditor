@@ -16,6 +16,6 @@ public class AbstractBlockStateMixin
     @Inject(method = "canPlaceAt", at = @At("HEAD"), cancellable = true)
     public void canPlaceAtOverride(WorldView world, BlockPos pos, CallbackInfoReturnable<Boolean> cir)
     {
-        if (Keystone.isActive() && KeystoneGlobalState.SuppressPlacementChecks) cir.setReturnValue(true);
+        if (Keystone.isEnabled() && KeystoneGlobalState.SuppressPlacementChecks) cir.setReturnValue(true);
     }
 }

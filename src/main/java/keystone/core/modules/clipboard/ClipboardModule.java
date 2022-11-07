@@ -48,14 +48,11 @@ public class ClipboardModule implements IKeystoneModule
     //region Event Handlers
     private void onKeyPressed(int key, int action, int scancode, int modifiers)
     {
-        if (action == GLFW.GLFW_PRESS)
+        if (action == GLFW.GLFW_PRESS && modifiers == GLFW.GLFW_MOD_CONTROL && Keystone.isActive())
         {
-            if (modifiers == GLFW.GLFW_MOD_CONTROL)
-            {
-                if (key == GLFW.GLFW_KEY_X) cut();
-                else if (key == GLFW.GLFW_KEY_C) copy();
-                else if (key == GLFW.GLFW_KEY_V) paste();
-            }
+            if (key == GLFW.GLFW_KEY_X) cut();
+            else if (key == GLFW.GLFW_KEY_C) copy();
+            else if (key == GLFW.GLFW_KEY_V) paste();
         }
     }
     //endregion

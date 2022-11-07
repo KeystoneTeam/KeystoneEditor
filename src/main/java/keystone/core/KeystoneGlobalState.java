@@ -30,10 +30,10 @@ public class KeystoneGlobalState
      */
     public static boolean GuiConsumingKeys = false;
     /**
-     * If true, all keybinds will be disabled. This is used to force the player to wait for
-     * something, such as flushing the {@link WorldChangeQueueModule}
+     * If true, Keystone is waiting for the {@link WorldChangeQueueModule} to finish applying
+     * world changes. While true, all keybinds are disabled and no tick handlers will be run
      */
-    public static boolean BlockingKeys = false;
+    public static boolean WaitingForChangeQueue = false;
 
     /**
      * If true, all block ticks will be ignored. This is manually changed by the player for
