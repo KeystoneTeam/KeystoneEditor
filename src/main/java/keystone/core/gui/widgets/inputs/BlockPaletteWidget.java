@@ -23,7 +23,6 @@ public class BlockPaletteWidget extends ButtonNoHotkey
     protected final TextRenderer font;
     protected final WidgetDisabler widgetDisabler;
     private BlockPalette palette;
-    private IKeystoneTooltip tooltip;
     
     private final List<ItemStack> stacks;
 
@@ -54,7 +53,6 @@ public class BlockPaletteWidget extends ButtonNoHotkey
         this.stacks = new ArrayList<>();
         rebuildStacks();
     }
-    public void setTooltip(IKeystoneTooltip tooltip) { this.tooltip = tooltip; }
     
     public static int getPaletteOffset() { return 11; }
     public static int getFinalHeight()
@@ -91,13 +89,8 @@ public class BlockPaletteWidget extends ButtonNoHotkey
             x += 20;
         }
     
-        if (active && visible && hovered) renderTooltip(matrixStack, mouseX, mouseY);
+        renderTooltip(matrixStack, mouseX, mouseY);
     }
-    @Override
-    public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY)
-    {
-        if (this.tooltip != null) KeystoneOverlayHandler.addTooltip(this.tooltip);
-    }
-
+    
     public BlockPalette getPalette() { return palette; }
 }

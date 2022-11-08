@@ -8,7 +8,7 @@ import net.minecraft.text.Text;
 
 public class SimpleButton extends ButtonNoHotkey
 {
-    private TextRenderer textRenderer;
+    private final TextRenderer textRenderer;
 
     protected int borderColor = 0xFF404040;
     protected int buttonColor = 0xFF404040;
@@ -69,11 +69,7 @@ public class SimpleButton extends ButtonNoHotkey
         {
             fill(matrixStack, x, y, x + width, y + height, borderColor);
             if (buttonColor != borderColor) fill(matrixStack, x + 1, y + 1, x + width - 1, y + height - 1, buttonColor);
-            if (isHovered())
-            {
-                drawCenteredText(matrixStack, textRenderer, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, textColorHovered);
-                renderTooltip(matrixStack, mouseX, mouseY);
-            }
+            if (isHovered()) drawCenteredText(matrixStack, textRenderer, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, textColorHovered);
             else drawCenteredText(matrixStack, textRenderer, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, textColor);
         }
         else
@@ -81,7 +77,8 @@ public class SimpleButton extends ButtonNoHotkey
             fill(matrixStack, x, y, x + width, y + height, borderColor);
             if (buttonColor != borderColor) fill(matrixStack, x + 1, y + 1, x + width - 1, y + height - 1, buttonColor);
             drawCenteredText(matrixStack, textRenderer, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, textColorDisabled);
-            if (isHovered()) renderTooltip(matrixStack, mouseX, mouseY);
         }
+    
+        renderTooltip(matrixStack, mouseX, mouseY);
     }
 }

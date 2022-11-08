@@ -23,7 +23,6 @@ public class BlockMaskWidget extends ButtonNoHotkey
     protected final TextRenderer font;
     protected final WidgetDisabler widgetDisabler;
     private BlockMask mask;
-    private IKeystoneTooltip tooltip;
     
     private final List<ItemStack> stacks;
 
@@ -54,7 +53,6 @@ public class BlockMaskWidget extends ButtonNoHotkey
         this.stacks = new ArrayList<>();
         rebuildStacks();
     }
-    public void setTooltip(IKeystoneTooltip tooltip) { this.tooltip = tooltip; }
     
     public static int getMaskOffset() { return 11; }
     public static final int getFinalHeight()
@@ -101,12 +99,7 @@ public class BlockMaskWidget extends ButtonNoHotkey
             x += 20;
         }
         
-        if (active && visible && hovered) renderTooltip(matrixStack, mouseX, mouseY);
-    }
-    @Override
-    public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY)
-    {
-        if (this.tooltip != null) KeystoneOverlayHandler.addTooltip(this.tooltip);
+        renderTooltip(matrixStack, mouseX, mouseY);
     }
 
     public BlockMask getMask() { return mask; }

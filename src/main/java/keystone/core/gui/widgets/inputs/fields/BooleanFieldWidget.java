@@ -2,6 +2,7 @@ package keystone.core.gui.widgets.inputs.fields;
 
 import keystone.api.Keystone;
 import keystone.api.variables.Hook;
+import keystone.core.KeystoneConfig;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.utils.AnnotationUtils;
@@ -20,7 +21,12 @@ public class BooleanFieldWidget extends CheckboxWidget
     private final Field field;
     private final Hook hook;
     private final String name;
-    private final IKeystoneTooltip tooltip;
+    
+    private IKeystoneTooltip tooltip;
+    private float tooltipDelay;
+    private float tooltipTimer;
+    private int tooltipX;
+    private int tooltipY;
 
     public BooleanFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
@@ -32,6 +38,7 @@ public class BooleanFieldWidget extends CheckboxWidget
         this.hook = field.getAnnotation(Hook.class);
         AnnotationUtils.runHook(instance.get(), hook);
         this.tooltip = AnnotationUtils.getFieldTooltip(field);
+        this.tooltipDelay = KeystoneConfig.tooltipDelay;
     }
     public static int getFinalHeight() { return 20; }
 
@@ -61,11 +68,23 @@ public class BooleanFieldWidget extends CheckboxWidget
     public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta)
     {
         super.renderButton(matrices, mouseX, mouseY, delta);
-        if (active && visible && hovered) renderTooltip(matrices, mouseX, mouseY);
+        renderTooltip(matrices, mouseX, mouseY);
     }
     @Override
     public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY)
     {
-        if (this.tooltip != null) KeystoneOverlayHandler.addTooltip(this.tooltip);
+        if (this.tooltip != null)
+        {
+            if (active && visible && hovered)
+            {
+                if (mouseX == tooltipX && mouseY == tooltipY) tooltipTimer += MinecraftClient.getInstance().getTickDelta();
+                else tooltipTimer = 0;
+                
+                tooltipX = mouseX;
+                tooltipY = mouseY;
+                if (tooltipTimer >= tooltipDelay) KeystoneOverlayHandler.addTooltip(this.tooltip);
+            }
+            else tooltipTimer = 0;
+        }
     }
 }

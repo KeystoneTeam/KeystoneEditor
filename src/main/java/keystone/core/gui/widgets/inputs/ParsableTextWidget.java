@@ -1,6 +1,7 @@
 package keystone.core.gui.widgets.inputs;
 
 import keystone.api.Keystone;
+import keystone.core.KeystoneConfig;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.MinecraftClient;
@@ -16,7 +17,12 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     protected final MinecraftClient mc;
     protected final TextRenderer textRenderer;
     private T value;
+    
     private IKeystoneTooltip tooltip;
+    private float tooltipDelay;
+    private float tooltipTimer;
+    private int tooltipX;
+    private int tooltipY;
     
     public ParsableTextWidget(Text name, int x, int y, int width, T value)
     {
@@ -25,12 +31,14 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
         this.mc = MinecraftClient.getInstance();
         this.textRenderer = mc.textRenderer;
         this.value = postProcess(value);
+        this.tooltipDelay = KeystoneConfig.tooltipDelay;
 
         setMaxLength(256);
         setDrawsBackground(true);
         setText(this.value.toString());
     }
-    public void setTooltip(IKeystoneTooltip tooltip) { this.tooltip = tooltip; }
+    public ParsableTextWidget<T> setTooltip(IKeystoneTooltip tooltip) { this.tooltip = tooltip; return this; }
+    public ParsableTextWidget<T> setTooltipDelay(float delay) { this.tooltipDelay = delay; return this; }
     
     public static int getFieldOffset() { return 11; }
     public static int getFinalHeight() { return 23; }
@@ -53,7 +61,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
         y += getFieldOffset();
         height -= getFieldOffset();
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
-        if (active && visible && hovered) renderTooltip(matrixStack, mouseX, mouseY);
+        renderTooltip(matrixStack, mouseX, mouseY);
         height += getFieldOffset();
         y -= getFieldOffset();
         matrixStack.pop();
@@ -61,7 +69,19 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     @Override
     public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY)
     {
-        if (this.tooltip != null) KeystoneOverlayHandler.addTooltip(this.tooltip);
+        if (this.tooltip != null)
+        {
+            if (active && visible && hovered)
+            {
+                if (mouseX == tooltipX && mouseY == tooltipY) tooltipTimer += MinecraftClient.getInstance().getTickDelta();
+                else tooltipTimer = 0;
+                
+                tooltipX = mouseX;
+                tooltipY = mouseY;
+                if (tooltipTimer >= tooltipDelay) KeystoneOverlayHandler.addTooltip(this.tooltip);
+            }
+            else tooltipTimer = 0;
+        }
     }
 
     @Override

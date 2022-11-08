@@ -1,5 +1,6 @@
 package keystone.core.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.keystone.KeystoneInputEvents;
@@ -161,7 +162,7 @@ public class KeystoneOverlayHandler
         if (Keystone.isEnabled())
         {
             rendering = true;
-            addList.forEach(add -> overlays.add(add));
+            overlays.addAll(addList);
             addList.clear();
 
             // Render overlays
@@ -170,7 +171,7 @@ public class KeystoneOverlayHandler
                 if (MinecraftClient.getInstance().currentScreen != null && i > 0) continue;
 
                 matrixStack.push();
-                matrixStack.translate(0, 0, i * 200);
+                matrixStack.translate(0, 0, i * 10);
 
                 Screen screen = overlays.get(i);
                 screen.render(matrixStack, mouseX, mouseY, partialTicks);
@@ -180,12 +181,15 @@ public class KeystoneOverlayHandler
             }
 
             // Render tooltips
+            matrixStack.push();
+            matrixStack.translate(0, 0, overlays.size() * 10);
             IKeystoneTooltip tooltip = tooltips.poll();
             while (tooltip != null)
             {
                 tooltip.render(matrixStack, mouseX, mouseY, partialTicks);
                 tooltip = tooltips.poll();
             }
+            matrixStack.pop();
 
             removeList.forEach(remove -> overlays.remove(remove));
             removeList.clear();

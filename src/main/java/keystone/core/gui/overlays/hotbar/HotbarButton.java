@@ -35,6 +35,8 @@ public class HotbarButton extends ButtonNoHotkey
         this.parent = parent;
         this.slot = slot;
         this.enabledSupplier = enabledSupplier;
+        
+        setTooltipDelay(0.0f);
     }
 
     public void onSlotClicked()

@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 public @interface Variable
 {
     /**
-     * @return The name of the filter variable. Defaults to the space-seperated title case of the field
+     * @return The name of the filter variable. Defaults to the space-separated title case of the field
      */
     String value() default "";
 }

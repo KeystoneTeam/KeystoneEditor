@@ -76,13 +76,17 @@
   "keystone.block_selection_panel.propertiesPanel": "Block Properties",
   "keystone.block_selection_panel.anyVariant": "Any Variant",
 
+  "keystone.brush.brushVariables": "Brush Variables",
   "keystone.brush.minimumSpacing": "Minimum Spacing",
   "keystone.brush.noise": "Noise",
   "keystone.brush.fill": "Fill",
   "keystone.brush.erode": "Erode",
   "keystone.brush.gravity": "Gravity",
   "keystone.brush.stackFill": "Stack Fill",
-  "keystone.brush.brushVariables": "Brush Variables",
+  "keystone.brush.minimumSpacing.tooltip": "The minimum distance between the brush positions.",
+  "keystone.brush.noise.tooltip": "The percent chance that a block on the edge of the brush will be placed. Lower values make rougher shapes.",
+  "keystone.brush.immediateMode.tooltip": "Immediate Mode: The brush is performed as you click and drag.",
+  "keystone.brush.deferredMode.tooltip": "Deferred Mode: Clicking and dragging creates a set of positions. Releasing left-click performs the brush on all positions.",
 
   "keystone.shape.round": "Round",
   "keystone.shape.diamond": "Diamond",
