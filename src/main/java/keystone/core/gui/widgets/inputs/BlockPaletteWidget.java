@@ -1,6 +1,8 @@
 package keystone.core.gui.widgets.inputs;
 
 import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.core.gui.IKeystoneTooltip;
+import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.WidgetDisabler;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.overlays.block_selection.BlockPaletteEditScreen;
@@ -20,9 +22,9 @@ public class BlockPaletteWidget extends ButtonNoHotkey
     protected final MinecraftClient mc;
     protected final TextRenderer font;
     protected final WidgetDisabler widgetDisabler;
-
     private BlockPalette palette;
-
+    private IKeystoneTooltip tooltip;
+    
     private final List<ItemStack> stacks;
 
     public BlockPaletteWidget(Text name, int x, int y, int width, BlockPalette value)
@@ -52,6 +54,8 @@ public class BlockPaletteWidget extends ButtonNoHotkey
         this.stacks = new ArrayList<>();
         rebuildStacks();
     }
+    public void setTooltip(IKeystoneTooltip tooltip) { this.tooltip = tooltip; }
+    
     public static int getPaletteOffset() { return 11; }
     public static int getFinalHeight()
     {
@@ -86,6 +90,13 @@ public class BlockPaletteWidget extends ButtonNoHotkey
             KeystoneOverlay.drawItem(this, mc, stack, x, y + 1);
             x += 20;
         }
+    
+        if (active && visible && hovered) renderTooltip(matrixStack, mouseX, mouseY);
+    }
+    @Override
+    public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY)
+    {
+        if (this.tooltip != null) KeystoneOverlayHandler.addTooltip(this.tooltip);
     }
 
     public BlockPalette getPalette() { return palette; }

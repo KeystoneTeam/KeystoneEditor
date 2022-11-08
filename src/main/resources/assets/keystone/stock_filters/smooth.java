@@ -1,6 +1,7 @@
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.IntRange;
+import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.blocks.BlockType;
 
@@ -8,6 +9,7 @@ import java.util.HashMap;
 
 public class Smooth extends KeystoneFilter
 {
+    @Tooltip("How much to smooth the selection. Higher values take much longer to process.")
     @Variable @IntRange(min = 1, max = 20) int smoothing = 1;
 
     @Override

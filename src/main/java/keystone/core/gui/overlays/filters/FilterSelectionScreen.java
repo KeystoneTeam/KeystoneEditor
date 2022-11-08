@@ -218,6 +218,7 @@ public class FilterSelectionScreen extends KeystonePanel
     }
     //endregion
     //region Getters
+    public static FilterSelectionScreen getOpenInstance() { return open; }
     public KeystoneFilter getFilter() { return filterManager.getFilter(selectedFilterFile); }
     //endregion
     //region Helpers

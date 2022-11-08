@@ -22,6 +22,7 @@ public class KeystoneConfig
     public static int maxChunkUpdatesPerTick = 64;
     public static int chunkUpdateCooldownTicks = 0;
     public static int guiScrollSpeed = 10;
+    public static float tooltipDelay = 1.0f;
 
     public static float flySpeed = 0.1f;
     public static float flySmoothing = 0.0f;

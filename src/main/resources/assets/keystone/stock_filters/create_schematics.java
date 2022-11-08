@@ -2,6 +2,7 @@ import keystone.api.KeystoneDirectories;
 import keystone.api.WorldRegion;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
@@ -22,18 +23,23 @@ import java.util.Set;
 
 public class CreateSchematics extends KeystoneFilter
 {
-    private BlockType markerBlockType = blockType("minecraft:structure_block[mode=save]");
-
+    @Tooltip("Each block that matches this mask will start a structure search.")
+    @Variable BlockMask markerMask = whitelist("minecraft:structure_block[mode=save]");
+    
+    @Tooltip("What to replace the Marker Mask with before saving the schematic.")
     @Variable BlockPalette replaceMarkerWith = palette("minecraft:air");
+    
+    @Tooltip("The blocks that surround the structure of the schematic")
     @Variable BlockMask borderMask = blacklist("minecraft:air");
+    
+    @Tooltip("What blocks represent a structure void.")
     @Variable BlockType structureVoid = blockType("minecraft:structure_void");
-    @Variable String fileExtension = "kschem";
 
     @Override
     public void processBlock(int x, int y, int z, WorldRegion region)
     {
         Block block = region.getBlock(x, y, z);
-        if (block.blockType().equals(markerBlockType))
+        if (markerMask.valid(block))
         {
             // Read name from structure block
             String identifier = block.tileEntity().getString("name").trim();
@@ -47,7 +53,7 @@ public class CreateSchematics extends KeystoneFilter
             region.setBlock(x, y, z, replaceMarkerWith.randomBlock());
             BoundingBox schematicBounds = getSchematicBounds(x, y, z, region);
             KeystoneSchematic schematic = schematic(schematicBounds, region.getWorldModifiers(), RetrievalMode.CURRENT, structureVoid);
-            SchematicLoader.saveSchematic(schematic, path.toString() + "." + fileExtension);
+            SchematicLoader.saveSchematic(schematic, path.toString() + ".kschem");
             region.setBlock(x, y, z, block);
         }
     }

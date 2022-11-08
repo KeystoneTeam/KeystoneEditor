@@ -1,6 +1,8 @@
 package keystone.core.gui.widgets.inputs;
 
 import keystone.api.Keystone;
+import keystone.core.gui.IKeystoneTooltip;
+import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -14,7 +16,8 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     protected final MinecraftClient mc;
     protected final TextRenderer textRenderer;
     private T value;
-
+    private IKeystoneTooltip tooltip;
+    
     public ParsableTextWidget(Text name, int x, int y, int width, T value)
     {
         super(MinecraftClient.getInstance().textRenderer, x, y, width, getFinalHeight(), name);
@@ -27,9 +30,11 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
         setDrawsBackground(true);
         setText(this.value.toString());
     }
+    public void setTooltip(IKeystoneTooltip tooltip) { this.tooltip = tooltip; }
+    
     public static int getFieldOffset() { return 11; }
     public static int getFinalHeight() { return 23; }
-
+    
     protected abstract T parse(String str) throws Exception;
     protected T postProcess(T value) { return value; }
     protected boolean onSetValue(T value) { return true; }
@@ -48,9 +53,15 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
         y += getFieldOffset();
         height -= getFieldOffset();
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
+        if (active && visible && hovered) renderTooltip(matrixStack, mouseX, mouseY);
         height += getFieldOffset();
         y -= getFieldOffset();
         matrixStack.pop();
+    }
+    @Override
+    public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY)
+    {
+        if (this.tooltip != null) KeystoneOverlayHandler.addTooltip(this.tooltip);
     }
 
     @Override

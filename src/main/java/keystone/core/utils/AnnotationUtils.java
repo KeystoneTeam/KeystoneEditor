@@ -3,15 +3,20 @@ package keystone.core.utils;
 import keystone.api.utils.StringUtils;
 import keystone.api.variables.Hook;
 import keystone.api.variables.Name;
+import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
+import keystone.core.gui.IKeystoneTooltip;
+import keystone.core.gui.overlays.filters.FilterSelectionScreen;
+import net.minecraft.text.Text;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.List;
 
-public class AnnotationUtils
+public final class AnnotationUtils
 {
-    public static final String getFieldName(Variable variable, Field field)
+    public static String getFieldName(Variable variable, Field field)
     {
         Name nameAnnotation = field.getAnnotation(Name.class);
         String variableName = StringUtils.addSpacesToSentence(StringUtils.titleCase(field.getName().trim()));
@@ -19,14 +24,24 @@ public class AnnotationUtils
         if (nameAnnotation != null) variableName = nameAnnotation.value().trim();
         return variableName;
     }
-    public static final <T extends Enum<?>> String getEnumValueName(T value)
+    public static IKeystoneTooltip getFieldTooltip(Field field)
+    {
+        Tooltip tooltip = field.getAnnotation(Tooltip.class);
+        if (tooltip != null)
+        {
+            List<Text> builtTooltip = List.of(Text.of(tooltip.value()));
+            return (stack, mouseX, mouseY, partialTicks) -> FilterSelectionScreen.getOpenInstance().renderTooltip(stack, builtTooltip, mouseX, mouseY);
+        }
+        else return null;
+    }
+    public static <T extends Enum<?>> String getEnumValueName(T value)
     {
         Name nameAnnotation = getEnumAnnotation(value, Name.class);
         String variableName = StringUtils.enumCaseToTitleCase(value.name());
         if (nameAnnotation != null) variableName = nameAnnotation.value();
         return variableName;
     }
-    public static final <T extends Enum<?>, A extends Annotation> A getEnumAnnotation(T enumValue, Class<A> annotationClass)
+    public static <T extends Enum<?>, A extends Annotation> A getEnumAnnotation(T enumValue, Class<A> annotationClass)
     {
         try
         {
@@ -39,7 +54,7 @@ public class AnnotationUtils
         }
         return null;
     }
-    public static final <T> void runHook(Object instance, Hook hook)
+    public static <T> void runHook(Object instance, Hook hook)
     {
         if (instance != null && hook != null)
         {

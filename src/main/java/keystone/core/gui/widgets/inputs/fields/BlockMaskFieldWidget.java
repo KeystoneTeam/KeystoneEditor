@@ -17,14 +17,15 @@ public class BlockMaskFieldWidget extends BlockMaskWidget
     private final Field field;
     private final Hook hook;
 
-    public BlockMaskFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width) throws IllegalAccessException
+    public BlockMaskFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(Text.literal(name), x, y, width, (BlockMask)field.get(instance.get()));
 
         this.instance = instance;
         this.field = field;
-        this.hook = hook;
+        this.hook = field.getAnnotation(Hook.class);
         AnnotationUtils.runHook(instance.get(), hook);
+        setTooltip(AnnotationUtils.getFieldTooltip(field));
     }
 
     @Override

@@ -1,5 +1,6 @@
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.BlockType;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 
 public class ColorBiomes extends KeystoneFilter
 {
+    @Tooltip("Whether to smooth the biomes the same way Minecraft does.")
     @Variable boolean smooth = false;
     
     private BlockType[] biomeColors = new BlockType[]

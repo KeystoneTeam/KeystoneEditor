@@ -1,7 +1,6 @@
 package keystone.core.gui.widgets.inputs.fields;
 
 import keystone.api.Keystone;
-import keystone.api.variables.Hook;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.BlockMask;
@@ -38,14 +37,13 @@ public class FieldWidgetList extends WidgetList
         for (Field field : fields)
         {
             Variable variable = field.getAnnotation(Variable.class);
-            Hook hook = field.getAnnotation(Hook.class);
             if (variable == null) continue;
             String variableName = AnnotationUtils.getFieldName(variable, field);
 
             try
             {
                 field.setAccessible(true);
-                nextWidgetY += createVariableEditor(field.getType(), field, hook, variableName, nextWidgetY) + padding;
+                nextWidgetY += createVariableEditor(field.getType(), field, variableName, nextWidgetY) + padding;
             }
             catch (SecurityException e)
             {
@@ -67,61 +65,61 @@ public class FieldWidgetList extends WidgetList
 
     public int getNextWidgetY() { return this.nextWidgetY; }
 
-    private int createVariableEditor(Class<?> type, Field field, Hook hook, String name, int y) throws IllegalAccessException
+    private int createVariableEditor(Class<?> type, Field field, String name, int y) throws IllegalAccessException
     {
         //region Block Palette
         if (type == BlockPalette.class)
         {
-            add(new BlockPaletteFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
+            add(new BlockPaletteFieldWidget(instance, field, name, 0, y, intendedWidth));
             return BlockPaletteFieldWidget.getFinalHeight();
         }
         //endregion
         //region Block Mask
         if (type == BlockMask.class)
         {
-            add(new BlockMaskFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
+            add(new BlockMaskFieldWidget(instance, field, name, 0, y, intendedWidth));
             return BlockMaskFieldWidget.getFinalHeight();
         }
         //endregion
         //region Float
         else if (type == float.class)
         {
-            add(new FloatFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
+            add(new FloatFieldWidget(instance, field, name, 0, y, intendedWidth));
             return ParsableTextFieldWidget.getFinalHeight();
         }
         //endregion
         //region Integer
         else if (type == int.class)
         {
-            add(new IntegerFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
+            add(new IntegerFieldWidget(instance, field, name, 0, y, intendedWidth));
             return ParsableTextFieldWidget.getFinalHeight();
         }
         //endregion
         //region String
         else if (type == String.class)
         {
-            add(new StringFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
+            add(new StringFieldWidget(instance, field, name, 0, y, intendedWidth));
             return ParsableTextFieldWidget.getFinalHeight();
         }
         //endregion
         //region Boolean
         else if (type == boolean.class)
         {
-            add(new BooleanFieldWidget(instance, field, hook, name, 0, y, intendedWidth));
+            add(new BooleanFieldWidget(instance, field, name, 0, y, intendedWidth));
             return BooleanFieldWidget.getFinalHeight();
         }
         //endregion
         //region Enum
         else if (Enum.class.isAssignableFrom(type))
         {
-            add(new EnumFieldWidget(instance, field, hook, name, 0, y, intendedWidth, addDropdown));
+            add(new EnumFieldWidget(instance, field, name, 0, y, intendedWidth, addDropdown));
             return EnumFieldWidget.getFinalHeight();
         }
         //endregion
         //region Biome
         else if (type == Biome.class)
         {
-            add(new BiomeFieldWidget(instance, field, hook, name, 0, y, intendedWidth, addDropdown));
+            add(new BiomeFieldWidget(instance, field, name, 0, y, intendedWidth, addDropdown));
             return BiomeFieldWidget.getFinalHeight();
         }
         //endregion

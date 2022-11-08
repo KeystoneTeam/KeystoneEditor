@@ -1,5 +1,6 @@
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
@@ -7,7 +8,10 @@ import keystone.api.wrappers.coordinates.BlockPos;
 
 public class Hollow extends KeystoneFilter
 {
+    @Tooltip("The palette to use on the interior of a build when hollowing.")
     @Variable BlockPalette hollowingPalette = palette("minecraft:air");
+    
+    @Tooltip("The thickness of the shell to leave behind after hollowing. Higher values take much longer to process.")
     @Variable int thickness = 1;
 
     @Override

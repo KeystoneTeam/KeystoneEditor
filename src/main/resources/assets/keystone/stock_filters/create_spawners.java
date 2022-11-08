@@ -1,11 +1,13 @@
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.variables.Tooltip;
 import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
 
 public class CreateSpawners extends KeystoneFilter
 {
+    @Tooltip("If checked, the spawner will always spawn entities at the coordinates of the template entity.")
     @Variable boolean keepPosition = false;
 
     public boolean allowBlocksOutsideRegion() { return true; }

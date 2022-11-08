@@ -19,14 +19,15 @@ public class EnumFieldWidget<T extends Enum<T>> extends EnumWidget<T>
     private final Field field;
     private final Hook hook;
 
-    public EnumFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width, BiConsumer<ClickableWidget, Boolean> addDropdown) throws IllegalAccessException
+    public EnumFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width, BiConsumer<ClickableWidget, Boolean> addDropdown) throws IllegalAccessException
     {
         super(Text.literal(name), x, y, width, (T)field.get(instance.get()), addDropdown);
 
         this.instance = instance;
         this.field = field;
-        this.hook = hook;
+        this.hook = field.getAnnotation(Hook.class);
         AnnotationUtils.runHook(instance.get(), hook);
+        setTooltip(AnnotationUtils.getFieldTooltip(field));
     }
 
     @Override

@@ -18,14 +18,15 @@ public class BlockPaletteFieldWidget extends BlockPaletteWidget
     private final Field field;
     private final Hook hook;
 
-    public BlockPaletteFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width) throws IllegalAccessException
+    public BlockPaletteFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(Text.literal(name), x, y, width, (BlockPalette)field.get(instance.get()));
 
         this.instance = instance;
         this.field = field;
-        this.hook = hook;
+        this.hook = field.getAnnotation(Hook.class);
         AnnotationUtils.runHook(instance.get(), hook);
+        setTooltip(AnnotationUtils.getFieldTooltip(field));
     }
 
     @Override

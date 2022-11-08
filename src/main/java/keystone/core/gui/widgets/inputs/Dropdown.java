@@ -18,7 +18,7 @@ public class Dropdown<T> extends WidgetList
 {
     private static final int PADDING = 0;
 
-    public static record Option<T>(T value, Text label) { }
+    public record Option<T>(T value, Text label) { }
     public static class DropdownOptionButton<T> extends ButtonNoHotkey
     {
         private final Dropdown<T> dropdown;

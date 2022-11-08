@@ -16,14 +16,15 @@ public abstract class ParsableTextFieldWidget<T> extends ParsableTextWidget<T>
     protected final Field field;
     private final Hook hook;
 
-    public ParsableTextFieldWidget(Supplier<Object> instance, Field field, Hook hook, String name, int x, int y, int width) throws IllegalAccessException
+    public ParsableTextFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(Text.literal(name), x, y, width, (T)field.get(instance.get()));
 
         this.instance = instance;
         this.field = field;
-        this.hook = hook;
+        this.hook = field.getAnnotation(Hook.class);
         AnnotationUtils.runHook(instance.get(), hook);
+        setTooltip(AnnotationUtils.getFieldTooltip(field));
     }
 
     @Override
