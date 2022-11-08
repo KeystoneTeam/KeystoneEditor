@@ -107,6 +107,9 @@ public class FillAndReplaceScreen extends KeystonePanel
         palette = new BlockPaletteWidget(Text.translatable("keystone.fill.palette"), PADDING, y, width, previousPalette);
         y += palette.getHeight() + PADDING;
 
+        mask.setTooltip((matrices, mouseX, mouseY, partialTicks) -> renderTooltip(matrices, Text.translatable("keystone.fill.mask.tooltip"), mouseX, mouseY));
+        palette.setTooltip((matrices, mouseX, mouseY, partialTicks) -> renderTooltip(matrices, Text.translatable("keystone.fill.palette.tooltip"), mouseX, mouseY));
+
         int buttonWidth = (getViewport().getWidth() - 3 * PADDING) >> 1;
         ButtonNoHotkey fillButton = new ButtonNoHotkey(PADDING, y, buttonWidth, 20, Text.translatable("keystone.fill.fill"), this::fillButton);
         ButtonNoHotkey cancelButton = new ButtonNoHotkey(getViewport().getMaxX() - PADDING - buttonWidth, y, buttonWidth, 20, Text.translatable("keystone.cancel"), button -> close());

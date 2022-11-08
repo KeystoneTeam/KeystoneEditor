@@ -106,6 +106,8 @@
 
   "keystone.fill.mask": "Mask",
   "keystone.fill.palette": "Palette",
+  "keystone.fill.mask.tooltip": "Only blocks matching this mask will be replaced.",
+  "keystone.fill.palette.tooltip": "The palette to use when filling the selection.",
   "keystone.fill.fill": "Fill",
 
   "keystone.biomes.shouldPlace": "Place Biomes",

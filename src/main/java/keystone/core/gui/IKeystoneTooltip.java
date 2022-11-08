@@ -4,5 +4,5 @@ import net.minecraft.client.util.math.MatrixStack;
 
 public interface IKeystoneTooltip
 {
-    void render(MatrixStack matrix, int mouseX, int mouseY, float partialTicks);
+    void render(MatrixStack matrices, int mouseX, int mouseY, float partialTicks);
 }
