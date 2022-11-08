@@ -1,8 +1,6 @@
 package keystone.core.gui.widgets.inputs;
 
 import keystone.api.wrappers.blocks.BlockMask;
-import keystone.core.gui.IKeystoneTooltip;
-import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.WidgetDisabler;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.overlays.block_selection.BlockMaskEditScreen;

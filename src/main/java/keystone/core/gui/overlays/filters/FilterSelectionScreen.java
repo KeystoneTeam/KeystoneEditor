@@ -4,6 +4,7 @@ import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
+import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.WidgetDisabler;
 import keystone.core.gui.overlays.KeystonePanel;
@@ -182,6 +183,7 @@ public class FilterSelectionScreen extends KeystonePanel
         int buttonWidth = textRenderer.getWidth(Text.translatable("keystone.filter_panel.runFilter").getString()) + 10;
         int panelCenter = getViewport().getMinX() + getViewport().getWidth() / 2;
         ButtonNoHotkey runFilterButton = new ButtonNoHotkey(panelCenter - buttonWidth / 2, getViewport().getMaxY() - 25, buttonWidth, 20, Text.translatable("keystone.filter_panel.runFilter"), button -> runFilter());
+        runFilterButton.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.filter_panel.runFilter.tooltip")));
 
         // Add buttons
         this.selectFilterButton.setMessage(this.dropdown.getSelectedOption().label());

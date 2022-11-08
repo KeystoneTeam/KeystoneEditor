@@ -74,7 +74,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
             if (active && visible && hovered)
             {
                 if (mouseX == tooltipX && mouseY == tooltipY) tooltipTimer += MinecraftClient.getInstance().getTickDelta();
-                else tooltipTimer = 0;
+                else if (tooltipTimer < tooltipDelay) tooltipTimer = 0;
                 
                 tooltipX = mouseX;
                 tooltipY = mouseY;

@@ -72,6 +72,7 @@
   "keystone.filter_panel.select": "Filter: ",
   "keystone.filter_panel.runFilter": "Filter",
   "keystone.filter_panel.filterVariables": "Filter Variables",
+  "keystone.filter_panel.runFilter.tooltip": "Execute the filter on the current selection boxes.",
 
   "keystone.block_selection_panel.propertiesPanel": "Block Properties",
   "keystone.block_selection_panel.anyVariant": "Any Variant",
@@ -112,6 +113,8 @@
 
   "keystone.biomes.shouldPlace": "Place Biomes",
   "keystone.structure_voids.shouldPlace": "Place Structure Voids",
+  "keystone.biomes.tooltip": "Whether to change the biomes to the biomes in the schematic.",
+  "keystone.structure_voids.tooltip": "If checked, structure void blocks will be placed in the world instead of ignored.",
 
   "keystone.clone.offsetX": "X Offset",
   "keystone.clone.offsetY": "Y Offset",
@@ -119,6 +122,8 @@
   "keystone.clone.repeat": "Repeat",
   "keystone.clone.copyAir": "Copy Air",
   "keystone.clone.clone": "Clone",
+  "keystone.clone.repeat.tooltip": "The number of times to perform the clone. Each clone operation is placed relative to the previous operation.",
+  "keystone.clone.copyAir.tooltip": "If unchecked, air will not be copied when cloning the selection.",
   "keystone.clone.clone.tooltip": "Perform the clone operation. Shortcut: Enter",
 
   "keystone.file_browser.fileName": "File Name",

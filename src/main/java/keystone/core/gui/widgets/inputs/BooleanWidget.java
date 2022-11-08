@@ -1,14 +1,14 @@
-package keystone.core.gui.widgets.buttons;
+package keystone.core.gui.widgets.inputs;
 
 import keystone.core.KeystoneConfig;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.CheckboxWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
-public class ButtonNoHotkey extends ButtonWidget
+public class BooleanWidget extends CheckboxWidget
 {
     private IKeystoneTooltip tooltip;
     private float tooltipDelay;
@@ -16,26 +16,21 @@ public class ButtonNoHotkey extends ButtonWidget
     private int tooltipX;
     private int tooltipY;
 
-    public ButtonNoHotkey(int x, int y, int width, int height, Text title, PressAction pressedAction)
+    public BooleanWidget(int x, int y, int width, int height, Text message, boolean checked) { this(x, y, width, height, message, checked, true); }
+    public BooleanWidget(int x, int y, int width, int height, Text message, boolean checked, boolean showMessage)
     {
-        this(x, y, width, height, title, pressedAction, null);
-    }
-    public ButtonNoHotkey(int x, int y, int width, int height, Text title, PressAction pressedAction, IKeystoneTooltip tooltip)
-    {
-        super(x, y, width, height, title, pressedAction);
-        this.tooltip = tooltip;
+        super(x, y, width, height, message, checked, showMessage);
         this.tooltipDelay = KeystoneConfig.tooltipDelay;
     }
-
-    public ButtonNoHotkey setTooltip(IKeystoneTooltip tooltip) { this.tooltip = tooltip; return this; }
-    public ButtonNoHotkey setTooltipDelay(float delay) { this.tooltipDelay = delay; return this; }
-
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
-    {
-        return false;
-    }
+    public BooleanWidget setTooltip(IKeystoneTooltip tooltip) { this.tooltip = tooltip; return this; }
+    public BooleanWidget setTooltipDelay(float delay) { this.tooltipDelay = delay; return this; }
     
+    @Override
+    public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta)
+    {
+        super.renderButton(matrices, mouseX, mouseY, delta);
+        renderTooltip(matrices, mouseX, mouseY);
+    }
     @Override
     public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY)
     {

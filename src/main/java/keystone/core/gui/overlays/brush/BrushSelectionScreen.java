@@ -3,6 +3,7 @@ package keystone.core.gui.overlays.brush;
 import keystone.api.Keystone;
 import keystone.core.KeystoneConfig;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
+import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.overlays.KeystonePanel;
 import keystone.core.gui.overlays.hotbar.KeystoneHotbarSlot;
@@ -89,7 +90,7 @@ public class BrushSelectionScreen extends KeystonePanel
         {
             brushModule.setImmediateMode(!brushModule.isImmediateMode());
             init(client, width, height);
-        }).setTooltip((matrices, mouseX, mouseY, partialTicks) -> renderTooltip(matrices, brushModule.isImmediateMode() ? Text.translatable("keystone.brush.immediateMode.tooltip") : Text.translatable("keystone.brush.deferredMode.tooltip"), mouseX, mouseY)));
+        }).setTooltip(IKeystoneTooltip.createSimple(this, brushModule.isImmediateMode() ? Text.translatable("keystone.brush.immediateMode.tooltip") : Text.translatable("keystone.brush.deferredMode.tooltip"))));
         y += 20 + PADDING;
 
         // Change Shape Button
@@ -144,7 +145,7 @@ public class BrushSelectionScreen extends KeystonePanel
                 brushModule.setMinSpacing(value);
                 return true;
             }
-        }.setTooltip((matrices, mouseX, mouseY, partialTicks) -> renderTooltip(matrices, Text.translatable("keystone.brush.minimumSpacing.tooltip"), mouseX, mouseY)));
+        }.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.brush.minimumSpacing.tooltip"))));
         addDrawableChild(new IntegerWidget(Text.translatable("keystone.brush.noise"), PADDING + spacingNoiseWidth + PADDING, y, spacingNoiseWidth, brushModule.getNoise(), 1, 100)
         {
             @Override
@@ -153,7 +154,7 @@ public class BrushSelectionScreen extends KeystonePanel
                 brushModule.setNoise(value);
                 return true;
             }
-        }.setTooltip((matrices, mouseX, mouseY, partialTicks) -> renderTooltip(matrices, Text.translatable("keystone.brush.noise.tooltip"), mouseX, mouseY)));
+        }.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.brush.noise.tooltip"))));
         y += IntegerWidget.getFinalHeight() + PADDING;
 
         // Brush variables

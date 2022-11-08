@@ -2,6 +2,7 @@ package keystone.core.gui.overlays.schematics;
 
 import keystone.api.Keystone;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
+import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.overlays.KeystonePanel;
 import keystone.core.gui.overlays.hotbar.KeystoneHotbar;
@@ -10,6 +11,7 @@ import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.buttons.NudgeButton;
 import keystone.core.gui.widgets.buttons.SimpleButton;
+import keystone.core.gui.widgets.inputs.BooleanWidget;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
 import keystone.core.modules.schematic_import.ImportBoundingBox;
 import keystone.core.modules.schematic_import.ImportModule;
@@ -112,7 +114,7 @@ public class ImportScreen extends KeystonePanel
         addDrawableChild(mirrorButton);
         addDrawableChild(nudgeImports);
 
-        IntegerWidget scale = new IntegerWidget(Text.translatable("keystone.schematic_import.scale"), x, y, getViewport().getWidth() - 2 * MARGINS, 1, 1, 8)
+        IntegerWidget scale = (IntegerWidget) new IntegerWidget(Text.translatable("keystone.schematic_import.scale"), x, y, getViewport().getWidth() - 2 * MARGINS, 1, 1, 8)
         {
             @Override
             protected boolean onSetValue(Integer value)
@@ -120,7 +122,7 @@ public class ImportScreen extends KeystonePanel
                 importModule.setScaleAll(value);
                 return true;
             }
-        };
+        }.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.schematic_import.scale.tooltip")));
         y += scale.getHeight() + PADDING;
         addDrawableChild(scale);
 
@@ -211,8 +213,8 @@ public class ImportScreen extends KeystonePanel
     }
     private CheckboxWidget createExtensionOption(int y, Identifier extensionID)
     {
-        Text label = Text.translatable(extensionID.getNamespace() + "." + extensionID.getPath() + ".shouldPlace");
-        return new CheckboxWidget(getViewport().getMinX() + MARGINS, y, getViewport().getWidth() - 2 * MARGINS, 20, label, extensionsToPlace.get(extensionID), true)
+        String translationKey = extensionID.getNamespace() + "." + extensionID.getPath();
+        return new BooleanWidget(getViewport().getMinX() + MARGINS, y, getViewport().getWidth() - 2 * MARGINS, 20, Text.translatable(translationKey + ".shouldPlace"), extensionsToPlace.get(extensionID), true)
         {
             @Override
             public void onPress()
@@ -220,7 +222,7 @@ public class ImportScreen extends KeystonePanel
                 super.onPress();
                 extensionsToPlace.put(extensionID, isChecked());
             }
-        };
+        }.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable(translationKey + ".tooltip")));
     }
     //endregion
     //region Button Callbacks
