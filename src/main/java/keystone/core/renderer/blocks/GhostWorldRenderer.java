@@ -58,8 +58,7 @@ public class GhostWorldRenderer
     public void tick()
     {
         MinecraftClient mc = MinecraftClient.getInstance();
-        if (mc.world == null || mc.player == null || !changed)
-            return;
+        if (mc.world == null || mc.player == null || !changed) return;
 
         redraw(mc);
         changed = false;

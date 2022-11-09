@@ -11,6 +11,7 @@ import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import keystone.core.schematic.KeystoneSchematic;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -24,9 +25,10 @@ import java.util.Set;
 
 public class GhostBlocksModule implements IKeystoneModule
 {
+    private final Set<GhostBlocksWorld> ghostWorlds = Collections.synchronizedSet(new HashSet<>());
     private WorldCacheModule worldCache;
-    private Set<GhostBlocksWorld> ghostWorlds = Collections.synchronizedSet(new HashSet<>());
-
+    private boolean irisLoaded;
+    
     public GhostBlocksModule()
     {
         ClientTickEvents.START_CLIENT_TICK.register(this::onTick);
@@ -35,12 +37,13 @@ public class GhostBlocksModule implements IKeystoneModule
     @Override
     public boolean isEnabled()
     {
-        return true;
+        return !irisLoaded;
     }
     @Override
     public void postInit()
     {
         this.worldCache = Keystone.getModule(WorldCacheModule.class);
+        this.irisLoaded = FabricLoader.getInstance().isModLoaded("iris");
     }
     @Override
     public void resetModule()
@@ -50,29 +53,35 @@ public class GhostBlocksModule implements IKeystoneModule
 
     public void renderGhostBlocks(WorldRenderContext context)
     {
-        Vec3d cameraPos = Camera.getPosition();
-        MatrixStack stack = new MatrixStack();
-        stack.push();
-        stack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-
-        RenderSystem.enablePolygonOffset();
-        RenderSystem.polygonOffset(-0.1f, -0.2f);
-
-        RenderSystem.setShader(GameRenderer::getBlockShader);
-        SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();
-        ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().render(stack, buffer, context.tickDelta()));
-        buffer.draw();
-
-        RenderSystem.polygonOffset(0, 0);
-        RenderSystem.disablePolygonOffset();
-        RenderSystem.enableCull();
-
-        stack.pop();
+        if (isEnabled())
+        {
+            Vec3d cameraPos = Camera.getPosition();
+            MatrixStack stack = new MatrixStack();
+            stack.push();
+            stack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+    
+            RenderSystem.enablePolygonOffset();
+            RenderSystem.polygonOffset(-0.1f, -0.2f);
+    
+            RenderSystem.setShader(GameRenderer::getBlockShader);
+            SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();
+            ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().render(stack, buffer, context.tickDelta()));
+            buffer.draw();
+    
+            RenderSystem.polygonOffset(0, 0);
+            RenderSystem.disablePolygonOffset();
+            RenderSystem.enableCull();
+    
+            stack.pop();
+        }
     }
 
     private void onTick(MinecraftClient client)
     {
-        ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().tick());
+        if (isEnabled())
+        {
+            ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().tick());
+        }
     }
 
     public GhostBlocksWorld createWorld(BlockRotation rotation, BlockMirror mirror)
