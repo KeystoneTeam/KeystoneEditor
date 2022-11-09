@@ -18,7 +18,7 @@ public class Dropdown<T> extends WidgetList
 {
     private static final int PADDING = 0;
 
-    public record Option<T>(T value, Text label) { }
+    public record Option<T>(T value, Text label, boolean hide) { }
     public static class DropdownOptionButton<T> extends ButtonNoHotkey
     {
         private final Dropdown<T> dropdown;
@@ -103,7 +103,7 @@ public class Dropdown<T> extends WidgetList
     public void build()
     {
         clear();
-        options.forEach(option -> { if (search.test(option)) add(new DropdownOptionButton<>(this, option)); });
+        options.forEach(option -> { if (search.test(option) && !option.hide) add(new DropdownOptionButton<>(this, option)); });
         setElementsOffset(1, 1);
         bake();
     }

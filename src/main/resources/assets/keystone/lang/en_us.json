@@ -23,6 +23,8 @@
   "keystone.cancel": "Cancel",
   "keystone.nudge": "Nudge",
   "keystone.blacklist": "Blacklist",
+  "keystone.blacklist.tooltip": "Blacklist: Matches every block not in the mask.",
+  "keystone.whitelist.tooltip": "Whitelist: Only matches blocks in the mask.",
 
   "keystone.nudge.tooltip": "Click and hold. Use movement keys to nudge. Right click to move a larger distance.",
 

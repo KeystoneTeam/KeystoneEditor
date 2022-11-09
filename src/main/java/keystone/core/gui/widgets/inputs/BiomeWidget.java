@@ -26,7 +26,7 @@ public class BiomeWidget extends LabeledDropdownWidget<Biome>
         {
             Biome biome = new Biome(biomeRegistry.entryOf(biomeKey));
             Text registryName = Text.literal(biomeKey.getValue().toString());
-            options.add(new Dropdown.Option<>(biome, registryName));
+            options.add(new Dropdown.Option<>(biome, registryName, false));
         });
     }
 

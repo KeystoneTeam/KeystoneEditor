@@ -5,6 +5,7 @@ import keystone.api.variables.Hook;
 import keystone.core.gui.widgets.inputs.BooleanWidget;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -18,7 +19,7 @@ public class BooleanFieldWidget extends BooleanWidget
     private final Hook hook;
     private final String name;
 
-    public BooleanFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public BooleanFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(x, y, width, getFinalHeight(), Text.literal(name), (boolean)field.get(instance.get()), true);
 
@@ -27,7 +28,7 @@ public class BooleanFieldWidget extends BooleanWidget
         this.name = name;
         this.hook = field.getAnnotation(Hook.class);
         AnnotationUtils.runHook(instance.get(), hook);
-        setTooltip(AnnotationUtils.getFieldTooltip(field));
+        setTooltip(AnnotationUtils.getFieldTooltip(screen, field));
     }
     public static int getFinalHeight() { return 20; }
 

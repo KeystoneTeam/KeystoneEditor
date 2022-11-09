@@ -1,14 +1,15 @@
 package keystone.core.gui.overlays.block_selection;
 
 import keystone.api.wrappers.blocks.BlockMask;
+import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
+import keystone.core.gui.widgets.inputs.BooleanWidget;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.gui.widget.CheckboxWidget;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
@@ -60,8 +61,8 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         this.maskPanel.rebuildButtons();
         addDrawableChild(maskPanel);
 
-        // Done and Cancel Buttons
-        addDrawableChild(new CheckboxWidget(maskPanel.x, maskPanel.y + maskPanel.getHeight() + 5, maskPanel.getWidth(), 20, Text.translatable("keystone.blacklist"), this.mask.isBlacklist(), true)
+        // Blacklist, Done and Cancel Buttons
+        addDrawableChild(new BooleanWidget(maskPanel.x, maskPanel.y + maskPanel.getHeight() + 5, maskPanel.getWidth(), 20, Text.translatable("keystone.blacklist"), this.mask.isBlacklist(), true)
         {
             @Override
             public void onPress()
@@ -70,7 +71,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
                 if (isChecked()) mask.blacklist();
                 else mask.whitelist();
             }
-        });
+        }.setTooltip(IKeystoneTooltip.createSimple(this, () -> mask.isBlacklist() ? Text.translatable("keystone.blacklist.tooltip") : Text.translatable("keystone.whitelist.tooltip"))));
         addDrawableChild(new ButtonNoHotkey(maskPanel.x, maskPanel.y + maskPanel.getHeight() + 30, maskPanel.getWidth(), 20, Text.translatable("keystone.done"), button ->
         {
             if (!ranCallback)

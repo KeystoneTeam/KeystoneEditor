@@ -41,7 +41,9 @@ public class ImportScreen extends KeystonePanel
     private final ImportModule importModule;
     private NudgeButton nudgeImports;
     private Map<Identifier, Boolean> extensionsToPlace;
-
+    
+    private BooleanWidget copyAir;
+    
     protected ImportScreen()
     {
         super(Text.literal("keystone.screen.import"));
@@ -86,9 +88,9 @@ public class ImportScreen extends KeystonePanel
     protected Viewport createViewport()
     {
         Viewport dock = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT, Viewport.MIDDLE, Viewport.LEFT);
-
+        
         int widgetsHeight = (3 * (BUTTON_HEIGHT + PADDING)) + OPTIONS_PADDING + IntegerWidget.getFinalHeight() + OPTIONS_PADDING;
-        widgetsHeight += extensionsToPlace.size() * (20 + PADDING);
+        widgetsHeight += (extensionsToPlace.size() + 1) * (20 + PADDING);
 
         return dock.createLeftCenteredViewport(widgetsHeight + 2 * MARGINS);
     }
@@ -114,6 +116,7 @@ public class ImportScreen extends KeystonePanel
         addDrawableChild(mirrorButton);
         addDrawableChild(nudgeImports);
 
+        // Scale Widget
         IntegerWidget scale = (IntegerWidget) new IntegerWidget(Text.translatable("keystone.schematic_import.scale"), x, y, getViewport().getWidth() - 2 * MARGINS, 1, 1, 8)
         {
             @Override
@@ -125,7 +128,14 @@ public class ImportScreen extends KeystonePanel
         }.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.schematic_import.scale.tooltip")));
         y += scale.getHeight() + PADDING;
         addDrawableChild(scale);
+    
+        // Copy Air Field
+        copyAir = new BooleanWidget(x, y, getViewport().getWidth() - 2 * MARGINS, 20, Text.translatable("keystone.clone.copyAir"), true, true);
+        copyAir.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.clone.copyAir.tooltip")));
+        y += copyAir.getHeight() + PADDING;
+        addDrawableChild(copyAir);
 
+        // Extension Options
         List<CheckboxWidget> extensionOptions = new ArrayList<>();
         int defaultPanelWidth = getViewport().getWidth();
         for (Identifier extension : extensionsToPlace.keySet())
@@ -240,7 +250,8 @@ public class ImportScreen extends KeystonePanel
     }
     private void importButton(ButtonWidget button)
     {
-        importModule.placeAll(extensionsToPlace, true, true, true);
+        // TODO: Add copyAir checkbox similar to CloneScreen
+        importModule.placeAll(extensionsToPlace, copyAir.isChecked(), true, true);
     }
     //endregion
 }

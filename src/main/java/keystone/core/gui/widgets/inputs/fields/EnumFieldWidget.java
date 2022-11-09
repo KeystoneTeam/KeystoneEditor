@@ -5,6 +5,7 @@ import keystone.api.variables.Hook;
 import keystone.core.gui.widgets.inputs.EnumWidget;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -19,7 +20,7 @@ public class EnumFieldWidget<T extends Enum<T>> extends EnumWidget<T>
     private final Field field;
     private final Hook hook;
 
-    public EnumFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width, BiConsumer<ClickableWidget, Boolean> addDropdown) throws IllegalAccessException
+    public EnumFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width, BiConsumer<ClickableWidget, Boolean> addDropdown) throws IllegalAccessException
     {
         super(Text.literal(name), x, y, width, (T)field.get(instance.get()), addDropdown);
 
@@ -27,7 +28,7 @@ public class EnumFieldWidget<T extends Enum<T>> extends EnumWidget<T>
         this.field = field;
         this.hook = field.getAnnotation(Hook.class);
         AnnotationUtils.runHook(instance.get(), hook);
-        setTooltip(AnnotationUtils.getFieldTooltip(field));
+        setTooltip(AnnotationUtils.getFieldTooltip(screen, field));
     }
 
     @Override

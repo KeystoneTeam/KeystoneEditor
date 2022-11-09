@@ -68,7 +68,7 @@ public class BrushSelectionScreen extends KeystonePanel
         // Calculate panel size
         brushModule = Keystone.getModule(BrushModule.class);
         int maxPanelHeight = client.getWindow().getScaledHeight() - (PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getFinalHeight() + PADDING) + PADDING);
-        brushVariablesList = new FieldWidgetList(Text.translatable("keystone.brush.brushVariables"), brushModule::getBrushOperation, 0, 0, dock.getWidth(), maxPanelHeight, PADDING);
+        brushVariablesList = new FieldWidgetList(this, Text.translatable("keystone.brush.brushVariables"), brushModule::getBrushOperation, 0, 0, dock.getWidth(), maxPanelHeight, PADDING);
         brushVariablesList.bake();
         int panelHeight = PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getFinalHeight() + PADDING) + PADDING + brushVariablesList.getHeight();
 

@@ -101,7 +101,7 @@ public class FilterSelectionScreen extends KeystonePanel
 
         // Build Filter Variable Widgets
         int maxPanelHeight = dock.getHeight() - 40 - 4 * PADDING;
-        filterVariablesList = new FieldWidgetList(Text.translatable("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, dock.getWidth(), maxPanelHeight, PADDING);
+        filterVariablesList = new FieldWidgetList(this, Text.translatable("keystone.filter_panel.filterVariables"), this::getFilter, 0, 0, dock.getWidth(), maxPanelHeight, PADDING);
 
         // Error Display
         KeystoneFilter selectedFilter = filterManager.getFilter(selectedFilterFile);
@@ -152,7 +152,7 @@ public class FilterSelectionScreen extends KeystonePanel
             
             MutableText label = Text.literal(filter.getName());
             if (!filter.isCompiledSuccessfully()) label = label.styled(style -> style.withColor(Formatting.RED));
-            dropdownOptions.add(new Dropdown.Option<>(filterFile, label));
+            dropdownOptions.add(new Dropdown.Option<>(filterFile, label, false));
         }
 
         this.dropdown = new Dropdown<>(selectFilterButton.x, selectFilterButton.y, selectFilterButton.getWidth(), Text.translatable("keystone.tool.filter.dropdown"),

@@ -10,9 +10,9 @@ public class IntegerFieldWidget extends ParsableTextFieldWidget<Integer>
 {
     private final IntRange range;
 
-    public IntegerFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public IntegerFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(instance, field, name, x, y, width);
+        super(screen, instance, field, name, x, y, width);
         this.range = field.getAnnotation(IntRange.class);
     }
 

@@ -10,9 +10,9 @@ public class FloatFieldWidget extends ParsableTextFieldWidget<Float>
 {
     private final FloatRange range;
 
-    public FloatFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public FloatFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(instance, field, name, x, y, width);
+        super(screen, instance, field, name, x, y, width);
         this.range = field.getAnnotation(FloatRange.class);
     }
 

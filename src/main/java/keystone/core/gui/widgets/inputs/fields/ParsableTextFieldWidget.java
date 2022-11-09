@@ -4,6 +4,7 @@ import keystone.api.Keystone;
 import keystone.api.variables.Hook;
 import keystone.core.gui.widgets.inputs.ParsableTextWidget;
 import keystone.core.utils.AnnotationUtils;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -16,7 +17,7 @@ public abstract class ParsableTextFieldWidget<T> extends ParsableTextWidget<T>
     protected final Field field;
     private final Hook hook;
 
-    public ParsableTextFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public ParsableTextFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(Text.literal(name), x, y, width, (T)field.get(instance.get()));
 
@@ -24,7 +25,7 @@ public abstract class ParsableTextFieldWidget<T> extends ParsableTextWidget<T>
         this.field = field;
         this.hook = field.getAnnotation(Hook.class);
         AnnotationUtils.runHook(instance.get(), hook);
-        setTooltip(AnnotationUtils.getFieldTooltip(field));
+        setTooltip(AnnotationUtils.getFieldTooltip(screen, field));
     }
 
     @Override

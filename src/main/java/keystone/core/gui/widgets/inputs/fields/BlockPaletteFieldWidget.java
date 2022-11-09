@@ -6,6 +6,7 @@ import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.core.gui.widgets.inputs.BlockPaletteWidget;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -18,7 +19,7 @@ public class BlockPaletteFieldWidget extends BlockPaletteWidget
     private final Field field;
     private final Hook hook;
 
-    public BlockPaletteFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public BlockPaletteFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(Text.literal(name), x, y, width, (BlockPalette)field.get(instance.get()));
 
@@ -26,7 +27,7 @@ public class BlockPaletteFieldWidget extends BlockPaletteWidget
         this.field = field;
         this.hook = field.getAnnotation(Hook.class);
         AnnotationUtils.runHook(instance.get(), hook);
-        setTooltip(AnnotationUtils.getFieldTooltip(field));
+        setTooltip(AnnotationUtils.getFieldTooltip(screen, field));
     }
 
     @Override

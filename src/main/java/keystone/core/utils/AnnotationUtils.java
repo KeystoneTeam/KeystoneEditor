@@ -6,7 +6,7 @@ import keystone.api.variables.Name;
 import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
 import keystone.core.gui.IKeystoneTooltip;
-import keystone.core.gui.overlays.filters.FilterSelectionScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
 import java.lang.annotation.Annotation;
@@ -24,13 +24,13 @@ public final class AnnotationUtils
         if (nameAnnotation != null) variableName = nameAnnotation.value().trim();
         return variableName;
     }
-    public static IKeystoneTooltip getFieldTooltip(Field field)
+    public static IKeystoneTooltip getFieldTooltip(Screen screen, Field field)
     {
         Tooltip tooltip = field.getAnnotation(Tooltip.class);
         if (tooltip != null)
         {
             List<Text> builtTooltip = List.of(Text.of(tooltip.value()));
-            return (stack, mouseX, mouseY, partialTicks) -> FilterSelectionScreen.getOpenInstance().renderTooltip(stack, builtTooltip, mouseX, mouseY);
+            return (stack, mouseX, mouseY, partialTicks) -> screen.renderTooltip(stack, builtTooltip, mouseX, mouseY);
         }
         else return null;
     }
@@ -54,7 +54,7 @@ public final class AnnotationUtils
         }
         return null;
     }
-    public static <T> void runHook(Object instance, Hook hook)
+    public static void runHook(Object instance, Hook hook)
     {
         if (instance != null && hook != null)
         {

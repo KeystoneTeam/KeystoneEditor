@@ -6,6 +6,7 @@ import keystone.api.wrappers.Biome;
 import keystone.core.gui.widgets.inputs.BiomeWidget;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -20,7 +21,7 @@ public class BiomeFieldWidget extends BiomeWidget
     private final Field field;
     private final Hook hook;
 
-    public BiomeFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width, BiConsumer<ClickableWidget, Boolean> addDropdown) throws IllegalAccessException
+    public BiomeFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width, BiConsumer<ClickableWidget, Boolean> addDropdown) throws IllegalAccessException
     {
         super(Text.literal(name), x, y, width, (Biome)field.get(instance.get()), addDropdown);
         
@@ -28,7 +29,7 @@ public class BiomeFieldWidget extends BiomeWidget
         this.field = field;
         this.hook = field.getAnnotation(Hook.class);
         AnnotationUtils.runHook(instance.get(), hook);
-        setTooltip(AnnotationUtils.getFieldTooltip(field));
+        setTooltip(AnnotationUtils.getFieldTooltip(screen, field));
     }
 
     @Override

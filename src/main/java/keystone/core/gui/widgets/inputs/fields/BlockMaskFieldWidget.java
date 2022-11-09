@@ -5,6 +5,7 @@ import keystone.api.variables.Hook;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.core.gui.widgets.inputs.BlockMaskWidget;
 import keystone.core.utils.AnnotationUtils;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -17,7 +18,7 @@ public class BlockMaskFieldWidget extends BlockMaskWidget
     private final Field field;
     private final Hook hook;
 
-    public BlockMaskFieldWidget(Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
+    public BlockMaskFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(Text.literal(name), x, y, width, (BlockMask)field.get(instance.get()));
 
@@ -25,7 +26,7 @@ public class BlockMaskFieldWidget extends BlockMaskWidget
         this.field = field;
         this.hook = field.getAnnotation(Hook.class);
         AnnotationUtils.runHook(instance.get(), hook);
-        setTooltip(AnnotationUtils.getFieldTooltip(field));
+        setTooltip(AnnotationUtils.getFieldTooltip(screen, field));
     }
 
     @Override
