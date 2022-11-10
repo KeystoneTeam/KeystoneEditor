@@ -28,6 +28,10 @@ public class FieldWidgetList extends WidgetList
 
     public FieldWidgetList(Screen screen, Text label, Supplier<Object> instance, int x, int y, int width, int maxHeight, int padding)
     {
+        this(screen, label, instance, instance.get().getClass(), x, y, width, maxHeight, padding);
+    }
+    public FieldWidgetList(Screen screen, Text label, Supplier<Object> instance, Class<?> clazz, int x, int y, int width, int maxHeight, int padding)
+    {
         super(x, y, width, maxHeight, padding, label);
 
         this.parent = screen;
@@ -36,7 +40,7 @@ public class FieldWidgetList extends WidgetList
         this.addDropdown = this::add;
         this.nextWidgetY = 0;
 
-        Field[] fields = instance.get().getClass().getDeclaredFields();
+        Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields)
         {
             Variable variable = field.getAnnotation(Variable.class);

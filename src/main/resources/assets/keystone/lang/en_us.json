@@ -7,6 +7,7 @@
   "keystone.version_check.releasesLink.hyperlink": "here",
   "keystone.version_check.changelog": "Changes:",
 
+  "keystone.screen.options": "Keystone Options",
   "keystone.screen.selection": "Selection tools",
   "keystone.screen.selectionNudge": "Nudge selection bounds",
   "keystone.screen.blockSelection": "Select a block",

@@ -5,6 +5,7 @@ import keystone.api.tools.DeleteEntitiesTool;
 import keystone.api.tools.FillTool;
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
+import keystone.core.gui.screens.KeystoneOptionsScreen;
 import keystone.core.keybinds.conflicts.DefaultKeyConditions;
 import keystone.core.keybinds.conflicts.IKeyCondition;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -48,10 +49,10 @@ public class KeystoneKeyBindings
                 while (DELETE_SELECTION.wasPressed()) Keystone.runInternalFilters(new FillTool(Blocks.AIR.getDefaultState()), new DeleteEntitiesTool());
                 while (TOGGLE_UPDATES.wasPressed()) KeystoneGlobalState.SuppressingBlockTicks = !KeystoneGlobalState.SuppressingBlockTicks;
                 while (HIGHLIGHT_TILE_ENTITIES.wasPressed()) KeystoneGlobalState.HighlightTileEntities = !KeystoneGlobalState.HighlightTileEntities;
-    
+                
                 while (FEATURE_TEST.wasPressed())
                 {
-        
+                    MinecraftClient.getInstance().setScreenAndRender(new KeystoneOptionsScreen());
                 }
             }
         });

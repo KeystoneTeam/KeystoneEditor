@@ -38,7 +38,7 @@ public class WidgetList extends ClickableWidget
     public void add(ClickableWidget widget) { add(widget, false); }
     public void add(ClickableWidget widget, boolean queued)
     {
-        widget.x += this.x + padding;
+        widget.x += this.x + offsetX;
         if (widget instanceof TextFieldWidget textField) textField.setWidth(textField.getWidth() - 2);
 
         if (queued) queuedWidgets.add(widget);
