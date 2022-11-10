@@ -169,16 +169,16 @@ public abstract class FileBrowserScreen extends Screen
         for (File file : currentFileStructure.files) allButtons.add(new FileButton(this, i++, buttonWidth, file, currentFileStructure, selectedFiles.contains(file)));
 
         int panelCenterX = panelX + (panelWidth / 2);
-        ButtonWidget cancel = new ButtonNoHotkey(this.panelX, this.panelY + this.panelHeight - 20, panelCenterX - panelX - PADDING / 2, 20, CANCEL_LABEL, (button) ->
-        {
-            this.callback.accept(new File[0]);
-            close();
-        });
-        ButtonWidget open = new ButtonNoHotkey(this.panelX + cancel.getWidth() + PADDING, this.panelY + this.panelHeight - 20, panelCenterX - panelX - PADDING / 2, 20, getDoneButtonLabel(), (button) ->
+        ButtonWidget open = new ButtonNoHotkey(this.panelX, this.panelY + this.panelHeight - 20, panelCenterX - panelX - PADDING / 2, 20, getDoneButtonLabel(), (button) ->
         {
             File[] files = new File[selectedFiles.size()];
             for (int j = 0; j < files.length; j++) files[j] = selectedFiles.get(j).file;
             runCallback(files);
+            close();
+        });
+        ButtonWidget cancel = new ButtonNoHotkey(this.panelX + open.getWidth() + PADDING, this.panelY + this.panelHeight - 20, panelCenterX - panelX - PADDING / 2, 20, CANCEL_LABEL, (button) ->
+        {
+            this.callback.accept(new File[0]);
             close();
         });
 

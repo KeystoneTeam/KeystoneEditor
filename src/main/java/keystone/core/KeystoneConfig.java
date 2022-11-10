@@ -17,7 +17,6 @@ public class KeystoneConfig
 
     public static int clickThreshold = 200;
     public static int dragThresholdSqr = 8 * 8;
-    public static double selectFaceSkipThreshold = 0.5;
     public static int maxBrushSize = 512;
     public static int maxChunkUpdatesPerTick = 64;
     public static int chunkUpdateCooldownTicks = 0;
@@ -33,4 +32,5 @@ public class KeystoneConfig
     public static float viewportLeftBorder = 0.25f;
     public static float viewportRightBorder = 0.25f;
     public static int viewportPadding = 5;
+    public static int minGuiScale = 2;
 }

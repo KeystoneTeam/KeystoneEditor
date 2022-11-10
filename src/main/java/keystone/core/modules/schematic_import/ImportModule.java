@@ -90,7 +90,8 @@ public class ImportModule implements IKeystoneModule
                 KeystoneDirectories.getSchematicsDirectory(), true, (files) ->
         {
             for (File schematic : files) importSchematic(schematic, minPosition, false, false);
-            KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(this.importBoxes, true);
+            KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(this.importBoxes, files.length > 0);
+            if (files.length == 0) KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
         });
     }
     public void importSchematic(String path, Vec3i minPosition, boolean raiseEvent, boolean createHistoryEntry)

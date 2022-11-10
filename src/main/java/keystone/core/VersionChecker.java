@@ -76,7 +76,7 @@ public class VersionChecker
                     if (changelog.size() > 0)
                     {
                         lines.add(Text.literal(""));
-                        lines.add(Text.literal("keystone.version_check.changelog").styled(style -> style.withColor(Formatting.GOLD)));
+                        lines.add(Text.translatable("keystone.version_check.changelog").styled(style -> style.withColor(Formatting.GOLD)));
                         changelog.forEach(pair ->
                                 lines.add(Text.literal("    " + pair.getLeft().getFriendlyString() + ": ").styled(style -> style.withColor(Formatting.AQUA)).append(
                                         Text.literal(pair.getRight()).styled(style -> style.withColor(Formatting.GREEN))
@@ -86,8 +86,8 @@ public class VersionChecker
 
                 // Update link
                 lines.add(Text.literal(""));
-                lines.add(Text.literal("keystone.version_check.releasesLink").styled(style -> style.withColor(Formatting.GOLD)).append(Text.literal(" "))
-                        .append(Text.literal("keystone.version_check.releasesLink.hyperlink").setStyle
+                lines.add(Text.translatable("keystone.version_check.releasesLink").styled(style -> style.withColor(Formatting.GOLD)).append(Text.literal(" "))
+                        .append(Text.translatable("keystone.version_check.releasesLink.hyperlink").setStyle
                         (
                                 Style.EMPTY
                                         .withColor(Formatting.AQUA)

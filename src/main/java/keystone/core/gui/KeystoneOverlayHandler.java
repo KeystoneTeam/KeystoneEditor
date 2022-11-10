@@ -101,6 +101,7 @@ public class KeystoneOverlayHandler
     }
     public static void mouseClicked(int button, int action, int modifiers)
     {
+        if (MinecraftClient.getInstance().currentScreen != null) return;
         if (Keystone.isActive())
         {
             MinecraftClient mc = MinecraftClient.getInstance();
@@ -113,6 +114,7 @@ public class KeystoneOverlayHandler
     }
     public static void mouseScrolled(double offsetX, double offsetY)
     {
+        if (MinecraftClient.getInstance().currentScreen != null) return;
         if (Keystone.isActive())
         {
             MinecraftClient mc = MinecraftClient.getInstance();
@@ -123,6 +125,7 @@ public class KeystoneOverlayHandler
     }
     public static void mouseDragged(int button, double mouseX, double mouseY, double dragX, double dragY, boolean gui)
     {
+        if (MinecraftClient.getInstance().currentScreen != null) return;
         if (Keystone.isActive()) mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
     //endregion
@@ -163,32 +166,35 @@ public class KeystoneOverlayHandler
             rendering = true;
             overlays.addAll(addList);
             addList.clear();
-
-            // Render overlays
-            for (int i = 0; i < overlays.size(); i++)
+    
+            if (MinecraftClient.getInstance().currentScreen == null)
             {
-                if (MinecraftClient.getInstance().currentScreen != null && i > 0) continue;
-
+                // Render overlays
+                for (int i = 0; i < overlays.size(); i++)
+                {
+                    if (MinecraftClient.getInstance().currentScreen != null && i > 0) continue;
+        
+                    matrixStack.push();
+                    matrixStack.translate(0, 0, i * 55);
+        
+                    Screen screen = overlays.get(i);
+                    screen.render(matrixStack, mouseX, mouseY, partialTicks);
+                    if (!KeystoneGlobalState.MouseOverGUI && screen instanceof KeystoneOverlay) ((KeystoneOverlay) screen).checkMouseOverGui();
+        
+                    matrixStack.pop();
+                }
+    
+                // Render tooltips
                 matrixStack.push();
-                matrixStack.translate(0, 0, i * 10);
-
-                Screen screen = overlays.get(i);
-                screen.render(matrixStack, mouseX, mouseY, partialTicks);
-                if (!KeystoneGlobalState.MouseOverGUI && screen instanceof KeystoneOverlay) ((KeystoneOverlay) screen).checkMouseOverGui();
-
+                matrixStack.translate(0, 0, overlays.size() * 55);
+                IKeystoneTooltip tooltip = tooltips.poll();
+                while (tooltip != null)
+                {
+                    tooltip.render(matrixStack, mouseX, mouseY, partialTicks);
+                    tooltip = tooltips.poll();
+                }
                 matrixStack.pop();
             }
-
-            // Render tooltips
-            matrixStack.push();
-            matrixStack.translate(0, 0, overlays.size() * 10);
-            IKeystoneTooltip tooltip = tooltips.poll();
-            while (tooltip != null)
-            {
-                tooltip.render(matrixStack, mouseX, mouseY, partialTicks);
-                tooltip = tooltips.poll();
-            }
-            matrixStack.pop();
 
             removeList.forEach(remove -> overlays.remove(remove));
             removeList.clear();

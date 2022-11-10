@@ -6,6 +6,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -38,6 +39,7 @@ public class WidgetList extends ClickableWidget
     public void add(ClickableWidget widget, boolean queued)
     {
         widget.x += this.x + padding;
+        if (widget instanceof TextFieldWidget textField) textField.setWidth(textField.getWidth() - 2);
 
         if (queued) queuedWidgets.add(widget);
         else widgets.add(widget);
@@ -137,6 +139,7 @@ public class WidgetList extends ClickableWidget
         {
             widget.x = x;
             widget.y = y;
+            if (widget instanceof TextFieldWidget textField) textField.x++;
     
             y += widget.getHeight() + padding;
             height += widget.getHeight() + padding;
@@ -149,13 +152,7 @@ public class WidgetList extends ClickableWidget
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
     {
         if (!visible) return;
-
-        //if (maxScrollOffset > 0)
-        //{
-        //    int scrollbarY = y + (int)(height * (scrollIndex / (float)widgets.size()));
-        //    int scrollbarHeight = (int)(height * (currentWidgets.size() / (float)widgets.size()));
-        //    fill(stack, x + width - 1, scrollbarY, x + width + 1, scrollbarY + scrollbarHeight, 0xFF808080);
-        //}
+        
         if (maxScrollOffset > 0)
         {
             int scrollbarHeight = height - maxScrollOffset;

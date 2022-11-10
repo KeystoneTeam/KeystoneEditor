@@ -17,9 +17,7 @@ import net.minecraft.util.Identifier;
 public class KeystoneOverlay extends Screen
 {
     private static final Identifier ROUNDED_BOX = new Identifier("keystone:textures/gui/rounded_box.png");
-
-    private static int itemOffsetY = 0;
-
+    
     protected KeystoneOverlay(Text titleIn)
     {
         super(titleIn);
@@ -81,18 +79,8 @@ public class KeystoneOverlay extends Screen
     }
     public static void drawItem(ClickableWidget widget, MinecraftClient mc, ItemStack stack, int x, int y, String text)
     {
-        widget.setZOffset(200);
-        mc.getItemRenderer().zOffset = 200.0F;
-        
-        mc.getItemRenderer().renderInGuiWithOverrides(stack, x, y + itemOffsetY);
-        mc.getItemRenderer().renderGuiItemOverlay(mc.textRenderer, stack, x, y + itemOffsetY, text);
-
-        widget.setZOffset(0);
-        mc.getItemRenderer().zOffset = 0.0F;
-    }
-    public static void setItemOffsetY(int offset)
-    {
-        itemOffsetY = offset;
+        mc.getItemRenderer().renderInGuiWithOverrides(stack, x, y);
+        mc.getItemRenderer().renderGuiItemOverlay(mc.textRenderer, stack, x, y, text);
     }
     public static void drawTooltip(IKeystoneTooltip tooltip)
     {
