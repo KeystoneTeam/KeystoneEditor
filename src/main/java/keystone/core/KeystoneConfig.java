@@ -27,7 +27,7 @@ public class KeystoneConfig
     public static float viewportLeftBorder = 0.25f;
     public static float viewportRightBorder = 0.25f;
     @Header("GUI Settings")
-    @Variable public static int viewportPadding = 5;
+    @Variable public static int viewportPadding = 10;
     @Variable public static int minGuiScale = 2;
     @Variable public static int guiScrollSpeed = 10;
     @Variable public static float tooltipDelay = 20;

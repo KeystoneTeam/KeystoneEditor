@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
 import org.lwjgl.glfw.GLFW;
@@ -52,7 +53,7 @@ public class KeystoneKeyBindings
                 
                 while (FEATURE_TEST.wasPressed())
                 {
-                    MinecraftClient.getInstance().setScreenAndRender(new KeystoneOptionsScreen());
+                    MinecraftClient.getInstance().setScreenAndRender(new KeystoneOptionsScreen(null));
                 }
             }
         });

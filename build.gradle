@@ -16,6 +16,7 @@ repositories {
         name "tterrag maven"
         url "https://maven.tterrag.com/"
     }
+    maven { url 'https://maven.terraformersmc.com/releases/' }
 }
 
 configurations {
@@ -31,6 +32,9 @@ dependencies {
     // Mod Dependencies
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     shade "org.codehaus.janino:janino:${project.janino_version}"
+
+    // Optional Mod Dependencies
+    modCompileOnly "com.terraformersmc:modmenu:${project.mod_menu_version}"
 }
 
 // Autofill fabric.mod.json values

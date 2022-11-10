@@ -19,6 +19,9 @@
     ],
     "main": [
       "keystone.core.KeystoneMod"
+    ],
+    "modmenu": [
+      "keystone.compat.modmenu.KeystoneModMenu"
     ]
   },
   "mixins": [

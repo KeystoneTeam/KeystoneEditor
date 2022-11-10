@@ -12,12 +12,19 @@ public class KeystoneOptionsScreen extends Screen
 {
     private static final int PADDING = 5;
     
+    private final Screen parent;
     private Viewport optionsViewport;
-    private FieldWidgetList optionsWidgets;
     
-    public KeystoneOptionsScreen()
+    public KeystoneOptionsScreen(Screen parent)
     {
         super(Text.translatable("keystone.screen.options"));
+        this.parent = parent;
+    }
+    
+    @Override
+    public void close()
+    {
+        client.setScreenAndRender(parent);
     }
     
     @Override
@@ -26,10 +33,10 @@ public class KeystoneOptionsScreen extends Screen
         Viewport topViewport = ScreenViewports.getViewport(Viewport.TOP, Viewport.MIDDLE);
         optionsViewport = ScreenViewports.getViewport(Viewport.MIDDLE, Viewport.MIDDLE);
         Viewport bottomViewport = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.MIDDLE);
-        
-        this.optionsWidgets = new FieldWidgetList(this, getTitle(), () -> null, KeystoneConfig.class, optionsViewport.getMinX(), optionsViewport.getMinY() + PADDING, optionsViewport.getWidth(), optionsViewport.getHeight() - 2 * PADDING, PADDING);
-        this.optionsWidgets.bake();
-        addDrawableChild(this.optionsWidgets);
+    
+        FieldWidgetList optionsWidgets = new FieldWidgetList(this, getTitle(), () -> null, KeystoneConfig.class, optionsViewport.getMinX(), optionsViewport.getMinY() + PADDING, optionsViewport.getWidth(), optionsViewport.getHeight() - 2 * PADDING, PADDING);
+        optionsWidgets.bake();
+        addDrawableChild(optionsWidgets);
     }
     
     @Override
