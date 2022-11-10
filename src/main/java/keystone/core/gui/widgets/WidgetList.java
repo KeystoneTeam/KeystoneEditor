@@ -49,6 +49,7 @@ public class WidgetList extends ClickableWidget
         this.widgets.clear();
         this.queuedWidgets.clear();
     }
+    public int size() { return widgets.size(); }
 
     public void bake()
     {
