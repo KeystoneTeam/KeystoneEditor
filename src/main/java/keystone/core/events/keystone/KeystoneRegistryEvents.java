@@ -8,6 +8,8 @@ import keystone.core.schematic.SchematicLoader;
 import keystone.core.schematic.extensions.ISchematicExtension;
 import keystone.core.schematic.formats.ISchematicFormat;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
+import keystone.core.serialization.VariableSerializer;
+import keystone.core.serialization.VariablesSerializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.nbt.NbtCompound;
@@ -32,6 +34,10 @@ public final class KeystoneRegistryEvents
     public static final Event<RegisterHistoryEntriesListener> HISTORY_ENTRIES = EventFactory.createArrayBacked(RegisterHistoryEntriesListener.class, listeners -> () ->
     {
         for (final RegisterHistoryEntriesListener listener : listeners) listener.onRegister();
+    });
+    public static final Event<RegisterVariableSerializersListener> VARIABLE_SERIALIZERS = EventFactory.createArrayBacked(RegisterVariableSerializersListener.class, listeners -> () ->
+    {
+        for (final RegisterVariableSerializersListener listener : listeners) listener.onRegister();
     });
     //endregion
     //region Event Interfaces
@@ -62,6 +68,15 @@ public final class KeystoneRegistryEvents
             historyModule.registerDeserializer(id, deserializer);
         }
     }
+    public interface RegisterVariableSerializersListener
+    {
+        void onRegister();
+
+        default <T> void register(Class<T> clazz, VariableSerializer<T> serializer)
+        {
+            VariablesSerializer.registerSerializer(clazz, serializer);
+        }
+    }
     //endregion
     //region Static Helpers
     public static void registerModules()
@@ -79,6 +94,11 @@ public final class KeystoneRegistryEvents
     public static void registerHistoryEntries()
     {
         HISTORY_ENTRIES.invoker().onRegister();
+    }
+    public static void registerVariableSerializers()
+    {
+        VariablesSerializer.registerDefaultSerializers();
+        VARIABLE_SERIALIZERS.invoker().onRegister();
     }
     //endregion
 }

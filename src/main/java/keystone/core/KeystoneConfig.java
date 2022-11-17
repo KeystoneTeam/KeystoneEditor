@@ -1,7 +1,14 @@
 package keystone.core;
 
+import keystone.api.KeystoneDirectories;
 import keystone.api.variables.Header;
 import keystone.api.variables.Variable;
+import keystone.core.serialization.VariablesSerializer;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtIo;
+
+import java.io.File;
+import java.io.IOException;
 
 public class KeystoneConfig
 {
@@ -42,4 +49,34 @@ public class KeystoneConfig
     public static float viewportBottomBorder = 0.075f;
     public static float viewportLeftBorder = 0.25f;
     public static float viewportRightBorder = 0.25f;
+
+    public static void save()
+    {
+        try
+        {
+            NbtCompound nbt = VariablesSerializer.write(KeystoneConfig.class, null);
+            NbtIo.write(nbt, KeystoneDirectories.getKeystoneDirectory().toPath().resolve("config.nbt").toFile());
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    public static void load()
+    {
+        try
+        {
+            File configFile = KeystoneDirectories.getKeystoneDirectory().toPath().resolve("config.nbt").toFile();
+            if (configFile.exists() && configFile.isFile())
+            {
+                NbtCompound nbt = NbtIo.read(configFile);
+                if (nbt != null) VariablesSerializer.read(KeystoneConfig.class, nbt, () -> null);
+            }
+            else save();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
 }

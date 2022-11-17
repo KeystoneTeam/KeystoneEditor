@@ -146,7 +146,14 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         Keystone.LOGGER.info("Triggering Keystone initialization events");
         Keystone.init();
 
+        // Register Modules
         KeystoneRegistryEvents.registerModules();
+
+        // Register Serializers and Load Config
+        KeystoneRegistryEvents.registerVariableSerializers();
+        KeystoneConfig.load();
+
+        // Register Rest of Content
         KeystoneRegistryEvents.registerHistoryEntries();
         KeystoneRegistryEvents.registerSchematicFormats();
         KeystoneRegistryEvents.registerSchematicExtensions();

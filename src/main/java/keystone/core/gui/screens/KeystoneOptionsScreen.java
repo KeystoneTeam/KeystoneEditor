@@ -64,6 +64,7 @@ public class KeystoneOptionsScreen extends Screen
     private void doneButton(ButtonWidget buttonWidget)
     {
         close();
+        KeystoneConfig.save();
     }
     private void resetButton(ButtonWidget buttonWidget)
     {
