@@ -50,7 +50,7 @@ public class Viewport
         this.scale = scale;
         return this;
     }
-    public Viewport createLeftCenteredViewport(int height)
+    public Viewport setHeight(int height)
     {
         float halfNormalizedHeight = height / (float)window.getScaledHeight() / 2.0f;
         float center = (normalizedMinY + normalizedMaxY) / 2.0f;

@@ -92,7 +92,7 @@ public class ImportScreen extends KeystonePanel
         int widgetsHeight = (3 * (BUTTON_HEIGHT + PADDING)) + OPTIONS_PADDING + IntegerWidget.getFinalHeight() + OPTIONS_PADDING;
         widgetsHeight += (extensionsToPlace.size() + 1) * (20 + PADDING);
 
-        return dock.createLeftCenteredViewport(widgetsHeight + 2 * MARGINS);
+        return dock.setHeight(widgetsHeight + 2 * MARGINS);
     }
     @Override
     protected void setupPanel()

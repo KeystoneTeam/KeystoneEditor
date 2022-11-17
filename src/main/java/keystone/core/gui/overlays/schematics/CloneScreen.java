@@ -156,7 +156,7 @@ public class CloneScreen extends KeystonePanel
         widgetsHeight += 2 * (IntegerWidget.getFinalHeight() + PADDING);
         widgetsHeight += (extensionsToPlace.size() + 1) * (20 + PADDING);
 
-        return dock.createLeftCenteredViewport(widgetsHeight + 2 * MARGINS);
+        return dock.setHeight(widgetsHeight + 2 * MARGINS);
     }
     @Override
     protected void setupPanel()

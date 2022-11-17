@@ -96,7 +96,7 @@ public class FillAndReplaceScreen extends KeystonePanel
     {
         Viewport dock = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT, Viewport.MIDDLE, Viewport.LEFT);
         int widgetSize = BlockMaskWidget.getFinalHeight() + BlockPaletteWidget.getFinalHeight() + 20 + 2 * PADDING;
-        return dock.createLeftCenteredViewport(widgetSize + 2 * PADDING);
+        return dock.setHeight(widgetSize + 2 * PADDING);
     }
     @Override
     protected void setupPanel()

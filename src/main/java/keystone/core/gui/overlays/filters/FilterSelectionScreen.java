@@ -89,7 +89,7 @@ public class FilterSelectionScreen extends KeystonePanel
     protected Viewport createViewport()
     {
         Viewport dock = ScreenViewports.getViewport(Viewport.MIDDLE, Viewport.LEFT);
-        return dock.createLeftCenteredViewport(40 + 4 * PADDING + filterVariablesList.getHeight());
+        return dock.setHeight(40 + 4 * PADDING + filterVariablesList.getHeight());
     }
     @Override
     protected void init()

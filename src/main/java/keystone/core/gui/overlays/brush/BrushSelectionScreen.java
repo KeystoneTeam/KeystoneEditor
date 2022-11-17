@@ -72,7 +72,7 @@ public class BrushSelectionScreen extends KeystonePanel
         brushVariablesList.bake();
         int panelHeight = PADDING + 2 * (20 + PADDING) + 2 * (IntegerWidget.getFinalHeight() + PADDING) + PADDING + brushVariablesList.getHeight();
 
-        return dock.createLeftCenteredViewport(panelHeight);
+        return dock.setHeight(panelHeight);
     }
 
     @Override

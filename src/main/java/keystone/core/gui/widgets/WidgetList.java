@@ -115,7 +115,10 @@ public class WidgetList extends ClickableWidget
         // Update Child Lists
         for (ClickableWidget widget : queuedWidgets) if (widget instanceof WidgetList list) list.updateCurrentWidgets();
         for (ClickableWidget widget : widgets) if (widget instanceof WidgetList list) list.updateCurrentWidgets();
-
+    
+        // Update Widget Locations
+        updateWidgetLocations();
+        
         // Update Max Scroll Index
         boolean hadScrollbar = maxScrollOffset > 0;
         maxScrollOffset = 0;
@@ -125,9 +128,6 @@ public class WidgetList extends ClickableWidget
         
         if (maxScrollOffset > 0 && !hadScrollbar) width += 2;
         else if (maxScrollOffset == 0 && hadScrollbar) width -= 2;
-
-        // Update Widget Locations
-        updateWidgetLocations();
     }
     private void updateWidgetLocations()
     {
@@ -156,8 +156,9 @@ public class WidgetList extends ClickableWidget
         
         if (maxScrollOffset > 0)
         {
-            int scrollbarHeight = height - maxScrollOffset;
-            int scrollbarY = y + scrollOffset;
+            float heightProportion = height / (float)(height + maxScrollOffset);
+            int scrollbarHeight = (int)(heightProportion * height);
+            int scrollbarY = y + (int)(heightProportion * scrollOffset);
             fill(stack, x + width - 2, scrollbarY, x + width, scrollbarY + scrollbarHeight, 0xFF808080);
         }
 

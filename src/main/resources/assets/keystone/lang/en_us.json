@@ -133,6 +133,8 @@
   "keystone.file_browser.saveFile": "Save File",
   "keystone.file_browser.open": "Open",
   "keystone.file_browser.save": "Save",
+
+  "keystone.options.reset": "Reset to Defaults",
   
   "keystone.hud.block_updates.label": "Block Updates: ",
   "keystone.hud.block_updates.on": "ON",
