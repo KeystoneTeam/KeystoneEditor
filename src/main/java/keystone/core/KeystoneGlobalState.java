@@ -34,13 +34,11 @@ public class KeystoneGlobalState
      * world changes. While true, all keybinds are disabled and no tick handlers will be run
      */
     public static boolean WaitingForChangeQueue = false;
-
     /**
      * If true, all block ticks will be ignored. This is manually changed by the player for
      * things like ignoring block gravity
      */
     public static boolean SuppressingBlockTicks = false;
-    
     /**
      * If true, block states will not check if they can be placed at a location before being
      * placed in the world
@@ -55,4 +53,9 @@ public class KeystoneGlobalState
      * If true, tile entities will be highlighted with a yellow box
      */
     public static boolean HighlightTileEntities = false;
+    /**
+     * If true, the Minecraft world renderer will be reloaded. This is used to
+     * redraw biomes
+     */
+    public static boolean ReloadWorldRenderer = false;
 }

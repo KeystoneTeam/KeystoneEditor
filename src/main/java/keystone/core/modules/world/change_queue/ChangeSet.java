@@ -41,6 +41,7 @@ public class ChangeSet
     }
     
     private final List<WorldChange> changeQueue;
+    private boolean redrawBiomes;
     private int queueIndex;
     private FlushMode flushMode;
     private QueueState state;
@@ -60,6 +61,7 @@ public class ChangeSet
     {
         if (state != QueueState.IDLE) throw new IllegalStateException("Trying to call ChangeSet.enqueue while queue is not idle! This is not supported and will cause issues!");
         this.changeQueue.add(new WorldChange(session, chunk, undoing));
+        if (chunk.isBiomesChanged()) this.redrawBiomes = true;
     }
     
     public void beginFlush(FlushMode flushMode, Runnable callback, String progressBarTitle)
@@ -96,13 +98,6 @@ public class ChangeSet
             {
                 if (flushMode == FlushMode.BLOCKING) tickImmediate();
                 else tickAsync();
-                
-                if (state == QueueState.IDLE)
-                {
-                    this.flushMode = null;
-                    this.changeQueue.clear();
-                    if (callback != null) callback.run();
-                }
             }
         }
     }
@@ -162,9 +157,14 @@ public class ChangeSet
     }
     private void transitionToIdle()
     {
+        flushMode = null;
         state = QueueState.IDLE;
         changeQueue.clear();
+        if (callback != null) callback.run();
+    
         KeystoneGlobalState.WaitingForChangeQueue = false;
+        // TODO: Find a way to only reload chunks with biome changes
+        if (redrawBiomes) KeystoneGlobalState.ReloadWorldRenderer = true;
         if (hasProgressBar) ProgressBar.finish();
     }
     //endregion

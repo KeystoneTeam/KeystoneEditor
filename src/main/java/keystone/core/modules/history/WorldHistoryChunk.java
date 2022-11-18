@@ -49,6 +49,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class WorldHistoryChunk
 {
+    private static final int BLOCK_FLAGS = net.minecraft.block.Block.NOTIFY_LISTENERS | net.minecraft.block.Block.SKIP_DROPS;
+    
     public final int chunkX;
     public final int chunkY;
     public final int chunkZ;
@@ -69,6 +71,7 @@ public class WorldHistoryChunk
     private final PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> oldBiomes;
     private PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> biomeBuffer1;
     private PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> biomeBuffer2;
+    private boolean biomesChanged;
 
     private final ConcurrentHashMap<UUID, Entity> oldEntities;
     private final ConcurrentHashMap<UUID, Entity> entityBuffer1;
@@ -223,15 +226,16 @@ public class WorldHistoryChunk
                 return biomeRegistry.getEntry(RegistryKey.of(Registry.BIOME_KEY, identifier)).get();
             });
 
-            this.swappedBiomes = nbt.getBoolean("Swapped");
+            this.swappedBiomes = biomesNBT.getBoolean("Swapped");
+            this.biomesChanged = biomesNBT.getBoolean("BiomesChanged");
         }
         else
         {
             this.oldBiomes = new PalettedArray<>(64, 1, BuiltinRegistries.BIOME.entryOf(BiomeKeys.THE_VOID));
             this.biomeBuffer1 = new PalettedArray<>(64, 1, BuiltinRegistries.BIOME.entryOf(BiomeKeys.THE_VOID));
             this.biomeBuffer2 = new PalettedArray<>(64, 1, BuiltinRegistries.BIOME.entryOf(BiomeKeys.THE_VOID));
-
             this.swappedBiomes = false;
+            this.biomesChanged = false;
         }
 
         if (nbt.contains("Entities", NbtElement.COMPOUND_TYPE))
@@ -243,7 +247,7 @@ public class WorldHistoryChunk
             this.entityBuffer2 = new ConcurrentHashMap<>(NBTSerializer.deserializeEntities(entitiesNBT.getCompound("Buffer2")));
             this.allEntities = new ConcurrentHashMap<>(NBTSerializer.deserializeEntities(entitiesNBT.getCompound("All")));
 
-            this.swappedEntities = nbt.getBoolean("Swapped");
+            this.swappedEntities = entitiesNBT.getBoolean("Swapped");
         }
         else
         {
@@ -279,7 +283,8 @@ public class WorldHistoryChunk
         biomesNBT.put("Old", this.oldBiomes.serialize(biome -> NbtString.of(biome.getKey().get().getValue().toString())));
         biomesNBT.put("Buffer1", this.biomeBuffer1.serialize(biome -> NbtString.of(biome.getKey().get().getValue().toString())));
         biomesNBT.put("Buffer2", this.biomeBuffer2.serialize(biome -> NbtString.of(biome.getKey().get().getValue().toString())));
-        blocksNBT.putBoolean("Swapped", this.swappedBiomes);
+        biomesNBT.putBoolean("Swapped", this.swappedBiomes);
+        biomesNBT.putBoolean("BiomesChanged", this.biomesChanged);
         nbt.put("Biomes", biomesNBT);
         
         NbtCompound entitiesNBT = new NbtCompound();
@@ -294,10 +299,8 @@ public class WorldHistoryChunk
     }
     //endregion
 
-    public RegistryKey<World> getRegistryKey()
-    {
-        return world.toServerWorld().getRegistryKey();
-    }
+    public RegistryKey<World> getRegistryKey() { return world.toServerWorld().getRegistryKey(); }
+    public boolean isBiomesChanged() { return biomesChanged; }
 
     //region Content Getters
     public BlockType getBlockType(int x, int y, int z, RetrievalMode retrievalMode)
@@ -503,6 +506,7 @@ public class WorldHistoryChunk
 
         if (swappedBiomes) biomeBuffer2.set(index, biome.getMinecraftBiome());
         else biomeBuffer1.set(index, biome.getMinecraftBiome());
+        biomesChanged = true;
     }
     public void commitEntityChanges(Entity entity)
     {
@@ -613,7 +617,7 @@ public class WorldHistoryChunk
                     BlockPos pos = start.add(x, y, z);
                     BlockState state = blockStates.get(z + y * 16 + x * 256);
                 
-                    world.toServerWorld().setBlockState(pos, state, net.minecraft.block.Block.NOTIFY_LISTENERS);
+                    world.toServerWorld().setBlockState(pos, state, BLOCK_FLAGS);
                     NBTCompound blockData = tileEntities.getOrDefault(pos, null);
                     if (blockData != null)
                     {
@@ -643,8 +647,6 @@ public class WorldHistoryChunk
             }
             else entities.get(entityID).updateMinecraftEntity(world);
         }
-    
-        // TODO: Re-Render Biomes
     }
     private <T> PalettedArray<T> copyContainer(PalettedContainer<T> container, int sizeX, int sizeY, int sizeZ)
     {

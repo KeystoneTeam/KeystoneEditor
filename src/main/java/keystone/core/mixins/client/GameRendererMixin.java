@@ -1,5 +1,6 @@
 package keystone.core.mixins.client;
 
+import keystone.core.KeystoneGlobalState;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.GameRenderer;
@@ -19,7 +20,15 @@ public class GameRendererMixin
     @Inject(method = "render", at = @At("TAIL"))
     public void render(float partialTicks, long nanoTime, boolean renderWorld, CallbackInfo callback)
     {
-        if (!client.skipGameRender) KeystoneOverlayHandler.render(new MatrixStack(), partialTicks);
+        if (!client.skipGameRender)
+        {
+            KeystoneOverlayHandler.render(new MatrixStack(), partialTicks);
+            if (KeystoneGlobalState.ReloadWorldRenderer)
+            {
+                client.worldRenderer.reload();
+                KeystoneGlobalState.ReloadWorldRenderer = false;
+            }
+        }
     }
 }
 

@@ -1,7 +1,6 @@
 package keystone.core.serialization;
 
 import keystone.api.variables.Variable;
-import keystone.core.events.keystone.KeystoneRegistryEvents;
 import net.minecraft.nbt.NbtCompound;
 
 import java.lang.reflect.Field;
