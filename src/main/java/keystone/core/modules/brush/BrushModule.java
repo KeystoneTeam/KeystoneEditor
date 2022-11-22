@@ -28,6 +28,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BrushModule implements IKeystoneModule
 {
@@ -44,7 +45,7 @@ public class BrushModule implements IKeystoneModule
     private int minSpacing;
     private float minSpacingSqr;
     private int noise;
-    private final List<Vec3i> brushPositions = Collections.synchronizedList(new ArrayList<>());
+    private final List<Vec3i> brushPositions = Collections.synchronizedList(new CopyOnWriteArrayList<>());
 
     private boolean immediateMode;
     private Vec3i lastImmediateModePosition;
@@ -318,9 +319,7 @@ public class BrushModule implements IKeystoneModule
         List<BlockPos> processedBlocks = new ArrayList<>();
 
         int iterations = brushOperation.iterations();
-        Vec3i[] positions = brushPositions.toArray(Vec3i[]::new);
-    
-        for (Vec3i position : positions)
+        for (Vec3i position : brushPositions)
         {
             for (int iteration = 0; iteration < iterations; iteration++)
             {
@@ -349,9 +348,7 @@ public class BrushModule implements IKeystoneModule
         mainLoop:
         for (int iteration = 0; iteration < iterations; iteration++)
         {
-            Vec3i[] positions = new Vec3i[brushPositions.size()];
-            brushPositions.toArray(positions);
-            for (Vec3i position : positions)
+            for (Vec3i position : brushPositions)
             {
                 if (executionCancelled) break mainLoop;
                 Vec3i min = position.subtract(new Vec3i(brushSize[0] >> 1, brushSize[1] >> 1, brushSize[2] >> 1));

@@ -4,6 +4,7 @@ import keystone.core.gui.widgets.inputs.fields.EditableObject;
 import keystone.core.modules.brush.operations.ErodeBrushOperation;
 import keystone.core.modules.brush.operations.FillBrushOperation;
 import keystone.core.modules.brush.operations.GravityBrushOperation;
+import keystone.core.modules.brush.operations.SetBiomeBrushOperation;
 import keystone.core.modules.brush.operations.StackFillBrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
 import net.minecraft.text.Text;
@@ -22,6 +23,7 @@ public abstract class BrushOperation extends EditableObject
     public static final BrushOperation ERODE = new ErodeBrushOperation();
     public static final BrushOperation GRAVITY = new GravityBrushOperation();
     public static final BrushOperation STACK_FILL = new StackFillBrushOperation();
+    public static final BrushOperation SET_BIOME = new SetBiomeBrushOperation();
 
     protected BrushOperation()
     {

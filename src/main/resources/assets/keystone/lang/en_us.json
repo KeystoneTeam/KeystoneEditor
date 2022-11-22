@@ -87,6 +87,7 @@
   "keystone.brush.erode": "Erode",
   "keystone.brush.gravity": "Gravity",
   "keystone.brush.stackFill": "Stack Fill",
+  "keystone.brush.setBiome": "Set Biome",
   "keystone.brush.minimumSpacing.tooltip": "The minimum distance between the brush positions.",
   "keystone.brush.noise.tooltip": "The percent chance that a block on the edge of the brush will be placed. Lower values make rougher shapes.",
   "keystone.brush.immediateMode.tooltip": "Immediate Mode: The brush is performed as you click and drag.",
