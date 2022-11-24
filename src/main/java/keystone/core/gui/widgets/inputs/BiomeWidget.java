@@ -19,6 +19,12 @@ public class BiomeWidget extends LabeledDropdownWidget<Biome>
     }
 
     @Override
+    protected boolean autoBuild()
+    {
+        return false;
+    }
+
+    @Override
     public void buildOptionsList(List<Dropdown.Option<Biome>> options)
     {
         Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.getBiomeRegistry();

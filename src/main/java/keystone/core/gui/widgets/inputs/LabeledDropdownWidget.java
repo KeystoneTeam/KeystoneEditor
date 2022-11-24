@@ -1,5 +1,6 @@
 package keystone.core.gui.widgets.inputs;
 
+import keystone.api.Keystone;
 import keystone.core.gui.WidgetDisabler;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.client.MinecraftClient;
@@ -10,12 +11,49 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
 {
+    private class LabeledDropdown extends Dropdown<T>
+    {
+        public LabeledDropdown(int x, int y, int width, Text title, Collection<Option<T>> options)
+        {
+            super(x, y, width, title, option ->
+            {
+                LabeledDropdownWidget.this.setMessage(option.label());
+                LabeledDropdownWidget.this.onSetValue(option.value());
+                LabeledDropdownWidget.this.value = option.value();
+                LabeledDropdownWidget.this.widgetDisabler.restoreAll();
+                LabeledDropdownWidget.this.dropdown.hide();
+            }, options);
+        }
+
+        @Override
+        public void show()
+        {
+            super.show();
+            if (searchable)
+            {
+                searchBar.visible = true;
+                searchBar.active = true;
+                searchBar.setTextFieldFocused(true);
+            }
+        }
+
+        @Override
+        public void hide()
+        {
+            super.hide();
+            searchBar.visible = false;
+            searchBar.active = false;
+        }
+    }
+
     private final MinecraftClient mc;
     private final TextRenderer font;
     private final BiConsumer<ClickableWidget, Boolean> addDropdown;
@@ -51,6 +89,7 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
     }
     public LabeledDropdownWidget<T> setSearchable(boolean searchable)
     {
+        if (built) Keystone.LOGGER.warn("Trying to call LabeledDropdownWidget.setSearchable after building! This will lead to unused widgets in the queuedWidgets list and should be avoided!");
         this.searchable = searchable;
         built = false;
         build();
@@ -86,36 +125,7 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
             searchBar.setText("");
             searchBar.setChangedListener(str -> dropdown.search(option -> option.label().getString().toLowerCase().contains(str.toLowerCase())));
 
-            this.dropdown = new Dropdown<>(x, y + getDropdownOffset() + (searchable ? 12 : 20), width, getMessage(), option ->
-            {
-                setMessage(option.label());
-                onSetValue(option.value());
-                this.value = option.value();
-
-                widgetDisabler.restoreAll();
-                dropdown.hide();
-            }, optionsList)
-            {
-                @Override
-                public void show()
-                {
-                    super.show();
-                    if (searchable)
-                    {
-                        searchBar.visible = true;
-                        searchBar.active = true;
-                        searchBar.setTextFieldFocused(true);
-                    }
-                }
-
-                @Override
-                public void hide()
-                {
-                    super.hide();
-                    searchBar.visible = false;
-                    searchBar.active = false;
-                }
-            };
+            this.dropdown = new LabeledDropdown(x, y + getDropdownOffset() + (searchable ? 12 : 20), width, getMessage(), optionsList);
             this.dropdown.setSelectedOption(this.value, false);
             configureDropdown(dropdown);
 

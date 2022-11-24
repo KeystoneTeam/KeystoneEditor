@@ -1,5 +1,8 @@
 package keystone.core.gui.widgets.inputs;
 
+import keystone.core.gui.viewports.ScreenViewports;
+import keystone.core.gui.viewports.Viewport;
+import keystone.core.gui.widgets.ILocationObservable;
 import keystone.core.gui.widgets.WidgetList;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.client.MinecraftClient;
@@ -14,7 +17,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class Dropdown<T> extends WidgetList
+public class Dropdown<T> extends WidgetList implements ILocationObservable
 {
     private static final int PADDING = 0;
 
@@ -88,10 +91,11 @@ public class Dropdown<T> extends WidgetList
         }
     }
     @Override
-    protected void updateCurrentWidgets()
+    public void onLocationChanged(int x, int y, int width, int height)
     {
-        this.maxHeight = MinecraftClient.getInstance().getWindow().getScaledHeight() - y;
-        super.updateCurrentWidgets();
+        Viewport bottomViewport = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT);
+        this.maxHeight = MinecraftClient.getInstance().getWindow().getScaledHeight() - y - bottomViewport.getHeight();
+        ILocationObservable.super.onLocationChanged(x, y, width, height);
     }
 
     @Override

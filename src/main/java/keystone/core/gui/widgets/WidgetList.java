@@ -63,9 +63,9 @@ public class WidgetList extends ClickableWidget
         // Add listeners to all changing height widgets
         for (ClickableWidget widget : widgets)
         {
-            if (widget instanceof IChangingHeightWidget changingHeightWidget)
+            if (widget instanceof ILocationObservable locationObservable)
             {
-                changingHeightWidget.addListener((w, height) -> updateCurrentWidgets());
+                locationObservable.addListener((x, y, width, height) -> updateCurrentWidgets());
             }
         }
 
@@ -141,11 +141,14 @@ public class WidgetList extends ClickableWidget
             widget.x = x;
             widget.y = y;
             if (widget instanceof TextFieldWidget textField) textField.x++;
-    
+            if (widget instanceof ILocationObservable locationObservable) locationObservable.trigger(widget);
+
             y += widget.getHeight() + padding;
             height += widget.getHeight() + padding;
         }
         height = Math.min(height, maxHeight);
+
+        if (this instanceof ILocationObservable locationObservable) locationObservable.trigger(this);
     }
     
     //region Widget Overrides
@@ -173,7 +176,7 @@ public class WidgetList extends ClickableWidget
     @Override
     public void onClick(double mouseX, double mouseY)
     {
-        if (!clicked(mouseX, mouseY)) return;
+        if (!active || !visible) return;
         widgets.forEach(widget -> { if (widget.active) widget.onClick(mouseX, mouseY); });
         queuedWidgets.forEach(widget -> { if (widget.active) widget.onClick(mouseX, mouseY); });
     }
@@ -181,7 +184,7 @@ public class WidgetList extends ClickableWidget
     @Override
     public void onRelease(double mouseX, double mouseY)
     {
-        if (!clicked(mouseX, mouseY)) return;
+        if (!active || !visible) return;
         widgets.forEach(widget -> { if (widget.active) widget.onRelease(mouseX, mouseY); });
         queuedWidgets.forEach(widget -> { if (widget.active) widget.onRelease(mouseX, mouseY); });
     }
@@ -189,7 +192,7 @@ public class WidgetList extends ClickableWidget
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button)
     {
-        if (!clicked(mouseX, mouseY)) return false;
+        if (!active || !visible) return false;
         for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.mouseClicked(mouseX, mouseY, button)) return true;
         for (ClickableWidget widget : widgets) if (widget.active && widget.mouseClicked(mouseX, mouseY, button)) return true;
         return false;
@@ -198,7 +201,7 @@ public class WidgetList extends ClickableWidget
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button)
     {
-        if (!clicked(mouseX, mouseY)) return false;
+        if (!active || !visible) return false;
         for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.mouseReleased(mouseX, mouseY, button)) return true;
         for (ClickableWidget widget : widgets) if (widget.active && widget.mouseReleased(mouseX, mouseY, button)) return true;
         return false;
@@ -207,7 +210,7 @@ public class WidgetList extends ClickableWidget
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY)
     {
-        if (!clicked(mouseX, mouseY)) return false;
+        if (!active || !visible) return false;
         for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
         for (ClickableWidget widget : widgets) if (widget.active && widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
         return false;
@@ -216,10 +219,7 @@ public class WidgetList extends ClickableWidget
     @Override
     public boolean isHovered()
     {
-        Mouse mouse = MinecraftClient.getInstance().mouse;
-        Window window = MinecraftClient.getInstance().getWindow();
-        if (!clicked(mouse.getX() * window.getScaledWidth() / window.getWidth(), mouse.getY() * window.getScaledHeight() / window.getHeight())) return false;
-        
+        if (!active || !visible) return false;
         for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.isHovered()) return true;
         for (ClickableWidget widget : widgets) if (widget.active && widget.isHovered()) return true;
         return false;
@@ -228,7 +228,7 @@ public class WidgetList extends ClickableWidget
     @Override
     public boolean isMouseOver(double mouseX, double mouseY)
     {
-        if (!clicked(mouseX, mouseY)) return false;
+        if (!active || !visible) return false;
         for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.isMouseOver(mouseX, mouseY)) return true;
         for (ClickableWidget widget : widgets) if (widget.active && widget.isMouseOver(mouseX, mouseY)) return true;
         return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
@@ -237,7 +237,7 @@ public class WidgetList extends ClickableWidget
     @Override
     public void mouseMoved(double mouseX, double mouseY)
     {
-        if (!clicked(mouseX, mouseY)) return;
+        if (!active || !visible) return;
         widgets.forEach(widget -> { if (widget.active) widget.mouseMoved(mouseX, mouseY); });
         queuedWidgets.forEach(widget -> { if (widget.active) widget.mouseMoved(mouseX, mouseY); });
     }
@@ -245,7 +245,7 @@ public class WidgetList extends ClickableWidget
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollDelta)
     {
-        if (!clicked(mouseX, mouseY)) return false;
+        if (!active || !visible) return false;
         for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
         for (ClickableWidget widget : widgets) if (widget.active && widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
         return scrollPanel(mouseX, mouseY, scrollDelta);
@@ -254,7 +254,7 @@ public class WidgetList extends ClickableWidget
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {
-        if (!active) return false;
+        if (!active || !visible) return false;
         for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.keyPressed(keyCode, scanCode, modifiers)) return true;
         for (ClickableWidget widget : widgets) if (widget.active && widget.keyPressed(keyCode, scanCode, modifiers)) return true;
         return false;
@@ -263,7 +263,7 @@ public class WidgetList extends ClickableWidget
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers)
     {
-        if (!active) return false;
+        if (!active || !visible) return false;
         for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.keyReleased(keyCode, scanCode, modifiers)) return true;
         for (ClickableWidget widget : widgets) if (widget.active && widget.keyReleased(keyCode, scanCode, modifiers)) return true;
         return false;
@@ -272,7 +272,7 @@ public class WidgetList extends ClickableWidget
     @Override
     public boolean charTyped(char codePoint, int modifiers)
     {
-        if (!active) return false;
+        if (!active || !visible) return false;
         for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.charTyped(codePoint, modifiers)) return true;
         for (ClickableWidget widget : widgets) if (widget.active && widget.charTyped(codePoint, modifiers)) return true;
         return false;
