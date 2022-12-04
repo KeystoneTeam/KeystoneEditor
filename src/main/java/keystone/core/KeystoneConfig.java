@@ -1,8 +1,7 @@
 package keystone.core;
 
 import keystone.api.KeystoneDirectories;
-import keystone.api.variables.Header;
-import keystone.api.variables.Variable;
+import keystone.api.variables.*;
 import keystone.core.serialization.VariablesSerializer;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
@@ -13,21 +12,21 @@ import java.io.IOException;
 public class KeystoneConfig
 {
     @Header("Performance")
-    @Variable public static int maxBrushSize = 512;
-    @Variable public static int maxChunkUpdatesPerTick = 64;
-    @Variable public static int chunkUpdateCooldownTicks = 0;
+    @Variable @IntRange(min = 1, scrollStep = 16) public static int maxBrushSize = 512;
+    @Variable @IntRange(min = 1) public static int maxChunkUpdatesPerTick = 64;
+    @Variable @IntRange(min = 0) public static int chunkUpdateCooldownTicks = 0;
 
     @Header("Controls")
     @Variable public static boolean startActive = false;
-    @Variable public static float flySpeed = 0.1f;
-    @Variable public static float flySmoothing = 0.0f;
-    @Variable public static float flySpeedChangeAmount = 0.05f;
+    @Variable @FloatRange(min = 0.05f) @DisplayScale(20) public static float flySpeed = 0.1f;
+    @Variable @FloatRange(min = 0.0f, max = 1.0f, scrollStep = 0.1f) public static float flySmoothing = 0.0f;
+    @Variable @FloatRange(min = 0.05f) @DisplayScale(20) public static float flySpeedChangeAmount = 0.05f;
     
     @Header("GUI Settings")
-    @Variable public static int viewportPadding = 10;
-    @Variable public static int minGuiScale = 2;
-    @Variable public static int guiScrollSpeed = 10;
-    @Variable public static float tooltipDelay = 20;
+    @Variable @IntRange(min = 0) public static int viewportPadding = 10;
+    @Variable @IntRange(min = 1) public static int minGuiScale = 2;
+    @Variable @IntRange(min = 1) public static int guiScrollSpeed = 10;
+    @Variable @FloatRange(min = 0, scrollStep = 0.25f) @DisplayScale(0.05f) public static float tooltipDelay = 20;
 
     @Header("Directories")
     @Variable public static String keystoneDirectory = "keystone";
