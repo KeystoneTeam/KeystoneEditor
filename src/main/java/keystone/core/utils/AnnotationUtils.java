@@ -1,13 +1,16 @@
 package keystone.core.utils;
 
+import keystone.api.Keystone;
 import keystone.api.utils.StringUtils;
 import keystone.api.variables.Hook;
 import keystone.api.variables.Name;
 import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
 import keystone.core.gui.IKeystoneTooltip;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -54,20 +57,53 @@ public final class AnnotationUtils
         }
         return null;
     }
-    public static void runHook(Object instance, Hook hook)
+    public static void runHook(Object instance, Field field, Hook hook)
     {
-        if (instance != null && hook != null)
+        if (hook != null)
         {
             try
             {
-                Method method = instance.getClass().getDeclaredMethod(hook.value());
+                // Find and prepare hook method
+                Method[] methods = field.getDeclaringClass().getDeclaredMethods();
+                Method method = null;
+                for (Method test : methods)
+                {
+                    if (validateHook(test, field, hook))
+                    {
+                        if (method == null) method = test;
+                        else
+                        {
+                            hookError("Failed to run hook '" + hook.value() + "'! Multiple valid hooks found.");
+                            return;
+                        }
+                    }
+                }
+                if (method == null)
+                {
+                    hookError("Failed to run hook '" + hook.value() + "'! Could not find valid hook.");
+                    return;
+                }
                 method.setAccessible(true);
-                method.invoke(instance);
+                
+                // Invoke hook method
+                if (method.getParameterCount() == 0) method.invoke(instance);
+                else method.invoke(instance, field.get(instance));
             }
             catch (Exception e)
             {
                 e.printStackTrace();
             }
         }
+    }
+    private static boolean validateHook(Method method, Field field, Hook hook)
+    {
+        if (!method.getName().equals(hook.value())) return false;
+        if (method.getParameterCount() == 0) return true;
+        else return method.getParameterCount() == 1 && method.getParameterTypes()[0].isAssignableFrom(field.getType());
+    }
+    private static void hookError(String error)
+    {
+        Keystone.LOGGER.error(error);
+        MinecraftClient.getInstance().player.sendMessage(Text.literal(error).styled(style -> style.withColor(Formatting.RED)));
     }
 }

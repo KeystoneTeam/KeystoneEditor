@@ -48,4 +48,11 @@ public class BooleanWidget extends CheckboxWidget
             else tooltipTimer = 0;
         }
     }
+    
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
+    {
+        if (!isFocused()) return false;
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
 }

@@ -27,7 +27,7 @@ public class EnumFieldWidget<T extends Enum<T>> extends EnumWidget<T>
         this.instance = instance;
         this.field = field;
         this.hook = field.getAnnotation(Hook.class);
-        AnnotationUtils.runHook(instance.get(), hook);
+        AnnotationUtils.runHook(instance.get(), field, hook);
         setTooltip(AnnotationUtils.getFieldTooltip(screen, field));
     }
 
@@ -37,7 +37,7 @@ public class EnumFieldWidget<T extends Enum<T>> extends EnumWidget<T>
         try
         {
             field.set(instance.get(), value);
-            AnnotationUtils.runHook(instance.get(), hook);
+            AnnotationUtils.runHook(instance.get(), field, hook);
         }
         catch (IllegalAccessException e)
         {

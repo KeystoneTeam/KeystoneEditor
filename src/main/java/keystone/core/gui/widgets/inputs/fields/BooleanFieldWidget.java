@@ -27,7 +27,7 @@ public class BooleanFieldWidget extends BooleanWidget
         this.field = field;
         this.name = name;
         this.hook = field.getAnnotation(Hook.class);
-        AnnotationUtils.runHook(instance.get(), hook);
+        AnnotationUtils.runHook(instance.get(), field, hook);
         setTooltip(AnnotationUtils.getFieldTooltip(screen, field));
     }
     public static int getFinalHeight() { return 20; }
@@ -44,7 +44,7 @@ public class BooleanFieldWidget extends BooleanWidget
         try
         {
             field.set(instance.get(), this.isChecked());
-            AnnotationUtils.runHook(instance.get(), hook);
+            AnnotationUtils.runHook(instance.get(), field, hook);
         }
         catch (IllegalArgumentException | IllegalAccessException e)
         {

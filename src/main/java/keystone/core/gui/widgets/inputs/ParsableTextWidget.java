@@ -98,14 +98,17 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     @Override
     protected void setFocused(boolean focus)
     {
-        onFocusedChanged(focus);
-        super.setFocused(focus);
+        if (focus != isFocused())
+        {
+            super.setFocused(focus);
+            onFocusedChanged(focus);
+        }
     }
 
     @Override
     protected void onFocusedChanged(boolean focused)
     {
-        if (!focused && isFocused())
+        if (!focused)
         {
             try
             {
@@ -129,7 +132,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {
-        if (!active) return false;
+        if (!active || !isFocused()) return false;
 
         if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
         {

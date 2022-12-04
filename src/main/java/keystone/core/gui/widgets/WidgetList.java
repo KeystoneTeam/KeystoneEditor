@@ -29,7 +29,7 @@ public class WidgetList extends ClickableWidget implements ParentElement
     private final List<ClickableWidget> layoutControlledWidgets = new ArrayList<>();
     private final List<ClickableWidget> nonLayoutControlledWidgets = new ArrayList<>();
     private final List<ClickableWidget> allWidgets = new ArrayList<>();
-    private Element focused;
+    private ClickableWidget focused;
     private boolean dragging;
 
     public WidgetList(int x, int y, int width, int maxHeight, int padding, Text label)
@@ -54,7 +54,7 @@ public class WidgetList extends ClickableWidget implements ParentElement
     }
     
     public void setFocused(@Nullable Element focused) {
-        this.focused = focused;
+        this.focused = (ClickableWidget)focused;
     }
     
     @Override
@@ -213,30 +213,30 @@ public class WidgetList extends ClickableWidget implements ParentElement
         stack.pop();
     }
 
-    // TODO: Check if this is necessary
-    //@Override
-    //public void onClick(double mouseX, double mouseY)
-    //{
-    //    if (!active || !visible) return;
-    //    widgets.forEach(widget -> { if (widget.active) widget.onClick(mouseX, mouseY); });
-    //    queuedWidgets.forEach(widget -> { if (widget.active) widget.onClick(mouseX, mouseY); });
-    //}
-    //
-    //@Override
-    //public void onRelease(double mouseX, double mouseY)
-    //{
-    //    if (!active || !visible) return;
-    //    widgets.forEach(widget -> { if (widget.active) widget.onRelease(mouseX, mouseY); });
-    //    queuedWidgets.forEach(widget -> { if (widget.active) widget.onRelease(mouseX, mouseY); });
-    //}
+    @Override
+    public void onClick(double mouseX, double mouseY)
+    {
+        if (!active || !visible) return;
+        allWidgets.forEach(widget -> { if (widget.active) widget.onClick(mouseX, mouseY); });
+    }
+    
+    @Override
+    public void onRelease(double mouseX, double mouseY)
+    {
+        if (!active || !visible) return;
+        allWidgets.forEach(widget -> { if (widget.active) widget.onRelease(mouseX, mouseY); });
+    }
     
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button)
     {
         if (!active || !visible) return false;
+        
+        if (focused != null && focused.active && focused.mouseClicked(mouseX, mouseY, button)) return true;
+        
         for (ClickableWidget widget : allWidgets)
         {
-            if (widget.active && widget.mouseClicked(mouseX, mouseY, button))
+            if (widget != focused && widget.active && widget.mouseClicked(mouseX, mouseY, button))
             {
                 setFocused(widget);
                 return true;
@@ -249,7 +249,8 @@ public class WidgetList extends ClickableWidget implements ParentElement
     public boolean mouseReleased(double mouseX, double mouseY, int button)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : allWidgets) if (widget.active && widget.mouseReleased(mouseX, mouseY, button)) return true;
+        if (focused != null && focused.active && focused.mouseReleased(mouseX, mouseY, button)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget != focused && widget.active && widget.mouseReleased(mouseX, mouseY, button)) return true;
         return false;
     }
 
@@ -257,7 +258,8 @@ public class WidgetList extends ClickableWidget implements ParentElement
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : allWidgets) if (widget.active && widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
+        if (focused != null && focused.active && focused.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget != focused && widget.active && widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
         return false;
     }
 
@@ -288,7 +290,8 @@ public class WidgetList extends ClickableWidget implements ParentElement
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollDelta)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : allWidgets) if (widget.active && widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
+        if (focused != null && focused.active && focused.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget != focused && widget.active && widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
         return scrollPanel(mouseX, mouseY, scrollDelta);
     }
 
@@ -296,7 +299,8 @@ public class WidgetList extends ClickableWidget implements ParentElement
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : allWidgets) if (widget.active && widget.keyPressed(keyCode, scanCode, modifiers)) return true;
+        if (focused != null && focused.active && focused.keyPressed(keyCode, scanCode, modifiers)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget != focused && widget.active && widget.keyPressed(keyCode, scanCode, modifiers)) return true;
         return false;
     }
 
@@ -304,7 +308,8 @@ public class WidgetList extends ClickableWidget implements ParentElement
     public boolean keyReleased(int keyCode, int scanCode, int modifiers)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : allWidgets) if (widget.active && widget.keyReleased(keyCode, scanCode, modifiers)) return true;
+        if (focused != null && focused.active && focused.keyReleased(keyCode, scanCode, modifiers)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget != focused && widget.active && widget.keyReleased(keyCode, scanCode, modifiers)) return true;
         return false;
     }
 
@@ -312,7 +317,8 @@ public class WidgetList extends ClickableWidget implements ParentElement
     public boolean charTyped(char codePoint, int modifiers)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : allWidgets) if (widget.active && widget.charTyped(codePoint, modifiers)) return true;
+        if (focused != null && focused.active && focused.charTyped(codePoint, modifiers)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget != focused && widget.active && widget.charTyped(codePoint, modifiers)) return true;
         return false;
     }
 
