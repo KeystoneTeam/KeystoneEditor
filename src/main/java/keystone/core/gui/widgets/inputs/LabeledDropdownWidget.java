@@ -132,8 +132,8 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
             widgetDisabler = new WidgetDisabler(dropdown, searchBar);
 
             setMessage(this.dropdown.getSelectedOption().label());
-            addDropdown.accept(this.dropdown, true);
-            if (searchable) addDropdown.accept(this.searchBar, true);
+            addDropdown.accept(this.dropdown, false);
+            if (searchable) addDropdown.accept(this.searchBar, false);
         }
     }
 

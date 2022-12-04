@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 public class FieldWidgetList extends WidgetList
 {
     //region Widgets
-    private static class HeaderWidget extends ClickableWidget
+    public static class HeaderWidget extends ClickableWidget
     {
         private final TextRenderer textRenderer;
         private final int textWidth;
@@ -87,7 +87,7 @@ public class FieldWidgetList extends WidgetList
             Header header = field.getAnnotation(Header.class);
             if (header != null)
             {
-                HeaderWidget headerWidget = new HeaderWidget(header, 0, nextWidgetY, intendedWidth, size() == 0 ? 0 : 20);
+                HeaderWidget headerWidget = new HeaderWidget(header, 0, nextWidgetY, intendedWidth, layoutControlledWidgetCount() == 0 ? 0 : 20);
                 add(headerWidget);
                 nextWidgetY += headerWidget.getHeight() + padding;
             }

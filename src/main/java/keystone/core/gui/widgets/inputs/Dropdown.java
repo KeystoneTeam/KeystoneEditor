@@ -113,7 +113,7 @@ public class Dropdown<T> extends WidgetList implements ILocationObservable
     }
 
     public Predicate<Option<T>> getSearch() { return search; }
-    public int size() { return options.size(); }
+    public int layoutControlledWidgetCount() { return options.size(); }
     public Option<T> getOption(int index) { return options.get(index); }
     public Option<T> getSelectedOption() { return selectedOption; }
     public T getValue(int index) { return options.get(index).value; }

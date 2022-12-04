@@ -295,7 +295,7 @@ public class KeystoneOverlayHandler
             {
                 if (element instanceof WidgetList list)
                 {
-                    list.forEach(consumer::accept);
+                    list.forEachLayoutControlled(consumer::accept);
                     if (acceptLists) consumer.accept(list);
                 }
                 else consumer.accept(element);

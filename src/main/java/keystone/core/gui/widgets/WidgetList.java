@@ -2,20 +2,21 @@ package keystone.core.gui.widgets;
 
 import keystone.core.KeystoneConfig;
 import keystone.core.gui.GUIMaskHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.Mouse;
+import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
+import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.ParentElement;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class WidgetList extends ClickableWidget
+public class WidgetList extends ClickableWidget implements ParentElement
 {
     private int scrollOffset;
     private int maxScrollOffset;
@@ -25,8 +26,11 @@ public class WidgetList extends ClickableWidget
     protected int maxHeight;
 
     private final int padding;
-    private final List<ClickableWidget> widgets = new ArrayList<>();
-    private final List<ClickableWidget> queuedWidgets = new ArrayList<>();
+    private final List<ClickableWidget> layoutControlledWidgets = new ArrayList<>();
+    private final List<ClickableWidget> nonLayoutControlledWidgets = new ArrayList<>();
+    private final List<ClickableWidget> allWidgets = new ArrayList<>();
+    private Element focused;
+    private boolean dragging;
 
     public WidgetList(int x, int y, int width, int maxHeight, int padding, Text label)
     {
@@ -34,34 +38,71 @@ public class WidgetList extends ClickableWidget
         this.padding = padding;
         this.maxHeight = maxHeight;
     }
+    
+    //region Parent Element Implementation
+    public final boolean isDragging() {
+        return this.dragging;
+    }
+    
+    public final void setDragging(boolean dragging) {
+        this.dragging = dragging;
+    }
+    
+    @Nullable
+    public Element getFocused() {
+        return this.focused;
+    }
+    
+    public void setFocused(@Nullable Element focused) {
+        this.focused = focused;
+    }
+    
+    @Override
+    public List<? extends Element> children()
+    {
+        return layoutControlledWidgets;
+    }
+    
+    @Override
+    public boolean changeFocus(boolean lookForwards)
+    {
+        boolean successful = ParentElement.super.changeFocus(lookForwards);
+        while (successful && focused instanceof FieldWidgetList.HeaderWidget) successful = changeFocus(lookForwards);
+        return successful;
+    }
+    //endregion
 
-    public void add(ClickableWidget widget) { add(widget, false); }
-    public void add(ClickableWidget widget, boolean queued)
+    public void add(ClickableWidget widget) { add(widget, true); }
+    public void add(ClickableWidget widget, boolean layoutControlled)
     {
         widget.x += this.x + offsetX;
         if (widget instanceof TextFieldWidget textField) textField.setWidth(textField.getWidth() - 2);
 
-        if (queued) queuedWidgets.add(widget);
-        else widgets.add(widget);
+        if (layoutControlled) layoutControlledWidgets.add(widget);
+        else nonLayoutControlledWidgets.add(widget);
+        allWidgets.add(widget);
     }
     public void clear()
     {
-        this.widgets.clear();
-        this.queuedWidgets.clear();
+        this.layoutControlledWidgets.clear();
+        this.nonLayoutControlledWidgets.clear();
+        this.allWidgets.clear();
     }
-    public int size() { return widgets.size(); }
+    public int layoutControlledWidgetCount() { return layoutControlledWidgets.size(); }
+    public int nonLayoutControlledWidgetCount() { return nonLayoutControlledWidgets.size(); }
+    public int allWidgetCount() { return allWidgets.size(); }
 
     public void bake()
     {
         // Check for empty list
-        if (widgets.size() == 0 && queuedWidgets.size() == 0)
+        if (allWidgets.size() == 0)
         {
             height = 0;
             return;
         }
         
         // Add listeners to all changing height widgets
-        for (ClickableWidget widget : widgets)
+        for (ClickableWidget widget : layoutControlledWidgets)
         {
             if (widget instanceof ILocationObservable locationObservable)
             {
@@ -74,7 +115,7 @@ public class WidgetList extends ClickableWidget
     }
     public void move(int x, int y)
     {
-        for (ClickableWidget widget : queuedWidgets)
+        for (ClickableWidget widget : nonLayoutControlledWidgets)
         {
             widget.x += x;
             widget.y += y;
@@ -89,11 +130,11 @@ public class WidgetList extends ClickableWidget
         offsetY = y;
         updateCurrentWidgets();
     }
-    public void forEach(Consumer<ClickableWidget> consumer)
+    public void forEachLayoutControlled(Consumer<ClickableWidget> consumer)
     {
-        widgets.forEach(clickable ->
+        layoutControlledWidgets.forEach(clickable ->
         {
-            if (clickable instanceof WidgetList list) list.forEach(consumer);
+            if (clickable instanceof WidgetList list) list.forEachLayoutControlled(consumer);
             consumer.accept(clickable);
         });
     }
@@ -113,8 +154,7 @@ public class WidgetList extends ClickableWidget
     protected void updateCurrentWidgets()
     {
         // Update Child Lists
-        for (ClickableWidget widget : queuedWidgets) if (widget instanceof WidgetList list) list.updateCurrentWidgets();
-        for (ClickableWidget widget : widgets) if (widget instanceof WidgetList list) list.updateCurrentWidgets();
+        for (ClickableWidget widget : allWidgets) if (widget instanceof WidgetList list) list.updateCurrentWidgets();
     
         // Update Widget Locations
         updateWidgetLocations();
@@ -123,7 +163,7 @@ public class WidgetList extends ClickableWidget
         boolean hadScrollbar = maxScrollOffset > 0;
         maxScrollOffset = 0;
         
-        for (ClickableWidget widget : widgets) maxScrollOffset += widget.getHeight() + padding;
+        for (ClickableWidget widget : layoutControlledWidgets) maxScrollOffset += widget.getHeight() + padding;
         maxScrollOffset = Math.max(0, maxScrollOffset - padding - height);
         
         if (maxScrollOffset > 0 && !hadScrollbar) width += 2;
@@ -136,7 +176,7 @@ public class WidgetList extends ClickableWidget
         int y = this.y + offsetY - scrollOffset;
         
         // Update Widget Locations
-        for (ClickableWidget widget : widgets)
+        for (ClickableWidget widget : layoutControlledWidgets)
         {
             widget.x = x;
             widget.y = y;
@@ -167,34 +207,41 @@ public class WidgetList extends ClickableWidget
 
         stack.push();
         GUIMaskHelper.addMask(stack, x, y, width, height);
-        widgets.forEach(widget -> { if (widget.visible) widget.render(stack, mouseX, mouseY, partialTicks); });
-        queuedWidgets.forEach(widget -> { if (widget.visible) widget.render(stack, mouseX, mouseY, partialTicks); });
+        layoutControlledWidgets.forEach(widget -> { if (widget.visible) widget.render(stack, mouseX, mouseY, partialTicks); });
+        nonLayoutControlledWidgets.forEach(widget -> { if (widget.visible) widget.render(stack, mouseX, mouseY, partialTicks); });
         GUIMaskHelper.endMask();
         stack.pop();
     }
 
-    @Override
-    public void onClick(double mouseX, double mouseY)
-    {
-        if (!active || !visible) return;
-        widgets.forEach(widget -> { if (widget.active) widget.onClick(mouseX, mouseY); });
-        queuedWidgets.forEach(widget -> { if (widget.active) widget.onClick(mouseX, mouseY); });
-    }
-
-    @Override
-    public void onRelease(double mouseX, double mouseY)
-    {
-        if (!active || !visible) return;
-        widgets.forEach(widget -> { if (widget.active) widget.onRelease(mouseX, mouseY); });
-        queuedWidgets.forEach(widget -> { if (widget.active) widget.onRelease(mouseX, mouseY); });
-    }
-
+    // TODO: Check if this is necessary
+    //@Override
+    //public void onClick(double mouseX, double mouseY)
+    //{
+    //    if (!active || !visible) return;
+    //    widgets.forEach(widget -> { if (widget.active) widget.onClick(mouseX, mouseY); });
+    //    queuedWidgets.forEach(widget -> { if (widget.active) widget.onClick(mouseX, mouseY); });
+    //}
+    //
+    //@Override
+    //public void onRelease(double mouseX, double mouseY)
+    //{
+    //    if (!active || !visible) return;
+    //    widgets.forEach(widget -> { if (widget.active) widget.onRelease(mouseX, mouseY); });
+    //    queuedWidgets.forEach(widget -> { if (widget.active) widget.onRelease(mouseX, mouseY); });
+    //}
+    
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.mouseClicked(mouseX, mouseY, button)) return true;
-        for (ClickableWidget widget : widgets) if (widget.active && widget.mouseClicked(mouseX, mouseY, button)) return true;
+        for (ClickableWidget widget : allWidgets)
+        {
+            if (widget.active && widget.mouseClicked(mouseX, mouseY, button))
+            {
+                setFocused(widget);
+                return true;
+            }
+        }
         return false;
     }
 
@@ -202,8 +249,7 @@ public class WidgetList extends ClickableWidget
     public boolean mouseReleased(double mouseX, double mouseY, int button)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.mouseReleased(mouseX, mouseY, button)) return true;
-        for (ClickableWidget widget : widgets) if (widget.active && widget.mouseReleased(mouseX, mouseY, button)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget.active && widget.mouseReleased(mouseX, mouseY, button)) return true;
         return false;
     }
 
@@ -211,8 +257,7 @@ public class WidgetList extends ClickableWidget
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
-        for (ClickableWidget widget : widgets) if (widget.active && widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget.active && widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
         return false;
     }
 
@@ -220,8 +265,7 @@ public class WidgetList extends ClickableWidget
     public boolean isHovered()
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.isHovered()) return true;
-        for (ClickableWidget widget : widgets) if (widget.active && widget.isHovered()) return true;
+        for (ClickableWidget widget : allWidgets) if (widget.active && widget.isHovered()) return true;
         return false;
     }
 
@@ -229,8 +273,7 @@ public class WidgetList extends ClickableWidget
     public boolean isMouseOver(double mouseX, double mouseY)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.isMouseOver(mouseX, mouseY)) return true;
-        for (ClickableWidget widget : widgets) if (widget.active && widget.isMouseOver(mouseX, mouseY)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget.active && widget.isMouseOver(mouseX, mouseY)) return true;
         return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
     }
 
@@ -238,16 +281,14 @@ public class WidgetList extends ClickableWidget
     public void mouseMoved(double mouseX, double mouseY)
     {
         if (!active || !visible) return;
-        widgets.forEach(widget -> { if (widget.active) widget.mouseMoved(mouseX, mouseY); });
-        queuedWidgets.forEach(widget -> { if (widget.active) widget.mouseMoved(mouseX, mouseY); });
+        allWidgets.forEach(widget -> { if (widget.active) widget.mouseMoved(mouseX, mouseY); });
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollDelta)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
-        for (ClickableWidget widget : widgets) if (widget.active && widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget.active && widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
         return scrollPanel(mouseX, mouseY, scrollDelta);
     }
 
@@ -255,8 +296,7 @@ public class WidgetList extends ClickableWidget
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.keyPressed(keyCode, scanCode, modifiers)) return true;
-        for (ClickableWidget widget : widgets) if (widget.active && widget.keyPressed(keyCode, scanCode, modifiers)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget.active && widget.keyPressed(keyCode, scanCode, modifiers)) return true;
         return false;
     }
 
@@ -264,8 +304,7 @@ public class WidgetList extends ClickableWidget
     public boolean keyReleased(int keyCode, int scanCode, int modifiers)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.keyReleased(keyCode, scanCode, modifiers)) return true;
-        for (ClickableWidget widget : widgets) if (widget.active && widget.keyReleased(keyCode, scanCode, modifiers)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget.active && widget.keyReleased(keyCode, scanCode, modifiers)) return true;
         return false;
     }
 
@@ -273,15 +312,14 @@ public class WidgetList extends ClickableWidget
     public boolean charTyped(char codePoint, int modifiers)
     {
         if (!active || !visible) return false;
-        for (ClickableWidget widget : queuedWidgets) if (widget.active && widget.charTyped(codePoint, modifiers)) return true;
-        for (ClickableWidget widget : widgets) if (widget.active && widget.charTyped(codePoint, modifiers)) return true;
+        for (ClickableWidget widget : allWidgets) if (widget.active && widget.charTyped(codePoint, modifiers)) return true;
         return false;
     }
 
     @Override
     public void appendNarrations(NarrationMessageBuilder builder)
     {
-
+    
     }
     //endregion
 }

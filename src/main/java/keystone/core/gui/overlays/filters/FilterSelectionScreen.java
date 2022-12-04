@@ -168,7 +168,7 @@ public class FilterSelectionScreen extends KeystonePanel
 
         if (selectedFilterFile != null)
         {
-            for (int i = 0; i < dropdown.size(); i++)
+            for (int i = 0; i < dropdown.layoutControlledWidgetCount(); i++)
             {
                 File filterFile = dropdown.getValue(i);
                 if (filterFile.equals(selectedFilterFile))

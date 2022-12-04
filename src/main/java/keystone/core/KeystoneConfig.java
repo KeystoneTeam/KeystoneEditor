@@ -18,7 +18,7 @@ public class KeystoneConfig
 
     @Header("Controls")
     @Variable public static boolean startActive = false;
-    @Variable @FloatRange(min = 0.05f) @DisplayScale(20) public static float flySpeed = 0.1f;
+    @Variable @FloatRange(min = 0.05f) @DisplayScale(43.17f) public static float flySpeed = 0.1f;
     @Variable @FloatRange(min = 0.0f, max = 1.0f, scrollStep = 0.1f) public static float flySmoothing = 0.0f;
     @Variable @FloatRange(min = 0.05f) @DisplayScale(20) public static float flySpeedChangeAmount = 0.05f;
     
