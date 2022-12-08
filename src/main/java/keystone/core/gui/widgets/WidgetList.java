@@ -124,6 +124,10 @@ public class WidgetList extends ClickableWidget implements ParentElement
         this.y += y;
         updateCurrentWidgets();
     }
+    public boolean isMouseInListArea(double mouseX, double mouseY)
+    {
+        return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+    }
     public void setElementsOffset(int x, int y)
     {
         offsetX = x;
@@ -212,30 +216,18 @@ public class WidgetList extends ClickableWidget implements ParentElement
         GUIMaskHelper.endMask();
         stack.pop();
     }
-
-    @Override
-    public void onClick(double mouseX, double mouseY)
-    {
-        if (!active || !visible) return;
-        allWidgets.forEach(widget -> { if (widget.active) widget.onClick(mouseX, mouseY); });
-    }
-    
-    @Override
-    public void onRelease(double mouseX, double mouseY)
-    {
-        if (!active || !visible) return;
-        allWidgets.forEach(widget -> { if (widget.active) widget.onRelease(mouseX, mouseY); });
-    }
     
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button)
     {
         if (!active || !visible) return false;
-        
         if (focused != null && focused.active && focused.mouseClicked(mouseX, mouseY, button)) return true;
         
+        boolean mouseInListArea = isMouseInListArea(mouseX, mouseY);
         for (ClickableWidget widget : allWidgets)
         {
+            if (!mouseInListArea && layoutControlledWidgets.contains(widget)) continue;
+            
             if (widget != focused && widget.active && widget.mouseClicked(mouseX, mouseY, button))
             {
                 setFocused(widget);
@@ -250,7 +242,13 @@ public class WidgetList extends ClickableWidget implements ParentElement
     {
         if (!active || !visible) return false;
         if (focused != null && focused.active && focused.mouseReleased(mouseX, mouseY, button)) return true;
-        for (ClickableWidget widget : allWidgets) if (widget != focused && widget.active && widget.mouseReleased(mouseX, mouseY, button)) return true;
+    
+        boolean mouseInListArea = isMouseInListArea(mouseX, mouseY);
+        for (ClickableWidget widget : allWidgets)
+        {
+            if (!mouseInListArea && layoutControlledWidgets.contains(widget)) continue;
+            if (widget != focused && widget.active && widget.mouseReleased(mouseX, mouseY, button)) return true;
+        }
         return false;
     }
 
@@ -259,7 +257,13 @@ public class WidgetList extends ClickableWidget implements ParentElement
     {
         if (!active || !visible) return false;
         if (focused != null && focused.active && focused.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
-        for (ClickableWidget widget : allWidgets) if (widget != focused && widget.active && widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
+    
+        boolean mouseInListArea = isMouseInListArea(mouseX, mouseY);
+        for (ClickableWidget widget : allWidgets)
+        {
+            if (!mouseInListArea && layoutControlledWidgets.contains(widget)) continue;
+            if (widget != focused && widget.active && widget.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
+        }
         return false;
     }
 
@@ -291,7 +295,13 @@ public class WidgetList extends ClickableWidget implements ParentElement
     {
         if (!active || !visible) return false;
         if (focused != null && focused.active && focused.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
-        for (ClickableWidget widget : allWidgets) if (widget != focused && widget.active && widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
+    
+        boolean mouseInListArea = isMouseInListArea(mouseX, mouseY);
+        for (ClickableWidget widget : allWidgets)
+        {
+            if (!mouseInListArea && layoutControlledWidgets.contains(widget)) continue;
+            if (widget != focused && widget.active && widget.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
+        }
         return scrollPanel(mouseX, mouseY, scrollDelta);
     }
 

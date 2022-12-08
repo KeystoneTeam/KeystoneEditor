@@ -1,11 +1,7 @@
 package keystone.core.modules.brush;
 
 import keystone.core.gui.widgets.inputs.fields.EditableObject;
-import keystone.core.modules.brush.operations.ErodeBrushOperation;
-import keystone.core.modules.brush.operations.FillBrushOperation;
-import keystone.core.modules.brush.operations.GravityBrushOperation;
-import keystone.core.modules.brush.operations.SetBiomeBrushOperation;
-import keystone.core.modules.brush.operations.StackFillBrushOperation;
+import keystone.core.modules.brush.operations.*;
 import keystone.core.modules.world.WorldModifierModules;
 import net.minecraft.text.Text;
 

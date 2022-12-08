@@ -17,7 +17,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     protected final MinecraftClient mc;
     protected final TextRenderer textRenderer;
     private T value;
-    private T displayValue;
+    private String displayValue;
     
     private IKeystoneTooltip tooltip;
     private float tooltipDelay;
@@ -37,7 +37,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
 
         setMaxLength(256);
         setDrawsBackground(true);
-        setText(this.displayValue.toString());
+        setText(this.displayValue);
     }
     public ParsableTextWidget<T> setTooltip(IKeystoneTooltip tooltip) { this.tooltip = tooltip; return this; }
     public ParsableTextWidget<T> setTooltipDelay(float delay) { this.tooltipDelay = delay; return this; }
@@ -47,8 +47,8 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     
     protected abstract T parse(String str) throws Exception;
     protected T postProcess(T value) { return value; }
-    protected T postProcessDisplay(T value) { return value; }
-    protected T reverseProcessDisplay(T displayValue) { return displayValue; }
+    protected String postProcessDisplay(T value) { return value.toString(); }
+    protected T reverseProcessDisplay(String displayValue) throws Exception { return parse(displayValue); }
     protected boolean onSetValue(T value) { return true; }
 
     @Override
@@ -112,7 +112,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
         {
             try
             {
-                T newValue = reverseProcessDisplay(parse(getText()));
+                T newValue = reverseProcessDisplay(getText());
                 setTypedValue(newValue);
             }
             catch (Exception e)
@@ -123,7 +123,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
             }
             finally
             {
-                setText(displayValue.toString());
+                setText(displayValue);
             }
         }
         super.onFocusedChanged(focused);
@@ -147,6 +147,6 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     {
         value = postProcess(newValue);
         displayValue = postProcessDisplay(value);
-        if (onSetValue(newValue)) setText(displayValue.toString());
+        if (onSetValue(newValue)) setText(displayValue);
     }
 }

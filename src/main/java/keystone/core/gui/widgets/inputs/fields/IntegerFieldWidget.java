@@ -1,22 +1,23 @@
 package keystone.core.gui.widgets.inputs.fields;
 
-import keystone.api.variables.DisplayScale;
+import keystone.api.variables.DisplayModifiers;
 import keystone.api.variables.IntRange;
 import net.minecraft.client.gui.screen.Screen;
 
 import java.lang.reflect.Field;
+import java.text.DecimalFormat;
 import java.util.function.Supplier;
 
 public class IntegerFieldWidget extends ParsableTextFieldWidget<Integer>
 {
     private final IntRange range;
-    private final DisplayScale scale;
+    private final DisplayModifiers displayModifiers;
 
     public IntegerFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
         super(screen, instance, field, name, x, y, width);
         this.range = field.getAnnotation(IntRange.class);
-        this.scale = field.getAnnotation(DisplayScale.class);
+        this.displayModifiers = field.getAnnotation(DisplayModifiers.class);
         setTypedValue(getTypedValue());
     }
 
@@ -36,14 +37,26 @@ public class IntegerFieldWidget extends ParsableTextFieldWidget<Integer>
         return value;
     }
     @Override
-    protected Integer postProcessDisplay(Integer value)
+    protected String postProcessDisplay(Integer value)
     {
-        return (int)(scale != null ? scale.value() * value : value);
+        if (displayModifiers != null)
+        {
+            float scaled = displayModifiers.numberScale() * value;
+            if (displayModifiers.decimalPoints() >= 0)
+            {
+                DecimalFormat decimalFormat = new DecimalFormat();
+                decimalFormat.setMaximumFractionDigits(displayModifiers.decimalPoints());
+                return decimalFormat.format(scaled);
+            }
+            else return Float.toString(scaled);
+        }
+        else return value.toString();
     }
     @Override
-    protected Integer reverseProcessDisplay(Integer displayValue)
+    protected Integer reverseProcessDisplay(String displayValue)
     {
-        return scale != null ? (int)(displayValue / scale.value()) : displayValue;
+        float parsed = Float.parseFloat(displayValue);
+        return displayModifiers != null ? (int)(parsed / displayModifiers.numberScale()) : (int)parsed;
     }
     
     @Override
@@ -52,7 +65,7 @@ public class IntegerFieldWidget extends ParsableTextFieldWidget<Integer>
         if (isHovered() && active && Screen.hasControlDown())
         {
             int step = range != null ? range.scrollStep() : 1;
-            if (scale != null) step /= scale.value();
+            if (displayModifiers != null) step /= displayModifiers.numberScale();
 
             if (delta > 0) setTypedValue(getTypedValue() + step);
             else if (delta < 0) setTypedValue(getTypedValue() - step);

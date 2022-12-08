@@ -19,15 +19,15 @@ public class KeystoneConfig
 
     @Header("Controls")
     @Variable public static boolean startActive = false;
-    @Variable @FloatRange(min = 0.05f) @DisplayScale(200.0f) @Hook("flySpeedHook") public static float flySpeed = 0.1f;
+    @Variable @FloatRange(min = 0.05f) @DisplayModifiers(numberScale = 200.0f) @Hook("flySpeedHook") public static float flySpeed = 0.1f;
     @Variable @FloatRange(min = 0.0f, max = 1.0f, scrollStep = 0.1f) public static float flySmoothing = 0.0f;
-    @Variable @FloatRange(min = 0.05f) @DisplayScale(200.0f) public static float flySpeedChangeAmount = 0.05f;
+    @Variable @FloatRange(min = 0.05f) @DisplayModifiers(numberScale = 200.0f) public static float flySpeedChangeAmount = 0.05f;
     
     @Header("GUI Settings")
     @Variable @IntRange(min = 0) public static int viewportPadding = 10;
     @Variable @IntRange(min = 1) public static int minGuiScale = 2;
     @Variable @IntRange(min = 1) public static int guiScrollSpeed = 10;
-    @Variable @FloatRange(min = 0, scrollStep = 0.25f) @DisplayScale(0.05f) public static float tooltipDelay = 20;
+    @Variable @FloatRange(min = 0, scrollStep = 0.25f) @DisplayModifiers(numberScale = 0.05f) public static float tooltipDelay = 20;
 
     @Header("Directories")
     @Variable public static String keystoneDirectory = "keystone";
@@ -39,7 +39,6 @@ public class KeystoneConfig
     @Variable public static String backupDirectory = "backup";
     @Variable public static String historyDirectory = "history";
     
-    public static boolean disableInGameMenu = true;
     public static boolean debugHistoryLog = false;
     
     public static int clickThreshold = 200;
