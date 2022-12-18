@@ -11,7 +11,7 @@ import java.util.function.BiConsumer;
 
 public class EnumWidget<T extends Enum<T>> extends LabeledDropdownWidget<T>
 {
-    public EnumWidget(Text name, int x, int y, int width, T value, BiConsumer<ClickableWidget, Boolean> addDropdown)
+    public EnumWidget(Text name, int x, int y, int width, T value, BiConsumer<ClickableWidget, ClickableWidget> addDropdown)
     {
         super(name, x, y, width, value, addDropdown);
     }

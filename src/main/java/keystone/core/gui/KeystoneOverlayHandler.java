@@ -9,11 +9,13 @@ import keystone.core.gui.overlays.KeystoneHudOverlay;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.overlays.hotbar.KeystoneHotbar;
 import keystone.core.gui.viewports.ScreenViewports;
-import keystone.core.gui.widgets.WidgetList;
+import keystone.core.gui.widgets.groups.VerticalLayoutGroup;
+import keystone.core.gui.widgets.groups.WidgetList;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.ParentElement;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -293,9 +295,9 @@ public class KeystoneOverlayHandler
         {
             if (!ignoreSet.contains(element))
             {
-                if (element instanceof WidgetList list)
+                if (element instanceof ParentElement list)
                 {
-                    list.forEachLayoutControlled(consumer::accept);
+                    list.children().forEach(consumer);
                     if (acceptLists) consumer.accept(list);
                 }
                 else consumer.accept(element);

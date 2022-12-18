@@ -6,7 +6,7 @@ import keystone.api.variables.Variable;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
-import keystone.core.gui.widgets.WidgetList;
+import keystone.core.gui.widgets.groups.VerticalLayoutGroup;
 import keystone.core.utils.AnnotationUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -21,7 +21,7 @@ import java.lang.reflect.Field;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-public class FieldWidgetList extends WidgetList
+public class FieldWidgetList extends VerticalLayoutGroup
 {
     //region Widgets
     public static class HeaderWidget extends ClickableWidget
@@ -63,7 +63,7 @@ public class FieldWidgetList extends WidgetList
     protected final Screen parent;
     protected final Supplier<Object> instance;
     protected final int intendedWidth;
-    protected final BiConsumer<ClickableWidget, Boolean> addDropdown;
+    protected final BiConsumer<ClickableWidget, ClickableWidget> addDropdown;
 
     protected int nextWidgetY;
 
@@ -78,7 +78,7 @@ public class FieldWidgetList extends WidgetList
         this.parent = screen;
         this.instance = instance;
         this.intendedWidth = width - 2 * padding;
-        this.addDropdown = this::add;
+        this.addDropdown = this::addPinnedWidget;
         this.nextWidgetY = 0;
 
         Field[] fields = clazz.getDeclaredFields();

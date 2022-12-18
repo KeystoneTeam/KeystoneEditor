@@ -1,7 +1,7 @@
 package keystone.core.gui.widgets.inputs.properties;
 
 import keystone.api.wrappers.blocks.Block;
-import keystone.core.gui.widgets.WidgetList;
+import keystone.core.gui.widgets.groups.VerticalLayoutGroup;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
@@ -12,17 +12,17 @@ import net.minecraft.text.Text;
 import java.util.Collection;
 import java.util.function.BiConsumer;
 
-public class BlockPropertiesWidgetList extends WidgetList
+public class BlockPropertiesWidgetList extends VerticalLayoutGroup
 {
     protected final int intendedWidth;
-    protected final BiConsumer<ClickableWidget, Boolean> addDropdown;
+    protected final BiConsumer<ClickableWidget, ClickableWidget> addDropdown;
 
     public BlockPropertiesWidgetList(Block block, int x, int y, int width, int maxHeight, int padding)
     {
         super(x, y, width, maxHeight, padding, Text.translatable("keystone.block_selection_panel.propertiesPanel"));
 
         this.intendedWidth = width - 2 * padding;
-        this.addDropdown = this::add;
+        this.addDropdown = this::addPinnedWidget;
 
         int propertyY = 0;
         Collection<Property<?>> properties = block.blockType().getMinecraftBlock().getProperties();

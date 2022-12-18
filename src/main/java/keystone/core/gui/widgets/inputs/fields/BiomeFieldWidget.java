@@ -21,7 +21,7 @@ public class BiomeFieldWidget extends BiomeWidget
     private final Field field;
     private final Hook hook;
 
-    public BiomeFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width, BiConsumer<ClickableWidget, Boolean> addDropdown) throws IllegalAccessException
+    public BiomeFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width, BiConsumer<ClickableWidget, ClickableWidget> addDropdown) throws IllegalAccessException
     {
         super(Text.literal(name), x, y, width, (Biome)field.get(instance.get()), addDropdown);
         

@@ -20,7 +20,7 @@ public class EnumFieldWidget<T extends Enum<T>> extends EnumWidget<T>
     private final Field field;
     private final Hook hook;
 
-    public EnumFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width, BiConsumer<ClickableWidget, Boolean> addDropdown) throws IllegalAccessException
+    public EnumFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width, BiConsumer<ClickableWidget, ClickableWidget> addDropdown) throws IllegalAccessException
     {
         super(Text.literal(name), x, y, width, (T)field.get(instance.get()), addDropdown);
 

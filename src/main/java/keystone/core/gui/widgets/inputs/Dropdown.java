@@ -1,9 +1,10 @@
 package keystone.core.gui.widgets.inputs;
 
+import keystone.core.gui.GUIMaskHelper;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.ILocationObservable;
-import keystone.core.gui.widgets.WidgetList;
+import keystone.core.gui.widgets.groups.VerticalLayoutGroup;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -17,7 +18,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class Dropdown<T> extends WidgetList implements ILocationObservable
+public class Dropdown<T> extends VerticalLayoutGroup implements ILocationObservable
 {
     private static final int PADDING = 0;
 
@@ -75,33 +76,23 @@ public class Dropdown<T> extends WidgetList implements ILocationObservable
         build();
         hide();
     }
-
+    
     @Override
-    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+    protected void prepareRender(MatrixStack matrices, int mouseX, int mouseY, float delta)
     {
-        if (visible)
-        {
-            stack.push();
-            stack.translate(0, 0, 200);
-
-            fill(stack, this.x, this.y, this.x + width, this.y + this.height + 2, 0xFFFFFFFF);
-            super.render(stack, mouseX, mouseY, partialTicks);
-
-            stack.pop();
-        }
+        matrices.translate(0, 0, 200);
+    }
+    @Override
+    protected void renderBackground(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+    {
+        fill(stack, this.x, this.y, this.x + width, this.y + this.height + 2, 0xFFFFFFFF);
     }
     @Override
     public void onLocationChanged(int x, int y, int width, int height)
     {
         Viewport bottomViewport = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.LEFT);
-        this.maxHeight = MinecraftClient.getInstance().getWindow().getScaledHeight() - y - bottomViewport.getHeight();
+        setMaxHeight(MinecraftClient.getInstance().getWindow().getScaledHeight() - y - bottomViewport.getHeight());
         ILocationObservable.super.onLocationChanged(x, y, width, height);
-    }
-
-    @Override
-    public void appendNarrations(NarrationMessageBuilder builder)
-    {
-        
     }
 
     public void build()

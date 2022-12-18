@@ -62,10 +62,6 @@ public class BlockPropertiesScreen extends KeystoneOverlay
         panelHeight = PADDING + propertiesList.getHeight() + PADDING + 20 + PADDING;
         panelY = (height - panelHeight) / 2;
 
-        // Block Properties
-        propertiesList.move(panelX, panelY + PADDING);
-        addDrawableChild(propertiesList);
-
         // Done Button
         int buttonWidth = (panelWidth - 3 * PADDING) >> 1;
         addDrawableChild(new ButtonNoHotkey(panelX + PADDING, panelY + PADDING + propertiesList.getHeight() + PADDING, buttonWidth, 20, Text.translatable("keystone.done"), button -> close()));
@@ -75,6 +71,10 @@ public class BlockPropertiesScreen extends KeystoneOverlay
             ranCallback = true;
             close();
         }));
+    
+        // Block Properties
+        propertiesList.move(panelX, panelY + PADDING);
+        addDrawableChild(propertiesList);
     }
 
     @Override

@@ -24,7 +24,7 @@ public final class GUIMaskHelper
         GL11.glEnable(GL11.GL_STENCIL_TEST);
     
         RenderSystem.stencilFunc(GL11.GL_NEVER, nextStencilChannel, nextStencilChannel);
-        RenderSystem.stencilOp(GL11.GL_REPLACE, GL11.GL_KEEP, GL11.GL_KEEP);
+        RenderSystem.stencilOp(GL11.GL_REPLACE, GL11.GL_REPLACE, GL11.GL_REPLACE);
         RenderSystem.stencilMask(nextStencilChannel);
         RenderSystem.colorMask(false, false, false, false);
         RenderSystem.depthMask(false);

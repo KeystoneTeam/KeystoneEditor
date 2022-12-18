@@ -55,7 +55,7 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
 
     private final MinecraftClient mc;
     private final TextRenderer font;
-    private final BiConsumer<ClickableWidget, Boolean> addDropdown;
+    private final BiConsumer<ClickableWidget, ClickableWidget> addDropdown;
     private final Text name;
     private WidgetDisabler widgetDisabler;
 
@@ -66,7 +66,7 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
     private TextFieldWidget searchBar;
     private Dropdown<T> dropdown;
 
-    public LabeledDropdownWidget(Text name, int x, int y, int width, T value, BiConsumer<ClickableWidget, Boolean> addDropdown)
+    public LabeledDropdownWidget(Text name, int x, int y, int width, T value, BiConsumer<ClickableWidget, ClickableWidget> addDropdown)
     {
         super(x, y, width, getFinalHeight(), name, (button) ->
         {
@@ -131,8 +131,8 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
             widgetDisabler = new WidgetDisabler(dropdown, searchBar);
 
             setMessage(this.dropdown.getSelectedOption().label());
-            addDropdown.accept(this.dropdown, false);
-            if (searchable) addDropdown.accept(this.searchBar, false);
+            addDropdown.accept(this.dropdown, this);
+            if (searchable) addDropdown.accept(this.searchBar, this);
         }
     }
 

@@ -15,7 +15,7 @@ public class EnumPropertyWidget<T extends Enum<T> & StringIdentifiable> extends 
     private final Block block;
     private final EnumProperty<T> property;
 
-    public EnumPropertyWidget(Block block, EnumProperty<T> property, int x, int y, int width, BiConsumer<ClickableWidget, Boolean> addDropdown)
+    public EnumPropertyWidget(Block block, EnumProperty<T> property, int x, int y, int width, BiConsumer<ClickableWidget, ClickableWidget> addDropdown)
     {
         super(Text.literal(property.getName()), x, y, width, block.blockType().getMinecraftBlock().get(property), addDropdown);
 

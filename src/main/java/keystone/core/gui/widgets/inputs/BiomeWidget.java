@@ -12,7 +12,7 @@ import java.util.function.BiConsumer;
 
 public class BiomeWidget extends LabeledDropdownWidget<Biome>
 {
-    public BiomeWidget(Text name, int x, int y, int width, Biome value, BiConsumer<ClickableWidget, Boolean> addDropdown)
+    public BiomeWidget(Text name, int x, int y, int width, Biome value, BiConsumer<ClickableWidget, ClickableWidget> addDropdown)
     {
         super(name, x, y, width, value, addDropdown);
         setSearchable(true);
