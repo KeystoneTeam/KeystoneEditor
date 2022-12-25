@@ -1,6 +1,6 @@
 package keystone.core.gui.widgets.groups;
 
-import keystone.core.gui.GUIMaskHelper;
+import keystone.core.gui.GUIMaskStack;
 import keystone.core.gui.widgets.LocationListener;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -22,8 +22,7 @@ public abstract class LayoutGroup extends WidgetList
         }
     }
     
-    private int offsetX;
-    private int offsetY;
+    private Margins margins;
     private boolean maskGroup;
     private boolean baked;
     
@@ -37,8 +36,7 @@ public abstract class LayoutGroup extends WidgetList
     public LayoutGroup(int x, int y, int width, int height, Text message, boolean maskGroup)
     {
         super(x, y, width, height, message);
-        this.offsetX = 0;
-        this.offsetY = 0;
+        this.margins = new Margins(0);
         this.maskGroup = maskGroup;
         this.layoutControlled = new ArrayList<>();
         this.pinMap = new HashMap<>();
@@ -86,8 +84,8 @@ public abstract class LayoutGroup extends WidgetList
         // Move widgets to the correct offset
         for (ClickableWidget widget : layoutControlled)
         {
-            widget.x += this.x + offsetX;
-            widget.y += this.y + offsetY;
+            widget.x += this.x + margins.left();
+            widget.y += this.y + margins.top();
         
             // Correct the element offsets of any child layout groups
             if (widget instanceof LayoutGroup layoutGroup) layoutGroup.correctOffset();
@@ -108,18 +106,32 @@ public abstract class LayoutGroup extends WidgetList
         }
     }
     
-    protected void applyLayout(ClickableWidget widget, int x, int y, int width)
+    /**
+     * Apply a new position and width to the provided widget
+     * @param widget The widget to change
+     * @param x The new x-coordinate
+     * @param y The new y-coordinate
+     * @param width The new width
+     * @return Any difference in the bottom y-coordinate of the widget. This is used to correct poorly written vanilla widget code
+     */
+    protected int applyLayout(ClickableWidget widget, int x, int y, int width)
     {
-        boolean changed = widget.x != x || widget.y != y || widget.getWidth() != width;
-        if (changed)
+        int deltaY = 0;
+        
+        // Fix the off-by-one error on text fields caused by their top-left being (-1, -1) instead of (0, 0)
+        if (widget instanceof TextFieldWidget)
         {
-            widget.x = x;
-            widget.y = y;
-            widget.setWidth(width);
-    
-            // Fix the off-by-one error on text fields caused by their top-left being (-1, -1) instead of (0, 0)
-            if (widget instanceof TextFieldWidget textField) textField.x++;
+            x++;
+            y++;
+            deltaY = 1;
         }
+    
+        // Apply new position and width
+        widget.x = x;
+        widget.y = y;
+        widget.setWidth(width);
+        
+        return deltaY;
     }
     //endregion
     //region Pinning
@@ -153,15 +165,21 @@ public abstract class LayoutGroup extends WidgetList
         {
             matrices.push();
             prepareRender(matrices, mouseX, mouseY, delta);
-            
-            if (maskGroup) GUIMaskHelper.addMask(matrices, x, y, width, height);
+    
+            GUIMaskStack.push(true);
             renderBackground(matrices, mouseX, mouseY, delta);
+            GUIMaskStack.pop();
             
+            if (maskGroup)
+            {
+                GUIMaskStack.push(true);
+                GUIMaskStack.addMaskBox(matrices, x + margins.left(), y + margins.top(), width - margins.left() - margins.right(), height);
+            }
             for (ClickableWidget widget : layoutControlled) widget.render(matrices, mouseX, mouseY, delta);
             for (ClickableWidget widget : pinMap.keySet()) if (widget.visible) widget.render(matrices, mouseX, mouseY, delta);
+            if (maskGroup) GUIMaskStack.pop();
             renderForeground(matrices, mouseX, mouseY, delta);
-    
-            if (maskGroup) GUIMaskHelper.endMask();
+            
             matrices.pop();
         }
     }
@@ -193,26 +211,14 @@ public abstract class LayoutGroup extends WidgetList
     //endregion
     //region Getters and Setters
     protected boolean isBaked() { return baked; }
-    public int getOffsetX() { return offsetX; }
-    public int getOffsetY() { return offsetY; }
     
+    public Margins getMargins() { return margins; }
     public int layoutControlledWidgetCount() { return layoutControlled.size(); }
     public int layoutIgnoredWidgetCount() { return children.size() - layoutControlled.size(); }
     
-    public void setOffsetX(int offsetX)
+    public void setMargins(Margins margins)
     {
-        this.offsetX = offsetX;
-        if (baked) updateLayout();
-    }
-    public void setOffsetY(int offsetY)
-    {
-        this.offsetY = offsetY;
-        if (baked) updateLayout();
-    }
-    public void setElementsOffset(int offsetX, int offsetY)
-    {
-        this.offsetX = offsetX;
-        this.offsetY = offsetY;
+        this.margins = margins;
         if (baked) updateLayout();
     }
     public void setMaskGroup(boolean maskGroup) { this.maskGroup = maskGroup; }

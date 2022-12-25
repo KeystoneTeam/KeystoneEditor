@@ -33,6 +33,7 @@ public class VerticalLayoutGroup extends LayoutGroup
     protected void applyLayout(List<ClickableWidget> widgets)
     {
         // Apply Layout
+        Margins margins = getMargins();
         int y = -scrollOffset;
         for (ClickableWidget widget : widgets)
         {
@@ -42,8 +43,7 @@ public class VerticalLayoutGroup extends LayoutGroup
                 case RIGHT -> width - widget.getWidth();
                 default -> 0;
             };
-            applyLayout(widget, x, y, widget.getWidth());
-            y += widget.getHeight() + padding;
+            y += widget.getHeight() + padding + applyLayout(widget, x, y, widget.getWidth());
         }
         this.height = Math.min(y - padding, maxHeight);
     

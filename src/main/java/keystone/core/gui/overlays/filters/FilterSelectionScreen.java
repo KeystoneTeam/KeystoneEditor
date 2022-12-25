@@ -14,6 +14,7 @@ import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.TextDisplayWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.buttons.TextClickButton;
+import keystone.core.gui.widgets.groups.Margins;
 import keystone.core.gui.widgets.inputs.Dropdown;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
 import keystone.core.modules.filter.FilterDirectoryManager;
@@ -193,7 +194,7 @@ public class FilterSelectionScreen extends KeystonePanel
 
         // Create Filter Variables
         filterVariablesList.move(getViewport().getMinX(), getViewport().getMinY() + (getViewport().getHeight() / 2) - (filterVariablesList.getHeight() / 2));
-        filterVariablesList.setElementsOffset(5, 0);
+        filterVariablesList.setMargins(new Margins(5, 0));
         addDrawableChild(filterVariablesList);
         filterManager.getFilter(selectedFilterFile).undirtyEditor();
     }

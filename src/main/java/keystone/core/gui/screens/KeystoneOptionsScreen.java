@@ -4,6 +4,7 @@ import keystone.core.KeystoneConfig;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
+import keystone.core.gui.widgets.groups.Margins;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;

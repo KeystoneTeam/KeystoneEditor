@@ -5,6 +5,7 @@ import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
+import keystone.core.gui.widgets.groups.Margins;
 import keystone.core.gui.widgets.inputs.properties.BlockPropertiesWidgetList;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -57,7 +58,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
         panelX = (width - panelWidth) / 2;
         int maxPanelHeight = height - 60 - 3 * PADDING;
         propertiesList = new BlockPropertiesWidgetList(block, 0, 0, panelWidth, maxPanelHeight, PADDING);
-        propertiesList.setElementsOffset(5, 0);
+        propertiesList.setMargins(new Margins(5, 0));
         propertiesList.bake();
         panelHeight = PADDING + propertiesList.getHeight() + PADDING + 20 + PADDING;
         panelY = (height - panelHeight) / 2;

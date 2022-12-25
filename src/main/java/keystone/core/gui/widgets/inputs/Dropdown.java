@@ -1,14 +1,13 @@
 package keystone.core.gui.widgets.inputs;
 
-import keystone.core.gui.GUIMaskHelper;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.ILocationObservable;
+import keystone.core.gui.widgets.groups.Margins;
 import keystone.core.gui.widgets.groups.VerticalLayoutGroup;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -99,7 +98,7 @@ public class Dropdown<T> extends VerticalLayoutGroup implements ILocationObserva
     {
         clear();
         options.forEach(option -> { if (search.test(option) && !option.hide) add(new DropdownOptionButton<>(this, option)); });
-        setElementsOffset(1, 1);
+        setMargins(new Margins(1));
         bake();
     }
 

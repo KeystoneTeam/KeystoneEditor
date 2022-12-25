@@ -10,6 +10,7 @@ import keystone.core.gui.overlays.hotbar.KeystoneHotbarSlot;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
+import keystone.core.gui.widgets.groups.Margins;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
 import keystone.core.modules.brush.BrushModule;
@@ -159,7 +160,7 @@ public class BrushSelectionScreen extends KeystonePanel
 
         // Brush variables
         brushVariablesList.move(0, y);
-        brushVariablesList.setElementsOffset(5, 0);
+        brushVariablesList.setMargins(new Margins(5, 0));
         addDrawableChild(brushVariablesList);
 
         brushModule.getBrushOperation().undirtyEditor();
