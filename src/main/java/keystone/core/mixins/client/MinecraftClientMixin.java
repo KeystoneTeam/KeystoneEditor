@@ -1,9 +1,7 @@
 package keystone.core.mixins.client;
 
 import keystone.api.Keystone;
-import keystone.core.KeystoneConfig;
 import keystone.core.gui.KeystoneOverlayHandler;
-import keystone.core.gui.screens.KeystoneOptionsScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.Window;
 import org.spongepowered.asm.mixin.Final;
@@ -24,7 +22,7 @@ public class MinecraftClientMixin
     {
         if (Keystone.isEnabled())
         {
-            MinecraftClient.getInstance().setScreenAndRender(new KeystoneOptionsScreen(null));
+            //MinecraftClient.getInstance().setScreenAndRender(new KeystoneOptionsScreen(null));
             callback.cancel();
         }
     }

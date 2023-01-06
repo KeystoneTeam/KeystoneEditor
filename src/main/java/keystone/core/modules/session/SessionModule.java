@@ -147,15 +147,13 @@ public class SessionModule implements IKeystoneModule
     }
     private Optional<Properties> readSessionPropertiesFile()
     {
-        File sessionDirectory = KeystoneDirectories.getWorldSessionDirectory();
-        if (!sessionDirectory.exists()) return Optional.empty();
-    
-        Properties properties = new Properties();
-        try
+        File sessionFile = KeystoneDirectories.getWorldSessionDirectory().toPath().resolve("session.info").toFile();
+        if (!sessionFile.exists()) return Optional.empty();
+        
+        try (FileInputStream fileStream = new FileInputStream(sessionFile))
         {
-            FileInputStream outputStream = new FileInputStream(KeystoneDirectories.getWorldSessionDirectory().toPath().resolve("session.info").toFile());
-            properties.load(outputStream);
-            outputStream.close();
+            Properties properties = new Properties();
+            properties.load(fileStream);
             return Optional.of(properties);
         }
         catch (Exception e)

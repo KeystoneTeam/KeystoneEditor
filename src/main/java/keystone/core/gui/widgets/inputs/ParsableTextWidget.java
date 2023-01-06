@@ -60,15 +60,24 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
+        // Draw Label
         drawCenteredText(matrixStack, textRenderer, getMessage(), x + width / 2, y, 0xFFFFFF);
-        matrixStack.push();
+        
+        // Offset Position and Size of Text Field
+        x++;
         y += getFieldOffset();
-        height -= getFieldOffset();
+        width -= 2;
+        height -= getFieldOffset() + 1;
+        
+        // Render Text Field and Tooltip
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
         renderTooltip(matrixStack, mouseX, mouseY);
-        height += getFieldOffset();
+        
+        // Revert Offset
+        height += getFieldOffset() + 1;
+        width += 2;
         y -= getFieldOffset();
-        matrixStack.pop();
+        x--;
     }
     @Override
     public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY)

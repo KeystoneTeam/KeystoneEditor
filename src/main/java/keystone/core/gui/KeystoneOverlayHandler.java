@@ -9,8 +9,6 @@ import keystone.core.gui.overlays.KeystoneHudOverlay;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.overlays.hotbar.KeystoneHotbar;
 import keystone.core.gui.viewports.ScreenViewports;
-import keystone.core.gui.widgets.groups.VerticalLayoutGroup;
-import keystone.core.gui.widgets.groups.WidgetList;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.minecraft.client.MinecraftClient;

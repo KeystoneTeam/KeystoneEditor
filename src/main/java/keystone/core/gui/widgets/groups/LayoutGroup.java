@@ -1,9 +1,9 @@
 package keystone.core.gui.widgets.groups;
 
+import keystone.core.DebugFlags;
 import keystone.core.gui.GUIMaskStack;
 import keystone.core.gui.widgets.LocationListener;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -48,6 +48,7 @@ public abstract class LayoutGroup extends WidgetList
         {
             this.baked = true;
             updateLayout();
+            postBake(layoutControlled);
         }
     }
     
@@ -57,9 +58,29 @@ public abstract class LayoutGroup extends WidgetList
      * @param widgets The list of widgets to apply the layout to
      */
     protected abstract void applyLayout(List<ClickableWidget> widgets);
+    
+    /**
+     * Ran after this layout group is baked. Use this for one-time initialization, such
+     * as the height of the group or a maximum scroll amount
+     * @param widgets The list of widgets that this group was baked with and are layout controlled
+     */
+    protected void postBake(List<ClickableWidget> widgets) { }
+    
     protected void prepareRender(MatrixStack matrices, int mouseX, int mouseY, float delta) { }
     protected void renderBackground(MatrixStack matrices, int mouseX, int mouseY, float delta) { }
     protected void renderForeground(MatrixStack matrices, int mouseX, int mouseY, float delta) { }
+    
+    protected void renderDebug(MatrixStack matrices, int mouseX, int mouseY, float delta)
+    {
+        // Individual Widget Bounds
+        for (ClickableWidget widget : layoutControlled) fill(matrices, widget.x, widget.y, widget.x + widget.getWidth(), widget.y + widget.getHeight(), 0x80FF0000);
+    
+        // Display Bounds
+        fill(matrices, x + 2, y, x + width - 2, y + 2, 0x800000FF);
+        fill(matrices, x + width - 2, y, x + width, y + height, 0x800000FF);
+        fill(matrices, x + 2, y + height - 2, x + width - 2, y + height, 0x800000FF);
+        fill(matrices, x, y, x + 2, y + height, 0x800000FF);
+    }
     
     //region Layout Application
     public void updateLayout()
@@ -116,22 +137,12 @@ public abstract class LayoutGroup extends WidgetList
      */
     protected int applyLayout(ClickableWidget widget, int x, int y, int width)
     {
-        int deltaY = 0;
-        
-        // Fix the off-by-one error on text fields caused by their top-left being (-1, -1) instead of (0, 0)
-        if (widget instanceof TextFieldWidget)
-        {
-            x++;
-            y++;
-            deltaY = 1;
-        }
-    
         // Apply new position and width
         widget.x = x;
         widget.y = y;
         widget.setWidth(width);
         
-        return deltaY;
+        return 0;
     }
     //endregion
     //region Pinning
@@ -163,23 +174,34 @@ public abstract class LayoutGroup extends WidgetList
     {
         if (visible)
         {
+            // Prepare Render
             matrices.push();
             prepareRender(matrices, mouseX, mouseY, delta);
     
+            // Render Background
             GUIMaskStack.push(true);
             renderBackground(matrices, mouseX, mouseY, delta);
             GUIMaskStack.pop();
             
+            // Start Masking
             if (maskGroup)
             {
                 GUIMaskStack.push(true);
                 GUIMaskStack.addMaskBox(matrices, x + margins.left(), y + margins.top(), width - margins.left() - margins.right(), height);
             }
+            
+            // Render Widgets
             for (ClickableWidget widget : layoutControlled) widget.render(matrices, mouseX, mouseY, delta);
             for (ClickableWidget widget : pinMap.keySet()) if (widget.visible) widget.render(matrices, mouseX, mouseY, delta);
-            if (maskGroup) GUIMaskStack.pop();
-            renderForeground(matrices, mouseX, mouseY, delta);
             
+            // End Masking
+            if (maskGroup) GUIMaskStack.pop();
+            
+            // Render Foreground and Debug
+            renderForeground(matrices, mouseX, mouseY, delta);
+            if (DebugFlags.isFlagSet("debugLayoutGroups")) renderDebug(matrices, mouseX, mouseY, delta);
+            
+            // Finish Render
             matrices.pop();
         }
     }
@@ -188,14 +210,22 @@ public abstract class LayoutGroup extends WidgetList
     {
         super.add(element);
         if (!pinMap.containsKey(element)) layoutControlled.add(element);
-        if (baked && !pinMap.containsKey(element)) updateLayout();
+        if (baked && !pinMap.containsKey(element))
+        {
+            updateLayout();
+            postBake(layoutControlled);
+        }
     }
     @Override
     public void addToTop(ClickableWidget element)
     {
         super.addToTop(element);
         if (!pinMap.containsKey(element)) layoutControlled.add(0, element);
-        if (baked && !pinMap.containsKey(element)) updateLayout();
+        if (baked && !pinMap.containsKey(element))
+        {
+            updateLayout();
+            postBake(layoutControlled);
+        }
     }
     @Override
     public void remove(ClickableWidget element)
@@ -205,7 +235,11 @@ public abstract class LayoutGroup extends WidgetList
         else
         {
             layoutControlled.remove(element);
-            if (baked) updateLayout();
+            if (baked)
+            {
+                updateLayout();
+                postBake(layoutControlled);
+            }
         }
     }
     //endregion
@@ -219,7 +253,11 @@ public abstract class LayoutGroup extends WidgetList
     public void setMargins(Margins margins)
     {
         this.margins = margins;
-        if (baked) updateLayout();
+        if (baked)
+        {
+            updateLayout();
+            postBake(layoutControlled);
+        }
     }
     public void setMaskGroup(boolean maskGroup) { this.maskGroup = maskGroup; }
     //endregion

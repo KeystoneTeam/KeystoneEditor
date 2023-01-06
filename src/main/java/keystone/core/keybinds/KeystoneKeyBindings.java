@@ -52,7 +52,7 @@ public class KeystoneKeyBindings
                 
                 while (FEATURE_TEST.wasPressed())
                 {
-                
+                    MinecraftClient.getInstance().setScreenAndRender(new KeystoneOptionsScreen(null));
                 }
             }
         });

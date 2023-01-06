@@ -61,6 +61,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         try
         {
             KeystoneDirectories.init();
+            DebugFlags.init();
         }
         catch (IOException e)
         {

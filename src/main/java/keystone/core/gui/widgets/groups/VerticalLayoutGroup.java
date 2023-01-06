@@ -30,10 +30,32 @@ public class VerticalLayoutGroup extends LayoutGroup
     }
     
     @Override
+    protected void postBake(List<ClickableWidget> widgets)
+    {
+        if (widgets.size() == 0)
+        {
+            this.height = 0;
+            this.maxScrollOffset = 0;
+        }
+        else
+        {
+            int minY = Integer.MAX_VALUE;
+            int maxY = Integer.MIN_VALUE;
+            
+            for (ClickableWidget widget : widgets)
+            {
+                minY = Math.min(minY, widget.y);
+                maxY = Math.max(maxY, widget.y + widget.getHeight());
+            }
+            
+            this.height = Math.min(maxY - minY, maxHeight);
+            this.maxScrollOffset = Math.max(0, maxY - minY - height);
+        }
+    }
+    @Override
     protected void applyLayout(List<ClickableWidget> widgets)
     {
         // Apply Layout
-        Margins margins = getMargins();
         int y = -scrollOffset;
         for (ClickableWidget widget : widgets)
         {
@@ -45,17 +67,6 @@ public class VerticalLayoutGroup extends LayoutGroup
             };
             y += widget.getHeight() + padding + applyLayout(widget, x, y, widget.getWidth());
         }
-        this.height = Math.min(y - padding, maxHeight);
-    
-        // Update Max Scroll Index
-        boolean hadScrollbar = maxScrollOffset > 0;
-        maxScrollOffset = 0;
-        for (ClickableWidget widget : layoutControlled) maxScrollOffset += widget.getHeight() + padding;
-        maxScrollOffset = Math.max(0, maxScrollOffset - padding - height);
-    
-        // Update width based on scrollbar
-        if (maxScrollOffset > 0 && !hadScrollbar) width += 2;
-        else if (maxScrollOffset == 0 && hadScrollbar) width -= 2;
     }
     
     @Override
@@ -69,6 +80,27 @@ public class VerticalLayoutGroup extends LayoutGroup
             fill(matrices, x + width - 2, scrollbarY, x + width, scrollbarY + scrollbarHeight, 0xFF808080);
         }
     }
+    @Override
+    protected void renderDebug(MatrixStack matrices, int mouseX, int mouseY, float delta)
+    {
+        int minY = this.y - scrollOffset;
+        int maxY = minY + this.height + this.maxScrollOffset;
+    
+        // Individual Widget Bounds
+        for (ClickableWidget widget : layoutControlled) fill(matrices, widget.x, widget.y, widget.x + widget.getWidth(), widget.y + widget.getHeight(), 0x80FF0000);
+    
+        // Content Bounds
+        fill(matrices, x + 2, minY, x + width - 2, minY + 2, 0x8000FF00);
+        fill(matrices, x + width - 2, minY, x + width, maxY, 0x8000FF00);
+        fill(matrices, x + 2, maxY - 2, x + width - 2, maxY, 0x8000FF00);
+        fill(matrices, x, minY, x + 2, maxY, 0x8000FF00);
+    
+        // Display Bounds
+        fill(matrices, x + 2, y, x + width - 2, y + 2, 0x800000FF);
+        fill(matrices, x + width - 2, y, x + width, y + height, 0x800000FF);
+        fill(matrices, x + 2, y + height - 2, x + width - 2, y + height, 0x800000FF);
+        fill(matrices, x, y, x + 2, y + height, 0x800000FF);
+    }
     
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollDelta)
@@ -77,7 +109,6 @@ public class VerticalLayoutGroup extends LayoutGroup
         if (super.mouseScrolled(mouseX, mouseY, scrollDelta)) return true;
         return scrollPanel(mouseX, mouseY, scrollDelta);
     }
-    
     private boolean scrollPanel(double mouseX, double mouseY, double scrollDelta)
     {
         if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height)

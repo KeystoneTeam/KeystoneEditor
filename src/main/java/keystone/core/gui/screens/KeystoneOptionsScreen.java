@@ -4,7 +4,6 @@ import keystone.core.KeystoneConfig;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
-import keystone.core.gui.widgets.groups.Margins;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -40,11 +39,12 @@ public class KeystoneOptionsScreen extends Screen
         
         FieldWidgetList optionsWidgets = new FieldWidgetList(this, getTitle(), () -> null, KeystoneConfig.class, optionsViewport.getMinX(), optionsViewport.getMinY() + PADDING, optionsViewport.getWidth(), optionsViewport.getHeight() - PADDING, PADDING);
         optionsWidgets.bake();
-        addDrawableChild(optionsWidgets);
         
         int buttonY = optionsViewport.getMaxY() + 10;
         doneButton = addDrawableChild(new ButtonNoHotkey(optionsViewport.getMinX(), buttonY, optionsViewport.getWidth() / 2 - 2, 20, ScreenTexts.DONE, this::doneButton));
         resetButton = addDrawableChild(new ButtonNoHotkey(optionsViewport.getMinX() + doneButton.getWidth() + 4, buttonY, doneButton.getWidth(), 20, Text.translatable("keystone.options.reset"), this::resetButton));
+        
+        addDrawableChild(optionsWidgets);
     }
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta)
