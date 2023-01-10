@@ -3,7 +3,6 @@ package keystone.core.modules.session;
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
-import keystone.core.events.minecraft.InputEvents;
 import keystone.core.gui.screens.PromptQuestionScreen;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
@@ -18,7 +17,6 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraft.world.storage.RegionBasedStorage;
-import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,23 +41,13 @@ public class SessionModule implements IKeystoneModule
     {
         client = MinecraftClient.getInstance();
         historyModule = Keystone.getModule(HistoryModule.class);
-
-        InputEvents.KEY_PRESSED.register(this::onKeyPressed);
-
+        
         resetModule();
     }
     @Override
     public void resetModule()
     {
         this.revertingSessionChanges = false;
-    }
-
-    private void onKeyPressed(int key, int action, int scancode, int modifiers)
-    {
-        if (action == GLFW.GLFW_PRESS && key == GLFW.GLFW_KEY_S && modifiers == GLFW.GLFW_MOD_CONTROL)
-        {
-            commitChanges();
-        }
     }
     
     public void setLevel(LevelSummary level) { this.level = level; }

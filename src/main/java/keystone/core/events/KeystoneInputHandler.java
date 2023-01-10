@@ -53,7 +53,7 @@ public class KeystoneInputHandler
     {
         WorldRenderEvents.LAST.register(KeystoneInputHandler::postRender);
         InputEvents.MOUSE_CLICKED.register(KeystoneInputHandler::mouseClicked);
-        InputEvents.KEY_PRESSED.register(KeystoneInputHandler::onKeyInput);
+        InputEvents.KEY_EVENT.register(KeystoneInputHandler::onKeyInput);
     }
     
     public static void postRender(WorldRenderContext context)
@@ -177,7 +177,7 @@ public class KeystoneInputHandler
             }
         }
     }
-    public static void onKeyInput(int key, int action, int scancode, int modifiers)
+    public static boolean onKeyInput(int key, int action, int scancode, int modifiers)
     {
         GameOptions settings = MinecraftClient.getInstance().options;
         Mouse mouse = MinecraftClient.getInstance().mouse;
@@ -214,6 +214,8 @@ public class KeystoneInputHandler
                 }
             }
         }
+        
+        return false;
     }
 
     private static void onRelease(int button)

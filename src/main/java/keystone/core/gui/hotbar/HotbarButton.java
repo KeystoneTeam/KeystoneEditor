@@ -1,4 +1,4 @@
-package keystone.core.gui.overlays.hotbar;
+package keystone.core.gui.hotbar;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;

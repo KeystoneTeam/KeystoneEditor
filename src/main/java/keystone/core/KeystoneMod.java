@@ -14,6 +14,7 @@ import keystone.core.gui.overlays.schematics.ImportScreen;
 import keystone.core.gui.overlays.selection.SelectionNudgeScreen;
 import keystone.core.gui.overlays.selection.SelectionScreen;
 import keystone.core.keybinds.KeystoneKeyBindings;
+import keystone.core.keybinds.hotkeys.HotkeyManager;
 import keystone.core.modules.brush.BrushModule;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.filter.FilterModule;
@@ -62,6 +63,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         {
             KeystoneDirectories.init();
             DebugFlags.init();
+            HotkeyManager.init();
         }
         catch (IOException e)
         {

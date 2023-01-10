@@ -5,9 +5,9 @@ import keystone.core.KeystoneGlobalState;
 import keystone.core.events.keystone.KeystoneInputEvents;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.minecraft.InputEvents;
+import keystone.core.gui.hotbar.KeystoneHotbar;
 import keystone.core.gui.overlays.KeystoneHudOverlay;
 import keystone.core.gui.overlays.KeystoneOverlay;
-import keystone.core.gui.overlays.hotbar.KeystoneHotbar;
 import keystone.core.gui.viewports.ScreenViewports;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
@@ -55,6 +55,12 @@ public class KeystoneOverlayHandler
     public static boolean isRendering()
     {
         return rendering;
+    }
+    public static boolean escapeKeyInUse()
+    {
+        if (MinecraftClient.getInstance().currentScreen != null && MinecraftClient.getInstance().currentScreen.shouldCloseOnEsc()) return true;
+        for (Screen overlay : overlays) if (overlay.shouldCloseOnEsc()) return true;
+        return false;
     }
 
     public static void registerEvents()

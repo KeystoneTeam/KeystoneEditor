@@ -4,7 +4,6 @@ import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.tools.FillTool;
 import keystone.core.client.Player;
-import keystone.core.events.minecraft.InputEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.schematic_import.ImportModule;
@@ -14,7 +13,6 @@ import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.Vec3i;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +27,6 @@ public class ClipboardModule implements IKeystoneModule
     public ClipboardModule()
     {
         this.clipboard = new ArrayList<>();
-        InputEvents.KEY_PRESSED.register(this::onKeyPressed);
     }
 
     //region Module Implementation
@@ -43,17 +40,6 @@ public class ClipboardModule implements IKeystoneModule
     {
         this.worldModifiers = new WorldModifierModules();
         this.importModule = Keystone.getModule(ImportModule.class);
-    }
-    //endregion
-    //region Event Handlers
-    private void onKeyPressed(int key, int action, int scancode, int modifiers)
-    {
-        if (action == GLFW.GLFW_PRESS && modifiers == GLFW.GLFW_MOD_CONTROL && Keystone.isActive())
-        {
-            if (key == GLFW.GLFW_KEY_X) cut();
-            else if (key == GLFW.GLFW_KEY_C) copy();
-            else if (key == GLFW.GLFW_KEY_V) paste();
-        }
     }
     //endregion
 

@@ -24,9 +24,11 @@ public final class InputEvents
     {
         for (final FilesDropped listener : listeners) listener.filesDropped(paths);
     });
-    public static final Event<KeyPressed> KEY_PRESSED = EventFactory.createArrayBacked(KeyPressed.class, listeners -> (key, action, scancode, modifiers) ->
+    public static final Event<KeyEvent> KEY_EVENT = EventFactory.createArrayBacked(KeyEvent.class, listeners -> (key, action, scancode, modifiers) ->
     {
-        for (final KeyPressed listener : listeners) listener.keyPressed(key, action, scancode, modifiers);
+        boolean cancelEvent = false;
+        for (final KeyEvent listener : listeners) if (listener.onKey(key, action, scancode, modifiers)) cancelEvent = true;
+        return cancelEvent;
     });
     public static final Event<CharTyped> CHAR_TYPED = EventFactory.createArrayBacked(CharTyped.class, listeners -> (codePoint, modifiers) ->
     {
@@ -49,9 +51,9 @@ public final class InputEvents
     {
         void filesDropped(List<Path> paths);
     }
-    public interface KeyPressed
+    public interface KeyEvent
     {
-        void keyPressed(int key, int action, int scancode, int modifiers);
+        boolean onKey(int key, int action, int scancode, int modifiers);
     }
     public interface CharTyped
     {

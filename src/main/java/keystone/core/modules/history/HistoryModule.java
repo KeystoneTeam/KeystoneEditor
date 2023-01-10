@@ -5,13 +5,11 @@ import keystone.api.KeystoneDirectories;
 import keystone.core.KeystoneConfig;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.keystone.KeystoneRegistryEvents;
-import keystone.core.events.minecraft.InputEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.world.change_queue.FlushMode;
 import keystone.core.utils.NBTSerializer;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.NbtCompound;
-import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
 import java.util.HashMap;
@@ -30,23 +28,13 @@ public class HistoryModule implements IKeystoneModule
 
     public HistoryModule()
     {
-        InputEvents.KEY_PRESSED.register(this::onKeyboardInput);
         KeystoneLifecycleEvents.OPEN_WORLD.register(this::onJoinWorld);
         KeystoneLifecycleEvents.SAVE_SESSION_INFO.register(this::saveSession);
         KeystoneLifecycleEvents.REPAIR_SESSION.register(this::repairSession);
         KeystoneLifecycleEvents.COMMIT_SESSION.register(this::commitOrRevertSession);
         KeystoneLifecycleEvents.REVERT_SESSION.register(this::commitOrRevertSession);
     }
-
-    private void onKeyboardInput(int key, int action, int scancode, int modifiers)
-    {
-        if (Keystone.isActive() && action == GLFW.GLFW_PRESS && (modifiers & GLFW.GLFW_MOD_CONTROL) > 0)
-        {
-            if (key == GLFW.GLFW_KEY_Z) undo();
-            else if (key == GLFW.GLFW_KEY_Y) redo();
-            else if (key == GLFW.GLFW_KEY_P) logHistoryStack();
-        }
-    }
+    
     private void onJoinWorld(ClientWorld world)
     {
         if (skipClearOnLoad) skipClearOnLoad = false;

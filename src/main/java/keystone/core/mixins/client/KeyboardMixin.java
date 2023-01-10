@@ -23,18 +23,21 @@ public class KeyboardMixin
     @Shadow
     private boolean repeatEvents;
 
-    @Inject(method = "onKey", at = @At("HEAD"))
-    public void keyPress(long windowPointer, int key, int scanCode, int action, int modifiers, CallbackInfo info)
+    @Inject(method = "onKey", at = @At("HEAD"), cancellable = true)
+    public void keyPress(long windowPointer, int key, int scanCode, int action, int modifiers, CallbackInfo callback)
     {
-        if (windowPointer == client.getWindow().getHandle()) InputEvents.KEY_PRESSED.invoker().keyPressed(key, action, scanCode, modifiers);
-
-        if (Keystone.isEnabled())
+        if (windowPointer == client.getWindow().getHandle())
         {
-            if (action != GLFW.GLFW_PRESS && (action != GLFW.GLFW_REPEAT || !repeatEvents))
+            boolean cancelEvent = InputEvents.KEY_EVENT.invoker().onKey(key, action, scanCode, modifiers);
+            if (cancelEvent) callback.cancel();
+            else if (Keystone.isEnabled())
             {
-                if (action == GLFW.GLFW_RELEASE) KeystoneOverlayHandler.keyReleased(key, scanCode, modifiers);
+                if (action != GLFW.GLFW_PRESS && (action != GLFW.GLFW_REPEAT || !repeatEvents))
+                {
+                    if (action == GLFW.GLFW_RELEASE) KeystoneOverlayHandler.keyReleased(key, scanCode, modifiers);
+                }
+                else KeystoneOverlayHandler.keyPressed(key, scanCode, modifiers);
             }
-            else KeystoneOverlayHandler.keyPressed(key, scanCode, modifiers);
         }
     }
 

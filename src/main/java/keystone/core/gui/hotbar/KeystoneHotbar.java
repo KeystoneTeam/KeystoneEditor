@@ -1,4 +1,4 @@
-package keystone.core.gui.overlays.hotbar;
+package keystone.core.gui.hotbar;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
@@ -36,7 +36,7 @@ public class KeystoneHotbar extends KeystonePanel
 
     //region Hotbar Changed Event
     // TODO: Separate this from the hotbar screen
-    private final void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
+    private void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
         switch (slot)
         {
@@ -122,6 +122,10 @@ public class KeystoneHotbar extends KeystonePanel
             {
                 KeystoneHotbarSlot previous = selectedSlot;
                 selectedSlot = slot;
+                
+                if (previous != null) previous.getHotkeys().removeHotkeys();
+                selectedSlot.getHotkeys().addHotkeys();
+                
                 KeystoneHotbarEvents.CHANGED.invoker().changed(previous, slot);
             }
         }

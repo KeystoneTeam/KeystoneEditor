@@ -1,8 +1,6 @@
 package keystone.core;
 
 import keystone.api.KeystoneDirectories;
-import keystone.core.events.minecraft.InputEvents;
-import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,14 +15,7 @@ public final class DebugFlags
     
     public static void init()
     {
-        InputEvents.KEY_PRESSED.register(DebugFlags::reloadHotkeyListener);
         reload();
-    }
-    
-    private static void reloadHotkeyListener(int key, int action, int scancode, int modifiers)
-    {
-        // Reload debug flags with Ctrl+R
-        if (action == GLFW.GLFW_PRESS && key == GLFW.GLFW_KEY_R && modifiers == GLFW.GLFW_MOD_CONTROL) reload();
     }
     
     public static void reload()

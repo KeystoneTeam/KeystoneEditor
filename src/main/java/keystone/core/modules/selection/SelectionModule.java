@@ -8,9 +8,8 @@ import keystone.core.client.Player;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.events.keystone.KeystoneInputEvents;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
-import keystone.core.events.minecraft.InputEvents;
-import keystone.core.gui.overlays.hotbar.KeystoneHotbar;
-import keystone.core.gui.overlays.hotbar.KeystoneHotbarSlot;
+import keystone.core.gui.hotbar.KeystoneHotbar;
+import keystone.core.gui.hotbar.KeystoneHotbarSlot;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
@@ -22,8 +21,6 @@ import keystone.core.renderer.overlay.ComplexOverlayRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.option.KeyBinding;
 import net.minecraft.util.math.Vec3i;
 import org.lwjgl.glfw.GLFW;
 
@@ -49,13 +46,13 @@ public class SelectionModule implements IKeystoneModule
     {
         selectionBoxes = Collections.synchronizedList(new ArrayList<>());
 
-        InputEvents.KEY_PRESSED.register(this::onKeyInput);
         KeystoneInputEvents.MOUSE_CLICKED.register(this::onMouseClick);
         KeystoneInputEvents.START_MOUSE_DRAG.register(this::onMouseDragStart);
         KeystoneInputEvents.END_MOUSE_DRAG.register(this::onMouseDragEnd);
         KeystoneHotbarEvents.ALLOW_CHANGE.register(this::allowHotbarChange);
         KeystoneLifecycleEvents.SELECTION_CHANGED.register(this::onSelectionChanged);
     }
+    
     //region Module Implementation
     @Override
     public void postInit()
@@ -181,25 +178,6 @@ public class SelectionModule implements IKeystoneModule
     }
     //endregion
     //region Events
-    private void onKeyInput(int key, int action, int scancode, int modifiers)
-    {
-        if (!Keystone.isEnabled() || MinecraftClient.getInstance().currentScreen != null) return;
-
-        if (key == GLFW.GLFW_KEY_D && modifiers == GLFW.GLFW_MOD_CONTROL)
-        {
-            GameOptions settings = MinecraftClient.getInstance().options;
-            for (KeyBinding keyBinding : settings.allKeys)
-            {
-                if (keyBinding.isPressed())
-                {
-                    if (keyBinding.getDefaultKey().getCode() != GLFW.GLFW_KEY_D &&
-                            keyBinding.getDefaultKey().getCode() != GLFW.GLFW_KEY_LEFT_CONTROL &&
-                            keyBinding.getDefaultKey().getCode() != GLFW.GLFW_KEY_RIGHT_CONTROL) return;
-                }
-            }
-            deselect();
-        }
-    }
     private void onMouseClick(int button, int modifiers, double mouseX, double mouseY, boolean gui)
     {
         if (!Keystone.isEnabled() || MinecraftClient.getInstance().currentScreen != null || gui) return;
