@@ -22,11 +22,11 @@ public abstract class KeystonePanel extends KeystoneOverlay
         setupViewport();
         setupPanel();
     }
-
+    
     public final void setupViewport() { this.viewport = createViewport(); }
     public final Viewport getViewport() { return viewport; }
     protected final void fillPanel(MatrixStack matrixStack, int color)
     {
-        fill(matrixStack, viewport.getMinX(), viewport.getMinY(), viewport.getMaxX(), viewport.getMaxY(), 0x80000000);
+        fill(matrixStack, viewport.getMinX(), viewport.getMinY(), viewport.getMaxX(), viewport.getMaxY(), color);
     }
 }

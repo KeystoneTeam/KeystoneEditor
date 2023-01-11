@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
+import keystone.core.modules.hotkeys.HotkeySet;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
@@ -22,13 +23,16 @@ public class KeystoneOverlay extends Screen
     {
         super(titleIn);
     }
-
+    
+    public HotkeySet getHotkeySet() { return null; }
+    
     //region Screen Overrides
     @Override
     public boolean shouldCloseOnEsc()
     {
         return false;
     }
+    
     @Override
     public void close()
     {

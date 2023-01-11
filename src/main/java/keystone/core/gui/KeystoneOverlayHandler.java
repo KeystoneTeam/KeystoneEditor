@@ -9,6 +9,7 @@ import keystone.core.gui.hotbar.KeystoneHotbar;
 import keystone.core.gui.overlays.KeystoneHudOverlay;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.viewports.ScreenViewports;
+import keystone.core.modules.hotkeys.HotkeysModule;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.minecraft.client.MinecraftClient;
@@ -28,16 +29,17 @@ import java.util.function.Consumer;
 public class KeystoneOverlayHandler
 {
     private static boolean worldFinishedLoading = false;
-    private static Queue<IKeystoneTooltip> tooltips = new ArrayDeque<>();
-    private static List<Screen> overlays = Collections.synchronizedList(new ArrayList<>());
-    private static List<Screen> addList = Collections.synchronizedList(new ArrayList<>());
-    private static List<Screen> removeList = Collections.synchronizedList(new ArrayList<>());
+    private static final Queue<IKeystoneTooltip> tooltips = new ArrayDeque<>();
+    private static final List<Screen> overlays = Collections.synchronizedList(new ArrayList<>());
+    private static final List<Screen> addList = Collections.synchronizedList(new ArrayList<>());
+    private static final List<Screen> removeList = Collections.synchronizedList(new ArrayList<>());
 
     private static boolean rendering;
     
     public static void addOverlay(Screen overlay)
     {
-        if (!(overlay instanceof KeystoneOverlay)) Keystone.LOGGER.warn("Adding non-KeystoneOverlay screen to Keystone Overlay Handler! This is not recommended.");
+        if (overlay instanceof KeystoneOverlay casted) Keystone.getModule(HotkeysModule.class).addHotkeySet(casted.getHotkeySet());
+        else Keystone.LOGGER.warn("Adding non-KeystoneOverlay screen to Keystone Overlay Handler! This is not recommended.");
 
         MinecraftClient mc = MinecraftClient.getInstance();
         overlay.init(mc, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
@@ -45,6 +47,7 @@ public class KeystoneOverlayHandler
     }
     public static void removeOverlay(Screen overlay)
     {
+        if (overlay instanceof KeystoneOverlay casted) Keystone.getModule(HotkeysModule.class).removeHotkeySet(casted.getHotkeySet());
         overlay.removed();
         removeList.add(overlay);
     }

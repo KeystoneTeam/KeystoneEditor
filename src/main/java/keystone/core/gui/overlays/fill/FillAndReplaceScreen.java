@@ -16,6 +16,7 @@ import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.BlockMaskWidget;
 import keystone.core.gui.widgets.inputs.BlockPaletteWidget;
+import keystone.core.modules.hotkeys.HotkeySet;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -81,7 +82,13 @@ public class FillAndReplaceScreen extends KeystonePanel
             else open();
         }
     }
-
+    
+    @Override
+    public boolean shouldCloseOnEsc()
+    {
+        return true;
+    }
+    
     @Override
     public void removed()
     {
@@ -120,27 +127,20 @@ public class FillAndReplaceScreen extends KeystonePanel
         addDrawableChild(fillButton);
         addDrawableChild(cancelButton);
     }
+    
+    @Override
+    public HotkeySet getHotkeySet()
+    {
+        HotkeySet hotkeySet = new HotkeySet("fill_mode");
+        hotkeySet.getHotkey(GLFW.GLFW_KEY_ENTER).addListener(() -> fillButton(null));
+        return hotkeySet;
+    }
+    
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
         fillPanel(matrixStack, 0x80000000);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
-    }
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
-    {
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE)
-        {
-            close();
-            return true;
-        }
-        else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
-        {
-            fillButton(null);
-            return true;
-        }
-
-        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     private void fillButton(ButtonWidget button)

@@ -19,6 +19,7 @@ import keystone.core.gui.widgets.inputs.BooleanWidget;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.CloneScreenHistoryEntry;
+import keystone.core.modules.hotkeys.HotkeySet;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.world.WorldModifierModules;
@@ -145,6 +146,7 @@ public class CloneScreen extends KeystonePanel
     {
         open = null;
         Keystone.getModule(ImportModule.class).clearImportBoxes(true, false);
+        KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
 
     @Override
@@ -280,47 +282,40 @@ public class CloneScreen extends KeystonePanel
     {
         nudgeImports.tick();
     }
+    //endregion
+    //region Hotkeys
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
+    public HotkeySet getHotkeySet()
     {
-        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
+        HotkeySet hotkeySet = new HotkeySet("clone_mode");
+        hotkeySet.getHotkey(GLFW.GLFW_KEY_ENTER).addListener(() -> cloneButton(null));
+        hotkeySet.getHotkey(GLFW.GLFW_KEY_R).addListener(this::rotationHotkey);
+        hotkeySet.getHotkey(GLFW.GLFW_KEY_M).addListener(this::mirrorHotkey);
+        hotkeySet.getHotkey(GLFW.GLFW_KEY_ESCAPE).clear().addListener(this::cancelHotkey);
+        return hotkeySet;
+    }
+    
+    private void rotationHotkey()
+    {
+        BlockRotation newBlockRotation = rotation.rotate(BlockRotation.CLOCKWISE_90);
+        importModule.addCloneImportBoxes(schematic, anchor, newBlockRotation, mirror, offset, repeat, scale);
+        rotation = newBlockRotation;
+    }
+    private void mirrorHotkey()
+    {
+        BlockMirror newBlockMirror = switch (mirror)
         {
-            cloneButton(null);
-            return true;
-        }
-        else if (keyCode == GLFW.GLFW_KEY_R)
-        {
-            BlockRotation newBlockRotation = rotation.rotate(BlockRotation.CLOCKWISE_90);
-            importModule.addCloneImportBoxes(schematic, anchor, newBlockRotation, mirror, offset, repeat, scale);
-            rotation = newBlockRotation;
-            return true;
-        }
-        else if (keyCode == GLFW.GLFW_KEY_M)
-        {
-            BlockMirror newBlockMirror = mirror;
-            switch (mirror)
-            {
-                case NONE:
-                    newBlockMirror = BlockMirror.LEFT_RIGHT;
-                    break;
-                case LEFT_RIGHT:
-                    newBlockMirror = BlockMirror.FRONT_BACK;
-                    break;
-                case FRONT_BACK:
-                    newBlockMirror = BlockMirror.NONE;
-                    break;
-            }
-            importModule.addCloneImportBoxes(schematic, anchor, rotation, newBlockMirror, offset, repeat, scale);
-            mirror = newBlockMirror;
-            return true;
-        }
-        else if (keyCode == GLFW.GLFW_KEY_ESCAPE)
-        {
-            addCloseHistoryEntry();
-            KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
-            return true;
-        }
-        else return super.keyPressed(keyCode, scanCode, modifiers);
+            case NONE -> BlockMirror.LEFT_RIGHT;
+            case LEFT_RIGHT -> BlockMirror.FRONT_BACK;
+            case FRONT_BACK -> BlockMirror.NONE;
+        };
+        importModule.addCloneImportBoxes(schematic, anchor, rotation, newBlockMirror, offset, repeat, scale);
+        mirror = newBlockMirror;
+    }
+    private void cancelHotkey()
+    {
+        addCloseHistoryEntry();
+        close();
     }
     //endregion
     //region Helpers

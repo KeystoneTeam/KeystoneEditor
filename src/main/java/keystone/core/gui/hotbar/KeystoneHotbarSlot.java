@@ -1,11 +1,12 @@
 package keystone.core.gui.hotbar;
 
-import keystone.core.keybinds.hotkeys.HotkeySet;
+import keystone.core.modules.hotkeys.HotkeySet;
+import keystone.core.modules.hotkeys.HotkeySets;
 import net.minecraft.text.Text;
 
 public enum KeystoneHotbarSlot
 {
-    SELECTION("keystone.hotbar.selection", HotkeySet.SELECTION_MODE),
+    SELECTION("keystone.hotbar.selection", HotkeySets.SELECTION_MODE),
     BRUSH("keystone.hotbar.brush"),
     CLONE("keystone.hotbar.clone"),
     FILL("keystone.hotbar.fill"),
@@ -18,7 +19,7 @@ public enum KeystoneHotbarSlot
 
     KeystoneHotbarSlot(String titleTranslationKey)
     {
-        this(titleTranslationKey, HotkeySet.EMPTY);
+        this(titleTranslationKey, null);
     }
     KeystoneHotbarSlot(String titleTranslationKey, HotkeySet hotkeys)
     {

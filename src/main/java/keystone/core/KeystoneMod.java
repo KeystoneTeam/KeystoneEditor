@@ -14,7 +14,6 @@ import keystone.core.gui.overlays.schematics.ImportScreen;
 import keystone.core.gui.overlays.selection.SelectionNudgeScreen;
 import keystone.core.gui.overlays.selection.SelectionScreen;
 import keystone.core.keybinds.KeystoneKeyBindings;
-import keystone.core.keybinds.hotkeys.HotkeyManager;
 import keystone.core.modules.brush.BrushModule;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.filter.FilterModule;
@@ -22,6 +21,7 @@ import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.CloneScreenHistoryEntry;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
 import keystone.core.modules.history.entries.SelectionHistoryEntry;
+import keystone.core.modules.hotkeys.HotkeysModule;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.modules.rendering.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.rendering.world_highlight.WorldHighlightModule;
@@ -63,7 +63,6 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         {
             KeystoneDirectories.init();
             DebugFlags.init();
-            HotkeyManager.init();
         }
         catch (IOException e)
         {
@@ -75,14 +74,16 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
             Keystone.LOGGER.info("Registering default Keystone modules");
 
             registry.accept(new MouseModule());
+            registry.accept(new HistoryModule());
+            registry.accept(new ClipboardModule());
+            registry.accept(new SessionModule());
+            registry.accept(new HotkeysModule());
+            
             registry.accept(new WorldCacheModule());
             registry.accept(new BlocksModule());
             registry.accept(new BiomesModule());
             registry.accept(new EntitiesModule());
-            registry.accept(new HistoryModule());
-            registry.accept(new ClipboardModule());
             registry.accept(new WorldChangeQueueModule());
-            registry.accept(new SessionModule());
 
             registry.accept(new GhostBlocksModule());
             registry.accept(new WorldHighlightModule());

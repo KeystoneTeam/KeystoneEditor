@@ -8,6 +8,7 @@ import keystone.core.gui.overlays.KeystonePanel;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.modules.clipboard.ClipboardModule;
+import keystone.core.modules.hotkeys.HotkeysModule;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.client.util.math.MatrixStack;
@@ -123,8 +124,8 @@ public class KeystoneHotbar extends KeystonePanel
                 KeystoneHotbarSlot previous = selectedSlot;
                 selectedSlot = slot;
                 
-                if (previous != null) previous.getHotkeys().removeHotkeys();
-                selectedSlot.getHotkeys().addHotkeys();
+                if (previous != null) Keystone.getModule(HotkeysModule.class).removeHotkeySet(previous.getHotkeys());
+                Keystone.getModule(HotkeysModule.class).addHotkeySet(selectedSlot.getHotkeys());
                 
                 KeystoneHotbarEvents.CHANGED.invoker().changed(previous, slot);
             }

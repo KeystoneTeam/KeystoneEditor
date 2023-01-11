@@ -13,6 +13,7 @@ import keystone.core.gui.widgets.buttons.NudgeButton;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.gui.widgets.inputs.BooleanWidget;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
+import keystone.core.modules.hotkeys.HotkeySet;
 import keystone.core.modules.schematic_import.ImportBoundingBox;
 import keystone.core.modules.schematic_import.ImportModule;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -34,14 +35,13 @@ public class ImportScreen extends KeystonePanel
     private static final int PADDING = 5;
     private static final int OPTIONS_PADDING = 5;
     private static final int BUTTON_HEIGHT = 14;
-    private static final double tooltipWidth = 0.2;
 
     private static ImportScreen open;
 
     private final ImportModule importModule;
-    private NudgeButton nudgeImports;
-    private Map<Identifier, Boolean> extensionsToPlace;
+    private final Map<Identifier, Boolean> extensionsToPlace;
     
+    private NudgeButton nudgeImports;
     private BooleanWidget copyAir;
     
     protected ImportScreen()
@@ -170,31 +170,22 @@ public class ImportScreen extends KeystonePanel
     {
         nudgeImports.tick();
     }
+    //endregion
+    //region Hotkeys
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
+    public HotkeySet getHotkeySet()
     {
-        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
-        {
-            importButton(null);
-            return true;
-        }
-        else if (keyCode == GLFW.GLFW_KEY_R)
-        {
-            importModule.rotateAll();
-            return true;
-        }
-        else if (keyCode == GLFW.GLFW_KEY_M)
-        {
-            importModule.mirrorAll();
-            return true;
-        }
-        else if (keyCode == GLFW.GLFW_KEY_ESCAPE)
-        {
-            importModule.clearImportBoxes(true, true);
-            KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
-            return true;
-        }
-        else return super.keyPressed(keyCode, scanCode, modifiers);
+        HotkeySet hotkeySet = new HotkeySet("import_mode");
+        hotkeySet.getHotkey(GLFW.GLFW_KEY_ENTER).addListener(() -> importButton(null));
+        hotkeySet.getHotkey(GLFW.GLFW_KEY_R).addListener(importModule::rotateAll);
+        hotkeySet.getHotkey(GLFW.GLFW_KEY_M).addListener(importModule::mirrorAll);
+        hotkeySet.getHotkey(GLFW.GLFW_KEY_ESCAPE).clear().addListener(this::cancelHotkey);
+        return hotkeySet;
+    }
+    private void cancelHotkey()
+    {
+        importModule.clearImportBoxes(true, true);
+        KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
     //endregion
     //region Helpers
