@@ -52,7 +52,7 @@ import java.io.IOException;
 public class KeystoneMod implements ModInitializer, ClientModInitializer
 {
     public static final String MODID = "keystone";
-    private static boolean initialized = false;
+    private static boolean ranGameLoaded = false;
     private static boolean ranVersionCheck = false;
     private static boolean inWorld;
 
@@ -68,6 +68,8 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         {
             e.printStackTrace();
         }
+        
+        KeystoneLifecycleEvents.GAME_LOADED.register(this::gameLoaded);
 
         KeystoneRegistryEvents.MODULES.register(registry ->
         {
@@ -125,7 +127,6 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
     @Override
     public void onInitializeClient()
     {
-        ScreenEvents.AFTER_INIT.register(this::gameLoaded);
         ScreenEvents.AFTER_INIT.register(this::onWorldLeft);
         ClientEntityEvents.ENTITY_LOAD.register(this::onWorldLoaded);
 
@@ -141,12 +142,18 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
 
         KeystoneKeyBindings.register();
     }
-
-    private void gameLoaded(MinecraftClient client, Screen screen, int scaledWidth, int scaledHeight)
+    
+    public static void tryGameLoaded()
     {
-        if (initialized) return;
-        else initialized = true;
+        if (!ranGameLoaded)
+        {
+            KeystoneLifecycleEvents.GAME_LOADED.invoker().onLoaded();
+            ranGameLoaded = true;
+        }
+    }
 
+    private void gameLoaded()
+    {
         Keystone.LOGGER.info("Triggering Keystone initialization events");
         Keystone.init();
 

@@ -25,7 +25,8 @@
     ]
   },
   "mixins": [
-    "keystone.mixins.json"
+    "keystone.mixins.common.json",
+    "keystone.mixins.client.json"
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",

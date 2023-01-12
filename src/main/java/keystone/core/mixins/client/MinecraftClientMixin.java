@@ -1,6 +1,7 @@
 package keystone.core.mixins.client;
 
 import keystone.api.Keystone;
+import keystone.core.KeystoneMod;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.Window;
@@ -17,14 +18,16 @@ public class MinecraftClientMixin
 {
     @Shadow @Final private Window window;
 
-    @Inject(method = "openPauseMenu", at = @At(value = "HEAD"), cancellable = true)
+    @Inject(method = "run", at = @At("HEAD"))
+    public void gameLoaded(CallbackInfo callback)
+    {
+        KeystoneMod.tryGameLoaded();
+    }
+    
+    @Inject(method = "openPauseMenu", at = @At("HEAD"), cancellable = true)
     public void pauseGame(boolean pauseOnly, CallbackInfo callback)
     {
-        if (Keystone.isEnabled())
-        {
-            //MinecraftClient.getInstance().setScreenAndRender(new KeystoneOptionsScreen(null));
-            callback.cancel();
-        }
+        if (Keystone.isEnabled()) callback.cancel();
     }
 
     @Inject(method = "onResolutionChanged", at = @At("RETURN"))

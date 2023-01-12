@@ -1,16 +1,11 @@
 package keystone.core.keybinds;
 
 import keystone.api.Keystone;
-import keystone.api.tools.DeleteEntitiesTool;
-import keystone.api.tools.FillTool;
 import keystone.core.KeystoneConfig;
-import keystone.core.KeystoneGlobalState;
-import keystone.core.gui.screens.KeystoneOptionsScreen;
 import keystone.core.keybinds.conflicts.DefaultKeyConditions;
 import keystone.core.keybinds.conflicts.IKeyCondition;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;

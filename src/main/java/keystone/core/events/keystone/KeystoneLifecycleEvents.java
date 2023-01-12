@@ -11,6 +11,17 @@ import java.util.Properties;
 
 public final class KeystoneLifecycleEvents
 {
+    //region Loading
+    public static final Event<GameLoaded> GAME_LOADED = EventFactory.createArrayBacked(GameLoaded.class, listeners -> () ->
+    {
+        for (final GameLoaded listener : listeners) listener.onLoaded();
+    });
+    
+    public interface GameLoaded
+    {
+        void onLoaded();
+    }
+    //endregion
     //region World Events
     public static final Event<OpenWorld> OPEN_WORLD = EventFactory.createArrayBacked(OpenWorld.class, listeners -> world ->
     {

@@ -1,0 +1,24 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "keystone.core.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "AbstractBlockStateMixin",
+    "BiomeInvoker",
+    "ChunkSectionAccessor",
+    "LivingEntityMixin",
+    "MinecraftServerMixin",
+    "PersistentStateManagerAccessor",
+    "ServerPlayerEntityMixin",
+    "ServerPlayerInteractionManagerMixin",
+    "ServerWorldMixin",
+    "ThreadedAnvilChunkStorageInvoker",
+    "WindowMixin",
+    "WorldAccessor",
+    "WorldEntryMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}
