@@ -1,5 +1,6 @@
 package keystone.api;
 
+import keystone.api.enums.WorldType;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.core.KeystoneConfig;
@@ -17,6 +18,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -62,14 +64,19 @@ public final class Keystone
      */
     public static void enableKeystone()
     {
+        // Ensure Keystone isn't already enabled
         if (enabled) return;
-        MinecraftClient minecraft = MinecraftClient.getInstance();
+        MinecraftClient client = MinecraftClient.getInstance();
 
-        enabled = true;
-        KeystoneGlobalState.AllowPlayerLook = false;
-        minecraft.mouse.unlockCursor();
-
-        minecraft.onResolutionChanged();
+        // If Keystone is supported
+        if (WorldType.get().canEnableKeystone(true))
+        {
+            // Enable Keystone
+            enabled = true;
+            KeystoneGlobalState.AllowPlayerLook = false;
+            client.mouse.unlockCursor();
+            client.onResolutionChanged();
+        }
     }
     /**
      * Disable Keystone if it isn't already
@@ -77,13 +84,13 @@ public final class Keystone
     public static void disableKeystone()
     {
         if (!enabled) return;
-        MinecraftClient minecraft = MinecraftClient.getInstance();
+        MinecraftClient client = MinecraftClient.getInstance();
 
         enabled = false;
-        minecraft.mouse.lockCursor();
+        client.mouse.lockCursor();
         revertPlayer = true;
 
-        minecraft.onResolutionChanged();
+        client.onResolutionChanged();
     }
     /**
      * @return If Keystone is enabled, a world is loaded, and Keystone is not waiting for

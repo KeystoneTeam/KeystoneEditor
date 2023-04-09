@@ -35,16 +35,4 @@ public class MinecraftClientMixin
     {
         KeystoneOverlayHandler.resize(MinecraftClient.getInstance(), this.window.getScaledWidth(), this.window.getScaledHeight());
     }
-
-    @Inject(method = "isMultiplayerEnabled", at = @At("HEAD"), cancellable = true)
-    public void isMultiplayerAllowed(CallbackInfoReturnable<Boolean> callback)
-    {
-        callback.setReturnValue(false);
-    }
-
-    @Inject(method = "isRealmsEnabled", at = @At("HEAD"), cancellable = true)
-    public void isRealmsEnabled(CallbackInfoReturnable<Boolean> callback)
-    {
-        callback.setReturnValue(false);
-    }
 }

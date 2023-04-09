@@ -1,5 +1,7 @@
 {
-  "title.multiplayer.disabled": "Keystone does not support Multiplayer. Please use a different profile without Keystone.",
+  "keystone.not_supported.none": "A world must be open to enable Keystone.",
+  "keystone.not_supported.multiplayer": "Keystone does not support Multiplayer. Please use a different launcher profile without Keystone.",
+  "keystone.not_supported.noPermission": "You must have command permissions to use Keystone.",
   
   "keystone.version_check.outdated": "You are using an outdated version of Keystone!",
   "keystone.version_check.currentVersion": "You are using %s, the current version is %s",

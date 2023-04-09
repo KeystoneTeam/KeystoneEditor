@@ -2,6 +2,7 @@ package keystone.core;
 
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
+import keystone.api.enums.WorldType;
 import keystone.core.events.KeystoneInputHandler;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.keystone.KeystoneRegistryEvents;
@@ -187,7 +188,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
             }
 
             KeystoneKeyBindings.configureKeyConditions();
-            KeystoneLifecycleEvents.OPEN_WORLD.invoker().join(world);
+            if (WorldType.get().supportsKeystone) KeystoneLifecycleEvents.OPEN_WORLD.invoker().join(world);
         }
     }
     private void onWorldLeft(MinecraftClient client, Screen screen, int scaledWidth, int scaledHeight)
@@ -198,7 +199,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
 
             Keystone.disableKeystone();
             Keystone.forEachModule(module -> module.resetModule());
-            KeystoneLifecycleEvents.CLOSE_WORLD.invoker().leave();
+            if (WorldType.get().supportsKeystone) KeystoneLifecycleEvents.CLOSE_WORLD.invoker().leave();
         }
     }
 }

@@ -1,6 +1,7 @@
 package keystone.core.mixins.client;
 
 import keystone.api.Keystone;
+import keystone.api.enums.WorldType;
 import keystone.core.modules.session.SessionModule;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.MessageScreen;
@@ -35,19 +36,24 @@ public abstract class GameMenuScreenMixin extends Screen
 
     private void saveAndQuitButton(ButtonWidget button)
     {
-        SessionModule session = Keystone.getModule(SessionModule.class);
-        session.promptUncommittedChanges(() ->
-                {
-                    session.commitChanges();
-                    vanillaSaveAndQuitButtonBehaviour(button, true);
-                },
-                () ->
-                {
-                    button.active = false;
-                    session.revertChanges(true);
-                    vanillaSaveAndQuitButtonBehaviour(button, false);
-                }, null
-        );
+        WorldType type = WorldType.get();
+        if (type.supportedFeatures.sessions())
+        {
+            SessionModule session = Keystone.getModule(SessionModule.class);
+            session.promptUncommittedChanges(() ->
+                    {
+                        session.commitChanges();
+                        vanillaSaveAndQuitButtonBehaviour(button, true);
+                    },
+                    () ->
+                    {
+                        button.active = false;
+                        session.revertChanges(true);
+                        vanillaSaveAndQuitButtonBehaviour(button, false);
+                    }, null
+            );
+        }
+        else vanillaSaveAndQuitButtonBehaviour(button, true);
     }
     private void vanillaSaveAndQuitButtonBehaviour(ButtonWidget button, boolean disconnect)
     {
