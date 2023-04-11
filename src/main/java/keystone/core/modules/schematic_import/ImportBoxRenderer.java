@@ -5,7 +5,8 @@ import keystone.core.client.Camera;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.modules.selection.SelectedFace;
 import keystone.core.renderer.Color4f;
-import keystone.core.renderer.RendererFactory;
+import keystone.core.renderer.RendererProperties;
+import keystone.core.renderer.ShapeRenderers;
 import keystone.core.renderer.interfaces.IAlphaProvider;
 import keystone.core.renderer.interfaces.IColorProvider;
 import keystone.core.renderer.overlay.ComplexOverlayRenderer;
@@ -21,11 +22,8 @@ public class ImportBoxRenderer
 
     public ImportBoxRenderer()
     {
-        this.renderer = RendererFactory.createComplexOverlay(
-                RendererFactory.createPolygonOverlay().buildFill(),
-                RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe()
-        );
-        this.planeGridRenderer = (WireframeOverlayRenderer)RendererFactory.createWireframeOverlay().buildWireframe(1.0f);
+        this.renderer = ShapeRenderers.createComplexOverlay(RendererProperties.createFill(), RendererProperties.createWireframe(2.0f).ignoreDepth());
+        this.planeGridRenderer = new WireframeOverlayRenderer(RendererProperties.createWireframe(1.0f));
         this.mouse = Keystone.getModule(MouseModule.class);
     }
 
@@ -41,18 +39,9 @@ public class ImportBoxRenderer
             double centerZ = (int)Camera.getZ();
             switch (selectedFace.getFaceDirection())
             {
-                case EAST:
-                case WEST:
-                    centerX = box.getCenter().getX();
-                    break;
-                case UP:
-                case DOWN:
-                    centerY = box.getCenter().getY();
-                    break;
-                case SOUTH:
-                case NORTH:
-                    centerZ = box.getCenter().getZ();
-                    break;
+                case EAST, WEST -> centerX = box.getCenter().getX();
+                case UP, DOWN -> centerY = box.getCenter().getY();
+                case SOUTH, NORTH -> centerZ = box.getCenter().getZ();
             }
 
             renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawPlane(new Vec3d(centerX, centerY, centerZ), selectedFace.getFaceDirection(), 1.0, Color4f.white.withAlpha(0.25f));

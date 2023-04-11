@@ -12,7 +12,8 @@ import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.modules.world.change_queue.FlushMode;
 import keystone.core.renderer.Color4f;
 import keystone.core.renderer.RenderBox;
-import keystone.core.renderer.RendererFactory;
+import keystone.core.renderer.RendererProperties;
+import keystone.core.renderer.ShapeRenderers;
 import keystone.core.renderer.overlay.ComplexOverlayRenderer;
 import keystone.core.utils.ProgressBar;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -37,7 +38,7 @@ public class BrushModule implements IKeystoneModule
     private HistoryModule historyModule;
     private WorldModifierModules worldModifiers;
 
-    private ComplexOverlayRenderer renderer;
+    private final ComplexOverlayRenderer renderer;
 
     private BrushOperation brushOperation;
     private BrushShape brushShape;
@@ -73,10 +74,7 @@ public class BrushModule implements IKeystoneModule
         KeystoneInputEvents.END_MOUSE_DRAG.register(this::onMouseDragEnd);
         ServerTickEvents.START_SERVER_TICK.register(this::onServerTick);
 
-        this.renderer = RendererFactory.createComplexOverlay(
-                RendererFactory.createSmartPolygonOverlay(this::isCameraInsideShape).buildFill(),
-                RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe(4.0f)
-        );
+        this.renderer = ShapeRenderers.createComplexOverlay(RendererProperties.createFill(this::isCameraInsideShape), RendererProperties.createWireframe(4.0f).ignoreDepth());
     }
 
     @Override

@@ -73,18 +73,6 @@ public class ComplexOverlayRenderer implements IOverlayRenderer
         this.drawMode = drawMode;
         return this;
     }
-    public ComplexOverlayRenderer lineWidth(float lineWidth)
-    {
-        IOverlayRenderer wireframeRenderer = this.renderers.get(DrawMode.WIREFRAME);
-        if (wireframeRenderer instanceof WireframeOverlayRenderer wireframe) wireframe.lineWidth(lineWidth);
-        return this;
-    }
-    public ComplexOverlayRenderer revertLineWidth()
-    {
-        IOverlayRenderer wireframeRenderer = this.renderers.get(DrawMode.WIREFRAME);
-        if (wireframeRenderer instanceof WireframeOverlayRenderer wireframe) wireframe.revertLineWidth();
-        return this;
-    }
 
     protected IOverlayRenderer getRenderer()
     {

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.renderer.interfaces.IRendererModifier;
 import net.minecraft.client.render.GameRenderer;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class DefaultRendererModifiers
@@ -84,9 +85,10 @@ public class DefaultRendererModifiers
             RenderSystem.depthMask(true);
         }
     };
+    
     public static class PolygonOffset implements IRendererModifier
     {
-        private int scale;
+        private final int scale;
 
         public PolygonOffset(int scale)
         {
@@ -99,14 +101,27 @@ public class DefaultRendererModifiers
             RenderSystem.enablePolygonOffset();
             RenderSystem.polygonOffset(-0.1f * scale, -0.2f * scale);
         }
-
         @Override
         public void disable()
         {
             RenderSystem.polygonOffset(0, 0);
             RenderSystem.disablePolygonOffset();
         }
-    };
+    
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PolygonOffset that = (PolygonOffset) o;
+            return scale == that.scale;
+        }
+        @Override
+        public int hashCode()
+        {
+            return scale;
+        }
+    }
 
     public static class ConditionalCull implements IRendererModifier
     {
@@ -126,6 +141,36 @@ public class DefaultRendererModifiers
         public void disable()
         {
             RenderSystem.enableCull();
+        }
+    }
+    
+    public static class LineWidth implements IRendererModifier
+    {
+        private final float lineWidth;
+        
+        public LineWidth(float lineWidth)
+        {
+            this.lineWidth = lineWidth;
+        }
+    
+        @Override
+        public void enable()
+        {
+            RenderSystem.lineWidth(this.lineWidth);
+        }
+    
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            LineWidth that = (LineWidth) o;
+            return lineWidth == that.lineWidth;
+        }
+        @Override
+        public int hashCode()
+        {
+            return Float.hashCode(lineWidth);
         }
     }
 }

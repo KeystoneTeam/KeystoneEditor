@@ -7,7 +7,8 @@ import keystone.core.gui.overlays.selection.SelectionNudgeScreen;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.renderer.Color4f;
 import keystone.core.renderer.RenderBox;
-import keystone.core.renderer.RendererFactory;
+import keystone.core.renderer.RendererProperties;
+import keystone.core.renderer.ShapeRenderers;
 import keystone.core.renderer.interfaces.IColorProvider;
 import keystone.core.renderer.overlay.ComplexOverlayRenderer;
 import keystone.core.renderer.overlay.WireframeOverlayRenderer;
@@ -27,11 +28,8 @@ public class SelectionBoxRenderer
 
     public SelectionBoxRenderer()
     {
-        this.renderer = RendererFactory.createComplexOverlay(
-                RendererFactory.createPolygonOverlay().buildFill(),
-                RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe()
-        );
-        this.gridRenderer = RendererFactory.createWireframeOverlay().buildWireframe();
+        this.renderer = ShapeRenderers.createComplexOverlay(RendererProperties.createFill(), RendererProperties.createWireframe(2.0f).ignoreDepth());
+        this.gridRenderer = new WireframeOverlayRenderer(RendererProperties.createWireframe(2.0f));
         this.mouse = Keystone.getModule(MouseModule.class);
     }
 
@@ -61,12 +59,11 @@ public class SelectionBoxRenderer
         });
 
         // Render Box Grid
-        gridRenderer.lineWidth(1.0f).drawGrid(Vec3d.of(box.getMin()), box.getSize(), 1.0, boxColor, direction ->
+        gridRenderer.drawGrid(Vec3d.of(box.getMin()), box.getSize(), 1.0, boxColor, direction ->
         {
             if (selectedFace != null && selectedFace.getBox().equals(box) && selectedFace.getFaceDirection() == direction) return 0.75f;
             else return 0.25f;
         }, false);
-        gridRenderer.revertLineWidth();
 
         // Render Corners If Selected
         if (box.getMin() != box.getMax() && selectedForNudge)

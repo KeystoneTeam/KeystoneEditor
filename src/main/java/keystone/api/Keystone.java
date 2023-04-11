@@ -14,6 +14,7 @@ import keystone.core.modules.filter.execution.IFilterThread;
 import keystone.core.modules.rendering.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.world.change_queue.WorldChangeQueueModule;
 import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.renderer.ShapeRenderers;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.MinecraftClient;
@@ -345,16 +346,29 @@ public final class Keystone
     {
         WorldRenderEvents.LAST.register(context ->
         {
+            // Update Client Player Data
             Player.update(context.tickDelta(), MinecraftClient.getInstance().player);
+            
             if (Keystone.isEnabled())
             {
+                // Begin Shape Rendering
+                ShapeRenderers.beginRender(context);
+                
+                // Render Ghost Blocks
                 ghostBlocksModule.renderGhostBlocks(context);
+                
+                // Pre-Render Enabled Modules
                 for (IKeystoneModule module : modules.values()) if (module.isEnabled()) module.preRender(context);
+                
+                // Render Modules
                 for (IKeystoneModule module : modules.values())
                 {
                     module.alwaysRender(context);
                     if (module.isEnabled()) module.renderWhenEnabled(context);
                 }
+                
+                // End Shape Rendering
+                ShapeRenderers.endRender();
             }
         });
 

@@ -7,8 +7,9 @@ import keystone.core.mixins.ThreadedAnvilChunkStorageInvoker;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.Color4f;
+import keystone.core.renderer.ShapeRenderers;
 import keystone.core.renderer.RenderBox;
-import keystone.core.renderer.RendererFactory;
+import keystone.core.renderer.RendererProperties;
 import keystone.core.renderer.overlay.ComplexOverlayRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
@@ -26,7 +27,7 @@ public class WorldHighlightModule implements IKeystoneModule
     public void postInit()
     {
         this.worldCache = Keystone.getModule(WorldCacheModule.class);
-        this.renderer = RendererFactory.createComplexOverlay(RendererFactory.createPolygonOverlay().ignoreDepth().buildFill(), RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe());
+        this.renderer = ShapeRenderers.createComplexOverlay(RendererProperties.createFill().ignoreDepth(), RendererProperties.createWireframe(2.0f).ignoreDepth());
     }
 
     @Override

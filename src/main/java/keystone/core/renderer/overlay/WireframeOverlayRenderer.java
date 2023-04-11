@@ -1,30 +1,30 @@
 package keystone.core.renderer.overlay;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.client.Camera;
-import keystone.core.renderer.Color4f;
-import keystone.core.renderer.RenderBox;
+import keystone.core.renderer.*;
 import keystone.core.renderer.interfaces.IAlphaProvider;
 import keystone.core.renderer.interfaces.IColorProvider;
-import keystone.core.renderer.interfaces.IRenderer;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 
 import java.util.function.BiFunction;
 
 public class WireframeOverlayRenderer implements IOverlayRenderer
 {
-    private static final Vec2f[] UNIT_CIRCLE_VERTICES = createUnitCircleVertices(90);
+    private static final int CIRCLE_RESOLUTION = 90;
+    private static final Vec2f[] UNIT_CIRCLE_VERTICES = createUnitCircleVertices();
     private static final Vec3d[] CIRCLE_VERTICES_BUFFER = new Vec3d[UNIT_CIRCLE_VERTICES.length];
-    private static Vec2f[] createUnitCircleVertices(int resolution)
+    private static Vec2f[] createUnitCircleVertices()
     {
-        double step = 6.283185307179586D / resolution;
-        Vec2f[] ret = new Vec2f[resolution];
-        for (int i = 0; i < resolution; i++)
+        double step = 6.283185307179586D / CIRCLE_RESOLUTION;
+        Vec2f[] ret = new Vec2f[CIRCLE_RESOLUTION];
+        for (int i = 0; i < CIRCLE_RESOLUTION; i++)
         {
             double theta = step * i;
             double localX = Math.cos(theta);
@@ -34,32 +34,18 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         return ret;
     }
 
-    private final IRenderer renderer;
-    private final float defaultLineWidth;
-    private float lineWidth;
+    private final ShapeRenderer renderer;
 
-    public WireframeOverlayRenderer(IRenderer renderer, float lineWidth)
+    public WireframeOverlayRenderer(RendererProperties properties)
     {
-        this.renderer = renderer;
-        this.defaultLineWidth = lineWidth;
-        this.lineWidth = lineWidth;
+        this.renderer = ShapeRenderers.getOrCreate(properties.copy(VertexFormat.DrawMode.LINES));
     }
 
-    public IRenderer getRenderer() { return this.renderer; }
-    public WireframeOverlayRenderer lineWidth(float lineWidth)
-    {
-        this.lineWidth = lineWidth;
-        return this;
-    }
-    public void revertLineWidth()
-    {
-        this.lineWidth = defaultLineWidth;
-    }
+    public ShapeRenderer getRenderer() { return this.renderer; }
 
     //region Draw Calls
     private void drawLineLoop(Color4f color, Vec3d[] vertices)
     {
-        renderer.lines(lineWidth, VertexFormats.LINES);
         for (int i = 0; i < vertices.length; i++)
         {
             Vec3d a = vertices[i];
@@ -68,7 +54,6 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
             renderer.vertex(a).color(color).normal(normal).next();
             renderer.vertex(b).color(color).normal(normal).next();
         }
-        renderer.draw();
     }
 
     @Override
@@ -169,7 +154,6 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         if (sizeY > 0 && sizeZ > 0)
         {
             //region WEST
-            renderer.lines(lineWidth, VertexFormats.LINES);
             color = colorProvider.apply(Direction.WEST).withAlpha(alphaProvider.apply(Direction.WEST));
             for (int i = 0; i < sizeZ; i++)
             {
@@ -193,12 +177,10 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                     renderer.vertex(b).color(color).normal(normal).next();
                 }
             }
-            renderer.draw();
             //endregion
             //region EAST
             if (sizeX > 0)
             {
-                renderer.lines(lineWidth, VertexFormats.LINES);
                 color = colorProvider.apply(Direction.EAST).withAlpha(alphaProvider.apply(Direction.EAST));
                 for (int i = 0; i < sizeZ; i++)
                 {
@@ -222,7 +204,6 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                         renderer.vertex(b).color(color).normal(normal).next();
                     }
                 }
-                renderer.draw();
             }
             //endregion
         }
@@ -231,7 +212,6 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         if (sizeX > 0 && sizeZ > 0)
         {
             //region DOWN
-            renderer.lines(lineWidth, VertexFormats.LINES);
             color = colorProvider.apply(Direction.DOWN).withAlpha(alphaProvider.apply(Direction.DOWN));
             for (int i = 0; i < sizeX; i++)
             {
@@ -255,12 +235,10 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                     renderer.vertex(b).color(color).normal(normal).next();
                 }
             }
-            renderer.draw();
             //endregion
             //region UP
             if (sizeY > 0)
             {
-                renderer.lines(lineWidth, VertexFormats.LINES);
                 color = colorProvider.apply(Direction.UP).withAlpha(alphaProvider.apply(Direction.UP));
                 for (int i = 0; i < sizeX; i++)
                 {
@@ -284,7 +262,6 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                         renderer.vertex(b).color(color).normal(normal).next();
                     }
                 }
-                renderer.draw();
             }
             //endregion
         }
@@ -293,7 +270,6 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         if (sizeX > 0 && sizeY > 0)
         {
             //region NORTH
-            renderer.lines(lineWidth, VertexFormats.LINES);
             color = colorProvider.apply(Direction.NORTH).withAlpha(alphaProvider.apply(Direction.NORTH));
             for (int i = 0; i < sizeX; i++)
             {
@@ -317,12 +293,10 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                     renderer.vertex(b).color(color).normal(normal).next();
                 }
             }
-            renderer.draw();
             //endregion
             //region SOUTH
             if (sizeZ > 0)
             {
-                renderer.lines(lineWidth, VertexFormats.LINES);
                 color = colorProvider.apply(Direction.SOUTH).withAlpha(alphaProvider.apply(Direction.SOUTH));
                 for (int i = 0; i < sizeX; i++)
                 {
@@ -346,7 +320,6 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                         renderer.vertex(b).color(color).normal(normal).next();
                     }
                 }
-                renderer.draw();
             }
             //endregion
         }
@@ -365,21 +338,21 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
         Vec3i size = Vec3i.ZERO;
         switch (planeNormal)
         {
-            case NORTH:
-            case SOUTH:
+            case NORTH, SOUTH ->
+            {
                 min = new Vec3d(center.x - halfSize, world.getBottomY(), center.z);
                 size = new Vec3i(fullSize, world.getHeight(), 0);
-                break;
-            case EAST:
-            case WEST:
+            }
+            case EAST, WEST ->
+            {
                 min = new Vec3d(center.x, world.getBottomY(), center.z - halfSize);
                 size = new Vec3i(0, world.getHeight(), fullSize);
-                break;
-            case UP:
-            case DOWN:
+            }
+            case UP, DOWN ->
+            {
                 min = center.add(-halfSize, 0, -halfSize);
                 size = new Vec3i(fullSize, 0, fullSize);
-                break;
+            }
         }
 
         drawGrid(min, size, gridScale, colorProvider, alphaProvider, true);

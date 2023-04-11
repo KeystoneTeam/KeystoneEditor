@@ -16,7 +16,8 @@ import keystone.core.modules.history.entries.SelectionHistoryEntry;
 import keystone.core.modules.mouse.MouseModule;
 import keystone.core.renderer.Color4f;
 import keystone.core.renderer.RenderBox;
-import keystone.core.renderer.RendererFactory;
+import keystone.core.renderer.RendererProperties;
+import keystone.core.renderer.ShapeRenderers;
 import keystone.core.renderer.overlay.ComplexOverlayRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
@@ -61,10 +62,7 @@ public class SelectionModule implements IKeystoneModule
         mouseModule = Keystone.getModule(MouseModule.class);
         revertHistoryEntry = new SelectionHistoryEntry(selectionBoxes);
 
-        highlightRenderer = RendererFactory.createComplexOverlay(
-                RendererFactory.createPolygonOverlay().buildFill(),
-                RendererFactory.createWireframeOverlay().ignoreDepth().buildWireframe()
-        );
+        highlightRenderer = ShapeRenderers.createComplexOverlay(RendererProperties.createFill(), RendererProperties.createWireframe(2.0f).ignoreDepth());
         selectionBoxRenderer = new SelectionBoxRenderer();
     }
     @Override
