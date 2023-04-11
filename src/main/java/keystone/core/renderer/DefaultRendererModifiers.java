@@ -156,7 +156,7 @@ public class DefaultRendererModifiers
         @Override
         public void enable()
         {
-            RenderSystem.lineWidth(this.lineWidth);
+            RenderSystem.lineWidth(lineWidth);
         }
     
         @Override

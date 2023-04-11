@@ -10,6 +10,10 @@ plugins {
 version = project.mod_version + '.' + project.mod_patch + '-' + project.minecraft_version
 group = project.maven_group
 
+loom {
+    accessWidenerPath = file("src/main/resources/keystone.accesswidener")
+}
+
 // Dependency Maven Repositories
 repositories {
     maven {

@@ -1,15 +1,11 @@
 package keystone.core.renderer.overlay;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.client.Camera;
 import keystone.core.renderer.*;
 import keystone.core.renderer.interfaces.IAlphaProvider;
 import keystone.core.renderer.interfaces.IColorProvider;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 
@@ -57,7 +53,7 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
     }
 
     @Override
-    public void drawCuboid(RenderBox box, IColorProvider colorProvider, IAlphaProvider alphaProvider)
+    public void drawCuboid(Box box, IColorProvider colorProvider, IAlphaProvider alphaProvider)
     {
         if (alphaProvider == null) alphaProvider = direction -> null;
 

@@ -8,6 +8,7 @@ import keystone.core.renderer.interfaces.IColorProvider;
 import keystone.core.renderer.shapes.SphereMesh;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexFormat;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -28,7 +29,7 @@ public class FillOverlayRenderer implements IOverlayRenderer
     
     //region Draw Calls
     @Override
-    public void drawCuboid(RenderBox box, IColorProvider colorProvider, IAlphaProvider alphaProvider)
+    public void drawCuboid(Box box, IColorProvider colorProvider, IAlphaProvider alphaProvider)
     {
         if (alphaProvider == null) alphaProvider = direction -> null;
 
@@ -130,7 +131,7 @@ public class FillOverlayRenderer implements IOverlayRenderer
             }
         }
 
-        drawCuboid(new RenderBox(min, min.add(size.getX(), size.getY(), size.getZ())).nudge(), colorProvider, alphaProvider);
+        drawCuboid(new RenderBox(min, min.add(size.getX(), size.getY(), size.getZ())), colorProvider, alphaProvider);
     }
     @Override
     public void drawDiamond(Vec3d center, double xRadius, double yRadius, double zRadius, Color4f color)

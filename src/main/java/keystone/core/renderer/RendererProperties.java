@@ -24,7 +24,7 @@ public record RendererProperties(VertexFormat.DrawMode drawMode, VertexFormat ve
     // region Presets
     public static RendererProperties createWireframe(float lineWidth)
     {
-        return new RendererProperties(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR)
+        return new RendererProperties(VertexFormat.DrawMode.LINES, VertexFormats.LINES)
                 .withModifier(DefaultRendererModifiers.LINES_SHADER)
                 .translucent()
                 .ignoreCull()

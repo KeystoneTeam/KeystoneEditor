@@ -13,6 +13,7 @@
   "license": "GPL-3.0",
   "icon": "assets/keystone/icon.png",
   "environment": "*",
+
   "entrypoints": {
     "client": [
       "keystone.core.KeystoneMod"
@@ -24,10 +25,13 @@
       "keystone.compat.modmenu.KeystoneModMenu"
     ]
   },
+
   "mixins": [
     "keystone.mixins.common.json",
     "keystone.mixins.client.json"
   ],
+  "accessWidener" : "keystone.accesswidener",
+
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": ">=${fabric_version}",

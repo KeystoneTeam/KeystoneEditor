@@ -2,9 +2,9 @@ package keystone.core.renderer.overlay;
 
 import keystone.api.Keystone;
 import keystone.core.renderer.Color4f;
-import keystone.core.renderer.RenderBox;
 import keystone.core.renderer.interfaces.IAlphaProvider;
 import keystone.core.renderer.interfaces.IColorProvider;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -36,7 +36,7 @@ public class ComplexOverlayRenderer implements IOverlayRenderer
         this.fallbackRenderer = new IOverlayRenderer()
         {
             @Override
-            public void drawCuboid(RenderBox box, IColorProvider colorProvider, IAlphaProvider alphaProvider)
+            public void drawCuboid(Box box, IColorProvider colorProvider, IAlphaProvider alphaProvider)
             {
                 Keystone.LOGGER.error("This ComplexOverlayRenderer does not support DrawMode." + drawMode + "!");
             }
@@ -80,7 +80,7 @@ public class ComplexOverlayRenderer implements IOverlayRenderer
     }
 
     @Override
-    public void drawCuboid(RenderBox box, IColorProvider colorProvider, IAlphaProvider alphaProvider)
+    public void drawCuboid(Box box, IColorProvider colorProvider, IAlphaProvider alphaProvider)
     {
         getRenderer().drawCuboid(box, colorProvider, alphaProvider);
     }
