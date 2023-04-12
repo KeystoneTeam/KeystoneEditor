@@ -9,6 +9,7 @@ import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.screens.KeystoneOptionsScreen;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.history.HistoryModule;
+import keystone.core.modules.rendering.world_highlight.WorldHighlightModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.session.SessionModule;
 import net.minecraft.block.Blocks;
@@ -29,7 +30,7 @@ public class HotkeySets
         DEFAULT.getHotkey(GLFW.GLFW_KEY_LEFT_CONTROL, GLFW.GLFW_KEY_Y).addListener(() -> Keystone.getModule(HistoryModule.class).redo());
         DEFAULT.getHotkey(GLFW.GLFW_KEY_LEFT_CONTROL, GLFW.GLFW_KEY_P).addListener(() -> Keystone.getModule(HistoryModule.class).logHistoryStack());
         DEFAULT.getHotkey(GLFW.GLFW_KEY_U).addListener(() -> KeystoneGlobalState.SuppressingBlockTicks = !KeystoneGlobalState.SuppressingBlockTicks);
-        DEFAULT.getHotkey(GLFW.GLFW_KEY_H).addListener(() -> KeystoneGlobalState.HighlightTileEntities = !KeystoneGlobalState.HighlightTileEntities);
+        DEFAULT.getHotkey(GLFW.GLFW_KEY_H).addListener(() -> Keystone.getModule(WorldHighlightModule.class).toggle());
         DEFAULT.getHotkey(GLFW.GLFW_KEY_O).addListener(HotkeySets::featureTest);
     
         SELECTION_MODE.getHotkey(GLFW.GLFW_KEY_LEFT_CONTROL, GLFW.GLFW_KEY_D).addListener(() -> Keystone.getModule(SelectionModule.class).deselect());

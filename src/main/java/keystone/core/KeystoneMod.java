@@ -128,7 +128,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
     @Override
     public void onInitializeClient()
     {
-        ScreenEvents.AFTER_INIT.register(this::onWorldLeft);
+        KeystoneLifecycleEvents.CLOSE_WORLD.register(this::onWorldLeft);
         ClientEntityEvents.ENTITY_LOAD.register(this::onWorldLoaded);
 
         KeystoneInputHandler.registerEvents();
@@ -191,15 +191,10 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
             if (WorldType.get().supportsKeystone) KeystoneLifecycleEvents.OPEN_WORLD.invoker().join(world);
         }
     }
-    private void onWorldLeft(MinecraftClient client, Screen screen, int scaledWidth, int scaledHeight)
+    private void onWorldLeft()
     {
-        if (screen instanceof TitleScreen && inWorld)
-        {
-            inWorld = false;
-
-            Keystone.disableKeystone();
-            Keystone.forEachModule(module -> module.resetModule());
-            if (WorldType.get().supportsKeystone) KeystoneLifecycleEvents.CLOSE_WORLD.invoker().leave();
-        }
+        inWorld = false;
+        Keystone.disableKeystone();
+        Keystone.forEachModule(module -> module.resetModule());
     }
 }

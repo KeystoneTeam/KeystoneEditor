@@ -28,6 +28,10 @@ public class KeystoneConfig
     @Variable @IntRange(min = 1) public static int minGuiScale = 2;
     @Variable @IntRange(min = 1) public static int guiScrollSpeed = 10;
     @Variable @FloatRange(min = 0, scrollStep = 0.25f) @DisplayModifiers(numberScale = 0.05f) public static float tooltipDelay = 20;
+    
+    @Header("Highlighting")
+    @Variable public static boolean highlightTileEntities = true;
+    @Variable public static boolean highlightEntities = true;
 
     @Header("Directories")
     @Variable public static String keystoneDirectory = "keystone";

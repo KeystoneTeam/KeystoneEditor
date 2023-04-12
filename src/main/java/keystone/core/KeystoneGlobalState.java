@@ -50,10 +50,6 @@ public class KeystoneGlobalState
      */
     public static boolean HideSelectionBoxes = false;
     /**
-     * If true, tile entities will be highlighted with a yellow box
-     */
-    public static boolean HighlightTileEntities = false;
-    /**
      * If true, the Minecraft world renderer will be reloaded. This is used to
      * redraw biomes
      */

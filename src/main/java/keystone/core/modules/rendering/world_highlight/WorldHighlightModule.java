@@ -1,9 +1,9 @@
 package keystone.core.modules.rendering.world_highlight;
 
 import keystone.api.Keystone;
+import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.client.Player;
-import keystone.core.mixins.ThreadedAnvilChunkStorageInvoker;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.renderer.Color4f;
@@ -13,12 +13,9 @@ import keystone.core.renderer.ShapeRenderers;
 import keystone.core.renderer.overlay.ComplexOverlayRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.model.WeightedBakedModel;
-import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.MarkerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.chunk.WorldChunk;
@@ -37,18 +34,19 @@ public class WorldHighlightModule implements IKeystoneModule
     private static final Color4f invisibleEntityOutline = invisibleEntityFill.withAlpha(1.0f);
     private static final Color4f specialEntityOutline = specialEntityFill.withAlpha(0.125f);
     
-    private WorldCacheModule worldCache;
     private ComplexOverlayRenderer renderer;
+    private boolean enabled = true;
 
     @Override
     public void postInit()
     {
-        this.worldCache = Keystone.getModule(WorldCacheModule.class);
         this.renderer = ShapeRenderers.createComplexOverlay(RendererProperties.createFill(), RendererProperties.createWireframe(2.0f).ignoreDepth());
     }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() { return enabled; }
+    
+    public void toggle() { enabled = !enabled; }
 
     @Override
     public void renderWhenEnabled(WorldRenderContext context)
@@ -64,7 +62,7 @@ public class WorldHighlightModule implements IKeystoneModule
             if (chunk != null)
             {
                 // Tile Entity Highlighting
-                if (KeystoneGlobalState.HighlightTileEntities && chunk.getBlockEntityPositions() != null)
+                if (KeystoneConfig.highlightTileEntities && chunk.getBlockEntityPositions() != null)
                 {
                     for (BlockPos pos : chunk.getBlockEntityPositions())
                     {
@@ -77,25 +75,28 @@ public class WorldHighlightModule implements IKeystoneModule
         }
         
         // Entity Highlighting
-        ServerWorld serverWorld = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
-        serverWorld.iterateEntities().forEach(entity ->
+        if (KeystoneConfig.highlightEntities)
         {
-            if (!entity.getUuid().equals(MinecraftClient.getInstance().cameraEntity.getUuid()))
+            ServerWorld serverWorld = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
+            for (Entity entity : serverWorld.iterateEntities())
             {
-                Box box = entity.getBoundingBox();
-                if (box.getXLength() == 0 && box.getYLength() == 0 && box.getZLength() == 0)
+                if (!entity.getUuid().equals(MinecraftClient.getInstance().cameraEntity.getUuid()))
                 {
-                    box = box.expand(-0.125, -0.125, -0.125);
-                    this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, specialEntityFill);
-                    this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawCuboid(box, specialEntityOutline);
-                }
-                else
-                {
-                    boolean invisible = entity.isInvisible();
-                    this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, invisible ? invisibleEntityFill : entityFill);
-                    this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawCuboid(box, invisible ? invisibleEntityOutline : entityOutline);
+                    Box box = entity.getBoundingBox();
+                    if (box.getXLength() == 0 && box.getYLength() == 0 && box.getZLength() == 0)
+                    {
+                        box = box.expand(-0.125, -0.125, -0.125);
+                        this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, specialEntityFill);
+                        this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawCuboid(box, specialEntityOutline);
+                    }
+                    else
+                    {
+                        boolean invisible = entity.isInvisible();
+                        this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, invisible ? invisibleEntityFill : entityFill);
+                        this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawCuboid(box, invisible ? invisibleEntityOutline : entityOutline);
+                    }
                 }
             }
-        });
+        }
     }
 }
