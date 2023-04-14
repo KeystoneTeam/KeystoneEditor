@@ -41,6 +41,8 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
     protected void init()
     {
         super.init();
+        
+        // Palette Panel
         this.palettePanel = BlockGridWidget.createWithViewport(this, ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.RIGHT, Viewport.MIDDLE, Viewport.RIGHT).offset(0, 0, -5, -80), true, Text.translatable("keystone.mask_panel"), (entry, mouseButton) ->
         {
             BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(entry.state());
@@ -51,7 +53,7 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
         {
             for (int i = 0; i < weight; i++) palettePanel.addBlock(blockProvider.getFirst().getMinecraftBlock(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP, false);
         });
-
+        this.palettePanel.setCountChangedCallback(this::onCountChanged);
         this.palettePanel.rebuildButtons();
         addDrawableChild(palettePanel);
         
@@ -103,6 +105,13 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
+    private void onCountChanged(BlockGridWidget.Entry entry, Integer count)
+    {
+        BlockType type = BlockTypeRegistry.fromMinecraftBlock(entry.state());
+        this.palette.without(type);
+        if (count != null && count > 0) this.palette.with(type, count);
+    }
+    
     @Override
     public void removed()
     {

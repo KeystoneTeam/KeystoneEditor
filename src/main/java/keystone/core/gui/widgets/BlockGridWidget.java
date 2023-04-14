@@ -72,20 +72,22 @@ public class BlockGridWidget extends ClickableWidget
 
     private int blockCount;
 
-    private int buttonsPerRow;
-    private int buttonsPerColumn;
-    private int buttonsInPanel;
+    private final int buttonsPerRow;
+    private final int buttonsPerColumn;
+    private final int buttonsInPanel;
     private double scrollOffset;
 
-    private int buttonsX;
-    private int buttonsY;
+    private final int buttonsX;
+    private final int buttonsY;
     private int buttonsWidth;
     private int buttonsHeight;
 
-    private List<Entry> entries;
-    private Map<Entry, Integer> blockCounts;
-    private List<BlockGridButton> buttons;
+    private final List<Entry> entries;
+    private final Map<Entry, Integer> blockCounts;
+    private final List<BlockGridButton> buttons;
+    
     private Predicate<BlockState> filter;
+    private BiConsumer<Entry, Integer> countChangedCallback;
 
     //region Creation
     private BlockGridWidget(Screen screen, int x, int y, int width, int height, boolean allowMultiples, Text title, BiConsumer<Entry, Integer> callback, BlockGridButton.ClickConsumer leftClickConsumer, BlockGridButton.ClickConsumer rightClickConsumer, BlockGridButton.ScrollConsumer scrollConsumer)
@@ -198,6 +200,7 @@ public class BlockGridWidget extends ClickableWidget
     public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons) { addBlock(block, tooltipBuilder, 1, rebuildButtons); }
     public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount, boolean rebuildButtons)
     {
+        // Increase Block Count
         Entry entry = new Entry(block, tooltipBuilder);
         if (!blockCounts.containsKey(entry))
         {
@@ -205,7 +208,9 @@ public class BlockGridWidget extends ClickableWidget
             entries.add(entry);
         }
         else if (allowMultiples) blockCounts.put(entry, blockCounts.get(entry) + amount);
-
+        
+        // Trigger Callback and Rebuild
+        if (countChangedCallback != null) countChangedCallback.accept(entry, blockCounts.get(entry));
         if (rebuildButtons) rebuildButtons();
     }
     public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder) { removeBlock(block, tooltipBuilder, true); }
@@ -213,6 +218,7 @@ public class BlockGridWidget extends ClickableWidget
     public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons) { removeBlock(block, tooltipBuilder, 1, true); }
     public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount, boolean rebuildButtons)
     {
+        // Decrease Block Count
         Entry entry = new Entry(block, tooltipBuilder);
         Integer count = blockCounts.get(entry);
         if (count != null)
@@ -224,7 +230,9 @@ public class BlockGridWidget extends ClickableWidget
                 blockCounts.remove(entry);
                 entries.remove(entry);
             }
-
+    
+            // Trigger Callback and Rebuild
+            if (countChangedCallback != null) countChangedCallback.accept(entry, Math.max(0, count));
             if (rebuildButtons) rebuildButtons();
         }
     }
@@ -312,6 +320,12 @@ public class BlockGridWidget extends ClickableWidget
     public int getButtonsInPanel()
     {
         return buttonsInPanel;
+    }
+    //endregion
+    //region Setters
+    public void setCountChangedCallback(BiConsumer<Entry, Integer> callback)
+    {
+        this.countChangedCallback = callback;
     }
     //endregion
 }
