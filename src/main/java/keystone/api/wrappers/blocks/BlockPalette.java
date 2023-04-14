@@ -3,14 +3,22 @@ package keystone.api.wrappers.blocks;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Either;
 import keystone.api.Keystone;
+import keystone.core.modules.filter.providers.BlockProviderTypes;
 import keystone.core.modules.filter.providers.BlockTypeProvider;
 import keystone.core.modules.filter.providers.IBlockProvider;
-import keystone.core.modules.filter.providers.TagBlockProvider;
+import keystone.core.modules.filter.providers.BlockListProvider;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.WeightedRandom;
 import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +31,7 @@ import java.util.function.BiConsumer;
  */
 public class BlockPalette
 {
-    private class PaletteEntry extends WeightedRandom.Item
+    private static class PaletteEntry extends WeightedRandom.Item
     {
         public final IBlockProvider blockProvider;
 
@@ -34,27 +42,132 @@ public class BlockPalette
         }
     }
 
-    private List<PaletteEntry> palette = new ArrayList<>();
-    private Map<IBlockProvider, PaletteEntry> weights = new HashMap<>();
+    private final List<PaletteEntry> palette = new ArrayList<>();
+    private final Map<IBlockProvider, PaletteEntry> weights = new HashMap<>();
     private int totalWeight;
-
+    
+    //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
-     * Create a new {@link BlockPalette} with the same contents as this one
-     * @return The cloned {@link BlockPalette}
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Write the contents of this palette to an NBT compound
      */
-    public BlockPalette clone()
+    public NbtCompound write()
     {
-        BlockPalette clone = new BlockPalette();
+        NbtCompound nbt = new NbtCompound();
+        
+        // Palette
+        NbtList paletteNBT = new NbtList();
         for (PaletteEntry entry : palette)
         {
-            PaletteEntry entryClone = new PaletteEntry(entry.blockProvider.clone(), entry.weight);
-            clone.palette.add(entryClone);
-            clone.weights.put(entryClone.blockProvider, entryClone);
+            NbtCompound entryNBT = new NbtCompound();
+            
+            // Block Provider
+            NbtCompound providerNBT = entry.blockProvider.write();
+            providerNBT.putString("ID", BlockProviderTypes.getID(entry.blockProvider).toString());
+            entryNBT.put("BlockProvider", providerNBT);
+            
+            // Weight
+            entryNBT.putInt("Weight", entry.weight);
+            
+            paletteNBT.add(entryNBT);
         }
-        clone.totalWeight = totalWeight;
-        return clone;
+        nbt.put("Palette", paletteNBT);
+        
+        return nbt;
     }
-
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Overwrite the contents of this palette with a palette NBT compound
+     * @param nbt The NBT of the palette to overwrite this with
+     */
+    public void read(NbtCompound nbt)
+    {
+        // Reset Contents
+        palette.clear();
+        weights.clear();
+        totalWeight = 0;
+        
+        // Palette
+        NbtList paletteNBT = nbt.getList("Palette", NbtElement.COMPOUND_TYPE);
+        for (int i = 0; i < paletteNBT.size(); i++)
+        {
+            NbtCompound entryNBT = paletteNBT.getCompound(i);
+            
+            // Block Provider
+            NbtCompound providerNBT = entryNBT.getCompound("BlockProvider");
+            Identifier providerTypeID = new Identifier(providerNBT.getString("ID"));
+            IBlockProvider provider = BlockProviderTypes.createFromID(providerTypeID);
+            provider.read(providerNBT);
+            
+            // Weight
+            int weight = entryNBT.getInt("Weight");
+            
+            // Add Palette Entry
+            PaletteEntry entry = new PaletteEntry(provider, weight);
+            palette.add(entry);
+            weights.put(provider, entry);
+            totalWeight += weight;
+        }
+    }
+    //endregion
+    //region API
+    //region Serialization
+    /**
+     * Create a new {@link BlockPalette} from a palette NBT compound.
+     * @param nbt The NBT compound to read the palette from
+     * @return The loaded {@link BlockPalette}
+     */
+    public static BlockPalette load(NbtCompound nbt)
+    {
+        BlockPalette palette = new BlockPalette();
+        palette.read(nbt);
+        return palette;
+    }
+    /**
+     * Read a new {@link BlockPalette} from a file.
+     * @param file The {@link File} to read the palette from
+     * @return The loaded {@link BlockPalette}
+     */
+    public static BlockPalette load(File file)
+    {
+        BlockPalette palette = new BlockPalette();
+        palette.read(file);
+        return palette;
+    }
+    
+    /**
+     * Save this {@link BlockPalette} to a file.
+     * @param file The {@link File} to save this palette to
+     */
+    public void write(File file)
+    {
+        try
+        {
+            NbtIo.write(write(), file);
+        }
+        catch (IOException e)
+        {
+            Keystone.LOGGER.error("Failed to write BlockPalette to '" + file.getPath() + "'!");
+            e.printStackTrace();
+        }
+    }
+    /**
+     * Read this {@link BlockPalette} from a file.
+     * @param file The {@link File} to read this palette from
+     */
+    public void read(File file)
+    {
+        try
+        {
+            read(NbtIo.read(file));
+        }
+        catch (IOException e)
+        {
+            Keystone.LOGGER.error("Failed to read BlockPalette from '" + file.getPath() + "'!");
+            e.printStackTrace();
+        }
+    }
+    //endregion
     //region With
     /**
      * Add a block ID to the palette. Any ID that is a valid ID for the /setblock command will work. Add a number
@@ -97,7 +210,7 @@ public class BlockPalette
         {
             Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(Registry.BLOCK, block, false);
             if (parser.left().isPresent()) return with(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()), weight);
-            if (parser.right().isPresent()) return with(new TagBlockProvider(parser.right().get().tag(), parser.right().get().vagueProperties()), weight);
+            if (parser.right().isPresent()) return with(new BlockListProvider(parser.right().get().tag(), parser.right().get().vagueProperties()), weight);
         }
         catch (CommandSyntaxException e)
         {
@@ -120,15 +233,15 @@ public class BlockPalette
      */
     public BlockPalette with(BlockType blockType, int weight) { return with(new BlockTypeProvider(blockType), weight); }
     /**
-     * Add an {@link keystone.core.modules.filter.providers.IBlockProvider} to the palette with a weight of 1
-     * @param block The {@link keystone.core.modules.filter.providers.IBlockProvider} to add
+     * Add an {@link IBlockProvider} to the palette with a weight of 1
+     * @param block The {@link IBlockProvider} to add
      * @return The modified {@link BlockPalette}
      */
     public BlockPalette with(IBlockProvider block) { return with(block, 1); }
     /**
-     * Add am {@link keystone.core.modules.filter.providers.IBlockProvider} to the palette with a given weight. A
+     * Add am {@link IBlockProvider} to the palette with a given weight. A
      * higher weight is more likely to be chosen
-     * @param block The {@link keystone.core.modules.filter.providers.IBlockProvider} to add
+     * @param block The {@link IBlockProvider} to add
      * @param weight The weight of the block provider
      * @return The modified {@link BlockPalette}
      */
@@ -195,7 +308,7 @@ public class BlockPalette
         {
             Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(Registry.BLOCK, block, false);
             if (parser.left().isPresent()) return without(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()), weight);
-            if (parser.right().isPresent()) return without(new TagBlockProvider(parser.right().get().tag(), parser.right().get().vagueProperties()), weight);
+            if (parser.right().isPresent()) return without(new BlockListProvider(parser.right().get().tag(), parser.right().get().vagueProperties()), weight);
         }
         catch (CommandSyntaxException e)
         {
@@ -218,8 +331,8 @@ public class BlockPalette
      */
     public BlockPalette without(BlockType blockType, int weight) { return without(new BlockTypeProvider(blockType), weight); }
     /**
-     * Remove an {@link keystone.core.modules.filter.providers.IBlockProvider} from the palette
-     * @param block The {@link keystone.core.modules.filter.providers.IBlockProvider} to remove
+     * Remove an {@link IBlockProvider} from the palette
+     * @param block The {@link IBlockProvider} to remove
      * @return The modified {@link BlockPalette}
      */
     public BlockPalette without(IBlockProvider block)
@@ -227,9 +340,9 @@ public class BlockPalette
         return without(block, Integer.MAX_VALUE);
     }
     /**
-     * Remove weight from an {@link keystone.core.modules.filter.providers.IBlockProvider} in the palette. If the remaining
+     * Remove weight from an {@link IBlockProvider} in the palette. If the remaining
      * weight is zero or less, the entry will be removed
-     * @param block The {@link keystone.core.modules.filter.providers.IBlockProvider} to effect
+     * @param block The {@link IBlockProvider} to effect
      * @param weight The weight to remove
      * @return The modified {@link BlockPalette}
      */
@@ -265,8 +378,8 @@ public class BlockPalette
         return contains(new BlockTypeProvider(blockType));
     }
     /**
-     * Check if the palette contains an {@link keystone.core.modules.filter.providers.IBlockProvider}
-     * @param provider The {@link keystone.core.modules.filter.providers.IBlockProvider} to check
+     * Check if the palette contains an {@link IBlockProvider}
+     * @param provider The {@link IBlockProvider} to check
      * @return Whether the palette contains the block provider
      */
     public boolean contains(IBlockProvider provider)
@@ -318,5 +431,24 @@ public class BlockPalette
      * @param consumer The function to run
      */
     public void forEach(BiConsumer<IBlockProvider, Integer> consumer) { palette.forEach(entry -> consumer.accept(entry.blockProvider, entry.weight)); }
+    //endregion
+    //region Utils
+    /**
+     * Create a new {@link BlockPalette} with the same contents as this one
+     * @return The cloned {@link BlockPalette}
+     */
+    public BlockPalette clone()
+    {
+        BlockPalette clone = new BlockPalette();
+        for (PaletteEntry entry : palette)
+        {
+            PaletteEntry entryClone = new PaletteEntry(entry.blockProvider.clone(), entry.weight);
+            clone.palette.add(entryClone);
+            clone.weights.put(entryClone.blockProvider, entryClone);
+        }
+        clone.totalWeight = totalWeight;
+        return clone;
+    }
+    //endregion
     //endregion
 }

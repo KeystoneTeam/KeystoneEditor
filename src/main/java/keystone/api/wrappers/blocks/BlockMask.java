@@ -2,14 +2,20 @@ package keystone.api.wrappers.blocks;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Either;
+import keystone.api.Keystone;
 import keystone.core.registries.BlockTypeRegistry;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.nbt.*;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.util.registry.RegistryEntryList;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +30,11 @@ public class BlockMask
 {
     private static final Map<BlockType, BlockType[]> forcedBlockAdditions = new HashMap<>();
 
+    private final List<BlockType> mask = new ArrayList<>();
+    private final List<net.minecraft.block.Block> anyVariantMask = new ArrayList<>();
+    private boolean blacklist;
+    
+    // region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Create the forced block additions list. Currently, this is used to bind all variants
@@ -37,24 +48,126 @@ public class BlockMask
                         BlockTypeRegistry.fromMinecraftBlock(Blocks.VOID_AIR.getDefaultState())
                 });
     }
-
-    private List<BlockType> mask = new ArrayList<>();
-    private List<net.minecraft.block.Block> anyVariantMask = new ArrayList<>();
-    private boolean blacklist;
-
+    
     /**
-     * Create a new {@link BlockMask} with the same contents as this one
-     *
-     * @return The cloned {@link BlockMask}
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Write the contents of this mask to an NBT compound
      */
-    public BlockMask clone()
+    public NbtCompound write()
     {
-        BlockMask clone = new BlockMask();
-        clone.mask.addAll(mask);
-        clone.blacklist = blacklist;
-        return clone;
+        NbtCompound nbt = new NbtCompound();
+        
+        // Blacklist Flag
+        nbt.putBoolean("Blacklist", blacklist);
+        
+        // Mask Contents
+        if (mask.size() > 0)
+        {
+            NbtList maskNBT = new NbtList();
+            for (BlockType maskEntry : mask) maskNBT.add(NbtHelper.fromBlockState(maskEntry.getMinecraftBlock()));
+            nbt.put("Mask", maskNBT);
+        }
+        
+        // Any Variant Mask Contents
+        if (anyVariantMask.size() > 0)
+        {
+            NbtList anyVariantNBT = new NbtList();
+            for (net.minecraft.block.Block block : anyVariantMask) anyVariantNBT.add(NbtString.of(Registry.BLOCK.getId(block).toString()));
+            nbt.put("AnyVariantMask", anyVariantNBT);
+        }
+        
+        return nbt;
     }
-
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Overwrite the contents of this mask with a mask NBT compound
+     * @param nbt The NBT of the mask to overwrite this with
+     */
+    public void read(NbtCompound nbt)
+    {
+        // Blacklist Flag
+        this.blacklist = nbt.getBoolean("Blacklist");
+        
+        // Mask Contents
+        this.mask.clear();
+        if (nbt.contains("Mask", NbtElement.LIST_TYPE))
+        {
+            NbtList maskNBT = nbt.getList("Mask", NbtElement.COMPOUND_TYPE);
+            for (int i = 0; i < maskNBT.size(); i++)
+            {
+                BlockState state = NbtHelper.toBlockState(maskNBT.getCompound(i));
+                this.mask.add(BlockTypeRegistry.fromMinecraftBlock(state));
+            }
+        }
+        
+        // Any Variant Mask Contents
+        this.anyVariantMask.clear();
+        if (nbt.contains("AnyVariantMask", NbtElement.LIST_TYPE))
+        {
+            NbtList anyVariantNBT = nbt.getList("AnyVariantMask", NbtElement.STRING_TYPE);
+            for (int i = 0; i < anyVariantNBT.size(); i++) anyVariantMask.add(Registry.BLOCK.get(new Identifier(anyVariantNBT.getString(i))));
+        }
+    }
+    // endregion
+    //region API
+    //region Serialization
+    /**
+     * Create a new {@link BlockMask} from a mask NBT compound.
+     * @param nbt The NBT compound to read the mask from
+     * @return The loaded {@link BlockMask}
+     */
+    public static BlockMask load(NbtCompound nbt)
+    {
+        BlockMask mask = new BlockMask();
+        mask.read(nbt);
+        return mask;
+    }
+    /**
+     * Read a new {@link BlockMask} from a file.
+     * @param file The {@link File} to read the mask from
+     * @return The loaded {@link BlockMask}
+     */
+    public static BlockMask load(File file)
+    {
+        BlockMask mask = new BlockMask();
+        mask.read(file);
+        return mask;
+    }
+    
+    /**
+     * Save this {@link BlockMask} to a file.
+     * @param file The {@link File} to save this mask to
+     */
+    public void write(File file)
+    {
+        try
+        {
+            NbtIo.write(write(), file);
+        }
+        catch (IOException e)
+        {
+            Keystone.LOGGER.error("Failed to write BlockMask to '" + file.getPath() + "'!");
+            e.printStackTrace();
+        }
+    }
+    /**
+     * Read this {@link BlockMask} from a file.
+     * @param file The {@link File} to read this mask from
+     */
+    public void read(File file)
+    {
+        try
+        {
+            read(NbtIo.read(file));
+        }
+        catch (IOException e)
+        {
+            Keystone.LOGGER.error("Failed to read BlockMask from '" + file.getPath() + "'!");
+            e.printStackTrace();
+        }
+    }
+    //endregion
+    //region With
     /**
      * Add a block ID to the mask. Any ID that is a valid ID for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      *
@@ -138,7 +251,8 @@ public class BlockMask
         if (!anyVariantMask.contains(blockType.getMinecraftBlock().getBlock())) anyVariantMask.add(blockType.getMinecraftBlock().getBlock());
         return this;
     }
-
+    //endregion
+    //region Without
     /**
      * Remove a block ID from the mask. Any ID that is a valid ID for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
      * @param block The block ID to remove
@@ -221,7 +335,8 @@ public class BlockMask
         anyVariantMask.remove(blockType.getMinecraftBlock().getBlock());
         return this;
     }
-
+    //endregion
+    //region Whitelist / Blacklist
     /**
      * Mark this {@link BlockMask} as a blacklist. This will match all blocks except the mask contents
      * @return The modified {@link BlockMask}
@@ -251,7 +366,8 @@ public class BlockMask
      * in the mask contents
      */
     public boolean isWhitelist() { return !blacklist; }
-
+    //endregion
+    //region Checking
     /**
      * Check if a {@link Block} is matched by this mask
      * @param block The {@link Block} to check
@@ -268,7 +384,19 @@ public class BlockMask
         boolean matches = mask.contains(blockType) || anyVariantMask.contains(blockType.getMinecraftBlock().getBlock());
         return matches != blacklist;
     }
-
+    //endregion
+    //region Utils
+    /**
+     * Create a new {@link BlockMask} with the same contents as this one
+     * @return The cloned {@link BlockMask}
+     */
+    public BlockMask clone()
+    {
+        BlockMask clone = new BlockMask();
+        clone.mask.addAll(mask);
+        clone.blacklist = blacklist;
+        return clone;
+    }
     /**
      * Run a function on every {@link BlockType} in the mask contents
      * @param variantConsumer The function to run on property-specific blocks
@@ -279,4 +407,6 @@ public class BlockMask
         mask.forEach(variantConsumer);
         anyVariantMask.forEach(anyVariantConsumer);
     }
+    //endregion
+    //endregion
 }

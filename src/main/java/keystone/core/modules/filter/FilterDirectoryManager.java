@@ -10,6 +10,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,23 +43,22 @@ public class FilterDirectoryManager
         KeystoneLifecycleEvents.OPEN_WORLD.register(this::onJoinWorld);
     }
 
-    private void onJoinWorld(ClientWorld world)
+    private void onJoinWorld(World world)
     {
         recompileAllFilters();
     }
 
-    public static FilterDirectoryManager create(File... directories)
+    public static FilterDirectoryManager create(Path... directories)
     {
         try
         {
             WatchService watchService = FileSystems.getDefault().newWatchService();
             FilterDirectoryManager manager = new FilterDirectoryManager(watchService);
 
-            for (File directory : directories)
+            for (Path directory : directories)
             {
-                Path path = directory.toPath();
-                WatchKey key = path.register(watchService, ENTRY_DELETE, ENTRY_MODIFY);
-                manager.paths.put(key, path);
+                WatchKey key = directory.register(watchService, ENTRY_DELETE, ENTRY_MODIFY);
+                manager.paths.put(key, directory);
             }
 
             return manager;
@@ -119,7 +119,7 @@ public class FilterDirectoryManager
     private void loadStockFilters()
     {
         stockFilters = new ArrayList<>();
-        File stockFilterCache = KeystoneDirectories.getStockFilterCache();
+        File stockFilterCache = KeystoneDirectories.getStockFilterCache().toFile();
         for (File file : stockFilterCache.listFiles()) file.delete();
 
         try
@@ -161,7 +161,7 @@ public class FilterDirectoryManager
         if (stockFilters == null || stockFilters.size() == 0) loadStockFilters();
 
         List<File> filters = new ArrayList<>();
-        File[] customFilters = KeystoneDirectories.getFilterDirectory().listFiles((dir, name) -> name.endsWith(".java") || name.endsWith(".filter"));
+        File[] customFilters = KeystoneDirectories.getFilterDirectory().toFile().listFiles((dir, name) -> name.endsWith(".java") || name.endsWith(".filter"));
         if (customFilters != null) Collections.addAll(filters, customFilters);
         filters.addAll(stockFilters);
         filters.sort(Comparator.comparing(a -> KeystoneFilter.getFilterName(a, true)));

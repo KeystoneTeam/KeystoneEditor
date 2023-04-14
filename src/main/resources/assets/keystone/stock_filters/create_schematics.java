@@ -34,7 +34,7 @@ public class CreateSchematics extends KeystoneFilter
     
     @Tooltip("What blocks represent a structure void.")
     @Variable BlockType structureVoid = blockType("minecraft:structure_void");
-
+    
     @Override
     public void processBlock(int x, int y, int z, WorldRegion region)
     {
@@ -44,11 +44,11 @@ public class CreateSchematics extends KeystoneFilter
             // Read name from structure block
             String identifier = block.tileEntity().getString("name").trim();
             if (identifier == null || identifier == "") return;
-
+            
             // Create file path from structure name
             String[] pathTokens = identifier.split(":", 2);
-            Path path = Paths.get(KeystoneDirectories.getSchematicsDirectory().toPath().resolve(pathTokens[0]).toString(), pathTokens[1].split("/"));
-
+            Path path = Paths.get(KeystoneDirectories.getSchematicsDirectory().resolve(pathTokens[0]).toString(), pathTokens[1].split("/"));
+            
             // Save schematic
             region.setBlock(x, y, z, replaceMarkerWith.randomBlock());
             BoundingBox schematicBounds = getSchematicBounds(x, y, z, region);
@@ -57,35 +57,35 @@ public class CreateSchematics extends KeystoneFilter
             region.setBlock(x, y, z, block);
         }
     }
-
+    
     private BoundingBox getSchematicBounds(int x, int y, int z, WorldRegion region)
     {
         int[] min = new int[] { x, y, z };
         int[] max = new int[] { x, y, z };
         int iterations = 100000000;
-
+        
         Deque frontier = new ArrayDeque();
         Set visited = new HashSet();
-
+        
         frontier.push(new BlockPos(x, y, z));
         while (!frontier.isEmpty() && iterations > 0)
         {
             if (isCancelled()) break;
             iterations--;
-
+            
             BlockPos pos = (BlockPos)frontier.remove();
             visited.add(pos);
-
+            
             if (region.bounds.contains(pos.x, pos.y, pos.z) && borderMask.valid(region.getBlockType(pos.x, pos.y, pos.z)))
             {
                 min[0] = Math.min(min[0], pos.x);
                 min[1] = Math.min(min[1], pos.y);
                 min[2] = Math.min(min[2], pos.z);
-
+                
                 max[0] = Math.max(max[0], pos.x);
                 max[1] = Math.max(max[1], pos.y);
                 max[2] = Math.max(max[2], pos.z);
-
+                
                 for (Direction direction : Direction.values())
                 {
                     BlockPos neighbor = new BlockPos(pos.x + direction.getVector().x, pos.y + direction.getVector().y, pos.z + direction.getVector().z);
@@ -93,7 +93,7 @@ public class CreateSchematics extends KeystoneFilter
                 }
             }
         }
-
+        
         return new BoundingBox(min[0], min[1], min[2], max[0], max[1], max[2]);
     }
 }

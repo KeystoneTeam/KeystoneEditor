@@ -5,6 +5,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -15,17 +16,17 @@ public class SaveFileScreen extends FileBrowserScreen
     protected static Text FILE_NAME_LABEL = Text.translatable("keystone.file_browser.fileName");
     protected static Text SAVE_LABEL = Text.translatable("keystone.file_browser.save");
 
-    private String extension;
+    private final String extension;
+    private final Consumer<File> callback;
     private ParsableTextWidget<String> fileName;
-    private Consumer<File> callback;
 
-    protected SaveFileScreen(Text prompt, String extension, Set<String> fileExtensions, File root, boolean recursive, Consumer<File> callback)
+    protected SaveFileScreen(Text prompt, String extension, Set<String> fileExtensions, Path root, boolean recursive, Consumer<File> callback)
     {
-        super(prompt, fileExtensions, root, recursive, (files) -> {});
+        super(prompt, fileExtensions, root, recursive, false, (files) -> {});
         this.extension = extension;
         this.callback = callback;
     }
-    public static void saveFile(String fileExtension, File root, boolean recursive, Consumer<File> callback)
+    public static void saveFile(String fileExtension, Path root, boolean recursive, Consumer<File> callback)
     {
         Set<String> extensionSet = new HashSet<>();
         extensionSet.add(fileExtension);
@@ -73,10 +74,10 @@ public class SaveFileScreen extends FileBrowserScreen
     protected void init()
     {
         super.init();
-        fileName = new ParsableTextWidget<String>(FILE_NAME_LABEL, panelX, panelY + filePanelHeight + MARGINS, panelWidth, "")
+        fileName = new ParsableTextWidget<>(FILE_NAME_LABEL, panelX, panelY + filePanelHeight + MARGINS, panelWidth, "")
         {
             @Override
-            protected String parse(String str) throws Exception
+            protected String parse(String str)
             {
                 return str;
             }

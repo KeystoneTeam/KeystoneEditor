@@ -9,6 +9,7 @@ import net.minecraft.text.Text;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,36 +24,36 @@ public abstract class FileBrowserScreen extends Screen
     protected static Text CANCEL_LABEL = Text.translatable("keystone.cancel");
 
     //region Data Types
-    protected class FileStructure
+    protected static class FileStructure
     {
-        public File directory;
+        public Path directory;
         public FileStructure parent;
         public List<FileStructure> directories;
         public List<File> files;
         public String path;
 
-        public FileStructure(FileStructure parent, File directory, boolean recursive, Set<String> fileExtensions)
+        public FileStructure(FileStructure parent, Path directory, boolean recursive, Set<String> fileExtensions)
         {
-            this.path = (parent != null) ? parent.path + "/" + directory.getName() : directory.getName();
+            this.path = (parent != null) ? parent.path + "/" + directory.toFile().getName() : directory.toFile().getName();
 
             this.directory = directory;
             this.parent = parent;
-            File[] contents = directory.listFiles();
+            File[] contents = directory.toFile().listFiles();
             Arrays.sort(contents, File::compareTo);
 
             this.directories = new ArrayList<>();
             this.files = new ArrayList<>();
             for (File file : contents)
             {
-                if (file.isDirectory() && recursive) directories.add(new FileStructure(this, file, true, fileExtensions));
+                if (file.isDirectory() && recursive) directories.add(new FileStructure(this, file.toPath(), true, fileExtensions));
                 else if (file.isFile() && fileExtensions.contains(FilenameUtils.getExtension(file.getName()).toLowerCase())) files.add(file);
             }
         }
 
-        public File getThisDirectory() { return this.directory; }
+        public Path getThisDirectory() { return this.directory; }
         public File resolveFile(String fileName)
         {
-            return directory.toPath().resolve(fileName).toFile();
+            return directory.resolve(fileName).toFile();
         }
     }
     protected class IndexedButton extends SimpleButton
@@ -110,7 +111,7 @@ public abstract class FileBrowserScreen extends Screen
 
         public DirectoryButton(FileBrowserScreen screen, int index, int width, FileStructure fileStructure, boolean parent)
         {
-            super(index, width, Text.literal(parent ? "../" : fileStructure.getThisDirectory().getName() + "/"), (button) -> screen.moveToDirectory((DirectoryButton)button));
+            super(index, width, Text.literal(parent ? "../" : fileStructure.getThisDirectory().toFile().getName() + "/"), (button) -> screen.moveToDirectory((DirectoryButton)button));
             this.fileStructure = fileStructure;
         }
     }
@@ -119,6 +120,7 @@ public abstract class FileBrowserScreen extends Screen
     protected Text currentPath;
     protected FileStructure currentFileStructure;
     protected Consumer<File[]> callback;
+    protected boolean allowMultipleFiles;
 
     protected int panelX;
     protected int panelY;
@@ -130,18 +132,20 @@ public abstract class FileBrowserScreen extends Screen
     protected List<IndexedButton> allButtons;
     protected List<FileButton> selectedFiles;
 
-    protected FileBrowserScreen(Text prompt, Set<String> fileExtensions, File root, boolean recursive, Consumer<File[]> callback)
+    protected FileBrowserScreen(Text prompt, Set<String> fileExtensions, Path root, boolean recursive, boolean allowMultipleFiles, Consumer<File[]> callback)
     {
         super(prompt);
 
         this.currentFileStructure = new FileStructure(null, root, recursive, fileExtensions);
         this.callback = callback;
+        this.allowMultipleFiles = allowMultipleFiles;
+        
         this.allButtons = new ArrayList<>();
         this.selectedFiles = new ArrayList<>();
         this.scroll = 0;
     }
 
-    protected boolean allowMultipleFiles() { return true; }
+    protected boolean allowMultipleFiles() { return allowMultipleFiles; }
     protected int getBottomMargin() { return 100 + 20; }
     protected int getPanelHeightExtension() { return 20 + MARGINS; }
     protected abstract Text getDoneButtonLabel();

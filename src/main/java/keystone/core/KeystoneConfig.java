@@ -12,13 +12,16 @@ import java.io.IOException;
 
 public class KeystoneConfig
 {
+    @Header("Installation")
+    @Variable public static String keystoneDirectory = "keystone";
+    @Variable public static boolean startActive = false;
+    
     @Header("Performance")
     @Variable @IntRange(min = 1, scrollStep = 16) public static int maxBrushSize = 512;
     @Variable @IntRange(min = 1) public static int maxChunkUpdatesPerTick = 64;
     @Variable @IntRange(min = 0) public static int chunkUpdateCooldownTicks = 0;
 
     @Header("Controls")
-    @Variable public static boolean startActive = false;
     @Variable @FloatRange(min = 0.05f) @DisplayModifiers(numberScale = 200.0f) @Hook("flySpeedHook") public static float flySpeed = 0.1f;
     @Variable @FloatRange(min = 0.0f, max = 1.0f, scrollStep = 0.1f) public static float flySmoothing = 0.0f;
     @Variable @FloatRange(min = 0.05f) @DisplayModifiers(numberScale = 200.0f) public static float flySpeedChangeAmount = 0.05f;
@@ -33,12 +36,15 @@ public class KeystoneConfig
     @Variable public static boolean highlightTileEntities = true;
     @Variable public static boolean highlightEntities = true;
 
-    @Header("Directories")
-    @Variable public static String keystoneDirectory = "keystone";
+    @Header("Global Directories")
     @Variable public static String analysesDirectory = "analyses";
-    @Variable public static String filtersDirectory = "filters";
     @Variable public static String schematicsDirectory = "schematics";
+    @Variable public static String palettesDirectory = "palettes";
+    @Variable public static String masksDirectory = "masks";
+    @Variable public static String filtersDirectory = "filters";
     @Variable public static String stockFilterCache = "stock_filters";
+    
+    @Header("Local Directories")
     @Variable public static String sessionDirectory = "session";
     @Variable public static String backupDirectory = "backup";
     @Variable public static String historyDirectory = "history";
@@ -58,7 +64,7 @@ public class KeystoneConfig
         try
         {
             NbtCompound nbt = VariablesSerializer.write(KeystoneConfig.class, null);
-            NbtIo.write(nbt, KeystoneDirectories.getKeystoneDirectory().toPath().resolve("config.nbt").toFile());
+            NbtIo.write(nbt, KeystoneDirectories.getKeystoneDirectory().resolve("config.nbt").toFile());
         }
         catch (IOException e)
         {
@@ -69,7 +75,7 @@ public class KeystoneConfig
     {
         try
         {
-            File configFile = KeystoneDirectories.getKeystoneDirectory().toPath().resolve("config.nbt").toFile();
+            File configFile = KeystoneDirectories.getKeystoneDirectory().resolve("config.nbt").toFile();
             if (configFile.exists() && configFile.isFile())
             {
                 NbtCompound nbt = NbtIo.read(configFile);

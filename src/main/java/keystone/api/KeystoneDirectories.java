@@ -6,66 +6,73 @@ import net.minecraft.client.MinecraftClient;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class KeystoneDirectories
 {
     private static WorldCacheModule worldCache;
-    private static File keystoneDirectory;
-    private static File currentSaveDirectory;
+    private static Path keystoneDirectory;
+    private static Path currentSaveDirectory;
 
-    private static File analysesDirectory;
-    private static File filterDirectory;
-    private static File schematicsDirectory;
-    private static File stockFilterCache;
+    private static Path analysesDirectory;
+    private static Path schematicsDirectory;
+    private static Path palettesDirectory;
+    private static Path masksDirectory;
+    private static Path filterDirectory;
+    private static Path stockFilterCache;
 
     public static void init() throws IOException
     {
-        keystoneDirectory = MinecraftClient.getInstance().runDirectory.toPath().resolve(KeystoneConfig.keystoneDirectory).toFile();
-        if (!keystoneDirectory.exists()) keystoneDirectory.mkdirs();
+        keystoneDirectory = MinecraftClient.getInstance().runDirectory.toPath().resolve(KeystoneConfig.keystoneDirectory);
+        if (!keystoneDirectory.toFile().exists()) keystoneDirectory.toFile().mkdirs();
 
         analysesDirectory = getKeystoneSubdirectory(KeystoneConfig.analysesDirectory);
-        filterDirectory = getKeystoneSubdirectory(KeystoneConfig.filtersDirectory);
         schematicsDirectory = getKeystoneSubdirectory(KeystoneConfig.schematicsDirectory);
+        palettesDirectory = getKeystoneSubdirectory(KeystoneConfig.palettesDirectory);
+        masksDirectory = getKeystoneSubdirectory(KeystoneConfig.masksDirectory);
+        filterDirectory = getKeystoneSubdirectory(KeystoneConfig.filtersDirectory);
         stockFilterCache = getKeystoneSubdirectory(KeystoneConfig.stockFilterCache);
     }
-    public static void setCurrentSaveDirectory(File currentSaveDirectory)
+    public static void setCurrentSaveDirectory(Path currentSaveDirectory)
     {
         KeystoneDirectories.currentSaveDirectory = currentSaveDirectory;
-        if (!currentSaveDirectory.exists()) currentSaveDirectory.mkdirs();
+        if (!currentSaveDirectory.toFile().exists()) currentSaveDirectory.toFile().mkdirs();
     }
 
-    public static File getKeystoneDirectory() { return keystoneDirectory; }
-    public static File getKeystoneSubdirectory(String subdirectory)
+    public static Path getKeystoneDirectory() { return keystoneDirectory; }
+    public static Path getKeystoneSubdirectory(String subdirectory)
     {
-        File file = keystoneDirectory.toPath().resolve(subdirectory).toFile();
+        File file = keystoneDirectory.resolve(subdirectory).toFile();
         if (!file.exists()) file.mkdirs();
-        return file;
+        return file.toPath();
     }
 
-    public static File getAnalysesDirectory() { return analysesDirectory; }
-    public static File getFilterDirectory() { return filterDirectory; }
-    public static File getSchematicsDirectory() { return schematicsDirectory; }
-    public static File getStockFilterCache() { return stockFilterCache; }
+    public static Path getAnalysesDirectory() { return analysesDirectory; }
+    public static Path getSchematicsDirectory() { return schematicsDirectory; }
+    public static Path getPalettesDirectory() { return palettesDirectory; }
+    public static Path getMasksDirectory() { return masksDirectory; }
+    public static Path getFilterDirectory() { return filterDirectory; }
+    public static Path getStockFilterCache() { return stockFilterCache; }
 
-    public static File getWorldDirectory()
+    public static Path getWorldDirectory()
     {
         return currentSaveDirectory;
     }
-    public static File getWorldCacheDirectory()
+    public static Path getWorldCacheDirectory()
     {
         if (worldCache == null) worldCache = Keystone.getModule(WorldCacheModule.class);
-        File file = currentSaveDirectory.toPath().resolve("##KEYSTONE.TEMP##").toFile();
+        File file = currentSaveDirectory.resolve("##KEYSTONE.TEMP##").toFile();
         if (!file.exists()) file.mkdirs();
-        return file;
+        return file.toPath();
     }
-    public static File getWorldCacheSubdirectory(String subdirectory)
+    public static Path getWorldCacheSubdirectory(String subdirectory)
     {
-        File file = getWorldCacheDirectory().toPath().resolve(subdirectory).toFile();
+        File file = getWorldCacheDirectory().resolve(subdirectory).toFile();
         if (!file.exists()) file.mkdirs();
-        return file;
+        return file.toPath();
     }
 
-    public static File getHistoryDirectory() { return getWorldCacheSubdirectory(KeystoneConfig.historyDirectory); }
-    public static File getWorldSessionDirectory() { return getWorldCacheSubdirectory(KeystoneConfig.sessionDirectory); }
-    public static File getWorldBackupDirectory() { return getWorldCacheSubdirectory(KeystoneConfig.backupDirectory); }
+    public static Path getHistoryDirectory() { return getWorldCacheSubdirectory(KeystoneConfig.historyDirectory); }
+    public static Path getWorldSessionDirectory() { return getWorldCacheSubdirectory(KeystoneConfig.sessionDirectory); }
+    public static Path getWorldBackupDirectory() { return getWorldCacheSubdirectory(KeystoneConfig.backupDirectory); }
 }

@@ -57,9 +57,9 @@ public class SessionModule implements IKeystoneModule
     {
         ChunkPos chunkPos = new ChunkPos(chunk.chunkX, chunk.chunkZ);
         String fileName = "r." + chunkPos.getRegionX() + "." + chunkPos.getRegionZ() + RegionBasedStorage.MCA_EXTENSION;
-        Path sourcePath = DimensionType.getSaveDirectory(chunk.getRegistryKey(), KeystoneDirectories.getWorldDirectory().toPath()).resolve("region").resolve(fileName);
-        Path sessionDestPath = DimensionType.getSaveDirectory(chunk.getRegistryKey(), KeystoneDirectories.getWorldSessionDirectory().toPath()).resolve("region").resolve(fileName);
-        Path backupDestPath = DimensionType.getSaveDirectory(chunk.getRegistryKey(), KeystoneDirectories.getWorldBackupDirectory().toPath()).resolve("region").resolve(fileName);
+        Path sourcePath = DimensionType.getSaveDirectory(chunk.getRegistryKey(), KeystoneDirectories.getWorldDirectory()).resolve("region").resolve(fileName);
+        Path sessionDestPath = DimensionType.getSaveDirectory(chunk.getRegistryKey(), KeystoneDirectories.getWorldSessionDirectory()).resolve("region").resolve(fileName);
+        Path backupDestPath = DimensionType.getSaveDirectory(chunk.getRegistryKey(), KeystoneDirectories.getWorldBackupDirectory()).resolve("region").resolve(fileName);
         writeSessionPropertiesFile();
         
         try
@@ -86,7 +86,7 @@ public class SessionModule implements IKeystoneModule
     public void commitChanges()
     {
         resetModule();
-        FileUtils.deleteRecursively(KeystoneDirectories.getWorldSessionDirectory(), true);
+        FileUtils.deleteRecursively(KeystoneDirectories.getWorldSessionDirectory().toFile(), true);
         KeystoneLifecycleEvents.COMMIT_SESSION.invoker().commitSession();
     }
     public void revertChanges(boolean closeWorld)
@@ -104,8 +104,8 @@ public class SessionModule implements IKeystoneModule
         // Revert Changes
         try
         {
-            FileUtils.copyRecursively(KeystoneDirectories.getWorldSessionDirectory().toPath(), KeystoneDirectories.getWorldDirectory().toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-            FileUtils.deleteRecursively(KeystoneDirectories.getWorldSessionDirectory(), true);
+            FileUtils.copyRecursively(KeystoneDirectories.getWorldSessionDirectory(), KeystoneDirectories.getWorldDirectory(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+            FileUtils.deleteRecursively(KeystoneDirectories.getWorldSessionDirectory().toFile(), true);
             KeystoneLifecycleEvents.REVERT_SESSION.invoker().revertSession();
             Keystone.forEachModule(IKeystoneModule::resetModule);
         }
@@ -135,7 +135,7 @@ public class SessionModule implements IKeystoneModule
     }
     private Optional<Properties> readSessionPropertiesFile()
     {
-        File sessionFile = KeystoneDirectories.getWorldSessionDirectory().toPath().resolve("session.info").toFile();
+        File sessionFile = KeystoneDirectories.getWorldSessionDirectory().resolve("session.info").toFile();
         if (!sessionFile.exists()) return Optional.empty();
         
         try (FileInputStream fileStream = new FileInputStream(sessionFile))
@@ -157,7 +157,7 @@ public class SessionModule implements IKeystoneModule
     
         try
         {
-            FileOutputStream outputStream = new FileOutputStream(KeystoneDirectories.getWorldSessionDirectory().toPath().resolve("session.info").toFile());
+            FileOutputStream outputStream = new FileOutputStream(KeystoneDirectories.getWorldSessionDirectory().resolve("session.info").toFile());
             properties.store(outputStream, "");
             outputStream.close();
         }

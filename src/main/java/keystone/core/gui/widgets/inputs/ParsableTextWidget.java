@@ -47,7 +47,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     
     protected abstract T parse(String str) throws Exception;
     protected T postProcess(T value) { return value; }
-    protected String postProcessDisplay(T value) { return value.toString(); }
+    protected String postProcessDisplay(T value) { return value == null ? "" : value.toString(); }
     protected T reverseProcessDisplay(String displayValue) throws Exception { return parse(displayValue); }
     protected boolean onSetValue(T value) { return true; }
 

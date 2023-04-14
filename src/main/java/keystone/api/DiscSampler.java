@@ -10,7 +10,7 @@ public class DiscSampler
 {
     private static int ceil(double a) { return (int)Math.ceil(a); }
 
-    public static List<Vector2f> sample2D(float radius, int minX, int minZ, int regionWidth, int regionHeight) { return sample2D(Keystone.FILTER_RANDOM, radius, minX, minZ, regionWidth, regionHeight, 30); }
+    public static List<Vector2f> sample2D(float radius, int minX, int minZ, int regionWidth, int regionHeight) { return sample2D(Keystone.RANDOM, radius, minX, minZ, regionWidth, regionHeight, 30); }
     public static List<Vector2f> sample2D(Random random, float radius, int minX, int minZ, int regionWidth, int regionHeight) { return sample2D(random, radius, minX, minZ, regionWidth, regionHeight, 30); }
     public static List<Vector2f> sample2D(Random random, float radius, int minX, int minZ, int regionWidth, int regionHeight, int samplesBeforeRejection)
     {

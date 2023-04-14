@@ -270,6 +270,13 @@ public class KeystoneFilter extends EditableObject
     //endregion
     //region Wrapper Creation
     /**
+     * @return A new instance of an empty {@link BlockPalette}
+     */
+    public final BlockPalette palette()
+    {
+        return new BlockPalette();
+    }
+    /**
      * Create a {@link BlockPalette} from multiple block IDs. Any ID that is a valid ID
      * for the /setblock command will work. Add a number after the ID to specify the block's weight in the
      * palette, with a higher weight being more likely to be chosen. [e.g. "minecraft:stone_slab[type=top] 10"]

@@ -1,6 +1,7 @@
 package keystone.api.wrappers;
 
 import keystone.api.Keystone;
+import keystone.core.utils.RandomWrapper;
 import net.minecraft.item.ItemStack;
 
 /**
@@ -55,7 +56,7 @@ public class Item
     {
         ItemStack newStack = this.stack.copy();
 
-        if (useUnbreaking) newStack.damage(damage, Keystone.RANDOM, null);
+        if (useUnbreaking) newStack.damage(damage, RandomWrapper.INSTANCE, null);
         else newStack.setDamage(newStack.getDamage() + damage);
 
         while (newStack.getDamage() >= newStack.getMaxDamage())

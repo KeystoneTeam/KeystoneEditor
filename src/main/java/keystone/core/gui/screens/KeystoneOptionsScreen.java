@@ -69,6 +69,7 @@ public class KeystoneOptionsScreen extends Screen
     }
     private void resetButton(ButtonWidget buttonWidget)
     {
+        // TODO: Handle Config Resetting
         init(client, width, height);
     }
 }

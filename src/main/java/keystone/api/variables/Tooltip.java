@@ -16,4 +16,9 @@ public @interface Tooltip
      * @return The tooltip text of the {@link Variable}
      */
     String value();
+    
+    /**
+     * @return Whether this tooltip is translatable
+     */
+    boolean translatable() default false;
 }

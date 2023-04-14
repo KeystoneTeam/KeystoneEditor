@@ -14,13 +14,13 @@ import java.nio.file.Path;
 @Mixin(CreateWorldScreen.class)
 public class CreateWorldScreenMixin
 {
-    @Shadow private String saveDirectoryName;
+    @Shadow String saveDirectoryName;
     
     @Inject(method = "startServer", at = @At("HEAD"))
     private void setCurrentWorldPath(CallbackInfo callback)
     {
         // Update Current Save Directory
         Path worldPath = MinecraftClient.getInstance().getLevelStorage().getSavesDirectory().resolve(saveDirectoryName);
-        KeystoneDirectories.setCurrentSaveDirectory(worldPath.toFile());
+        KeystoneDirectories.setCurrentSaveDirectory(worldPath);
     }
 }

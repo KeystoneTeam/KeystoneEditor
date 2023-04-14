@@ -32,7 +32,7 @@ public final class AnnotationUtils
         Tooltip tooltip = field.getAnnotation(Tooltip.class);
         if (tooltip != null)
         {
-            List<Text> builtTooltip = List.of(Text.of(tooltip.value()));
+            List<Text> builtTooltip = List.of(tooltip.translatable() ? Text.translatable(tooltip.value()) : Text.of(tooltip.value()));
             return (stack, mouseX, mouseY, partialTicks) -> screen.renderTooltip(stack, builtTooltip, mouseX, mouseY);
         }
         else return null;

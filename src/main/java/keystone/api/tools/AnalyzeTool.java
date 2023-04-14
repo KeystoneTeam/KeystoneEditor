@@ -77,7 +77,7 @@ public class AnalyzeTool extends KeystoneFilter
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
         String fileName = "analysis_" + formatter.format(LocalDateTime.now()) + ".txt";
 
-        File file = KeystoneDirectories.getAnalysesDirectory().toPath().resolve(fileName).toFile();
+        File file = KeystoneDirectories.getAnalysesDirectory().resolve(fileName).toFile();
         try (FileOutputStream fileOutput = new FileOutputStream(file))
         {
             try (PrintStream printStream = new PrintStream(fileOutput))

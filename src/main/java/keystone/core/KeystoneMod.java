@@ -2,7 +2,6 @@ package keystone.core;
 
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
-import keystone.api.enums.WorldType;
 import keystone.core.events.KeystoneInputHandler;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.keystone.KeystoneRegistryEvents;
@@ -18,6 +17,8 @@ import keystone.core.keybinds.KeystoneKeyBindings;
 import keystone.core.modules.brush.BrushModule;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.filter.FilterModule;
+import keystone.core.modules.filter.providers.BlockListProvider;
+import keystone.core.modules.filter.providers.BlockTypeProvider;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.CloneScreenHistoryEntry;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
@@ -37,16 +38,11 @@ import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.schematic.extensions.BiomesExtension;
 import keystone.core.schematic.extensions.StructureVoidsExtension;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
+import keystone.core.serialization.VariablesSerializer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.TitleScreen;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 
 import java.io.IOException;
 
@@ -55,7 +51,6 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
     public static final String MODID = "keystone";
     private static boolean ranGameLoaded = false;
     private static boolean ranVersionCheck = false;
-    private static boolean inWorld;
 
     @Override
     public void onInitialize()
@@ -124,12 +119,24 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
             registry.accept(new BiomesExtension());
             registry.accept(new StructureVoidsExtension());
         });
+        
+        KeystoneRegistryEvents.VARIABLE_SERIALIZERS.register(VariablesSerializer::registerDefaultSerializers);
+        
+        KeystoneRegistryEvents.BLOCK_PROVIDER_TYPES.register(new KeystoneRegistryEvents.RegisterBlockProviderTypesListener()
+        {
+            @Override
+            public void onRegister()
+            {
+                register(new Identifier("keystone:block_type"), BlockTypeProvider.class);
+                register(new Identifier("keystone:block_list"), BlockListProvider.class);
+            }
+        });
     }
     @Override
     public void onInitializeClient()
     {
-        KeystoneLifecycleEvents.CLOSE_WORLD.register(this::onWorldLeft);
-        ClientEntityEvents.ENTITY_LOAD.register(this::onWorldLoaded);
+        KeystoneLifecycleEvents.OPEN_WORLD.register(this::onOpenWorld);
+        KeystoneLifecycleEvents.CLOSE_WORLD.register(this::onCloseWorld);
 
         KeystoneInputHandler.registerEvents();
         BrushSelectionScreen.registerEvents();
@@ -169,31 +176,26 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         KeystoneRegistryEvents.registerHistoryEntries();
         KeystoneRegistryEvents.registerSchematicFormats();
         KeystoneRegistryEvents.registerSchematicExtensions();
+        KeystoneRegistryEvents.registerBlockProviderTypes();
 
         Keystone.postInit();
     }
 
-    private void onWorldLoaded(Entity entity, ClientWorld world)
+    private void onOpenWorld(World world)
     {
-        if (entity instanceof PlayerEntity && !inWorld)
+        if (KeystoneConfig.startActive) Keystone.enableKeystone();
+        else Keystone.disableKeystone();
+    
+        if (!ranVersionCheck)
         {
-            if (KeystoneConfig.startActive) Keystone.enableKeystone();
-            else Keystone.disableKeystone();
-            inWorld = true;
-
-            if (!ranVersionCheck)
-            {
-                ranVersionCheck = true;
-                VersionChecker.doVersionCheck();
-            }
-
-            KeystoneKeyBindings.configureKeyConditions();
-            if (WorldType.get().supportsKeystone) KeystoneLifecycleEvents.OPEN_WORLD.invoker().join(world);
+            ranVersionCheck = true;
+            VersionChecker.doVersionCheck();
         }
+    
+        KeystoneKeyBindings.configureKeyConditions();
     }
-    private void onWorldLeft()
+    private void onCloseWorld()
     {
-        inWorld = false;
         Keystone.disableKeystone();
         Keystone.forEachModule(module -> module.resetModule());
     }

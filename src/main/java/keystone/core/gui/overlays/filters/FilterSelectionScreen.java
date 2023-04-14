@@ -134,7 +134,7 @@ public class FilterSelectionScreen extends KeystonePanel
         setupViewport();
 
         // Select Filter Button
-        TextClickButton filterLabel = new TextClickButton(getViewport().getMinX() + 5, getViewport().getMinY() + 11, Text.translatable("keystone.filter_panel.select"), 0x8080FF, button -> Util.getOperatingSystem().open(KeystoneDirectories.getFilterDirectory()));
+        TextClickButton filterLabel = new TextClickButton(getViewport().getMinX() + 5, getViewport().getMinY() + 11, Text.translatable("keystone.filter_panel.select"), 0x8080FF, button -> Util.getOperatingSystem().open(KeystoneDirectories.getFilterDirectory().toFile()));
         addDrawableChild(filterLabel);
         int selectButtonX = filterLabel.x + filterLabel.getWidth();
         this.selectFilterButton = new ButtonNoHotkey(selectButtonX, getViewport().getMinY() + 5, getViewport().getMaxX() - selectButtonX - 5, 20, Text.literal("!ERROR!"), (button) ->

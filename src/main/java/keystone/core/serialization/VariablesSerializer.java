@@ -1,6 +1,8 @@
 package keystone.core.serialization;
 
 import keystone.api.variables.Variable;
+import keystone.api.wrappers.blocks.BlockMask;
+import keystone.api.wrappers.blocks.BlockPalette;
 import net.minecraft.nbt.NbtCompound;
 
 import java.lang.reflect.Field;
@@ -24,8 +26,10 @@ public class VariablesSerializer
         registerSerializer(Integer.class, new IntegerVariableSerializer());
         registerSerializer(Float.class, new FloatVariableSerializer());
         registerSerializer(Boolean.class, new BooleanVariableSerializer());
-
         registerSerializer(String.class, new StringVariableSerializer());
+        
+        registerSerializer(BlockMask.class, new BlockMaskVariableSerializer());
+        registerSerializer(BlockPalette.class, new BlockPaletteVariableSerializer());
     }
 
     public static <T> NbtCompound write(Class<T> clazz, T instance)

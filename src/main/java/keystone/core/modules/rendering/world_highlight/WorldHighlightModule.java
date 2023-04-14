@@ -80,7 +80,7 @@ public class WorldHighlightModule implements IKeystoneModule
             ServerWorld serverWorld = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
             for (Entity entity : serverWorld.iterateEntities())
             {
-                if (!entity.getUuid().equals(MinecraftClient.getInstance().cameraEntity.getUuid()))
+                if (entity != null && !entity.getUuid().equals(MinecraftClient.getInstance().cameraEntity.getUuid()))
                 {
                     Box box = entity.getBoundingBox();
                     if (box.getXLength() == 0 && box.getYLength() == 0 && box.getZLength() == 0)

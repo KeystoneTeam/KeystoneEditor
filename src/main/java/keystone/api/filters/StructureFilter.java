@@ -25,7 +25,7 @@ public abstract class StructureFilter extends KeystoneFilter
 
     @Override public void initialize()
     {
-        this.random = seed == 0 ? Keystone.FILTER_RANDOM : new Random(seed);
+        this.random = seed == 0 ? Keystone.RANDOM : new Random(seed);
     }
 
     @Override

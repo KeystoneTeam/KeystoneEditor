@@ -10,6 +10,7 @@ import keystone.core.modules.world.change_queue.FlushMode;
 import keystone.core.utils.NBTSerializer;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.world.World;
 
 import java.io.File;
 import java.util.HashMap;
@@ -35,7 +36,7 @@ public class HistoryModule implements IKeystoneModule
         KeystoneLifecycleEvents.REVERT_SESSION.register(this::commitOrRevertSession);
     }
     
-    private void onJoinWorld(ClientWorld world)
+    private void onJoinWorld(World world)
     {
         if (skipClearOnLoad) skipClearOnLoad = false;
         else Keystone.getModule(HistoryModule.class).clearHistory();
@@ -182,7 +183,7 @@ public class HistoryModule implements IKeystoneModule
     }
     public void clearHistory()
     {
-        File historyDirectory = KeystoneDirectories.getHistoryDirectory();
+        File historyDirectory = KeystoneDirectories.getHistoryDirectory().toFile();
         for (File file : historyDirectory.listFiles()) file.delete();
         currentHistoryIndex = -1;
     }
@@ -281,7 +282,7 @@ public class HistoryModule implements IKeystoneModule
     {
         for (int i = currentHistoryIndex + 1; i < historyStackSize; i++)
         {
-            File entryFile = KeystoneDirectories.getHistoryDirectory().toPath().resolve(i + ".nbt").toFile();
+            File entryFile = KeystoneDirectories.getHistoryDirectory().resolve(i + ".nbt").toFile();
             if (entryFile.exists()) entryFile.delete();
         }
         historyStackSize = currentHistoryIndex + 1;
@@ -289,13 +290,13 @@ public class HistoryModule implements IKeystoneModule
     }
     private void addHistoryEntry(HistoryStackFrame stackFrame)
     {
-        File entryFile = KeystoneDirectories.getHistoryDirectory().toPath().resolve(stackFrame.index + ".nbt").toFile();
+        File entryFile = KeystoneDirectories.getHistoryDirectory().resolve(stackFrame.index + ".nbt").toFile();
         NBTSerializer.serialize(entryFile, stackFrame.serialize());
         if (stackFrame.index > historyStackSize - 1) historyStackSize = stackFrame.index + 1;
     }
     private HistoryStackFrame loadHistoryEntry(int index)
     {
-        File entryFile = KeystoneDirectories.getHistoryDirectory().toPath().resolve(index + ".nbt").toFile();
+        File entryFile = KeystoneDirectories.getHistoryDirectory().resolve(index + ".nbt").toFile();
         if (entryFile.exists())
         {
             NbtCompound historyNBT = NBTSerializer.deserialize(entryFile);

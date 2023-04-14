@@ -5,6 +5,7 @@ import keystone.core.modules.selection.SelectionBoundingBox;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.world.World;
 
 import java.util.List;
 import java.util.Properties;
@@ -34,7 +35,7 @@ public final class KeystoneLifecycleEvents
     
     public interface OpenWorld
     {
-        void join(ClientWorld world);
+        void join(World world);
     }
     public interface CloseWorld
     {

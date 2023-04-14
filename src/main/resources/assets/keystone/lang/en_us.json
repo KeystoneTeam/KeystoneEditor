@@ -24,6 +24,8 @@
 
   "keystone.done": "Done",
   "keystone.cancel": "Cancel",
+  "keystone.save":"Save",
+  "keystone.load": "Load",
   "keystone.nudge": "Nudge",
   "keystone.blacklist": "Blacklist",
   "keystone.blacklist.tooltip": "Blacklist: Matches every block not in the mask.",

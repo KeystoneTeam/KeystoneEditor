@@ -1,8 +1,7 @@
 package keystone.core.utils;
 
-import net.minecraft.util.math.random.Random;
-
 import java.util.List;
+import java.util.Random;
 
 public final class WeightedRandom
 {
@@ -22,7 +21,7 @@ public final class WeightedRandom
         for (T item : items)
         {
             rand -= item.weight;
-            if (rand <= 0) return item;
+            if (rand < 0) return item;
         }
         return items.get(0);
     }

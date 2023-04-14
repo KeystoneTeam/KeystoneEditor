@@ -15,6 +15,7 @@ import keystone.core.modules.rendering.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.world.change_queue.WorldChangeQueueModule;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.renderer.ShapeRenderers;
+import keystone.core.utils.RandomWrapper;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.MinecraftClient;
@@ -40,8 +41,7 @@ import java.util.function.Consumer;
 public final class Keystone
 {
     public static final Logger LOGGER = LogManager.getLogger();
-    public static final Random RANDOM = Random.createThreadSafe();
-    public static final java.util.Random FILTER_RANDOM = new java.util.Random();
+    public static final java.util.Random RANDOM = new java.util.Random();
 
     private static FilterModule filterModule;
     private static GhostBlocksModule ghostBlocksModule;

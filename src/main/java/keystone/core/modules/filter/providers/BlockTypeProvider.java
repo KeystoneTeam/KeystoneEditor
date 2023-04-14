@@ -1,11 +1,18 @@
 package keystone.core.modules.filter.providers;
 
 import keystone.api.wrappers.blocks.BlockType;
+import keystone.core.registries.BlockTypeRegistry;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtHelper;
 
 public class BlockTypeProvider implements IBlockProvider
 {
-    private final BlockType blockType;
-
+    private BlockType blockType;
+    
+    private BlockTypeProvider()
+    {
+        this.blockType = null;
+    }
     public BlockTypeProvider(BlockType blockType)
     {
         this.blockType = blockType;
@@ -26,7 +33,10 @@ public class BlockTypeProvider implements IBlockProvider
     {
         return new BlockTypeProvider(blockType);
     }
-
+    
+    @Override public NbtCompound write() { return NbtHelper.fromBlockState(blockType.getMinecraftBlock()); }
+    @Override public void read(NbtCompound nbt) { blockType = BlockTypeRegistry.fromMinecraftBlock(NbtHelper.toBlockState(nbt)); }
+    
     @Override
     public int hashCode()
     {

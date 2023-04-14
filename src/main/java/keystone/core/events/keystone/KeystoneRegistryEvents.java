@@ -2,6 +2,8 @@ package keystone.core.events.keystone;
 
 import keystone.api.Keystone;
 import keystone.core.modules.IKeystoneModule;
+import keystone.core.modules.filter.providers.IBlockProvider;
+import keystone.core.modules.filter.providers.BlockProviderTypes;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.schematic.SchematicLoader;
@@ -13,6 +15,7 @@ import keystone.core.serialization.VariablesSerializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Identifier;
 
 import java.util.function.Consumer;
 
@@ -38,6 +41,10 @@ public final class KeystoneRegistryEvents
     public static final Event<RegisterVariableSerializersListener> VARIABLE_SERIALIZERS = EventFactory.createArrayBacked(RegisterVariableSerializersListener.class, listeners -> () ->
     {
         for (final RegisterVariableSerializersListener listener : listeners) listener.onRegister();
+    });
+    public static final Event<RegisterBlockProviderTypesListener> BLOCK_PROVIDER_TYPES = EventFactory.createArrayBacked(RegisterBlockProviderTypesListener.class, listeners -> () ->
+    {
+        for (final RegisterBlockProviderTypesListener listener : listeners) listener.onRegister();
     });
     //endregion
     //region Event Interfaces
@@ -77,6 +84,15 @@ public final class KeystoneRegistryEvents
             VariablesSerializer.registerSerializer(clazz, serializer);
         }
     }
+    public interface RegisterBlockProviderTypesListener
+    {
+        void onRegister();
+    
+        default <T> void register(Identifier id, Class<? extends IBlockProvider> providerClass)
+        {
+            BlockProviderTypes.register(id, providerClass);
+        }
+    }
     //endregion
     //region Static Helpers
     public static void registerModules()
@@ -97,8 +113,11 @@ public final class KeystoneRegistryEvents
     }
     public static void registerVariableSerializers()
     {
-        VariablesSerializer.registerDefaultSerializers();
         VARIABLE_SERIALIZERS.invoker().onRegister();
+    }
+    public static void registerBlockProviderTypes()
+    {
+        BLOCK_PROVIDER_TYPES.invoker().onRegister();
     }
     //endregion
 }

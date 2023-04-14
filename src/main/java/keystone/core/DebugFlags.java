@@ -22,7 +22,7 @@ public final class DebugFlags
     {
         flags.clear();
     
-        File flagsFile = KeystoneDirectories.getKeystoneDirectory().toPath().resolve(fileName).toFile();
+        File flagsFile = KeystoneDirectories.getKeystoneDirectory().resolve(fileName).toFile();
         if (flagsFile.exists())
         {
             try (Scanner scanner = new Scanner(flagsFile))
