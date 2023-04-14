@@ -5,13 +5,14 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
+import keystone.core.modules.filter.providers.IBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
 
 public class FillTool extends KeystoneFilter
 {
-    private BlockMask mask;
-    private BlockPalette palette;
+    private final BlockMask mask;
+    private final BlockPalette palette;
 
     public FillTool(BlockMask mask, BlockPalette palette)
     {
@@ -23,6 +24,10 @@ public class FillTool extends KeystoneFilter
     public FillTool(BlockType blockType)
     {
         this(new BlockMask().blacklist(), new BlockPalette().with(blockType));
+    }
+    public FillTool(IBlockProvider blockProvider)
+    {
+        this(new BlockMask().blacklist(), new BlockPalette().with(blockProvider));
     }
     public FillTool(BlockState block)
     {

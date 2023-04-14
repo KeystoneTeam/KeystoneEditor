@@ -72,10 +72,10 @@ public class FillAndReplaceScreen extends KeystonePanel
         {
             if (Screen.hasControlDown())
             {
-                quickFill = SingleBlockSelectionScreen.promptBlockStateChoice(blockType ->
+                quickFill = SingleBlockSelectionScreen.promptBlockChoice(blockProvider ->
                 {
                     quickFill = null;
-                    if (blockType != null) Keystone.runInternalFilters(new FillTool(blockType));
+                    if (blockProvider != null) Keystone.runInternalFilters(new FillTool(blockProvider));
                     KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
                 });
             }

@@ -3,6 +3,7 @@ package keystone.core.utils;
 import keystone.api.Keystone;
 import keystone.core.gui.overlays.block_selection.AbstractBlockSelectionScreen;
 import net.minecraft.block.Block;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
@@ -21,7 +22,7 @@ public class BlockUtils
         blockToItemMap.put("minecraft:lava", "minecraft:lava_bucket");
     }
 
-    public static final Item getBlockItem(Block block)
+    public static Item getBlockItem(Block block)
     {
         Item item = block.asItem();
         String blockIdentifier = Registry.BLOCK.getId(block).toString();
@@ -30,7 +31,7 @@ public class BlockUtils
         if (item == null || item == Items.AIR)
         {
             if (AbstractBlockSelectionScreen.DEBUG_LOG) Keystone.LOGGER.info("No item for block " + blockIdentifier);
-            return null;
+            return Items.BARRIER;
         }
         else return item;
     }

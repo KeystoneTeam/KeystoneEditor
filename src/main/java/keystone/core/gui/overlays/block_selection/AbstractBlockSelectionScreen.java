@@ -4,7 +4,10 @@ import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
-import net.minecraft.block.BlockState;
+import keystone.core.modules.filter.providers.BlockListProvider;
+import keystone.core.modules.filter.providers.BlockTypeProvider;
+import keystone.core.modules.filter.providers.IBlockProvider;
+import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -23,8 +26,8 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
         super(Text.translatable(narrationTitle));
     }
 
-    public void onLeftClick(BlockGridButton button, int mouseButton, BlockState state) { BlockGridButton.PASS_UNMODIFIED.accept(button, mouseButton, state); }
-    public void onRightClick(BlockGridButton button, int mouseButton, BlockState state) { BlockGridButton.EDIT_PROPERTIES.accept(button, mouseButton, state); }
+    public void onLeftClick(BlockGridButton button, int mouseButton, IBlockProvider blockProvider) { BlockGridButton.PASS_UNMODIFIED.accept(button, mouseButton, blockProvider); }
+    public void onRightClick(BlockGridButton button, int mouseButton, IBlockProvider blockProvider) { BlockGridButton.EDIT_PROPERTIES.accept(button, mouseButton, blockProvider); }
     public boolean onScroll(BlockGridButton button, double delta) { return BlockGridButton.NO_SCROLLING.accept(button, delta); }
     public Viewport getMainPanelViewport() { return ScreenViewports.getViewport(Viewport.MIDDLE, Viewport.MIDDLE).offset(0, 13, 0, 0); }
     public BlockGridWidget createMainPanel()
@@ -43,8 +46,10 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
     {
         this.client.keyboard.setRepeatEvents(true);
 
+        // Main Panel
         this.panel = createMainPanel();
-        Registry.BLOCK.forEach(block -> this.panel.addBlock(block.getDefaultState(), BlockGridWidget.NAME_TOOLTIP, false));
+        Registry.BLOCK.forEach(block -> this.panel.addBlockProvider(new BlockTypeProvider(BlockTypeRegistry.fromMinecraftBlock(block.getDefaultState())), BlockGridWidget.NAME_TOOLTIP, false));
+        Registry.BLOCK.streamTagsAndEntries().forEach(pair -> this.panel.addBlockProvider(new BlockListProvider(pair.getSecond(), null), BlockGridWidget.NAME_TOOLTIP, false));
         this.panel.rebuildButtons();
         addDrawableChild(this.panel);
 

@@ -1,22 +1,23 @@
 package keystone.core.gui.widgets;
 
-import keystone.api.utils.StringUtils;
-import keystone.core.KeystoneMod;
 import keystone.core.gui.WidgetDisabler;
 import keystone.core.gui.overlays.block_selection.AbstractBlockButton;
 import keystone.core.gui.overlays.block_selection.BlockGridButton;
 import keystone.core.gui.viewports.Viewport;
+import keystone.core.modules.filter.providers.BlockListProvider;
+import keystone.core.modules.filter.providers.BlockTypeProvider;
+import keystone.core.modules.filter.providers.IBlockProvider;
+import keystone.core.registries.BlockTypeRegistry;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryEntryList;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -24,41 +25,42 @@ import java.util.function.Predicate;
 
 public class BlockGridWidget extends ClickableWidget
 {
-    public record Entry(BlockState state, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
+    public record Entry(IBlockProvider provider, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
     {
+        public Entry(BlockState state, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
+        {
+            this(new BlockTypeProvider(BlockTypeRegistry.fromMinecraftBlock(state)), tooltipBuilder);
+        }
+        public Entry(RegistryEntryList<Block> tag, Map<String, String> vagueProperties, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
+        {
+            this(new BlockListProvider(tag, vagueProperties), tooltipBuilder);
+        }
+        
         @Override
         public boolean equals(Object o)
         {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Entry entry = (Entry) o;
-            return state.equals(entry.state) && tooltipBuilder.equals(entry.tooltipBuilder);
+            return provider.equals(entry.provider) && tooltipBuilder.equals(entry.tooltipBuilder);
         }
 
         @Override
         public int hashCode()
         {
-            return Objects.hash(state, tooltipBuilder);
+            return Objects.hash(provider, tooltipBuilder);
         }
     }
 
-    public static final AbstractBlockButton.IBlockTooltipBuilder NAME_TOOLTIP = (block, count, tooltip) -> tooltip.add(block.getBlock().getName());
-    public static final AbstractBlockButton.IBlockTooltipBuilder NAME_AND_PROPERTIES_TOOLTIP = (block, count, tooltip) ->
+    public static final AbstractBlockButton.IBlockTooltipBuilder NAME_TOOLTIP = (blockProvider, count, tooltip) -> tooltip.add(blockProvider.getName());
+    public static final AbstractBlockButton.IBlockTooltipBuilder NAME_AND_PROPERTIES_TOOLTIP = (blockProvider, count, tooltip) ->
     {
-        NAME_TOOLTIP.buildTooltip(block, count, tooltip);
-        block.getProperties().forEach(property ->
-        {
-            if (property instanceof BooleanProperty)
-            {
-                BooleanProperty booleanProperty = (BooleanProperty)property;
-                if (block.get(booleanProperty)) tooltip.addAll(Text.literal(StringUtils.snakeCaseToTitleCase(property.getName())).getWithStyle(Style.EMPTY.withColor(Formatting.GRAY)));
-            }
-            else tooltip.addAll(Text.literal(StringUtils.snakeCaseToTitleCase(property.getName()) + ": " + StringUtils.snakeCaseToTitleCase(block.get(property).toString())).getWithStyle(Style.EMPTY.withColor(Formatting.GRAY)));
-        });
+        NAME_TOOLTIP.buildTooltip(blockProvider, count, tooltip);
+        tooltip.addAll(blockProvider.getProperties());
     };
-    public static final AbstractBlockButton.IBlockTooltipBuilder ANY_VARIANT_TOOLTIP = (block, count, tooltip) ->
+    public static final AbstractBlockButton.IBlockTooltipBuilder ANY_VARIANT_TOOLTIP = (blockProvider, count, tooltip) ->
     {
-        NAME_TOOLTIP.buildTooltip(block, count, tooltip);
+        NAME_TOOLTIP.buildTooltip(blockProvider, count, tooltip);
         tooltip.add(Text.translatable("keystone.block_selection_panel.anyVariant").styled(style -> style.withColor(Formatting.GRAY)));
     };
 
@@ -86,7 +88,7 @@ public class BlockGridWidget extends ClickableWidget
     private final Map<Entry, Integer> blockCounts;
     private final List<BlockGridButton> buttons;
     
-    private Predicate<BlockState> filter;
+    private Predicate<IBlockProvider> filter;
     private BiConsumer<Entry, Integer> countChangedCallback;
 
     //region Creation
@@ -195,13 +197,13 @@ public class BlockGridWidget extends ClickableWidget
     }
     //endregion
     //region Editing
-    public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder) { addBlock(block, tooltipBuilder, 1, true); }
-    public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount) { addBlock(block, tooltipBuilder, amount, true); }
-    public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons) { addBlock(block, tooltipBuilder, 1, rebuildButtons); }
-    public void addBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount, boolean rebuildButtons)
+    public void addBlockProvider(IBlockProvider blockProvider, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder) { addBlockProvider(blockProvider, tooltipBuilder, 1, true); }
+    public void addBlockProvider(IBlockProvider blockProvider, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount) { addBlockProvider(blockProvider, tooltipBuilder, amount, true); }
+    public void addBlockProvider(IBlockProvider blockProvider, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons) { addBlockProvider(blockProvider, tooltipBuilder, 1, rebuildButtons); }
+    public void addBlockProvider(IBlockProvider blockProvider, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount, boolean rebuildButtons)
     {
         // Increase Block Count
-        Entry entry = new Entry(block, tooltipBuilder);
+        Entry entry = new Entry(blockProvider, tooltipBuilder);
         if (!blockCounts.containsKey(entry))
         {
             blockCounts.put(entry, allowMultiples ? amount : 1);
@@ -213,13 +215,13 @@ public class BlockGridWidget extends ClickableWidget
         if (countChangedCallback != null) countChangedCallback.accept(entry, blockCounts.get(entry));
         if (rebuildButtons) rebuildButtons();
     }
-    public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder) { removeBlock(block, tooltipBuilder, true); }
-    public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount) { removeBlock(block, tooltipBuilder, amount, true); }
-    public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons) { removeBlock(block, tooltipBuilder, 1, true); }
-    public void removeBlock(BlockState block, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount, boolean rebuildButtons)
+    public void removeBlockProvider(IBlockProvider blockProvider, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder) { removeBlockProvider(blockProvider, tooltipBuilder, true); }
+    public void removeBlockProvider(IBlockProvider blockProvider, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount) { removeBlockProvider(blockProvider, tooltipBuilder, amount, true); }
+    public void removeBlockProvider(IBlockProvider blockProvider, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons) { removeBlockProvider(blockProvider, tooltipBuilder, 1, true); }
+    public void removeBlockProvider(IBlockProvider blockProvider, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount, boolean rebuildButtons)
     {
         // Decrease Block Count
-        Entry entry = new Entry(block, tooltipBuilder);
+        Entry entry = new Entry(blockProvider, tooltipBuilder);
         Integer count = blockCounts.get(entry);
         if (count != null)
         {
@@ -238,18 +240,41 @@ public class BlockGridWidget extends ClickableWidget
     }
     public void filter(String searchString)
     {
-        if (searchString == null || searchString.isEmpty()) filter((Predicate<BlockState>)null);
+        if (searchString == null || searchString.isEmpty()) filter((Predicate<IBlockProvider>)null);
         else
         {
             String filterString = searchString.toLowerCase().trim();
-            filter(block ->
+    
+            // Tag Search
+            if (filterString.startsWith("#"))
             {
-                String blockName = block.getBlock().getName().getString().toLowerCase().trim();
-                return blockName.contains(filterString);
-            });
+                filter(blockProvider ->
+                {
+                    if (blockProvider instanceof BlockListProvider)
+                    {
+                        String providerName = blockProvider.getName().getString().toLowerCase().trim();
+                        return providerName.contains(filterString.substring(1));
+                    }
+                    else return false;
+                });
+            }
+            
+            // Block Search
+            else
+            {
+                filter(blockProvider ->
+                {
+                    if (!(blockProvider instanceof BlockListProvider))
+                    {
+                        String providerName = blockProvider.getName().getString().toLowerCase().trim();
+                        return providerName.contains(filterString);
+                    }
+                    else return false;
+                });
+            }
         }
     }
-    public void filter(Predicate<BlockState> filter)
+    public void filter(Predicate<IBlockProvider> filter)
     {
         this.filter = filter;
         rebuildButtons();
@@ -277,12 +302,12 @@ public class BlockGridWidget extends ClickableWidget
         {
             Integer count = blockCounts.get(entry);
 
-            // Check if block isn't from Keystone and matches filter
-            if (Registry.BLOCK.getId(entry.state.getBlock()).getNamespace().equals(KeystoneMod.MODID)) continue;
-            if (filter != null && !filter.test(entry.state)) continue;
+            // TODO: Ignore blocks added by Keystone
+            // Check if the block provider matches filter
+            if (filter != null && !filter.test(entry.provider)) continue;
 
             // Create button instance
-            BlockGridButton button = BlockGridButton.create(screen, this, entry.state, count, x, y, leftClickConsumer, rightClickConsumer, scrollConsumer, entry.tooltipBuilder);
+            BlockGridButton button = BlockGridButton.create(screen, this, entry.provider, count, x, y, leftClickConsumer, rightClickConsumer, scrollConsumer, entry.tooltipBuilder);
             if (button == null) continue;
             else blockCount++;
 

@@ -45,13 +45,12 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
         // Palette Panel
         this.palettePanel = BlockGridWidget.createWithViewport(this, ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.RIGHT, Viewport.MIDDLE, Viewport.RIGHT).offset(0, 0, -5, -80), true, Text.translatable("keystone.mask_panel"), (entry, mouseButton) ->
         {
-            BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(entry.state());
-            this.palette.without(wrapper, 1000000000);
-            this.palettePanel.removeBlock(entry.state(), entry.tooltipBuilder(), 1000000000);
+            this.palette.without(entry.provider(), 1000000000);
+            this.palettePanel.removeBlockProvider(entry.provider(), entry.tooltipBuilder(), 1000000000);
         }, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.CHANGE_AMOUNT);
         this.palette.forEach((blockProvider, weight) ->
         {
-            for (int i = 0; i < weight; i++) palettePanel.addBlock(blockProvider.getFirst().getMinecraftBlock(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP, false);
+            for (int i = 0; i < weight; i++) palettePanel.addBlockProvider(blockProvider, BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP, false);
         });
         this.palettePanel.setCountChangedCallback(this::onCountChanged);
         this.palettePanel.rebuildButtons();
@@ -107,9 +106,8 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
 
     private void onCountChanged(BlockGridWidget.Entry entry, Integer count)
     {
-        BlockType type = BlockTypeRegistry.fromMinecraftBlock(entry.state());
-        this.palette.without(type);
-        if (count != null && count > 0) this.palette.with(type, count);
+        this.palette.without(entry.provider());
+        if (count != null && count > 0) this.palette.with(entry.provider(), count);
     }
     
     @Override
@@ -125,8 +123,7 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
     @Override
     public void onEntrySelected(BlockGridWidget.Entry entry, int mouseButton)
     {
-        BlockType wrapper = BlockTypeRegistry.fromMinecraftBlock(entry.state());
-        this.palettePanel.addBlock(entry.state(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
-        this.palette.with(wrapper);
+        this.palettePanel.addBlockProvider(entry.provider(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
+        this.palette.with(entry.provider());
     }
 }

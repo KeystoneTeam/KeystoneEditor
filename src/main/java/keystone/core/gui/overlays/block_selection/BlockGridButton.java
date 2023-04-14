@@ -1,13 +1,9 @@
 package keystone.core.gui.overlays.block_selection;
 
 import keystone.core.gui.widgets.BlockGridWidget;
-import keystone.core.registries.BlockTypeRegistry;
-import keystone.core.utils.BlockUtils;
-import net.minecraft.block.BlockState;
+import keystone.core.modules.filter.providers.IBlockProvider;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 
 public class BlockGridButton extends AbstractBlockButton
@@ -17,7 +13,7 @@ public class BlockGridButton extends AbstractBlockButton
     //region Consumer Types
     public interface ClickConsumer
     {
-        void accept(BlockGridButton button, int mouseButton, BlockState state);
+        void accept(BlockGridButton button, int mouseButton, IBlockProvider blockProvider);
     }
     public interface ScrollConsumer
     {
@@ -25,21 +21,21 @@ public class BlockGridButton extends AbstractBlockButton
     }
     //endregion
     //region Default Consumers
-    public static ClickConsumer PASS_UNMODIFIED = (button, mouseButton, state) -> button.parent.onEntryClicked(new BlockGridWidget.Entry(state, button.getTooltipBuilder()), mouseButton);
-    public static ClickConsumer EDIT_PROPERTIES = (button, mouseButton, state) ->
+    public static ClickConsumer PASS_UNMODIFIED = (button, mouseButton, blockProvider) -> button.parent.onEntryClicked(new BlockGridWidget.Entry(blockProvider, button.getTooltipBuilder()), mouseButton);
+    public static ClickConsumer EDIT_PROPERTIES = (button, mouseButton, blockProvider) ->
     {
-        button.parent.disableWidgets();
-        BlockPropertiesScreen.editBlockProperties(BlockTypeRegistry.fromMinecraftBlock(state), block ->
-        {
-            if (block != null) button.parent.onEntryClicked(new BlockGridWidget.Entry(block.getMinecraftBlock(), button.getTooltipBuilder()), mouseButton);
-            button.parent.restoreWidgets();
-        });
+        PASS_UNMODIFIED.accept(button, mouseButton, blockProvider);
+        
+        // TODO: Implement EDIT_PROPERTIES
+//        button.parent.disableWidgets();
+//        blockProvider.openEditPropertiesScreen();
     };
     public static ScrollConsumer NO_SCROLLING = (button, delta) -> false;
     public static ScrollConsumer CHANGE_AMOUNT = (button, delta) ->
     {
-        if (delta > 0) button.parent.addBlock(button.block, button.getTooltipBuilder(), true);
-        else button.parent.removeBlock(button.block, button.getTooltipBuilder(), true);
+        button.count += delta;
+        if (delta > 0) button.parent.addBlockProvider(button.blockProvider, button.getTooltipBuilder(), true);
+        else button.parent.removeBlockProvider(button.blockProvider, button.getTooltipBuilder(), true);
         return true;
     };
     //endregion
@@ -49,19 +45,18 @@ public class BlockGridButton extends AbstractBlockButton
     private final ClickConsumer rightClickConsumer;
     private final ScrollConsumer scrollConsumer;
     
-    protected BlockGridButton(Screen screen, BlockGridWidget parent, ItemStack itemStack, BlockState block, int x, int y, ClickConsumer leftClickConsumer, ClickConsumer rightClickConsumer, ScrollConsumer scrollConsumer, IBlockTooltipBuilder tooltipBuilder)
+    protected BlockGridButton(Screen screen, BlockGridWidget parent, IBlockProvider blockProvider, int count, int x, int y, ClickConsumer leftClickConsumer, ClickConsumer rightClickConsumer, ScrollConsumer scrollConsumer, IBlockTooltipBuilder tooltipBuilder)
     {
-        super(screen, itemStack, block, x, y, SIZE, SIZE, tooltipBuilder);
+        super(screen, blockProvider, x, y, SIZE, SIZE, tooltipBuilder);
         this.parent = parent;
         this.leftClickConsumer = leftClickConsumer;
         this.rightClickConsumer = rightClickConsumer;
         this.scrollConsumer = scrollConsumer;
+        this.count = count;
     }
-    public static BlockGridButton create(Screen screen, BlockGridWidget parent, BlockState block, int count, int x, int y, ClickConsumer leftClickMutator, ClickConsumer rightClickMutator, ScrollConsumer scrollConsumer, IBlockTooltipBuilder tooltipBuilder)
+    public static BlockGridButton create(Screen screen, BlockGridWidget parent, IBlockProvider blockProvider, int count, int x, int y, ClickConsumer leftClickMutator, ClickConsumer rightClickMutator, ScrollConsumer scrollConsumer, IBlockTooltipBuilder tooltipBuilder)
     {
-        Item item = BlockUtils.getBlockItem(block.getBlock());
-        if (item == null) return null;
-        else return new BlockGridButton(screen, parent, new ItemStack(item, count), block, x, y, leftClickMutator, rightClickMutator, scrollConsumer, tooltipBuilder);
+        return new BlockGridButton(screen, parent, blockProvider, count, x, y, leftClickMutator, rightClickMutator, scrollConsumer, tooltipBuilder);
     }
 
     @Override
@@ -80,8 +75,8 @@ public class BlockGridButton extends AbstractBlockButton
     @Override
     protected void onClicked(int button)
     {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) leftClickConsumer.accept(this, button, getBlockState());
-        else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) rightClickConsumer.accept(this, button, getBlockState());
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) leftClickConsumer.accept(this, button, getBlockProvider());
+        else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) rightClickConsumer.accept(this, button, getBlockProvider());
     }
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta)

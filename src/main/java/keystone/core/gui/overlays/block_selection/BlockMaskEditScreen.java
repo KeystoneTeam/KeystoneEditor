@@ -11,8 +11,9 @@ import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.BooleanWidget;
+import keystone.core.modules.filter.providers.BlockTypeProvider;
+import keystone.core.modules.filter.providers.IBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
-import net.minecraft.block.BlockState;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
@@ -39,14 +40,14 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
     }
 
     @Override
-    public void onLeftClick(BlockGridButton button, int mouseButton, BlockState state)
+    public void onLeftClick(BlockGridButton button, int mouseButton, IBlockProvider blockProvider)
     {
-        BlockGridButton.EDIT_PROPERTIES.accept(button, mouseButton, state);
+        BlockGridButton.EDIT_PROPERTIES.accept(button, mouseButton, blockProvider);
     }
     @Override
-    public void onRightClick(BlockGridButton button, int mouseButton, BlockState state)
+    public void onRightClick(BlockGridButton button, int mouseButton, IBlockProvider blockProvider)
     {
-        BlockGridButton.PASS_UNMODIFIED.accept(button, mouseButton, state);
+        BlockGridButton.PASS_UNMODIFIED.accept(button, mouseButton, blockProvider);
     }
 
     @Override
@@ -55,12 +56,12 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         super.init();
         this.maskPanel = BlockGridWidget.createWithViewport(this, ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.RIGHT, Viewport.MIDDLE, Viewport.RIGHT).offset(0, 0, -5, -105), false, Text.translatable("keystone.mask_panel"), (entry, mouseButton) ->
         {
-            this.mask.without(BlockTypeRegistry.fromMinecraftBlock(entry.state()));
-            this.maskPanel.removeBlock(entry.state(), entry.tooltipBuilder());
+            entry.provider().forEach(blockType -> this.mask.without(blockType));
+            this.maskPanel.removeBlockProvider(entry.provider(), entry.tooltipBuilder());
         }, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.NO_SCROLLING);
         this.mask.forEach(
-                variant -> maskPanel.addBlock(variant.getMinecraftBlock(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP, false),
-                anyVariant -> maskPanel.addBlock(anyVariant.getDefaultState(), BlockGridWidget.ANY_VARIANT_TOOLTIP, false)
+                variant -> maskPanel.addBlockProvider(variant, BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP, false),
+                anyVariant -> maskPanel.addBlockProvider(anyVariant, BlockGridWidget.ANY_VARIANT_TOOLTIP, false)
         );
         this.maskPanel.rebuildButtons();
         addDrawableChild(maskPanel);
@@ -131,15 +132,16 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
     @Override
     public void onEntrySelected(BlockGridWidget.Entry entry, int mouseButton)
     {
+        // TODO: CRITICAL - Finish implementing this
         if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
-            this.mask.with(BlockTypeRegistry.fromMinecraftBlock(entry.state()));
-            this.maskPanel.addBlock(entry.state(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
+            this.mask.with(entry.provider());
+            this.maskPanel.addBlockProvider(entry.provider(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
         }
         else if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT)
         {
-            this.mask.withAllVariants(BlockTypeRegistry.fromMinecraftBlock(entry.state()));
-            this.maskPanel.addBlock(entry.state(), BlockGridWidget.ANY_VARIANT_TOOLTIP);
+            this.mask.withAllVariants(entry.provider());
+            this.maskPanel.addBlockProvider(entry.provider(), BlockGridWidget.ANY_VARIANT_TOOLTIP);
         }
     }
 }

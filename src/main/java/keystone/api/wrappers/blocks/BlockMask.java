@@ -3,11 +3,16 @@ package keystone.api.wrappers.blocks;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Either;
 import keystone.api.Keystone;
+import keystone.core.modules.filter.providers.BlockProviderTypes;
+import keystone.core.modules.filter.providers.BlockTypeProvider;
+import keystone.core.modules.filter.providers.IBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.argument.BlockArgumentParser;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntry;
@@ -30,8 +35,8 @@ public class BlockMask
 {
     private static final Map<BlockType, BlockType[]> forcedBlockAdditions = new HashMap<>();
 
-    private final List<BlockType> mask = new ArrayList<>();
-    private final List<net.minecraft.block.Block> anyVariantMask = new ArrayList<>();
+    private final List<IBlockProvider> mask = new ArrayList<>();
+    private final List<IBlockProvider> anyVariantMask = new ArrayList<>();
     private boolean blacklist;
     
     // region INTERNAL USE ONLY, DO NOT USE IN FILTERS
@@ -48,7 +53,6 @@ public class BlockMask
                         BlockTypeRegistry.fromMinecraftBlock(Blocks.VOID_AIR.getDefaultState())
                 });
     }
-    
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * Write the contents of this mask to an NBT compound
@@ -64,7 +68,12 @@ public class BlockMask
         if (mask.size() > 0)
         {
             NbtList maskNBT = new NbtList();
-            for (BlockType maskEntry : mask) maskNBT.add(NbtHelper.fromBlockState(maskEntry.getMinecraftBlock()));
+            for (IBlockProvider maskEntry : mask)
+            {
+                NbtCompound providerNBT = maskEntry.write();
+                providerNBT.putString("ID", BlockProviderTypes.getID(maskEntry).toString());
+                maskNBT.add(providerNBT);
+            }
             nbt.put("Mask", maskNBT);
         }
         
@@ -72,7 +81,12 @@ public class BlockMask
         if (anyVariantMask.size() > 0)
         {
             NbtList anyVariantNBT = new NbtList();
-            for (net.minecraft.block.Block block : anyVariantMask) anyVariantNBT.add(NbtString.of(Registry.BLOCK.getId(block).toString()));
+            for (IBlockProvider maskEntry : mask)
+            {
+                NbtCompound providerNBT = maskEntry.write();
+                providerNBT.putString("ID", BlockProviderTypes.getID(maskEntry).toString());
+                anyVariantNBT.add(providerNBT);
+            }
             nbt.put("AnyVariantMask", anyVariantNBT);
         }
         
@@ -95,8 +109,11 @@ public class BlockMask
             NbtList maskNBT = nbt.getList("Mask", NbtElement.COMPOUND_TYPE);
             for (int i = 0; i < maskNBT.size(); i++)
             {
-                BlockState state = NbtHelper.toBlockState(maskNBT.getCompound(i));
-                this.mask.add(BlockTypeRegistry.fromMinecraftBlock(state));
+                NbtCompound entryNBT = maskNBT.getCompound(i);
+                Identifier providerID = new Identifier(entryNBT.getString("ID"));
+                IBlockProvider provider = BlockProviderTypes.createFromID(providerID);
+                provider.read(entryNBT);
+                this.mask.add(provider);
             }
         }
         
@@ -105,8 +122,59 @@ public class BlockMask
         if (nbt.contains("AnyVariantMask", NbtElement.LIST_TYPE))
         {
             NbtList anyVariantNBT = nbt.getList("AnyVariantMask", NbtElement.STRING_TYPE);
-            for (int i = 0; i < anyVariantNBT.size(); i++) anyVariantMask.add(Registry.BLOCK.get(new Identifier(anyVariantNBT.getString(i))));
+            for (int i = 0; i < anyVariantNBT.size(); i++)
+            {
+                NbtCompound entryNBT = anyVariantNBT.getCompound(i);
+                Identifier providerID = new Identifier(entryNBT.getString("ID"));
+                IBlockProvider provider = BlockProviderTypes.createFromID(providerID);
+                provider.read(entryNBT);
+                this.anyVariantMask.add(provider);
+            }
         }
+    }
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Add a {@link IBlockProvider} to this mask
+     * @param provider The block provider to add
+     * @return The modified {@link BlockMask}
+     */
+    public BlockMask with(IBlockProvider provider)
+    {
+        if (!mask.contains(provider)) mask.add(provider);
+        return this;
+    }
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Add a property-agnostic {@link IBlockProvider} to this mask
+     * @param provider The block provider to add
+     * @return The modified {@link BlockMask}
+     */
+    public BlockMask withAllVariants(IBlockProvider provider)
+    {
+        if (!anyVariantMask.contains(provider)) anyVariantMask.add(provider);
+        return this;
+    }
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Remove a {@link IBlockProvider} from this mask
+     * @param provider The block provider to remove
+     * @return The modified {@link BlockMask}
+     */
+    public BlockMask without(IBlockProvider provider)
+    {
+        mask.remove(provider);
+        return this;
+    }
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * Remove a property-agnostic {@link IBlockProvider} from this mask
+     * @param provider The block provider to remove
+     * @return The modified {@link BlockMask}
+     */
+    public BlockMask withoutAllVariants(IBlockProvider provider)
+    {
+        anyVariantMask.remove(provider);
+        return this;
     }
     // endregion
     //region API
@@ -200,12 +268,8 @@ public class BlockMask
      */
     public BlockMask with(BlockType blockType)
     {
-        if (forcedBlockAdditions.containsKey(blockType))
-        {
-            for (BlockType add : forcedBlockAdditions.get(blockType)) if (!mask.contains(add)) mask.add(add);
-        }
-
-        if (!mask.contains(blockType)) mask.add(blockType);
+        with(new BlockTypeProvider(blockType));
+        if (forcedBlockAdditions.containsKey(blockType)) for (BlockType add : forcedBlockAdditions.get(blockType)) with(new BlockTypeProvider(add));
         return this;
     }
 
@@ -243,12 +307,8 @@ public class BlockMask
      */
     public BlockMask withAllVariants(BlockType blockType)
     {
-        if (forcedBlockAdditions.containsKey(blockType))
-        {
-            for (BlockType add : forcedBlockAdditions.get(blockType)) if (!mask.contains(add)) mask.add(add);
-        }
-
-        if (!anyVariantMask.contains(blockType.getMinecraftBlock().getBlock())) anyVariantMask.add(blockType.getMinecraftBlock().getBlock());
+        withAllVariants(new BlockTypeProvider(blockType));
+        if (forcedBlockAdditions.containsKey(blockType)) for (BlockType add : forcedBlockAdditions.get(blockType)) withAllVariants(new BlockTypeProvider(add));
         return this;
     }
     //endregion
@@ -284,12 +344,8 @@ public class BlockMask
      */
     public BlockMask without(BlockType blockType)
     {
-        if (forcedBlockAdditions.containsKey(blockType))
-        {
-            for (BlockType remove : forcedBlockAdditions.get(blockType)) mask.remove(remove);
-        }
-
-        mask.remove(blockType);
+        without(new BlockTypeProvider(blockType));
+        if (forcedBlockAdditions.containsKey(blockType)) for (BlockType remove : forcedBlockAdditions.get(blockType)) without(new BlockTypeProvider(remove));
         return this;
     }
 
@@ -327,12 +383,8 @@ public class BlockMask
      */
     public BlockMask withoutAllVariants(BlockType blockType)
     {
-        if (forcedBlockAdditions.containsKey(blockType))
-        {
-            for (BlockType add : forcedBlockAdditions.get(blockType)) mask.remove(add);
-        }
-
-        anyVariantMask.remove(blockType.getMinecraftBlock().getBlock());
+        withoutAllVariants(new BlockTypeProvider(blockType));
+        if (forcedBlockAdditions.containsKey(blockType)) for (BlockType add : forcedBlockAdditions.get(blockType)) withoutAllVariants(new BlockTypeProvider(add));
         return this;
     }
     //endregion
@@ -381,7 +433,32 @@ public class BlockMask
      */
     public boolean valid(@NotNull BlockType blockType)
     {
-        boolean matches = mask.contains(blockType) || anyVariantMask.contains(blockType.getMinecraftBlock().getBlock());
+        boolean matches = false;
+        
+        // Check Property-Specific Mask
+        for (IBlockProvider provider : mask)
+        {
+            if (provider.containsState(blockType))
+            {
+                matches = true;
+                break;
+            }
+        }
+        
+        // Check Property-Agnostic Mask
+        if (!matches)
+        {
+            for (IBlockProvider provider : anyVariantMask)
+            {
+                if (provider.containsBlock(blockType))
+                {
+                    matches = true;
+                    break;
+                }
+            }
+        }
+        
+        // Return Blacklist Check
         return matches != blacklist;
     }
     //endregion
@@ -393,16 +470,17 @@ public class BlockMask
     public BlockMask clone()
     {
         BlockMask clone = new BlockMask();
-        clone.mask.addAll(mask);
+        for (IBlockProvider entry : mask) clone.mask.add(entry.clone());
+        for (IBlockProvider entry : anyVariantMask) clone.anyVariantMask.add(entry.clone());
         clone.blacklist = blacklist;
         return clone;
     }
     /**
      * Run a function on every {@link BlockType} in the mask contents
-     * @param variantConsumer The function to run on property-specific blocks
-     * @param anyVariantConsumer The function to run on property agnostic blocks
+     * @param variantConsumer The function to run on property-specific block providers
+     * @param anyVariantConsumer The function to run on property agnostic block providers
      */
-    public void forEach(Consumer<BlockType> variantConsumer, Consumer<net.minecraft.block.Block> anyVariantConsumer)
+    public void forEach(Consumer<IBlockProvider> variantConsumer, Consumer<IBlockProvider> anyVariantConsumer)
     {
         mask.forEach(variantConsumer);
         anyVariantMask.forEach(anyVariantConsumer);

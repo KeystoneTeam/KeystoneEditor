@@ -3,7 +3,7 @@ package keystone.core.gui.overlays.block_selection;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
-import net.minecraft.block.BlockState;
+import keystone.core.modules.filter.providers.IBlockProvider;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
@@ -19,7 +19,7 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
 {
     public interface IBlockTooltipBuilder
     {
-        void buildTooltip(BlockState block, int count, List<Text> tooltip);
+        void buildTooltip(IBlockProvider blockProvider, int count, List<Text> tooltip);
     }
 
     private final IBlockTooltipBuilder tooltipBuilder;
@@ -27,24 +27,25 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
 
     protected final MinecraftClient mc;
     protected final TextRenderer fontRenderer;
-    protected final ItemStack itemStack;
-    protected final BlockState block;
+    protected final IBlockProvider blockProvider;
     protected final Screen screen;
+    
+    protected int count;
 
-    protected AbstractBlockButton(Screen screen, ItemStack itemStack, BlockState block, int x, int y, int width, int height, IBlockTooltipBuilder tooltipBuilder)
+    protected AbstractBlockButton(Screen screen, IBlockProvider blockProvider, int x, int y, int width, int height, IBlockTooltipBuilder tooltipBuilder)
     {
-        super(x, y, width, height, itemStack.getName(), button -> {});
+        super(x, y, width, height, blockProvider.getName(), button -> {});
 
         this.mc = MinecraftClient.getInstance();
         this.fontRenderer = mc.textRenderer;
-        this.itemStack = itemStack;
-        this.block = block;
+        this.blockProvider = blockProvider;
         this.screen = screen;
 
         List<Text> tooltip = new ArrayList<>();
-        tooltipBuilder.buildTooltip(block, itemStack.getCount(), tooltip);
+        tooltipBuilder.buildTooltip(blockProvider, count, tooltip);
         this.tooltipBuilder = tooltipBuilder;
         this.tooltip = Collections.unmodifiableList(tooltip);
+        this.count = 1;
     }
 
     protected abstract void onClicked(int button);
@@ -58,7 +59,10 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
             fill(matrixStack, x, y, x + width, y + height, 0x80FFFFFF);
             KeystoneOverlayHandler.addTooltip((stack, mX, mY, pT) -> screen.renderTooltip(matrixStack, tooltip, mX, mY));
         }
-        KeystoneOverlay.drawItem(this, mc, itemStack, x + (width - 18) / 2 + 1, y + (height - 18) / 2 + 1);
+        
+        ItemStack display = blockProvider.getDisplayItem();
+        display.setCount(count);
+        KeystoneOverlay.drawItem(this, mc, display, x + (width - 18) / 2 + 1, y + (height - 18) / 2 + 1);
     }
 
     @Override
@@ -82,6 +86,6 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
         return false;
     }
 
-    public BlockState getBlockState() { return block; }
+    public IBlockProvider getBlockProvider() { return blockProvider; }
     public IBlockTooltipBuilder getTooltipBuilder() { return tooltipBuilder; }
 }

@@ -4,7 +4,7 @@ import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
-import net.minecraft.block.BlockState;
+import keystone.core.modules.filter.providers.IBlockProvider;
 import net.minecraft.text.Text;
 
 import java.util.function.Consumer;
@@ -12,14 +12,14 @@ import java.util.function.Consumer;
 public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
 {
     private boolean ranCallback = false;
-    private final Consumer<BlockState> callback;
+    private final Consumer<IBlockProvider> callback;
 
-    protected SingleBlockSelectionScreen(Consumer<BlockState> callback)
+    protected SingleBlockSelectionScreen(Consumer<IBlockProvider> callback)
     {
         super("keystone.screen.blockSelection");
         this.callback = callback;
     }
-    public static SingleBlockSelectionScreen promptBlockStateChoice(Consumer<BlockState> callback)
+    public static SingleBlockSelectionScreen promptBlockChoice(Consumer<IBlockProvider> callback)
     {
         SingleBlockSelectionScreen prompt = new SingleBlockSelectionScreen(callback);
         KeystoneOverlayHandler.addOverlay(prompt);
@@ -45,7 +45,7 @@ public class SingleBlockSelectionScreen extends AbstractBlockSelectionScreen
     @Override
     public void onEntrySelected(BlockGridWidget.Entry entry, int mouseButton)
     {
-        callback.accept(entry.state());
+        callback.accept(entry.provider());
         ranCallback = true;
         close();
     }

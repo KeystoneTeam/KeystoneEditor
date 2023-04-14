@@ -1,21 +1,31 @@
 package keystone.core.modules.filter.providers;
 
 import keystone.api.Keystone;
+import keystone.api.utils.StringUtils;
 import keystone.api.wrappers.blocks.BlockType;
+import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.utils.BlockUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Property;
 import net.minecraft.tag.TagKey;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntryList;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class BlockListProvider implements IBlockProvider
 {
@@ -35,23 +45,16 @@ public class BlockListProvider implements IBlockProvider
     public BlockListProvider(RegistryEntryList<Block> blockTag, Map<String, String> vagueProperties)
     {
         // States
-        this.vagueProperties.putAll(vagueProperties);
-        addTagContents(blockTag, vagueProperties);
+        if (vagueProperties != null) this.vagueProperties.putAll(vagueProperties);
+        addTagContents(blockTag, this.vagueProperties);
         
         // Tag
         if (blockTag instanceof RegistryEntryList.Named<Block> namedTag) this.tag = namedTag.getTag();
     }
 
-    @Override
-    public BlockType get()
-    {
-        return BlockTypeRegistry.fromMinecraftBlock(states.get(Keystone.RANDOM.nextInt(states.size())));
-    }
-    @Override
-    public BlockType getFirst()
-    {
-        return BlockTypeRegistry.fromMinecraftBlock(this.states.get(0));
-    }
+    @Override public BlockType get() { return BlockTypeRegistry.fromMinecraftBlock(states.get(Keystone.RANDOM.nextInt(states.size()))); }
+    @Override public BlockType getFirst() { return BlockTypeRegistry.fromMinecraftBlock(this.states.get(0)); }
+    @Override public void forEach(Consumer<BlockType> consumer) { this.states.forEach(state -> consumer.accept(BlockTypeRegistry.fromMinecraftBlock(state))); }
     @Override
     public IBlockProvider clone()
     {
@@ -67,6 +70,14 @@ public class BlockListProvider implements IBlockProvider
     
         BlockState[] statesArray = states.toArray(BlockState[]::new);
         return new BlockListProvider(statesArray);
+    }
+    
+    @Override public boolean containsState(BlockType blockType) { return states.contains(blockType.getMinecraftBlock()); }
+    @Override
+    public boolean containsBlock(BlockType block)
+    {
+        for (BlockState state : this.states) if (state.getBlock().equals(block.getMinecraftBlock().getBlock())) return true;
+        return false;
     }
     
     @Override
@@ -121,9 +132,12 @@ public class BlockListProvider implements IBlockProvider
         }
         
         // From States
-        states.clear();
-        NbtList statesNBT = nbt.getList("States", NbtElement.COMPOUND_TYPE);
-        for (int i = 0; i < statesNBT.size(); i++) states.add(NbtHelper.toBlockState(statesNBT.getCompound(i)));
+        else
+        {
+            states.clear();
+            NbtList statesNBT = nbt.getList("States", NbtElement.COMPOUND_TYPE);
+            for (int i = 0; i < statesNBT.size(); i++) states.add(NbtHelper.toBlockState(statesNBT.getCompound(i)));
+        }
     }
     
     private void addTagContents(RegistryEntryList<Block> tagContents, Map<String, String> vagueProperties)
@@ -158,6 +172,33 @@ public class BlockListProvider implements IBlockProvider
             Keystone.LOGGER.warn("Failed to parse vague property value '" + value + "' for property '" + property.getName() + "'!");
             return state;
         }
+    }
+    
+    @Override
+    public Text getName()
+    {
+        if (this.tag != null) return Text.literal("#" + this.tag.id().toString());
+        else return Text.translatable("keystone.block_provider.dynamicList");
+    }
+    @Override
+    public List<Text> getProperties()
+    {
+        List<Text> properties = new ArrayList<>();
+        vagueProperties.forEach((name, value) -> properties.addAll(Text.literal(StringUtils.snakeCaseToTitleCase(name) + ": " + StringUtils.snakeCaseToTitleCase(value)).getWithStyle(Style.EMPTY.withColor(Formatting.GRAY))));
+        return properties;
+    }
+    @Override
+    public ItemStack getDisplayItem()
+    {
+        // TODO: Cycle tag items in display
+        Item item = BlockUtils.getBlockItem(getFirst().getMinecraftBlock().getBlock());
+        return new ItemStack(item);
+    }
+    
+    @Override
+    public void openEditPropertiesScreen()
+    {
+        // TODO: Implement Vague Property Edit Menu
     }
     
     @Override
