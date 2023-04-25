@@ -2,14 +2,14 @@ package keystone.core.modules.filter;
 
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
+import keystone.core.modules.filter.remapper.FilterRemapper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.InternalCompilerException;
-import org.codehaus.janino.Scanner;
-import org.codehaus.janino.SimpleCompiler;
+import org.codehaus.janino.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,32 +24,44 @@ public class FilterCompiler
 {
     public static KeystoneFilter compileFilter(File filterFile)
     {
+        // Randomize Class Name
         String oldClassName = KeystoneFilter.getFilterName(filterFile, true);
         String newClassName = createRandomClassName();
 
         try
         {
-            String filterCode = Files.lines(filterFile.toPath()).collect(Collectors.joining(System.lineSeparator()));
-
+            // Read the filter code and remap any calls to Minecraft code
+            String filterCode = new FilterRemapper(filterFile).remap();
+            
+            // Replace filter name with randomized name
             filterCode = filterCode.replaceAll(oldClassName, newClassName);
+            
+            // Add default filter imports
             FilterImports.Result imports = FilterImports.getImports(filterCode);
             filterCode = imports.newCode;
 
             try
             {
+                // Create a Janino scanner and compiler
                 Scanner scanner = new Scanner(filterFile.getName(), new StringReader(filterCode));
                 SimpleCompiler compiler = new SimpleCompiler();
-
+                compiler.setTargetVersion(8);
                 compiler.setParentClassLoader(KeystoneFilter.class.getClassLoader());
+                
+                // Compile the filter code
                 compiler.cook(scanner);
                 ClassLoader classLoader = compiler.getClassLoader();
 
                 try
                 {
+                    // Get the raw compiled filter class
                     Class<?> loadedClass = Class.forName(newClassName, true, classLoader);
                     try
                     {
+                        // Get the compiled filter class as a KeystoneFilter subclass
                         Class<? extends KeystoneFilter> filterClass = loadedClass.asSubclass(KeystoneFilter.class);
+                        
+                        // Instantiate and return an instance of the filter
                         return filterClass.newInstance().setName(KeystoneFilter.getFilterName(filterFile, false)).compiledSuccessfully();
                     }
                     catch (ClassCastException e)

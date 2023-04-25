@@ -36,6 +36,7 @@ dependencies {
     // Mod Dependencies
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     shade "org.codehaus.janino:janino:${project.janino_version}"
+    shade "com.github.javaparser:javaparser-symbol-solver-core:${project.javaparser_version}"
 
     // Optional Mod Dependencies
     modCompileOnly "com.terraformersmc:modmenu:${project.mod_menu_version}"
