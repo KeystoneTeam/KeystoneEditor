@@ -30,10 +30,6 @@ public class MappingTree extends AbstractMappingContainer
         Keystone.LOGGER.info("Loading Mappings Took " + duration + "ms.");
         return tree;
     }
-    public static MappingTree test()
-    {
-        return resource("test_mappings.zip");
-    }
     //endregion
     //region Yarn
     public static MappingTree yarn()

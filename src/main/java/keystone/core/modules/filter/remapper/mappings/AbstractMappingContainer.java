@@ -1,5 +1,6 @@
 package keystone.core.modules.filter.remapper.mappings;
 
+import keystone.api.Keystone;
 import keystone.core.modules.filter.remapper.descriptors.ClassDescriptor;
 import keystone.core.modules.filter.remapper.enums.MappingType;
 import keystone.core.modules.filter.remapper.descriptors.MethodDescriptor;
@@ -19,9 +20,11 @@ public abstract class AbstractMappingContainer
     );
     
     //region Lookups
+    // Class Names
     public Optional<String> lookup(RemappingDirection direction, ClassDescriptor descriptor) { return simplifyMapping(direction, lookupMapping(direction, descriptor)); }
     public Optional<String> lookup(RemappingDirection direction, MethodDescriptor descriptor) { return simplifyMapping(direction, lookupMapping(direction, descriptor)); }
     
+    // Methods
     public Optional<Mapping> lookupMapping(RemappingDirection direction, ClassDescriptor descriptor)
     {
         String[] tokens = descriptor.getDescriptor().split("\\$");
@@ -43,6 +46,19 @@ public abstract class AbstractMappingContainer
         if (declaringClass.isPresent()) return declaringClass.get().lookupMapping(direction, MappingType.METHOD, descriptor.getNamedDescriptor());
         else return Optional.empty();
     }
+    
+    // Raw
+    public Optional<Mapping> lookupMapping(RemappingDirection direction, MappingType type, String key)
+    {
+        Map<String, Mapping> map = mappings.get(direction).get(type);
+        if (map != null)
+        {
+            Mapping mapping = map.get(key);
+            if (mapping != null) return Optional.of(mapping);
+        }
+        return Optional.empty();
+    }
+    public Optional<String> lookup(RemappingDirection direction, MappingType type, String key) { return simplifyMapping(direction, lookupMapping(direction, type, key)); }
     //endregion
     //region Add Mappings
     public void putMapping(Mapping mapping)
@@ -55,16 +71,6 @@ public abstract class AbstractMappingContainer
     }
     //endregion
     //region Private Helpers
-    Optional<Mapping> lookupMapping(RemappingDirection direction, MappingType type, String key)
-    {
-        Map<String, Mapping> map = mappings.get(direction).get(type);
-        if (map != null)
-        {
-            Mapping mapping = map.get(key);
-            if (mapping != null) return Optional.of(mapping);
-        }
-        return Optional.empty();
-    }
     private Optional<String> simplifyMapping(RemappingDirection direction, Optional<Mapping> mapping)
     {
         return mapping.flatMap(value -> switch (direction)

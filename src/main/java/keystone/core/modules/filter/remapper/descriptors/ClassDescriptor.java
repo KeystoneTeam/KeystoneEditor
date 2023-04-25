@@ -12,12 +12,13 @@ public class ClassDescriptor implements IRemappable<ClassDescriptor>
     
     private ClassDescriptor(String descriptor) { this.descriptor = descriptor; }
     
+    public static ClassDescriptor of(String descriptor) { return new ClassDescriptor(descriptor); }
     public static ClassDescriptor fromName(String qualifiedName) { return new ClassDescriptor(qualifiedName.replace('.', '/')); }
     
     //region Getters
     public String getDescriptor() { return this.descriptor; }
     public String getQualifiedName() { return this.descriptor.replace('/', '.').replace('$', '.'); }
-    public String getSimpleName() { return this.descriptor.substring(descriptor.lastIndexOf('.') + 1).replace('$', '.'); }
+    public String getSimpleName() { return this.descriptor.substring(descriptor.lastIndexOf('/') + 1).replace('$', '.'); }
     //endregion
     //region Object Overrides
     @Override

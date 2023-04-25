@@ -1,6 +1,7 @@
 package keystone.core.modules.filter.remapper;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class StringSubstitutions
@@ -8,7 +9,6 @@ public class StringSubstitutions
     private record Substitution(int start, int end, String replaceWith) {}
     
     private final List<Substitution> substitutions = new ArrayList<>();
-    private int offset = 0;
     
     /**
      * Add a substitution operation to this substitution list.
@@ -18,19 +18,25 @@ public class StringSubstitutions
      */
     public void add(int start, int end, String replaceWith)
     {
-        substitutions.add(new Substitution(start + offset, end + offset, replaceWith));
-        offset += replaceWith.length() - (end - start);
+        substitutions.add(new Substitution(start, end, replaceWith));
     }
     public void clear()
     {
         substitutions.clear();
-        offset = 0;
     }
     
     public String perform(String source)
     {
+        substitutions.sort(Comparator.comparingInt(o -> o.start));
+        
         StringBuilder target = new StringBuilder(source);
-        for (Substitution substitution : substitutions) target.replace(substitution.start, substitution.end, substitution.replaceWith);
+        int offset = 0;
+        for (Substitution substitution : substitutions)
+        {
+            target.replace(substitution.start + offset, substitution.end + offset, substitution.replaceWith);
+            offset += substitution.replaceWith.length() - (substitution.end - substitution.start);
+        }
+        
         return target.toString();
     }
 }

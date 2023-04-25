@@ -67,8 +67,8 @@ public class MappingParser
     {
         // Parse Method Mapping
         Mapping mapping;
-        if (currentTokens.length == 4) mapping = new Mapping(MappingType.METHOD, currentTokens[1], currentTokens[2] + currentTokens[3]);
-        else mapping = new Mapping(MappingType.METHOD, currentTokens[1], currentTokens[1] + currentTokens[2]);
+        if (currentTokens.length == 4) mapping = new Mapping(MappingType.METHOD, currentTokens[1] + currentTokens[3], currentTokens[2] + currentTokens[3]);
+        else mapping = new Mapping(MappingType.METHOD, currentTokens[1] + currentTokens[2], currentTokens[1] + currentTokens[2]);
         add(mapping);
         
         // Skip Parameter Mappings
