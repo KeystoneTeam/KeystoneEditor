@@ -1,6 +1,7 @@
 package keystone.core.modules.filter.remapper.mappings;
 
 import keystone.api.Keystone;
+import keystone.core.modules.filter.remapper.FilterRemapper;
 import keystone.core.modules.filter.remapper.descriptors.ClassDescriptor;
 import keystone.core.modules.filter.remapper.enums.MappingType;
 import keystone.core.modules.filter.remapper.descriptors.MethodDescriptor;
@@ -42,8 +43,8 @@ public abstract class AbstractMappingContainer
     }
     public Optional<Mapping> lookupMapping(RemappingDirection direction, MethodDescriptor descriptor)
     {
-        Optional<Mapping> declaringClass = lookupMapping(direction, descriptor.getDeclaringClass());
-        if (declaringClass.isPresent()) return declaringClass.get().lookupMapping(direction, MappingType.METHOD, descriptor.getNamedDescriptor());
+        Optional<Class<?>> clazz = descriptor.getDeclaringClass().asClass();
+        if (clazz.isPresent()) return searchForMethodMapping(clazz.get(), direction, descriptor);
         else return Optional.empty();
     }
     
@@ -71,6 +72,48 @@ public abstract class AbstractMappingContainer
     }
     //endregion
     //region Private Helpers
+    private Optional<Mapping> searchForMethodMapping(Class<?> clazz, RemappingDirection direction, MethodDescriptor descriptor)
+    {
+        // The ClassDescriptor for the type that is being used to invoke the method
+        // This is NOT necessarily the class that the method is mapped in, as the
+        // method might @Override a method in a parent class
+        ClassDescriptor classDescriptor = ClassDescriptor.fromName(clazz.getName());
+        Optional<Mapping> classMapping = lookupMapping(direction, classDescriptor);
+    
+        // Check the current class for a mapping
+        if (classMapping.isPresent())
+        {
+            // Try to get a mapping for this method in the current level of
+            // the inheritance hierarchy
+            Mapping mapping = classMapping.get();
+            Optional<Mapping> methodMapping = mapping.lookupMapping(direction, MappingType.METHOD, descriptor.getNamedDescriptor());
+        
+            // If a valid mapping is present, return it
+            if (methodMapping.isPresent()) return methodMapping;
+        }
+        
+        // Search this class's interfaces for a valid mapping
+        for (Class<?> interfaceClass : clazz.getInterfaces())
+        {
+            Optional<Mapping> interfaceSearch = searchForMethodMapping(interfaceClass, direction, descriptor);
+            if (interfaceSearch.isPresent()) return interfaceSearch;
+        }
+    
+        // Try to go one level up in the inheritance hierarchy. If we are at
+        // the top level, break out of the loop
+        Optional<Class<?>> currentClass = classDescriptor.asClass();
+        if (currentClass.isEmpty()) return Optional.empty();
+        else
+        {
+            // Get the parent class of the current level in the inheritance hierarchy
+            Class<?> parentClass = currentClass.get().getSuperclass();
+        
+            // If there is no parent class, return empty. Otherwise, search the parent class
+            if (parentClass == null) return Optional.empty();
+            else return searchForMethodMapping(parentClass, direction, descriptor);
+        }
+    }
+    
     private Optional<String> simplifyMapping(RemappingDirection direction, Optional<Mapping> mapping)
     {
         return mapping.flatMap(value -> switch (direction)

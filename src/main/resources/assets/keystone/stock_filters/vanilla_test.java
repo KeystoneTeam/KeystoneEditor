@@ -9,6 +9,7 @@ public class VanillaTest extends KeystoneFilter
     public void finished()
     {
         MinecraftClient client = MinecraftClient.getInstance();
+        // sendMessage -> method_43496 (Located in net.minecraft.server.command.CommandOutput)
         client.player.sendMessage(Text.literal("Success!!!"));    //.styled(style -> style.withColor(Formatting.GREEN)));
     }
 }

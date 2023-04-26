@@ -1,5 +1,6 @@
 package keystone.core.modules.filter.remapper.descriptors;
 
+import keystone.core.modules.filter.remapper.FilterRemapper;
 import keystone.core.modules.filter.remapper.enums.RemappingDirection;
 import keystone.core.modules.filter.remapper.interfaces.IRemappable;
 import keystone.core.modules.filter.remapper.mappings.MappingTree;
@@ -56,5 +57,11 @@ public class ClassDescriptor implements IRemappable<ClassDescriptor>
     {
         Optional<String> mapping = mappings.lookup(direction, this);
         return mapping.map(ClassDescriptor::new).orElse(this);
+    }
+    
+    public Optional<Class<?>> asClass()
+    {
+        try { return Optional.of(FilterRemapper.REMAPPING_CLASS_LOADER.loadClass(getQualifiedName())); }
+        catch (ClassNotFoundException ignored) { return Optional.empty(); }
     }
 }
