@@ -10,7 +10,6 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
@@ -167,22 +166,24 @@ public class FilterRemapper
     }
     private void remapMethodCall(MethodCallExpr node)
     {
-        MethodDescriptor methodDescriptor = MethodDescriptor.fromMethodCall(node, MAPPINGS);
-        MethodDescriptor remapped = methodDescriptor.remap(RemappingDirection.OBFUSCATING, MAPPINGS);
-    
-        if (!remapped.equals(methodDescriptor))
+        Optional<MethodDescriptor> methodDescriptorOptional = MethodDescriptor.fromMethodCall(node, MAPPINGS);
+        methodDescriptorOptional.ifPresent(methodDescriptor ->
         {
-            // Remap Method Name
-            replaceNode(node.getName(), remapped.getName());
-            
-            // Remap Static Scope
-            if (methodDescriptor.isStatic() && node.getScope().isPresent())
+            MethodDescriptor remapped = methodDescriptor.remap(RemappingDirection.OBFUSCATING, MAPPINGS);
+            if (!remapped.equals(methodDescriptor))
             {
-                Node scope = node.getScope().get();
-                if (scope instanceof NameExpr className) renameClassName(className, remapped.getDeclaringClass());
-                else Keystone.LOGGER.info("Unknown static method scope node type: " + scope.getClass().getName());
+                // Remap Method Name
+                replaceNode(node.getName(), remapped.getName());
+        
+                // Remap Static Scope
+                if (methodDescriptor.isStatic() && node.getScope().isPresent())
+                {
+                    Node scope = node.getScope().get();
+                    if (scope instanceof NameExpr className) renameClassName(className, remapped.getDeclaringClass());
+                    else Keystone.LOGGER.info("Unknown static method scope node type: " + scope.getClass().getName());
+                }
             }
-        }
+        });
     }
     private void remapFieldAccess(FieldAccessExpr node)
     {

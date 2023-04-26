@@ -3,9 +3,14 @@ package keystone.core.modules.filter.remapper.mappings;
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.core.KeystoneMod;
+import keystone.core.modules.filter.remapper.descriptors.ClassDescriptor;
+import keystone.core.modules.filter.remapper.descriptors.MethodDescriptorParser;
+import keystone.core.modules.filter.remapper.enums.MappingType;
+import keystone.core.modules.filter.remapper.enums.RemappingDirection;
 import keystone.core.utils.FileUtils;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.entity.animation.AnimationHelper;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -13,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
@@ -21,6 +27,11 @@ import java.util.zip.ZipInputStream;
 
 public class MappingTree extends AbstractMappingContainer
 {
+    public record MethodMappingInfo(Class<?> declaringClass, Class<?>[] parameterTypes, Method method, Mapping mapping) {}
+    private final Map<RemappingDirection, Map<String, List<MethodMappingInfo>>> methodMappings = new HashMap<>();
+    
+    private MappingTree() { }
+    
     //region Built-In
     public static MappingTree builtin()
     {
@@ -145,10 +156,13 @@ public class MappingTree extends AbstractMappingContainer
         }
         finally
         {
-            Keystone.LOGGER.info("Done parsing mappings stream");
+            Keystone.LOGGER.info("Done parsing mappings stream.");
         }
         
         // Return loaded mappings
+        Keystone.LOGGER.info("Building method mappings...");
+        mappings.buildMethodMappings();
+        Keystone.LOGGER.info("Done building method mappings.");
         return mappings;
     }
     //endregion
@@ -162,13 +176,75 @@ public class MappingTree extends AbstractMappingContainer
         
         if (e != null) e.printStackTrace();
     }
-    //endregion
-    
-    //region Parsers
     private void parseMapping(Scanner scanner)
     {
         List<Mapping> mappings = MappingParser.parse(scanner);
         for (Mapping mapping : mappings) putMapping(mapping);
     }
+    private void buildMethodMappings()
+    {
+        forEachMapping(MappingType.METHOD, mapping ->
+        {
+            try
+            {
+                // Build the full descriptor of this method's declaring class
+                ClassDescriptor declaringClassDescriptor = ClassDescriptor.fromMapping((Mapping) mapping.getParent());
+                Class<?> declaringClass = KeystoneMod.class.getClassLoader().loadClass(declaringClassDescriptor.getClassLoaderName());
+                
+                // Parse the method descriptor
+                Optional<Class<?>[]> parameterTypes = MethodDescriptorParser.parseDescriptor(mapping.getNative(), this);
+                if (parameterTypes.isEmpty())
+                {
+                    Keystone.LOGGER.warn("Could not parse descriptor of method " + mapping.getDeobfuscated() + "!");
+                    return;
+                }
+                
+                // Find the reflection method
+                Optional<Method> method = findMethod(declaringClass, mapping, parameterTypes.get());
+                if (method.isEmpty())
+                {
+                    Keystone.LOGGER.warn("Method " + mapping.getDeobfuscated() + " is missing a reflection method!");
+                    return;
+                }
+                
+                // Build the MethodMappingInfo
+                MethodMappingInfo methodInfo = new MethodMappingInfo(declaringClass, parameterTypes.get(), method.get(), mapping);
+    
+                // Add Obfuscating Info
+                Map<String, List<MethodMappingInfo>> map = methodMappings.computeIfAbsent(RemappingDirection.OBFUSCATING, type -> new TreeMap<>());
+                List<MethodMappingInfo> infos = map.computeIfAbsent(mapping.getDeobfuscated().substring(0, mapping.getDeobfuscated().indexOf('(')), ignored -> new ArrayList<>());
+                infos.add(methodInfo);
+    
+                // Add Deobfuscating Info
+                map = methodMappings.computeIfAbsent(RemappingDirection.DEOBFUSCATING, type -> new TreeMap<>());
+                infos = map.computeIfAbsent(mapping.getObfuscated().substring(0, mapping.getObfuscated().indexOf('(')), ignored -> new ArrayList<>());
+                infos.add(methodInfo);
+            }
+            catch (Throwable e)
+            {
+                throw new RuntimeException(e);
+            }
+        }, true);
+    }
+    private Optional<Method> findMethod(Class<?> clazz, Mapping mapping, Class<?>... parameterTypes)
+    {
+        Optional<Method> method = findMethod(clazz, mapping.getObfuscated().substring(0, mapping.getObfuscated().indexOf('(')), parameterTypes);
+        if (method.isPresent()) return method;
+        else return findMethod(clazz, mapping.getDeobfuscated().substring(0, mapping.getDeobfuscated().indexOf('(')), parameterTypes);
+    }
+    private Optional<Method> findMethod(Class<?> clazz, String name, Class<?>... parameterTypes)
+    {
+        try { return Optional.of(clazz.getDeclaredMethod(name, parameterTypes)); }
+        catch (Throwable ignored)
+        {
+            if (clazz.getSuperclass() != null) return findMethod(clazz.getSuperclass(), name, parameterTypes);
+            else return Optional.empty();
+        }
+    }
     //endregion
+    
+    public List<MethodMappingInfo> getPossibleMethodMappings(RemappingDirection direction, String name)
+    {
+        return methodMappings.get(direction).get(name);
+    }
 }

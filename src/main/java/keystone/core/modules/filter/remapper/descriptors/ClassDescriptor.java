@@ -1,8 +1,10 @@
 package keystone.core.modules.filter.remapper.descriptors;
 
 import keystone.core.modules.filter.remapper.FilterRemapper;
+import keystone.core.modules.filter.remapper.enums.MappingType;
 import keystone.core.modules.filter.remapper.enums.RemappingDirection;
 import keystone.core.modules.filter.remapper.interfaces.IRemappable;
+import keystone.core.modules.filter.remapper.mappings.Mapping;
 import keystone.core.modules.filter.remapper.mappings.MappingTree;
 
 import java.util.Optional;
@@ -15,10 +17,24 @@ public class ClassDescriptor implements IRemappable<ClassDescriptor>
     
     public static ClassDescriptor of(String descriptor) { return new ClassDescriptor(descriptor); }
     public static ClassDescriptor fromName(String qualifiedName) { return new ClassDescriptor(qualifiedName.replace('.', '/')); }
+    public static ClassDescriptor fromMapping(Mapping mapping)
+    {
+        StringBuilder descriptorBuilder = new StringBuilder();
+        Mapping currentClassLevel = mapping;
+        while (currentClassLevel != null)
+        {
+            String className = currentClassLevel.getNative();
+            descriptorBuilder.insert(0, className + "$");
+            if (currentClassLevel.getParent() instanceof Mapping parentMapping && parentMapping.getType() == MappingType.CLASS) currentClassLevel = parentMapping;
+            else break;
+        }
+        return of(descriptorBuilder.substring(0, descriptorBuilder.length() - 1));
+    }
     
     //region Getters
     public String getDescriptor() { return this.descriptor; }
     public String getQualifiedName() { return this.descriptor.replace('/', '.').replace('$', '.'); }
+    public String getClassLoaderName() { return this.descriptor.replace('/', '.'); }
     public String getSimpleName() { return this.descriptor.substring(descriptor.lastIndexOf('/') + 1).replace('$', '.'); }
     //endregion
     //region Object Overrides
@@ -61,7 +77,7 @@ public class ClassDescriptor implements IRemappable<ClassDescriptor>
     
     public Optional<Class<?>> asClass()
     {
-        try { return Optional.of(FilterRemapper.REMAPPING_CLASS_LOADER.loadClass(getQualifiedName())); }
+        try { return Optional.of(FilterRemapper.REMAPPING_CLASS_LOADER.loadClass(getClassLoaderName())); }
         catch (ClassNotFoundException ignored) { return Optional.empty(); }
     }
 }

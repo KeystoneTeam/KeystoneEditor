@@ -1,5 +1,6 @@
 package keystone.core.modules.filter.remapper.mappings;
 
+import keystone.api.Keystone;
 import keystone.core.modules.filter.remapper.enums.MappingType;
 
 import java.util.*;
@@ -12,13 +13,14 @@ public class MappingParser
     private int currentIndent;
     private boolean done;
     
-    private List<Mapping> parsed;
-    private Mapping parent;
+    private final List<Mapping> parsed;
+    private final Stack<Mapping> childStack;
     
     private MappingParser(Scanner scanner)
     {
         this.scanner = scanner;
         this.parsed = new LinkedList<>();
+        this.childStack = new Stack<>();
     }
     public static List<Mapping> parse(Scanner scanner)
     {
@@ -52,6 +54,16 @@ public class MappingParser
     }
     private void parseClassMapping()
     {
+        // Ignore Anonymous Classes
+        try
+        {
+            // If the class name can be parsed into an int, ignore this class mapping
+            Integer.parseInt(currentTokens[1]);
+            skipChildren();
+            return;
+        }
+        catch (NumberFormatException ignored) {}
+    
         // Parse Class Mapping
         Mapping mapping;
         if (currentTokens.length == 3) mapping = new Mapping(MappingType.CLASS, currentTokens[1], currentTokens[2]);
@@ -59,17 +71,21 @@ public class MappingParser
         add(mapping);
         
         // Parse Children
-        parent = mapping;
+        childStack.push(mapping);
         parseChildren();
-        parent = null;
+        childStack.pop();
     }
     private void parseMethodMapping()
     {
-        // Parse Method Mapping
-        Mapping mapping;
-        if (currentTokens.length == 4) mapping = new Mapping(MappingType.METHOD, currentTokens[1] + currentTokens[3], currentTokens[2] + currentTokens[3]);
-        else mapping = new Mapping(MappingType.METHOD, currentTokens[1] + currentTokens[2], currentTokens[1] + currentTokens[2]);
-        add(mapping);
+        if (currentTokens.length == 4 && currentTokens[1].charAt(0) != '<')
+        {
+            // Parse Method Mapping
+            String obfuscatedName = currentTokens[1];
+            String deobfuscatedName = currentTokens[2];
+            String descriptor = currentTokens[3];
+            descriptor = descriptor.substring(0, descriptor.indexOf(')') + 1);
+            add(new Mapping(MappingType.METHOD, obfuscatedName + descriptor, deobfuscatedName + descriptor));
+        }
         
         // Skip Parameter Mappings
         skipChildren();
@@ -134,7 +150,7 @@ public class MappingParser
     }
     private void add(Mapping mapping)
     {
-        if (parent != null) parent.putMapping(mapping);
+        if (childStack.size() > 0) childStack.peek().putMapping(mapping);
         else parsed.add(mapping);
     }
     //endregion

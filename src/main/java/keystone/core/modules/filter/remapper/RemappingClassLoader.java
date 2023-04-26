@@ -1,5 +1,6 @@
 package keystone.core.modules.filter.remapper;
 
+import keystone.core.modules.filter.remapper.mappings.Mapping;
 import keystone.core.modules.filter.remapper.mappings.MappingTree;
 import keystone.core.modules.filter.remapper.descriptors.ClassDescriptor;
 import keystone.core.modules.filter.remapper.enums.RemappingDirection;
@@ -26,11 +27,15 @@ public class RemappingClassLoader extends ClassLoader
             ClassDescriptor descriptor = ClassDescriptor.fromName(name);
             
             // Search all mapping directions for the class descriptor
-            Optional<String> mapping;
+            Optional<Mapping> mapping;
             for (RemappingDirection direction : RemappingDirection.values())
             {
-                mapping = mappings.lookup(direction, descriptor);
-                if (mapping.isPresent()) return getParent().loadClass(mapping.get().replace('/', '.'));
+                mapping = mappings.lookupMapping(direction, descriptor);
+                if (mapping.isPresent())
+                {
+                    descriptor = ClassDescriptor.fromMapping(mapping.get());
+                    return getParent().loadClass(descriptor.getClassLoaderName());
+                }
             }
             
             // If no mapping found, re-throw the exception
