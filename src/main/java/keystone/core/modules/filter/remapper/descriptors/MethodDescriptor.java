@@ -2,17 +2,16 @@ package keystone.core.modules.filter.remapper.descriptors;
 
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.resolution.types.ResolvedType;
 import keystone.api.Keystone;
 import keystone.core.modules.filter.remapper.enums.RemappingDirection;
 import keystone.core.modules.filter.remapper.interfaces.IRemappable;
 import keystone.core.modules.filter.remapper.mappings.MappingTree;
+import keystone.core.modules.filter.remapper.resolution.MethodResolver;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,7 +31,7 @@ public class MethodDescriptor implements IRemappable<MethodDescriptor>
         this.descriptor = descriptor;
         this.isStatic = isStatic;
     }
-    public static Optional<MethodDescriptor> fromMethodCall(MethodCallExpr methodCall, MappingTree mappings)
+    public static Optional<MethodDescriptor> fromMethodCall(MethodCallExpr methodCall, MappingTree mappings, MethodResolver resolver)
     {
         if (methodCall.getScope().isPresent())
         {
@@ -40,12 +39,12 @@ public class MethodDescriptor implements IRemappable<MethodDescriptor>
             Optional<Class<?>> declaringClass = declaringTypeDescriptor.asClass();
             if (declaringClass.isEmpty()) return Optional.empty();
             
-            Optional<Class<?>[]> argumentTypes = MethodDescriptorParser.parseDescriptor(extractDescriptor(methodCall), mappings);
+            Optional<Class<?>[]> argumentTypes = MethodDescriptorUtils.parseDescriptor(extractDescriptor(methodCall), mappings);
             if (argumentTypes.isEmpty()) return Optional.empty();
-            
-            List<MappingTree.MethodMappingInfo> possibleMethods = mappings.getPossibleMethodMappings(RemappingDirection.OBFUSCATING, methodCall.getNameAsString());
-            MappingTree.MethodMappingInfo matchingMethod = null;
-            for (MappingTree.MethodMappingInfo possibleMethod : possibleMethods)
+    
+            List<MethodResolver.MethodMappingInfo> possibleMethods = resolver.getPossibleMethodMappings(RemappingDirection.OBFUSCATING, methodCall.getNameAsString());
+            MethodResolver.MethodMappingInfo matchingMethod = null;
+            for (MethodResolver.MethodMappingInfo possibleMethod : possibleMethods)
             {
                 if (possibleMethod.declaringClass().isAssignableFrom(declaringClass.get()) && possibleMethod.parameterTypes().length == argumentTypes.get().length)
                 {
@@ -75,7 +74,7 @@ public class MethodDescriptor implements IRemappable<MethodDescriptor>
             
             if (matchingMethod != null)
             {
-                String descriptor = remapDescriptorParameters(MethodDescriptorParser.buildDescriptor(matchingMethod.parameterTypes()), mappings);
+                String descriptor = remapDescriptorParameters(MethodDescriptorUtils.buildDescriptor(matchingMethod.parameterTypes()), mappings);
                 return Optional.of(new MethodDescriptor(declaringTypeDescriptor, methodCall.getNameAsString(), descriptor, Modifier.isStatic(matchingMethod.method().getModifiers())));
             }
             else return Optional.empty();

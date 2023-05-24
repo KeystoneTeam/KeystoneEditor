@@ -80,7 +80,10 @@ public abstract class AbstractMappingContainer
         mapping.setParent(this);
         
         Map<String, Mapping> map = mappings.get(RemappingDirection.OBFUSCATING).computeIfAbsent(mapping.getType(), e -> new TreeMap<>());
-        if (map.containsKey(mapping.getDeobfuscated())) Keystone.LOGGER.info("Deobfuscation map already contains " + mapping.getType().name() + " mapping '" + mapping.getDeobfuscated() + "'!");
+        if (map.containsKey(mapping.getDeobfuscated()))
+        {
+            Keystone.LOGGER.info("Deobfuscation map already contains " + mapping.getType().name() + " mapping '" + mapping.getDeobfuscated() + "'! Parent: " + this);
+        }
         map.put(mapping.getDeobfuscated(), mapping);
     
         map = mappings.get(RemappingDirection.DEOBFUSCATING).computeIfAbsent(mapping.getType(), e -> new TreeMap<>());

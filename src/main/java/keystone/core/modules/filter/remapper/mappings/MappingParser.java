@@ -1,9 +1,11 @@
 package keystone.core.modules.filter.remapper.mappings;
 
-import keystone.api.Keystone;
 import keystone.core.modules.filter.remapper.enums.MappingType;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Stack;
 
 public class MappingParser
 {
@@ -44,11 +46,12 @@ public class MappingParser
     
     private void parseCurrent()
     {
-        switch (currentTokens[0].toUpperCase())
+        String keyword = currentTokens[0].toLowerCase();
+        switch (keyword)
         {
-            case "CLASS" -> parseClassMapping();
-            case "METHOD" -> parseMethodMapping();
-            case "FIELD" -> parseFieldMapping();
+            case "c" -> parseClassMapping();
+            case "m" -> parseMethodMapping();
+            case "f" -> parseFieldMapping();
             default -> skipChildren();
         }
     }
@@ -77,12 +80,13 @@ public class MappingParser
     }
     private void parseMethodMapping()
     {
-        if (currentTokens.length == 4 && currentTokens[1].charAt(0) != '<')
+        String descriptor = currentTokens[1];
+        String obfuscatedName = currentTokens[2];
+        String deobfuscatedName = currentTokens[3];
+        
+        if (!obfuscatedName.equals(deobfuscatedName) && deobfuscatedName.charAt(0) != '<')
         {
             // Parse Method Mapping
-            String obfuscatedName = currentTokens[1];
-            String deobfuscatedName = currentTokens[2];
-            String descriptor = currentTokens[3];
             descriptor = descriptor.substring(0, descriptor.indexOf(')') + 1);
             add(new Mapping(MappingType.METHOD, obfuscatedName + descriptor, deobfuscatedName + descriptor));
         }
@@ -93,7 +97,7 @@ public class MappingParser
     private void parseFieldMapping()
     {
         // Parse Field Mapping
-        Mapping mapping = new Mapping(MappingType.FIELD, currentTokens[1], currentTokens[2]);
+        Mapping mapping = new Mapping(MappingType.FIELD, currentTokens[2], currentTokens[3]);
         add(mapping);
     
         // Next Line
@@ -139,7 +143,7 @@ public class MappingParser
         currentIndent = getIndent();
         currentLine = currentLine.trim();
         
-        if (currentLine.length() > 0) currentTokens = currentLine.split(" ");
+        if (currentLine.length() > 0) currentTokens = currentLine.split("[\t ]");
         else nextLine();
     }
     private int getIndent()

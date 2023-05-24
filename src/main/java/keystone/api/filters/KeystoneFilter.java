@@ -217,7 +217,7 @@ public class KeystoneFilter extends EditableObject
      * Send a message to the player in in-game chat
      * @param message The message to send
      */
-    public final void print(Object message)
+    public static void print(Object message)
     {
         if (message == null) message = "null";
         MinecraftClient.getInstance().player.sendMessage(Text.literal(message.toString()), false);

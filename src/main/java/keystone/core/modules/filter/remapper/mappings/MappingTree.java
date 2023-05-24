@@ -3,14 +3,9 @@ package keystone.core.modules.filter.remapper.mappings;
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.core.KeystoneMod;
-import keystone.core.modules.filter.remapper.descriptors.ClassDescriptor;
-import keystone.core.modules.filter.remapper.descriptors.MethodDescriptorParser;
-import keystone.core.modules.filter.remapper.enums.MappingType;
-import keystone.core.modules.filter.remapper.enums.RemappingDirection;
 import keystone.core.utils.FileUtils;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.entity.animation.AnimationHelper;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -18,7 +13,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
@@ -27,19 +21,14 @@ import java.util.zip.ZipInputStream;
 
 public class MappingTree extends AbstractMappingContainer
 {
-    public record MethodMappingInfo(Class<?> declaringClass, Class<?>[] parameterTypes, Method method, Mapping mapping) {}
-    private final Map<RemappingDirection, Map<String, List<MethodMappingInfo>>> methodMappings = new HashMap<>();
+    private final String name;
     
-    private MappingTree() { }
+    private MappingTree(String name) { this.name = name; }
     
     //region Built-In
     public static MappingTree builtin()
     {
-        long start = System.currentTimeMillis();
-        MappingTree tree = resource("filter_mappings.zip");
-        long duration = System.currentTimeMillis() - start;
-        Keystone.LOGGER.info("Loading Mappings Took " + duration + "ms.");
-        return tree;
+        return resource("filter_mappings.tiny");
     }
     //endregion
     //region Yarn
@@ -47,7 +36,7 @@ public class MappingTree extends AbstractMappingContainer
     {
         // Get Mapping Data from Game Version
         String mappingsVersion = SharedConstants.getGameVersion().getName();
-        Path mappingsCache = KeystoneDirectories.getKeystoneSubdirectory(".mappings").resolve("yarn").resolve(mappingsVersion + ".zip");
+        Path mappingsCache = KeystoneDirectories.getKeystoneSubdirectory(".mappings").resolve("yarn-" + mappingsVersion + ".zip");
         
         // Download Mappings if Necessary
         if (!mappingsCache.toFile().exists())
@@ -59,7 +48,7 @@ public class MappingTree extends AbstractMappingContainer
             catch (Exception e)
             {
                 reportException("Failed to download Yarn mappings!", e);
-                return new MappingTree();
+                return new MappingTree("yarn-fallback-" + mappingsVersion);
             }
         }
         
@@ -102,39 +91,62 @@ public class MappingTree extends AbstractMappingContainer
         }
     }
     //endregion
-    // region Zip Mappings
+    //region Resource Mappings
     public static MappingTree resource(String name)
     {
-        try (InputStream mappingsStream = KeystoneMod.class.getResourceAsStream("/" + name);
-             ZipInputStream zipStream = new ZipInputStream(Objects.requireNonNull(mappingsStream)))
+        if (name.endsWith(".zip"))
         {
-            return loadFromZipStream(zipStream);
+            try (InputStream mappingsStream = KeystoneMod.class.getResourceAsStream("/" + name);
+                 ZipInputStream zipStream = new ZipInputStream(Objects.requireNonNull(mappingsStream)))
+            {
+                return loadFromZipStream(name, zipStream);
+            }
+            catch (Exception e)
+            {
+                reportException("Failed to create .zip mappings resource stream!", e);
+                return new MappingTree(name);
+            }
         }
-        catch (Exception e)
+        else if (name.endsWith(".tiny"))
         {
-            reportException("Failed to create built-in mappings resource stream!", e);
-            return new MappingTree();
+            try (InputStream mappingsStream = KeystoneMod.class.getResourceAsStream("/" + name))
+            {
+                return loadFromTinyStream(name, mappingsStream);
+            }
+            catch (Exception e)
+            {
+                reportException("Failed to create .tiny mappings resource stream!", e);
+                return new MappingTree(name);
+            }
+        }
+        else
+        {
+            reportException("Unknown mapping resource file type! File name: '" + name + "'", null);
+            return new MappingTree(name);
         }
     }
+    //endregion
+    // region Zip Mappings
     public static MappingTree loadFromZipFile(File zipFile)
     {
         try (FileInputStream fis = new FileInputStream(zipFile);
              ZipInputStream zipStream = new ZipInputStream(fis))
         {
-            return loadFromZipStream(zipStream);
+            return loadFromZipStream(zipFile.getName(), zipStream);
         }
         catch (IOException e)
         {
             reportException("Failed to open zip file '" + zipFile.getName() + "'!", e);
-            return new MappingTree();
+            return new MappingTree(zipFile.getName());
         }
     }
-    public static MappingTree loadFromZipStream(ZipInputStream zipStream)
+    public static MappingTree loadFromZipStream(String name, ZipInputStream zipStream)
     {
-        MappingTree mappings = new MappingTree();
+        long startTime = System.currentTimeMillis();
+        Keystone.LOGGER.info("Loading Mapping Tree " + name + "...");
+        MappingTree mappings = new MappingTree(name);
         
         // Parse Mappings Archive
-        Keystone.LOGGER.info("Parsing mappings stream...");
         ZipEntry entry = null;
         try
         {
@@ -142,11 +154,7 @@ public class MappingTree extends AbstractMappingContainer
             while ((entry = zipStream.getNextEntry()) != null)
             {
                 // Process Mapping File
-                if (entry.getName().endsWith(".mapping"))
-                {
-                    Scanner scanner = new Scanner(zipStream);
-                    mappings.parseMapping(scanner);
-                }
+                if (entry.getName().endsWith(".mapping")) try (Scanner scanner = new Scanner(zipStream)) { mappings.parseMapping(scanner); }
             }
         }
         catch (IOException e)
@@ -154,15 +162,26 @@ public class MappingTree extends AbstractMappingContainer
             if (entry != null) reportException("Failed to process mappings stream! Failed entry name: " + entry.getName(), e);
             else reportException("Failed to process mappings stream!", e);
         }
-        finally
-        {
-            Keystone.LOGGER.info("Done parsing mappings stream.");
-        }
-        
+    
         // Return loaded mappings
-        Keystone.LOGGER.info("Building method mappings...");
-        mappings.buildMethodMappings();
-        Keystone.LOGGER.info("Done building method mappings.");
+        long duration = System.currentTimeMillis() - startTime;
+        Keystone.LOGGER.info("Loading Mappings Took " + duration + "ms.");
+        return mappings;
+    }
+    //endregion
+    //region Tiny Mappings
+    public static MappingTree loadFromTinyStream(String name, InputStream tinyStream)
+    {
+        long startTime = System.currentTimeMillis();
+        Keystone.LOGGER.info("Loading Mapping Tree " + name + "...");
+        MappingTree mappings = new MappingTree(name);
+    
+        // Parse Mappings File
+        try (Scanner scanner = new Scanner(tinyStream)) { mappings.parseMapping(scanner); }
+    
+        // Return loaded mappings
+        long duration = System.currentTimeMillis() - startTime;
+        Keystone.LOGGER.info("Loading Mappings Took " + duration + "ms.");
         return mappings;
     }
     //endregion
@@ -181,70 +200,11 @@ public class MappingTree extends AbstractMappingContainer
         List<Mapping> mappings = MappingParser.parse(scanner);
         for (Mapping mapping : mappings) putMapping(mapping);
     }
-    private void buildMethodMappings()
-    {
-        forEachMapping(MappingType.METHOD, mapping ->
-        {
-            try
-            {
-                // Build the full descriptor of this method's declaring class
-                ClassDescriptor declaringClassDescriptor = ClassDescriptor.fromMapping((Mapping) mapping.getParent());
-                Class<?> declaringClass = KeystoneMod.class.getClassLoader().loadClass(declaringClassDescriptor.getClassLoaderName());
-                
-                // Parse the method descriptor
-                Optional<Class<?>[]> parameterTypes = MethodDescriptorParser.parseDescriptor(mapping.getNative(), this);
-                if (parameterTypes.isEmpty())
-                {
-                    Keystone.LOGGER.warn("Could not parse descriptor of method " + mapping.getDeobfuscated() + "!");
-                    return;
-                }
-                
-                // Find the reflection method
-                Optional<Method> method = findMethod(declaringClass, mapping, parameterTypes.get());
-                if (method.isEmpty())
-                {
-                    Keystone.LOGGER.warn("Method " + mapping.getDeobfuscated() + " is missing a reflection method!");
-                    return;
-                }
-                
-                // Build the MethodMappingInfo
-                MethodMappingInfo methodInfo = new MethodMappingInfo(declaringClass, parameterTypes.get(), method.get(), mapping);
-    
-                // Add Obfuscating Info
-                Map<String, List<MethodMappingInfo>> map = methodMappings.computeIfAbsent(RemappingDirection.OBFUSCATING, type -> new TreeMap<>());
-                List<MethodMappingInfo> infos = map.computeIfAbsent(mapping.getDeobfuscated().substring(0, mapping.getDeobfuscated().indexOf('(')), ignored -> new ArrayList<>());
-                infos.add(methodInfo);
-    
-                // Add Deobfuscating Info
-                map = methodMappings.computeIfAbsent(RemappingDirection.DEOBFUSCATING, type -> new TreeMap<>());
-                infos = map.computeIfAbsent(mapping.getObfuscated().substring(0, mapping.getObfuscated().indexOf('(')), ignored -> new ArrayList<>());
-                infos.add(methodInfo);
-            }
-            catch (Throwable e)
-            {
-                throw new RuntimeException(e);
-            }
-        }, true);
-    }
-    private Optional<Method> findMethod(Class<?> clazz, Mapping mapping, Class<?>... parameterTypes)
-    {
-        Optional<Method> method = findMethod(clazz, mapping.getObfuscated().substring(0, mapping.getObfuscated().indexOf('(')), parameterTypes);
-        if (method.isPresent()) return method;
-        else return findMethod(clazz, mapping.getDeobfuscated().substring(0, mapping.getDeobfuscated().indexOf('(')), parameterTypes);
-    }
-    private Optional<Method> findMethod(Class<?> clazz, String name, Class<?>... parameterTypes)
-    {
-        try { return Optional.of(clazz.getDeclaredMethod(name, parameterTypes)); }
-        catch (Throwable ignored)
-        {
-            if (clazz.getSuperclass() != null) return findMethod(clazz.getSuperclass(), name, parameterTypes);
-            else return Optional.empty();
-        }
-    }
     //endregion
     
-    public List<MethodMappingInfo> getPossibleMethodMappings(RemappingDirection direction, String name)
+    @Override
+    public String toString()
     {
-        return methodMappings.get(direction).get(name);
+        return "MappingTree[" + this.name + "]";
     }
 }

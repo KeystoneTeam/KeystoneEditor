@@ -22,6 +22,7 @@ import keystone.core.modules.filter.remapper.descriptors.MethodDescriptor;
 import keystone.core.modules.filter.remapper.enums.MappingType;
 import keystone.core.modules.filter.remapper.enums.RemappingDirection;
 import keystone.core.modules.filter.remapper.mappings.MappingTree;
+import keystone.core.modules.filter.remapper.resolution.MethodResolver;
 import net.fabricmc.loader.impl.launch.FabricLauncherBase;
 
 import java.io.File;
@@ -37,12 +38,15 @@ public class FilterRemapper
     //region Static
     public static final MappingTree MAPPINGS;
     public static final RemappingClassLoader REMAPPING_CLASS_LOADER;
+    public static final MethodResolver METHOD_RESOLVER;
     
     private static final ParserConfiguration PARSER_CONFIGURATION;
     static
     {
         MAPPINGS = MappingTree.builtin();
         REMAPPING_CLASS_LOADER = new RemappingClassLoader(MAPPINGS, KeystoneMod.class.getClassLoader());
+        METHOD_RESOLVER = new MethodResolver(MAPPINGS);
+        
         PARSER_CONFIGURATION = new ParserConfiguration()
                 .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17)
                 .setSymbolResolver(new JavaSymbolSolver(new ClassLoaderTypeSolver(REMAPPING_CLASS_LOADER)));
@@ -166,7 +170,7 @@ public class FilterRemapper
     }
     private void remapMethodCall(MethodCallExpr node)
     {
-        Optional<MethodDescriptor> methodDescriptorOptional = MethodDescriptor.fromMethodCall(node, MAPPINGS);
+        Optional<MethodDescriptor> methodDescriptorOptional = MethodDescriptor.fromMethodCall(node, MAPPINGS, METHOD_RESOLVER);
         methodDescriptorOptional.ifPresent(methodDescriptor ->
         {
             MethodDescriptor remapped = methodDescriptor.remap(RemappingDirection.OBFUSCATING, MAPPINGS);
