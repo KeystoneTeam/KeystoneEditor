@@ -19,6 +19,7 @@ import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.filter.providers.BlockListProvider;
 import keystone.core.modules.filter.providers.BlockTypeProvider;
+import keystone.core.modules.filter.remapper.FilterRemapper;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.CloneScreenHistoryEntry;
 import keystone.core.modules.history.entries.ImportBoxesHistoryEntry;
@@ -59,8 +60,9 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         {
             KeystoneDirectories.init();
             DebugFlags.init();
+            FilterRemapper.init();
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             e.printStackTrace();
         }

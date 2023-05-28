@@ -14,6 +14,7 @@ public class KeystoneDirectories
     private static Path keystoneDirectory;
     private static Path currentSaveDirectory;
 
+    private static Path cacheDirectory;
     private static Path analysesDirectory;
     private static Path schematicsDirectory;
     private static Path palettesDirectory;
@@ -26,6 +27,7 @@ public class KeystoneDirectories
         keystoneDirectory = MinecraftClient.getInstance().runDirectory.toPath().resolve(KeystoneConfig.keystoneDirectory);
         if (!keystoneDirectory.toFile().exists()) keystoneDirectory.toFile().mkdirs();
 
+        cacheDirectory = getKeystoneSubdirectory(".cache");
         analysesDirectory = getKeystoneSubdirectory(KeystoneConfig.analysesDirectory);
         schematicsDirectory = getKeystoneSubdirectory(KeystoneConfig.schematicsDirectory);
         palettesDirectory = getKeystoneSubdirectory(KeystoneConfig.palettesDirectory);
@@ -47,6 +49,7 @@ public class KeystoneDirectories
         return file.toPath();
     }
 
+    public static Path getCacheDirectory() { return cacheDirectory; }
     public static Path getAnalysesDirectory() { return analysesDirectory; }
     public static Path getSchematicsDirectory() { return schematicsDirectory; }
     public static Path getPalettesDirectory() { return palettesDirectory; }

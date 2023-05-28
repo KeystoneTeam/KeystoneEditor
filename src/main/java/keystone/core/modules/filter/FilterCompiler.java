@@ -31,7 +31,8 @@ public class FilterCompiler
         try
         {
             // Read the filter code and remap any calls to Minecraft code
-            String filterCode = new FilterRemapper(filterFile).remap();
+//            String filterCode = new FilterRemapper(filterFile).remap();
+            String filterCode = String.join(System.lineSeparator(), Files.readAllLines(filterFile.toPath()));
             
             // Replace filter name with randomized name
             filterCode = filterCode.replaceAll(oldClassName, newClassName);
