@@ -1,6 +1,7 @@
 package keystone.core;
 
 import keystone.api.Keystone;
+import keystone.api.KeystoneCache;
 import keystone.api.KeystoneDirectories;
 import keystone.core.events.KeystoneInputHandler;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
@@ -59,6 +60,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         try
         {
             KeystoneDirectories.init();
+            KeystoneCache.init();
             DebugFlags.init();
             FilterRemapper.init();
         }
@@ -200,5 +202,6 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
     {
         Keystone.disableKeystone();
         Keystone.forEachModule(module -> module.resetModule());
+        KeystoneCache.cleanTempFiles();
     }
 }

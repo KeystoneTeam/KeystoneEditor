@@ -1,21 +1,23 @@
 package keystone.core.modules.filter.remapper;
 
 import keystone.api.Keystone;
-import keystone.api.KeystoneDirectories;
+import keystone.api.KeystoneCache;
 import keystone.core.KeystoneMod;
+import keystone.core.modules.filter.FilterIClassLoader;
+import keystone.core.utils.FileUtils;
 import net.fabricmc.loader.impl.launch.FabricLauncher;
 import net.fabricmc.loader.impl.launch.FabricLauncherBase;
-import net.fabricmc.loader.impl.launch.MappingConfiguration;
 import net.fabricmc.loader.impl.util.mappings.TinyRemapperMappingsHelper;
 import net.fabricmc.mapping.tree.TinyMappingFactory;
 import net.fabricmc.mapping.tree.TinyTree;
 import net.fabricmc.tinyremapper.*;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,10 +30,11 @@ import java.util.jar.JarFile;
 public class FilterRemapper
 {
     private static final FabricLauncher LAUNCHER;
-    private static final IMappingProvider TARGET_TO_NAMED;
-    private static final IMappingProvider NAMED_TO_TARGET;
-    private static final Path MINECRAFT_JAR;
-    private static final Path NAMED_MINECRAFT_JAR;
+    public static final IMappingProvider TARGET_TO_NAMED;
+    public static final IMappingProvider NAMED_TO_TARGET;
+    public static final Path MINECRAFT_JAR;
+    public static final Path NAMED_MINECRAFT_JAR;
+    public static final FilterIClassLoader REMAPPED_CLASS_LOADER;
     
     static
     {
@@ -41,7 +44,12 @@ public class FilterRemapper
         {
             File minecraftJarFile = new File(MinecraftClient.class.getProtectionDomain().getCodeSource().getLocation().toURI());
             MINECRAFT_JAR = minecraftJarFile.toPath();
-            NAMED_MINECRAFT_JAR = KeystoneDirectories.getCacheDirectory().resolve(FilenameUtils.removeExtension(minecraftJarFile.getName()) + "-named.jar");
+            NAMED_MINECRAFT_JAR = KeystoneCache.getCacheDirectory().resolve(SharedConstants.getGameVersion().getName() + "-named.jar");
+            REMAPPED_CLASS_LOADER = new FilterIClassLoader(
+                    KeystoneMod.class.getClassLoader(),
+                    ClassLoader.getPlatformClassLoader(),
+                    ClassLoader.getSystemClassLoader()
+            );
             
             try (InputStream resourceStream = KeystoneMod.class.getResourceAsStream("/filter_mappings.tiny");
                  InputStreamReader resourceStreamReader = new InputStreamReader(resourceStream);
@@ -58,12 +66,14 @@ public class FilterRemapper
         }
     }
     
-    private static void remapFile(Path input, Path output, IMappingProvider mapping) throws IOException
+    public static void remapFile(Path input, Path output, IMappingProvider mapping) throws IOException
     {
         remapFiles(List.of(input), List.of(output), mapping);
     }
-    private static void remapFiles(List<Path> inputFiles, List<Path> outputFiles, IMappingProvider mapping) throws IOException
+    public static void remapFiles(List<Path> inputFiles, List<Path> outputFiles, IMappingProvider mapping) throws IOException
     {
+        Path tempDirectory = KeystoneCache.newTempDirectory();
+        
         // Print Remapping Start
         long startTime = System.currentTimeMillis();
         Keystone.LOGGER.info("Beginning remapping operation. Files:");
@@ -99,7 +109,7 @@ public class FilterRemapper
             for (Path inputFile : inputFiles)
             {
                 // Get source and temp file paths
-                Path tmpFile = KeystoneDirectories.getCacheDirectory().resolve(inputFile.toFile().getName() + ".tmp");
+                Path tmpFile = tempDirectory.resolve(inputFile.toFile().getName() + ".tmp");
                 tmpFiles.add(tmpFile);
                 depPaths.add(tmpFile);
         
@@ -168,11 +178,15 @@ public class FilterRemapper
         // Print Timing
         long duration = System.currentTimeMillis() - startTime;
         Keystone.LOGGER.info("Finished remapping operation in " + duration + "ms.");
+        FileUtils.deleteRecursively(tempDirectory.toFile(), false);
     }
     
     public static void init() throws IOException
     {
         if (NAMED_MINECRAFT_JAR.toFile().exists()) Keystone.LOGGER.info("A remapped Minecraft jar is already cached. Skipping Minecraft remapping.");
         else remapFile(MINECRAFT_JAR, NAMED_MINECRAFT_JAR, TARGET_TO_NAMED);
+    
+        URLClassLoader namedJarLoader = new URLClassLoader(new URL[] { NAMED_MINECRAFT_JAR.toUri().toURL() });
+        REMAPPED_CLASS_LOADER.prependLoader(namedJarLoader).build();
     }
 }

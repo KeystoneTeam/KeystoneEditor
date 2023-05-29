@@ -12,6 +12,8 @@ import keystone.api.wrappers.coordinates.Vector2f;
 import java.util.ArrayList;
 import java.util.List;
 
+import static keystone.core.utils.ProgressBar.nextStep;
+
 public class Forester extends StructureFilter
 {
     //region Enums

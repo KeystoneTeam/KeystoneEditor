@@ -94,9 +94,8 @@ public class GhostBlocksWorld extends WrappedWorld implements ServerWorldAccess
         if (entityIn instanceof ItemFrameEntity)
             ((ItemFrameEntity) entityIn).getHeldItemStack()
                     .setNbt(null);
-        if (entityIn instanceof ArmorStandEntity)
+        if (entityIn instanceof ArmorStandEntity armorStandEntity)
         {
-            ArmorStandEntity armorStandEntity = (ArmorStandEntity) entityIn;
             armorStandEntity.getItemsEquipped()
                     .forEach(stack -> stack.setNbt(null));
         }

@@ -6,7 +6,6 @@ import keystone.api.utils.StringUtils;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.gui.overlays.filters.FilterSelectionScreen;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
@@ -107,7 +106,7 @@ public class FilterDirectoryManager
 
         KeystoneFilter existingFilter = compiledFilters.getOrDefault(file, null);
         VariableContainer variableContainer = existingFilter != null ? new VariableContainer(existingFilter) : null;
-        KeystoneFilter recompiled = FilterCompiler.compileFilter(file);
+        KeystoneFilter recompiled = FilterCompiler.loadFilter(file);
         if (variableContainer != null) variableContainer.apply(recompiled);
         compiledFilters.put(file, recompiled);
 
@@ -174,7 +173,7 @@ public class FilterDirectoryManager
     public void recompileAllFilters()
     {
         compiledFilters.clear();
-        for (File file : getInstalledFilters()) compiledFilters.put(file, FilterCompiler.compileFilter(file));
+        for (File file : getInstalledFilters()) compiledFilters.put(file, FilterCompiler.loadFilter(file));
     }
     //endregion
 }
