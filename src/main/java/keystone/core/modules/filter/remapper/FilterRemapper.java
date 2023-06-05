@@ -3,7 +3,7 @@ package keystone.core.modules.filter.remapper;
 import keystone.api.Keystone;
 import keystone.api.KeystoneCache;
 import keystone.core.KeystoneMod;
-import keystone.core.modules.filter.FilterIClassLoader;
+import keystone.core.modules.filter.MultiClassLoader;
 import keystone.core.utils.FileUtils;
 import net.fabricmc.loader.impl.launch.FabricLauncher;
 import net.fabricmc.loader.impl.launch.FabricLauncherBase;
@@ -34,7 +34,7 @@ public class FilterRemapper
     public static final IMappingProvider NAMED_TO_TARGET;
     public static final Path MINECRAFT_JAR;
     public static final Path NAMED_MINECRAFT_JAR;
-    public static final FilterIClassLoader REMAPPED_CLASS_LOADER;
+    public static final MultiClassLoader REMAPPED_CLASS_LOADER;
     
     static
     {
@@ -45,11 +45,13 @@ public class FilterRemapper
             File minecraftJarFile = new File(MinecraftClient.class.getProtectionDomain().getCodeSource().getLocation().toURI());
             MINECRAFT_JAR = minecraftJarFile.toPath();
             NAMED_MINECRAFT_JAR = KeystoneCache.getCacheDirectory().resolve(SharedConstants.getGameVersion().getName() + "-named.jar");
-            REMAPPED_CLASS_LOADER = new FilterIClassLoader(
-                    KeystoneMod.class.getClassLoader(),
-                    ClassLoader.getPlatformClassLoader(),
-                    ClassLoader.getSystemClassLoader()
-            );
+
+            ClassLoader keystoneLoader = KeystoneMod.class.getClassLoader();
+            ClassLoader fabricLoader = FabricLauncher.class.getClassLoader();
+            ClassLoader minecraftLoader = MinecraftClient.class.getClassLoader();
+            ClassLoader platformLoader = ClassLoader.getPlatformClassLoader();
+            ClassLoader systemLoader = ClassLoader.getSystemClassLoader();
+            REMAPPED_CLASS_LOADER = MultiClassLoader.from(keystoneLoader, fabricLoader, minecraftLoader, platformLoader, systemLoader);
             
             try (InputStream resourceStream = KeystoneMod.class.getResourceAsStream("/filter_mappings.tiny");
                  InputStreamReader resourceStreamReader = new InputStreamReader(resourceStream);
@@ -187,6 +189,6 @@ public class FilterRemapper
         else remapFile(MINECRAFT_JAR, NAMED_MINECRAFT_JAR, TARGET_TO_NAMED);
     
         URLClassLoader namedJarLoader = new URLClassLoader(new URL[] { NAMED_MINECRAFT_JAR.toUri().toURL() });
-        REMAPPED_CLASS_LOADER.prependLoader(namedJarLoader).build();
+        REMAPPED_CLASS_LOADER.prependLoader(namedJarLoader);
     }
 }

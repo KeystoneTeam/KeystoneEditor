@@ -3,6 +3,7 @@ package keystone.core.modules.filter;
 import keystone.api.Keystone;
 import keystone.api.KeystoneCache;
 import keystone.api.filters.KeystoneFilter;
+import keystone.core.KeystoneMod;
 import keystone.core.modules.filter.remapper.FilterRemapper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
@@ -14,6 +15,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.codehaus.commons.compiler.util.resource.FileResourceCreator;
+import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.Compiler;
 
 import java.io.File;
@@ -49,7 +51,7 @@ public class FilterCompiler
         // Create a Janino compiler
         Compiler compiler = new Compiler();
         compiler.setTargetVersion(8);
-        compiler.setIClassLoader(FilterRemapper.REMAPPED_CLASS_LOADER);
+        compiler.setIClassLoader(new ClassLoaderIClassLoader(FilterRemapper.REMAPPED_CLASS_LOADER));
         compiler.setClassFileFinder(new DirectoryResourceFinder(KeystoneCache.getCompiledDirectory().toFile()));
         compiler.setClassFileCreator(new FileResourceCreator() { @Override protected File getFile(String resourceName) { return KeystoneCache.getCompiledDirectory().resolve(resourceName).toFile(); } });
         
