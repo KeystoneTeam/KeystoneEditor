@@ -1,47 +1,24 @@
 package keystone.core.modules.filter;
 
 import keystone.api.Keystone;
-import keystone.api.KeystoneCache;
 import keystone.api.filters.KeystoneFilter;
-import keystone.core.KeystoneMod;
 import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.modules.filter.providers.IFilterProvider;
 import keystone.core.modules.filter.providers.impl.SimpleFilterProvider;
-import keystone.core.modules.filter.remapper.FilterRemapper;
-import keystone.core.utils.FileUtils;
 import keystone.core.utils.Result;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.NotImplementedException;
-import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.InternalCompilerException;
-import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
-import org.codehaus.commons.compiler.util.resource.FileResourceCreator;
-import org.codehaus.janino.ClassLoaderIClassLoader;
-import org.codehaus.janino.Compiler;
-import oshi.util.FileUtil;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 
 public class FilterCompiler
 {

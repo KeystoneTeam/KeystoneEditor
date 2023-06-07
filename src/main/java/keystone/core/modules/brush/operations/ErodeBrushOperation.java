@@ -1,7 +1,11 @@
 package keystone.core.modules.brush.operations;
 
 import keystone.api.enums.RetrievalMode;
-import keystone.api.variables.*;
+import keystone.api.variables.Hide;
+import keystone.api.variables.Hook;
+import keystone.api.variables.IntRange;
+import keystone.api.variables.Tooltip;
+import keystone.api.variables.Variable;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;

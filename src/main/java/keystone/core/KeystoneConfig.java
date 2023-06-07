@@ -2,7 +2,12 @@ package keystone.core;
 
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
-import keystone.api.variables.*;
+import keystone.api.variables.DisplayModifiers;
+import keystone.api.variables.FloatRange;
+import keystone.api.variables.Header;
+import keystone.api.variables.Hook;
+import keystone.api.variables.IntRange;
+import keystone.api.variables.Variable;
 import keystone.core.serialization.VariablesSerializer;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;

@@ -1,6 +1,5 @@
 package keystone.api.wrappers;
 
-import keystone.api.Keystone;
 import keystone.core.utils.RandomWrapper;
 import net.minecraft.item.ItemStack;
 

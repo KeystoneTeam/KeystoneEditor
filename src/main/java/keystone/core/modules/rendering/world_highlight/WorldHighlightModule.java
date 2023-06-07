@@ -2,7 +2,6 @@ package keystone.core.modules.rendering.world_highlight;
 
 import keystone.api.Keystone;
 import keystone.core.KeystoneConfig;
-import keystone.core.KeystoneGlobalState;
 import keystone.core.client.Player;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.world_cache.WorldCacheModule;

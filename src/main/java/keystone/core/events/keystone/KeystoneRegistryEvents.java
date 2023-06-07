@@ -2,8 +2,8 @@ package keystone.core.events.keystone;
 
 import keystone.api.Keystone;
 import keystone.core.modules.IKeystoneModule;
-import keystone.core.modules.filter.blocks.IBlockProvider;
 import keystone.core.modules.filter.blocks.BlockProviderTypes;
+import keystone.core.modules.filter.blocks.IBlockProvider;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.schematic.SchematicLoader;

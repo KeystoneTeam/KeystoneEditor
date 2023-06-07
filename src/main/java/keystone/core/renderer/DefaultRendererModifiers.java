@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.renderer.interfaces.IRendererModifier;
 import net.minecraft.client.render.GameRenderer;
 
-import java.util.Objects;
 import java.util.function.Supplier;
 
 public class DefaultRendererModifiers

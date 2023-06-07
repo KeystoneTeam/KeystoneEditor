@@ -2,7 +2,6 @@ package keystone.core.gui.overlays.block_selection;
 
 import keystone.api.KeystoneDirectories;
 import keystone.api.wrappers.blocks.BlockPalette;
-import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.overlays.file_browser.OpenFilesScreen;
 import keystone.core.gui.overlays.file_browser.SaveFileScreen;
@@ -10,7 +9,6 @@ import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
-import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;

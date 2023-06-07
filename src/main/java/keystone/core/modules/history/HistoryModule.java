@@ -8,7 +8,6 @@ import keystone.core.events.keystone.KeystoneRegistryEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.world.change_queue.FlushMode;
 import keystone.core.utils.NBTSerializer;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
 

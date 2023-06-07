@@ -5,7 +5,6 @@ import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.modules.filter.remapper.FilterRemapper;
 import keystone.core.utils.FileUtils;
 import keystone.core.utils.Result;
-import org.apache.commons.io.FilenameUtils;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.codehaus.commons.compiler.util.resource.FileResourceCreator;
 import org.codehaus.janino.ClassLoaderIClassLoader;

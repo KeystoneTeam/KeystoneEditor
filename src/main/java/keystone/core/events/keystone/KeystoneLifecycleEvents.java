@@ -4,7 +4,6 @@ import keystone.core.modules.schematic_import.ImportBoundingBox;
 import keystone.core.modules.selection.SelectionBoundingBox;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.World;
 
 import java.util.List;
