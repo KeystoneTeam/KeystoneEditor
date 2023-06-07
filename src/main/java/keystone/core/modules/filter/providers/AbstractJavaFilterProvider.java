@@ -19,12 +19,12 @@ import java.nio.file.Path;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
-public abstract class AbstractJavaFilterProvider implements IFilterProvider
+public abstract class AbstractJavaFilterProvider extends AbstractRemappingFilterProvider
 {
     protected abstract Result<Void> compileSource(File source, Path compilerWorkspace, Compiler compiler);
 
     @Override
-    public Result<Path> getFilter(File source, FilterCache.Entry entry)
+    protected Result<Path> getNamedFilter(File source, FilterCache.Entry entry)
     {
         Path compilerWorkspace = KeystoneCache.newTempDirectory();
         Result<Path> result = run(source, compilerWorkspace, entry);
@@ -53,15 +53,7 @@ public abstract class AbstractJavaFilterProvider implements IFilterProvider
             catch (IOException e) { return Result.failed("Unable to build content jar '" + cache.compiled() + "'", e); }
         }
 
-        // If a remapped JAR file is not cached
-        if (!cache.remapped().toFile().isFile())
-        {
-            // Run Remapper
-            try { FilterRemapper.remapFile(cache.compiled(), cache.remapped(), FilterRemapper.NAMED_TO_TARGET); }
-            catch (IOException e) { return Result.failed("Could not remap compiled filter jar '" + cache.compiled() + "'", e); }
-        }
-
-        return Result.success(cache.remapped());
+        return Result.success(cache.compiled());
     }
 
     //region JAR

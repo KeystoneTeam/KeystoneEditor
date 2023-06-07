@@ -9,5 +9,5 @@ import java.nio.file.Path;
 public interface IFilterProvider
 {
     boolean isSourceSupported(File source);
-    Result<Path> getFilter(File source, FilterCache.Entry entry);
+    Result<Path> getFilter(File source, FilterCache.Entry cache);
 }

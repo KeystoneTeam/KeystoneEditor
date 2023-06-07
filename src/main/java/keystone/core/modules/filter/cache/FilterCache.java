@@ -3,7 +3,6 @@ package keystone.core.modules.filter.cache;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
-import com.google.common.io.Files;
 import keystone.api.KeystoneCache;
 import keystone.core.VersionChecker;
 import net.minecraft.SharedConstants;
@@ -15,6 +14,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -165,7 +165,7 @@ public final class FilterCache
         {
             if (file.isFile())
             {
-                ByteSource byteSource = Files.asByteSource(file);
+                ByteSource byteSource = ByteSource.wrap(Files.readAllBytes(file.toPath()));
                 HashCode hash = byteSource.hash(Hashing.sha256());
                 return hash.asBytes();
             }

@@ -5,6 +5,7 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.modules.filter.providers.IFilterProvider;
 import keystone.core.modules.filter.providers.impl.DirectoryFilterProvider;
+import keystone.core.modules.filter.providers.impl.PrecompiledFilterProvider;
 import keystone.core.modules.filter.providers.impl.SimpleFilterProvider;
 import keystone.core.utils.Result;
 import net.minecraft.client.MinecraftClient;
@@ -25,7 +26,8 @@ public class FilterCompiler
 {
     private static final List<IFilterProvider> FILTER_PROVIDERS = List.of(
             SimpleFilterProvider.INSTANCE,
-            DirectoryFilterProvider.INSTANCE
+            DirectoryFilterProvider.INSTANCE,
+            PrecompiledFilterProvider.INSTANCE
     );
 
     public static KeystoneFilter loadFilter(File filterSource)
