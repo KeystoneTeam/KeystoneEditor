@@ -1,4 +1,4 @@
-package keystone.core.modules.filter.providers;
+package keystone.core.modules.filter.blocks;
 
 import keystone.api.Keystone;
 import net.minecraft.util.Identifier;

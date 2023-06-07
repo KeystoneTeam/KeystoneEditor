@@ -3,7 +3,7 @@ package keystone.core.gui.overlays.block_selection;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
-import keystone.core.modules.filter.providers.IBlockProvider;
+import keystone.core.modules.filter.blocks.IBlockProvider;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;

@@ -1,13 +1,10 @@
-package keystone.core.modules.filter.providers;
+package keystone.core.modules.filter.blocks;
 
 import keystone.api.utils.StringUtils;
 import keystone.api.wrappers.blocks.BlockType;
-import keystone.core.gui.overlays.block_selection.BlockPropertiesScreen;
-import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.BlockUtils;
 import net.minecraft.block.BlockState;
-import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;

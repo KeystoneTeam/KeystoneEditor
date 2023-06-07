@@ -125,7 +125,7 @@ public class FilterDirectoryManager
         {
             ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
             // TODO: Check if the stock filter predicate works
-            Map<Identifier, Resource> filterResources = resourceManager.findResources("stock_filters", path -> path.getPath().endsWith(".java") || path.getPath().endsWith(".filter"));
+            Map<Identifier, Resource> filterResources = resourceManager.findResources("stock_filters", path -> path.getPath().endsWith(".java") || path.getPath().endsWith(".jar"));
 
             for (Map.Entry<Identifier, Resource> filterEntry : filterResources.entrySet())
             {
@@ -160,7 +160,7 @@ public class FilterDirectoryManager
         if (stockFilters == null || stockFilters.size() == 0) loadStockFilters();
 
         List<File> filters = new ArrayList<>();
-        File[] customFilters = KeystoneDirectories.getFilterDirectory().toFile().listFiles((dir, name) -> name.endsWith(".java") || name.endsWith(".filter"));
+        File[] customFilters = KeystoneDirectories.getFilterDirectory().toFile().listFiles();
         if (customFilters != null) Collections.addAll(filters, customFilters);
         filters.addAll(stockFilters);
         filters.sort(Comparator.comparing(a -> KeystoneFilter.getFilterName(a, true)));

@@ -1,7 +1,7 @@
 package keystone.core.gui.overlays.block_selection;
 
 import keystone.core.gui.widgets.BlockGridWidget;
-import keystone.core.modules.filter.providers.IBlockProvider;
+import keystone.core.modules.filter.blocks.IBlockProvider;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
 import org.lwjgl.glfw.GLFW;

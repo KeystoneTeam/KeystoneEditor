@@ -4,7 +4,11 @@ import keystone.api.Keystone;
 import keystone.api.KeystoneCache;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.KeystoneMod;
+import keystone.core.modules.filter.providers.IFilterProvider;
+import keystone.core.modules.filter.providers.impl.SimpleFilterProvider;
 import keystone.core.modules.filter.remapper.FilterRemapper;
+import keystone.core.utils.FileUtils;
+import keystone.core.utils.Result;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
@@ -17,22 +21,54 @@ import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.codehaus.commons.compiler.util.resource.FileResourceCreator;
 import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.Compiler;
+import oshi.util.FileUtil;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 public class FilterCompiler
 {
+    private static final List<IFilterProvider> FILTER_PROVIDERS = List.of(
+            SimpleFilterProvider.INSTANCE
+    );
+
     public static KeystoneFilter loadFilter(File filterSource)
     {
-        // Load Valid Filter Sources
-        if (filterSource.isFile())
+        // Check Each Provider
+        for (IFilterProvider provider : FILTER_PROVIDERS)
         {
-            if (filterSource.getName().toLowerCase().endsWith(".java")) return compileSimpleFilter(filterSource);
-            else if (filterSource.getName().toLowerCase().endsWith(".jar")) return loadJarFilter(filterSource);
+            // If the provider supports the source file type
+            if (provider.isSourceSupported(filterSource))
+            {
+                // Run the provider on the filter source
+                Result<Path> providerResult = provider.getFilter(filterSource);
+
+                // If the provider wasn't successful
+                if (providerResult.isFailed())
+                {
+                    providerResult.logFailure();
+                    return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(providerResult.exception());
+                }
+
+                // If the provider was successful
+                else
+                {
+                    String error = "Filter loading is currently being rewritten. If you see this, the currently implemented parts of the filter pipeline were successful.";
+                    return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(new NotImplementedException(error));
+                }
+            }
         }
-        else if (filterSource.isDirectory()) return compileSourceFilter(filterSource);
         
         // Invalid Filter Source
         String error = "Unknown Filter Source '" + filterSource.toPath() + "'!";
@@ -40,60 +76,7 @@ public class FilterCompiler
         sendErrorMessage(error);
         return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(new IllegalArgumentException(error));
     }
-    
-    //region Compilers
-    private static KeystoneFilter compileSimpleFilter(File filterFile)
-    {
-        // Randomize Class Name
-        String oldClassName = KeystoneFilter.getFilterName(filterFile, true);
-        String newClassName = createRandomClassName();
-        
-        // Create a Janino compiler
-        Compiler compiler = new Compiler();
-        compiler.setTargetVersion(8);
-        compiler.setIClassLoader(new ClassLoaderIClassLoader(FilterRemapper.REMAPPED_CLASS_LOADER));
-        compiler.setClassFileFinder(new DirectoryResourceFinder(KeystoneCache.getCompiledDirectory().toFile()));
-        compiler.setClassFileCreator(new FileResourceCreator() { @Override protected File getFile(String resourceName) { return KeystoneCache.getCompiledDirectory().resolve(resourceName).toFile(); } });
-        
-        // Compile Filter File
-        try
-        {
-            compiler.compile(new File[] { filterFile });
-        }
-        catch (CompileException | InternalCompilerException e)
-        {
-            // Error Logging
-            String filterName = KeystoneFilter.getFilterName(filterFile, false);
-            String error = "Unable to compile filter '" + filterName + "': " + e.getLocalizedMessage();
-            Keystone.LOGGER.error(error);
-            sendErrorMessage(error);
-    
-            e.printStackTrace();
-            return new KeystoneFilter().setName(filterName).setCompilerException(e);
-        }
-        catch (IOException e)
-        {
-            // Error Logging
-            String error = "Unable to open filter file '" + filterFile.toPath() + "': " + e.getLocalizedMessage();
-            Keystone.LOGGER.error(error);
-            sendErrorMessage(error);
-    
-            e.printStackTrace();
-            return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false)).setCompilerException(e);
-        }
-    
-        // TODO: Finish Filter Loading
-        return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterFile, false)).setCompilerException(new NotImplementedException("Filters are currently not loaded from the compiled classes."));
-    }
-    private static KeystoneFilter compileSourceFilter(File filterDirectory)
-    {
-        throw new NotImplementedException("Keystone currently does not support complex filters!");
-    }
-    private static KeystoneFilter loadJarFilter(File filterJar)
-    {
-        throw new NotImplementedException("Keystone currently does not support pre-compiled filters!");
-    }
-    //endregion
+
     //region Helpers
     private static void sendErrorMessage(String message)
     {

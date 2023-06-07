@@ -30,6 +30,8 @@ import java.util.jar.JarFile;
 public class FilterRemapper
 {
     private static final FabricLauncher LAUNCHER;
+    private static final TinyTree MAPPINGS;
+
     public static final IMappingProvider TARGET_TO_NAMED;
     public static final IMappingProvider NAMED_TO_TARGET;
     public static final Path MINECRAFT_JAR;
@@ -57,9 +59,9 @@ public class FilterRemapper
                  InputStreamReader resourceStreamReader = new InputStreamReader(resourceStream);
                  BufferedReader mappingsReader = new BufferedReader(resourceStreamReader))
             {
-                TinyTree mappings = TinyMappingFactory.load(mappingsReader, true);
-                TARGET_TO_NAMED = TinyRemapperMappingsHelper.create(mappings, LAUNCHER.getMappingConfiguration().getTargetNamespace(), "named");
-                NAMED_TO_TARGET = TinyRemapperMappingsHelper.create(mappings, "named", LAUNCHER.getMappingConfiguration().getTargetNamespace());
+                MAPPINGS = TinyMappingFactory.load(mappingsReader, true);
+                TARGET_TO_NAMED = mappings(LAUNCHER.getMappingConfiguration().getTargetNamespace(), "named");
+                NAMED_TO_TARGET = mappings("named", LAUNCHER.getMappingConfiguration().getTargetNamespace());
             }
         }
         catch (Exception e)
@@ -67,7 +69,11 @@ public class FilterRemapper
             throw new RuntimeException(e);
         }
     }
-    
+
+    public static IMappingProvider mappings(String from, String to)
+    {
+        return TinyRemapperMappingsHelper.create(MAPPINGS, from, to);
+    }
     public static void remapFile(Path input, Path output, IMappingProvider mapping) throws IOException
     {
         remapFiles(List.of(input), List.of(output), mapping);

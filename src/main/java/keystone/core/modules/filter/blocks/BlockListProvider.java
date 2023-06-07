@@ -1,9 +1,8 @@
-package keystone.core.modules.filter.providers;
+package keystone.core.modules.filter.blocks;
 
 import keystone.api.Keystone;
 import keystone.api.utils.StringUtils;
 import keystone.api.wrappers.blocks.BlockType;
-import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.BlockUtils;
 import net.minecraft.block.Block;
@@ -14,7 +13,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Property;
 import net.minecraft.tag.TagKey;
 import net.minecraft.text.Style;

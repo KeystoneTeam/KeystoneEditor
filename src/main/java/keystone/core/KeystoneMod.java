@@ -18,8 +18,8 @@ import keystone.core.keybinds.KeystoneKeyBindings;
 import keystone.core.modules.brush.BrushModule;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.filter.FilterModule;
-import keystone.core.modules.filter.providers.BlockListProvider;
-import keystone.core.modules.filter.providers.BlockTypeProvider;
+import keystone.core.modules.filter.blocks.BlockListProvider;
+import keystone.core.modules.filter.blocks.BlockTypeProvider;
 import keystone.core.modules.filter.remapper.FilterRemapper;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.CloneScreenHistoryEntry;
@@ -45,8 +45,6 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
-
-import java.io.IOException;
 
 public class KeystoneMod implements ModInitializer, ClientModInitializer
 {

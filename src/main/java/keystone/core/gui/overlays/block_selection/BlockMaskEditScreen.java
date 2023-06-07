@@ -11,9 +11,7 @@ import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.BooleanWidget;
-import keystone.core.modules.filter.providers.BlockTypeProvider;
-import keystone.core.modules.filter.providers.IBlockProvider;
-import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.modules.filter.blocks.IBlockProvider;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 

@@ -5,7 +5,7 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
-import keystone.core.modules.filter.providers.IBlockProvider;
+import keystone.core.modules.filter.blocks.IBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
 

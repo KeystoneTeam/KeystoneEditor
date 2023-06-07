@@ -1,7 +1,6 @@
-package keystone.core.modules.filter.providers;
+package keystone.core.modules.filter.blocks;
 
 import keystone.api.wrappers.blocks.BlockType;
-import keystone.core.gui.widgets.BlockGridWidget;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;

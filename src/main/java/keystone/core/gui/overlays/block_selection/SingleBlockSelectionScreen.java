@@ -4,7 +4,7 @@ import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
-import keystone.core.modules.filter.providers.IBlockProvider;
+import keystone.core.modules.filter.blocks.IBlockProvider;
 import net.minecraft.text.Text;
 
 import java.util.function.Consumer;
