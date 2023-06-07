@@ -4,6 +4,7 @@ import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.modules.filter.providers.IFilterProvider;
+import keystone.core.modules.filter.providers.impl.DirectoryFilterProvider;
 import keystone.core.modules.filter.providers.impl.SimpleFilterProvider;
 import keystone.core.utils.Result;
 import net.minecraft.client.MinecraftClient;
@@ -23,7 +24,8 @@ import java.util.List;
 public class FilterCompiler
 {
     private static final List<IFilterProvider> FILTER_PROVIDERS = List.of(
-            SimpleFilterProvider.INSTANCE
+            SimpleFilterProvider.INSTANCE,
+            DirectoryFilterProvider.INSTANCE
     );
 
     public static KeystoneFilter loadFilter(File filterSource)

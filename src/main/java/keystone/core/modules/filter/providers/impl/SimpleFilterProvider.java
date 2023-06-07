@@ -27,6 +27,6 @@ public class SimpleFilterProvider extends AbstractJavaFilterProvider
         // Compile Filter File to Classes
         try { compiler.compile(new File[] { source }); return Result.success(null); }
         catch (CompileException | InternalCompilerException e) { return Result.failed("Unable to compile simple filter '" + filterName + "'", e); }
-        catch (IOException e) { return Result.failed("Unable to open content file '" + source.toPath() + "'", e); }
+        catch (IOException e) { return Result.failed("Unable to open filter file '" + source.toPath() + "'", e); }
     }
 }
