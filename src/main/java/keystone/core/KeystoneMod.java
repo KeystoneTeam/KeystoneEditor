@@ -20,6 +20,7 @@ import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.filter.blocks.BlockListProvider;
 import keystone.core.modules.filter.blocks.BlockTypeProvider;
+import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.modules.filter.remapper.FilterRemapper;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.entries.CloneScreenHistoryEntry;
@@ -185,6 +186,8 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
 
     private void onOpenWorld(World world)
     {
+        FilterCache.load();
+
         if (KeystoneConfig.startActive) Keystone.enableKeystone();
         else Keystone.disableKeystone();
     
@@ -198,6 +201,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
     }
     private void onCloseWorld()
     {
+        FilterCache.write();
         Keystone.disableKeystone();
         Keystone.forEachModule(module -> module.resetModule());
         KeystoneCache.cleanTempFiles();

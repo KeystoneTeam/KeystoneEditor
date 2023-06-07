@@ -1,5 +1,6 @@
 package keystone.api;
 
+import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.utils.FileUtils;
 
 import java.io.File;

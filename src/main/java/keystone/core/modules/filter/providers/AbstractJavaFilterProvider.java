@@ -1,6 +1,7 @@
 package keystone.core.modules.filter.providers;
 
 import keystone.api.KeystoneCache;
+import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.modules.filter.remapper.FilterRemapper;
 import keystone.core.utils.FileUtils;
 import keystone.core.utils.Result;
@@ -24,41 +25,44 @@ public abstract class AbstractJavaFilterProvider implements IFilterProvider
     protected abstract Result<Void> compileSource(File source, Path compilerWorkspace, Compiler compiler);
 
     @Override
-    public Result<Path> getFilter(File source)
+    public Result<Path> getFilter(File source, FilterCache.Entry entry)
     {
         Path compilerWorkspace = KeystoneCache.newTempDirectory();
-        Result<Path> result = run(source, compilerWorkspace);
+        Result<Path> result = run(source, compilerWorkspace, entry);
         FileUtils.deleteRecursively(compilerWorkspace.toFile(), false);
         return result;
     }
 
-    private Result<Path> run(File source, Path compilerWorkspace)
+    private Result<Path> run(File source, Path compilerWorkspace, FilterCache.Entry cache)
     {
-        // Create a Janino compiler
-        Compiler compiler = new Compiler();
-        compiler.setTargetVersion(8);
-        compiler.setIClassLoader(new ClassLoaderIClassLoader(FilterRemapper.REMAPPED_CLASS_LOADER));
-        compiler.setClassFileFinder(new DirectoryResourceFinder(KeystoneCache.getCompiledDirectory().toFile()));
-        compiler.setClassFileCreator(new FileResourceCreator() { @Override protected File getFile(String resourceName) { return compilerWorkspace.resolve(resourceName).toFile(); } });
-
-        // Run Compilation Code
-        Result<Void> compilationResult = compileSource(source, compilerWorkspace, compiler);
-        if (compilationResult.isFailed()) return Result.failed(compilationResult);
-
-        // Create Jar File from Compiled Classes
-        String jarName = FilenameUtils.removeExtension(source.getName()) + ".jar";
-        Path compiledJar = KeystoneCache.getCompiledDirectory().resolve(jarName);
-        try { buildJar(compilerWorkspace, compiledJar.toFile()); }
-        catch (IOException e) { return Result.failed("Unable to build content jar '" + compiledJar + "'", e); }
-
-        // Run Remapper
-        try
+        // If a compiled JAR file is not cached
+        if (!cache.compiled().toFile().isFile())
         {
-            Path remappedJar = KeystoneCache.getRemappedDirectory().resolve(jarName);
-            FilterRemapper.remapFile(compiledJar, remappedJar, FilterRemapper.mappings("named", "intermediary"));
-            return Result.success(remappedJar);
+            // Create a Janino compiler
+            Compiler compiler = new Compiler();
+            compiler.setTargetVersion(8);
+            compiler.setIClassLoader(new ClassLoaderIClassLoader(FilterRemapper.REMAPPED_CLASS_LOADER));
+            compiler.setClassFileFinder(new DirectoryResourceFinder(KeystoneCache.getCompiledDirectory().toFile()));
+            compiler.setClassFileCreator(new FileResourceCreator() { @Override protected File getFile(String resourceName) { return compilerWorkspace.resolve(resourceName).toFile(); } });
+
+            // Run Compilation Code
+            Result<Void> compilationResult = compileSource(source, compilerWorkspace, compiler);
+            if (compilationResult.isFailed()) return Result.failed(compilationResult);
+
+            // Create Jar File from Compiled Classes
+            try { buildJar(compilerWorkspace, cache.compiled().toFile()); }
+            catch (IOException e) { return Result.failed("Unable to build content jar '" + cache.compiled() + "'", e); }
         }
-        catch (IOException e) { return Result.failed("Could not remap compiled filter jar '" + compilationResult.get() + "'", e); }
+
+        // If a remapped JAR file is not cached
+        if (!cache.remapped().toFile().isFile())
+        {
+            // Run Remapper
+            try { FilterRemapper.remapFile(cache.compiled(), cache.remapped(), FilterRemapper.mappings("named", "intermediary")); }
+            catch (IOException e) { return Result.failed("Could not remap compiled filter jar '" + cache.compiled() + "'", e); }
+        }
+
+        return Result.success(cache.remapped());
     }
 
     //region JAR

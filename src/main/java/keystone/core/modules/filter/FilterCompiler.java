@@ -4,6 +4,7 @@ import keystone.api.Keystone;
 import keystone.api.KeystoneCache;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.KeystoneMod;
+import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.modules.filter.providers.IFilterProvider;
 import keystone.core.modules.filter.providers.impl.SimpleFilterProvider;
 import keystone.core.modules.filter.remapper.FilterRemapper;
@@ -45,36 +46,39 @@ public class FilterCompiler
 
     public static KeystoneFilter loadFilter(File filterSource)
     {
-        // Check Each Provider
-        for (IFilterProvider provider : FILTER_PROVIDERS)
+        // Get the Filter JAR File
+        FilterCache.Entry cacheEntry = FilterCache.getEntry(filterSource);
+        Result<Path> filterJar = getFilterJarPath(filterSource, cacheEntry);
+
+        // If the JAR could not be found or created
+        if (filterJar.isFailed())
         {
-            // If the provider supports the source file type
-            if (provider.isSourceSupported(filterSource))
+            filterJar.logFailure();
+            return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(filterJar.exception());
+        }
+
+        String error = "Filter loading is currently being rewritten. If you see this, the currently implemented parts of the filter pipeline were successful.";
+        return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(new NotImplementedException(error));
+    }
+    private static Result<Path> getFilterJarPath(File filterSource, FilterCache.Entry cacheEntry)
+    {
+        if (!cacheEntry.remapped().toFile().isFile())
+        {
+            // Check Each Provider
+            for (IFilterProvider provider : FILTER_PROVIDERS)
             {
-                // Run the provider on the filter source
-                Result<Path> providerResult = provider.getFilter(filterSource);
-
-                // If the provider wasn't successful
-                if (providerResult.isFailed())
+                // If the provider supports the source file type
+                if (provider.isSourceSupported(filterSource))
                 {
-                    providerResult.logFailure();
-                    return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(providerResult.exception());
-                }
-
-                // If the provider was successful
-                else
-                {
-                    String error = "Filter loading is currently being rewritten. If you see this, the currently implemented parts of the filter pipeline were successful.";
-                    return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(new NotImplementedException(error));
+                    // Run the provider on the filter source
+                    return provider.getFilter(filterSource, cacheEntry);
                 }
             }
+
+            // Invalid Filter Source
+            return Result.failed("Unknown Filter Source '" + filterSource.toPath() + "'");
         }
-        
-        // Invalid Filter Source
-        String error = "Unknown Filter Source '" + filterSource.toPath() + "'!";
-        Keystone.LOGGER.error(error);
-        sendErrorMessage(error);
-        return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(new IllegalArgumentException(error));
+        else return Result.success(cacheEntry.remapped());
     }
 
     //region Helpers
