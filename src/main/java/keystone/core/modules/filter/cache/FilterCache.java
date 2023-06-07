@@ -5,6 +5,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import keystone.api.KeystoneCache;
+import keystone.core.VersionChecker;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -89,7 +90,7 @@ public final class FilterCache
         UUID uuid = UUID.randomUUID();
         Path compiled = KeystoneCache.getCompiledDirectory().resolve(prefix + uuid + ".jar");
         Path remapped = KeystoneCache.getRemappedDirectory().resolve(prefix + uuid + ".jar");
-        String version = SharedConstants.getGameVersion().getName();
+        String version = currentVersion();
         Entry entry = new Entry(source, compiled, remapped, version, checksum);
         usableEntries.computeIfAbsent(source, (k) -> new HashMap<>()).put(checksum, entry);
 
@@ -124,7 +125,7 @@ public final class FilterCache
             }
         }
 
-        usableEntries = entries.computeIfAbsent(SharedConstants.getGameVersion().getName(), (version) -> new HashMap<>());
+        usableEntries = entries.computeIfAbsent(currentVersion(), (version) -> new HashMap<>());
     }
     public static void write()
     {
@@ -154,6 +155,10 @@ public final class FilterCache
         }
     }
 
+    private static String currentVersion()
+    {
+        return SharedConstants.getGameVersion().getName() + "-" + VersionChecker.getKeystoneVersion().getFriendlyString();
+    }
     private static byte[] checksum(File file)
     {
         try

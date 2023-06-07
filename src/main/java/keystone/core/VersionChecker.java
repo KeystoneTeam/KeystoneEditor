@@ -24,12 +24,32 @@ import java.util.List;
 
 public class VersionChecker
 {
+    private static Version version = null;
+
+    public static Version getKeystoneVersion()
+    {
+        if (version == null)
+        {
+            try
+            {
+                ModMetadata metadata = FabricLoader.getInstance().getModContainer(KeystoneMod.MODID).get().getMetadata();
+                version = Version.parse(metadata.getVersion().getFriendlyString().split("-")[0]);
+            }
+            catch (VersionParsingException e)
+            {
+                Keystone.LOGGER.error("Failed to retrieve keystone version!");
+                e.printStackTrace();
+            }
+        }
+        return version;
+    }
+
     public static void doVersionCheck()
     {
         try
         {
             ModMetadata metadata = FabricLoader.getInstance().getModContainer(KeystoneMod.MODID).get().getMetadata();
-            Version keystoneVersion = Version.parse(metadata.getVersion().getFriendlyString().split("-")[0]);
+            Version keystoneVersion = getKeystoneVersion();
             String minecraftVersion = SharedConstants.getGameVersion().getReleaseTarget();
             String homepage = metadata.getContact().get("homepage").get();
 

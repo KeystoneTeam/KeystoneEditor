@@ -58,7 +58,7 @@ public abstract class AbstractJavaFilterProvider implements IFilterProvider
         if (!cache.remapped().toFile().isFile())
         {
             // Run Remapper
-            try { FilterRemapper.remapFile(cache.compiled(), cache.remapped(), FilterRemapper.mappings("named", "intermediary")); }
+            try { FilterRemapper.remapFile(cache.compiled(), cache.remapped(), FilterRemapper.NAMED_TO_TARGET); }
             catch (IOException e) { return Result.failed("Could not remap compiled filter jar '" + cache.compiled() + "'", e); }
         }
 

@@ -30,6 +30,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,8 +62,63 @@ public class FilterCompiler
             return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(filterJar.exception());
         }
 
-        String error = "Filter loading is currently being rewritten. If you see this, the currently implemented parts of the filter pipeline were successful.";
-        return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(new NotImplementedException(error));
+        // Create the Filter Instance
+        try
+        {
+            // Load the Filter Class
+            URLClassLoader filterLoader = new URLClassLoader(new URL[] { filterJar.get().toUri().toURL() }, KeystoneFilter.class.getClassLoader());
+            Class<?> filterClass = filterLoader.loadClass(KeystoneFilter.getFilterName(filterSource, true));
+
+            // Check that the filter class extends KeystoneFilter
+            if (!KeystoneFilter.class.isAssignableFrom(filterClass))
+            {
+                String error = "Filter class '" + KeystoneFilter.getFilterName(filterSource, true) + "' does not extend KeystoneFilter!";
+                Keystone.LOGGER.error(error);
+                sendErrorMessage(error);
+                return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(new IllegalArgumentException(error));
+            }
+
+            // Instantiate the Filter Class
+            Constructor<?> filterConstructor = filterClass.getDeclaredConstructor();
+            KeystoneFilter filter = (KeystoneFilter) filterConstructor.newInstance();
+            filter.setName(KeystoneFilter.getFilterName(filterSource, false)).compiledSuccessfully();
+            return filter;
+        }
+        catch (MalformedURLException e)
+        {
+            String error = "Could not create URLClassLoader for filter jar '" + filterJar.get() + "': " + e.getLocalizedMessage();
+            Keystone.LOGGER.error(error);
+            e.printStackTrace();
+            sendErrorMessage(error);
+            return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(e);
+        }
+        catch (ClassNotFoundException e)
+        {
+            String error = "Could not load filter class '" + KeystoneFilter.getFilterName(filterSource, true) + "': " + e.getLocalizedMessage();
+            Keystone.LOGGER.error(error);
+            e.printStackTrace();
+            sendErrorMessage(error);
+            return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(e);
+        }
+        catch (NoSuchMethodException e)
+        {
+            String error = "Could not find zero-parameter constructor for filter class '" + KeystoneFilter.getFilterName(filterSource, true) + "': " + e.getLocalizedMessage();
+            Keystone.LOGGER.error(error);
+            e.printStackTrace();
+            sendErrorMessage(error);
+            return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(e);
+        }
+        catch (InvocationTargetException | InstantiationException | IllegalAccessException e)
+        {
+            String error = "Could not instantiate filter class '" + KeystoneFilter.getFilterName(filterSource, true) + "': " + e.getLocalizedMessage();
+            Keystone.LOGGER.error(error);
+            e.printStackTrace();
+            sendErrorMessage(error);
+            return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(e);
+        }
+
+//        String error = "Filter loading is currently being rewritten. If you see this, the currently implemented parts of the filter pipeline were successful.";
+//        return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(new NotImplementedException(error));
     }
     private static Result<Path> getFilterJarPath(File filterSource, FilterCache.Entry cacheEntry)
     {
