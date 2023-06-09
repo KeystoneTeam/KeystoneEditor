@@ -22,7 +22,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.List;
 
-public class FilterCompiler
+public class FilterLoader
 {
     private static final List<IFilterProvider> FILTER_PROVIDERS = List.of(
             SimpleFilterProvider.INSTANCE,
@@ -97,9 +97,6 @@ public class FilterCompiler
             sendErrorMessage(error);
             return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(e);
         }
-
-//        String error = "Filter loading is currently being rewritten. If you see this, the currently implemented parts of the filter pipeline were successful.";
-//        return new KeystoneFilter().setName(KeystoneFilter.getFilterName(filterSource, false)).setCompilerException(new NotImplementedException(error));
     }
     private static Result<Path> getFilterJarPath(File filterSource, FilterCache.Entry cacheEntry)
     {
@@ -117,7 +114,7 @@ public class FilterCompiler
             }
 
             // Invalid Filter Source
-            return Result.failed("Unknown Filter Source '" + filterSource.toPath() + "'");
+            return Result.failed("Could not find provider for filter source '" + filterSource.toPath() + "'");
         }
         else return Result.success(cacheEntry.remapped());
     }
@@ -127,16 +124,6 @@ public class FilterCompiler
     {
         PlayerEntity player = MinecraftClient.getInstance().player;
         if (player != null) player.sendMessage(Text.literal(message).styled(style -> style.withColor(Formatting.RED)), false);
-    }
-    private static String createRandomClassName()
-    {
-        StringBuilder sb = new StringBuilder();
-        char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-
-        sb.append("Filter_");
-        for (int i = 0; i < 32; i++) sb.append(chars[Keystone.RANDOM.nextInt(chars.length)]);
-
-        return sb.toString();
     }
     //endregion
 }

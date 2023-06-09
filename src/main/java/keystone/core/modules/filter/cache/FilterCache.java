@@ -3,8 +3,10 @@ package keystone.core.modules.filter.cache;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
+import com.google.common.io.Files;
 import keystone.api.KeystoneCache;
 import keystone.core.VersionChecker;
+import keystone.core.utils.FileUtils;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -14,14 +16,16 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public final class FilterCache
 {
+    //region Data Types
     public static class Entry
     {
         private final File source;
@@ -63,10 +67,12 @@ public final class FilterCache
             return nbt;
         }
     }
-
+    //endregion
+    //region Cache Maps
     private static final Map<String, Map<File, Map<String, Entry>>> entries = new HashMap<>();
     private static Map<File, Map<String, Entry>> usableEntries;
-
+    //endregion
+    //region Public API
     public static Entry getEntry(File source)
     {
         String checksum = HashCode.fromBytes(checksum(source)).toString();
@@ -94,10 +100,9 @@ public final class FilterCache
         Entry entry = new Entry(source, compiled, remapped, version, checksum);
         usableEntries.computeIfAbsent(source, (k) -> new HashMap<>()).put(checksum, entry);
 
-        write();
+        save();
         return entry;
     }
-
     public static void load()
     {
         entries.clear();
@@ -127,7 +132,7 @@ public final class FilterCache
 
         usableEntries = entries.computeIfAbsent(currentVersion(), (version) -> new HashMap<>());
     }
-    public static void write()
+    public static void save()
     {
         NbtList entriesNBT = new NbtList();
         for (Map<File, Map<String, Entry>> versionEntries : entries.values())
@@ -154,7 +159,10 @@ public final class FilterCache
             e.printStackTrace();
         }
     }
-
+    public static void trim() { trimVersion(currentVersion()); save(); }
+    public static void trimAllVersions() { for (String version : entries.keySet()) trimVersion(version); save(); }
+    //endregion
+    //region Private Helpers
     private static String currentVersion()
     {
         return SharedConstants.getGameVersion().getName() + "-" + VersionChecker.getKeystoneVersion().getFriendlyString();
@@ -165,7 +173,7 @@ public final class FilterCache
         {
             if (file.isFile())
             {
-                ByteSource byteSource = ByteSource.wrap(Files.readAllBytes(file.toPath()));
+                ByteSource byteSource = Files.asByteSource(file);
                 HashCode hash = byteSource.hash(Hashing.sha256());
                 return hash.asBytes();
             }
@@ -186,4 +194,40 @@ public final class FilterCache
             throw new RuntimeException(e);
         }
     }
+    private static void trimVersion(String version)
+    {
+        // Get the given version's cache entries
+        Map<File, Map<String, Entry>> versionEntries = entries.get(version);
+
+        // If the version has entries
+        if (versionEntries != null)
+        {
+            // Cache the entries to remove to prevent ConcurrentModificationExceptions
+            Set<Entry> removedEntries = new HashSet<>();
+
+            // Trim the version's cache entries
+            for (Map.Entry<File, Map<String, Entry>> sourceEntry : versionEntries.entrySet())
+            {
+                // If the filter source exists
+                if (sourceEntry.getKey().exists())
+                {
+                    // Only trim entries that don't match the current source checksum
+                    String currentChecksum = HashCode.fromBytes(checksum(sourceEntry.getKey())).toString();
+                    for (Entry cacheEntry : sourceEntry.getValue().values()) if (!cacheEntry.checksum.equals(currentChecksum)) removedEntries.add(cacheEntry);
+                }
+
+                // If the filter source doesn't exist, trim all entries
+                else for (Entry cacheEntry : sourceEntry.getValue().values()) removedEntries.add(cacheEntry);
+            }
+
+            // Remove trimmed entries
+            for (Entry removed : removedEntries)
+            {
+                FileUtils.deleteRecursively(removed.compiled.toFile(), false);
+                FileUtils.deleteRecursively(removed.remapped.toFile(), false);
+                versionEntries.remove(removed.source);
+            }
+        }
+    }
+    //endregion
 }

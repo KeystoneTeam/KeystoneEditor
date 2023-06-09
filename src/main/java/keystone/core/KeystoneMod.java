@@ -201,7 +201,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
     }
     private void onCloseWorld()
     {
-        FilterCache.write();
+        FilterCache.save();
         Keystone.disableKeystone();
         Keystone.forEachModule(module -> module.resetModule());
         KeystoneCache.cleanTempFiles();

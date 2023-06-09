@@ -114,10 +114,11 @@ public class FilterDirectoryManager
     private void onFileModified(Path path)
     {
         File file = path.toFile();
+        if (!file.exists() || file.getPath().endsWith("~")) return;
 
         KeystoneFilter existingFilter = compiledFilters.getOrDefault(file, null);
         VariableContainer variableContainer = existingFilter != null ? new VariableContainer(existingFilter) : null;
-        KeystoneFilter recompiled = FilterCompiler.loadFilter(file);
+        KeystoneFilter recompiled = FilterLoader.loadFilter(file);
         if (variableContainer != null) variableContainer.apply(recompiled);
         compiledFilters.put(file, recompiled);
 
@@ -184,7 +185,7 @@ public class FilterDirectoryManager
     public void recompileAllFilters()
     {
         compiledFilters.clear();
-        for (File file : getInstalledFilters()) compiledFilters.put(file, FilterCompiler.loadFilter(file));
+        for (File file : getInstalledFilters()) compiledFilters.put(file, FilterLoader.loadFilter(file));
     }
     //endregion
 }
