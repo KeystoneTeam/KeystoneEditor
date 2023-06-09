@@ -51,7 +51,7 @@ public class FilterSelectionScreen extends KeystonePanel
 
     protected FilterSelectionScreen()
     {
-        super(Text.literal("keystone.screen.filterPanel"));
+        super(Text.literal("keystone.screen.filterPanel"), true);
         this.filterModule = Keystone.getModule(FilterModule.class);
         this.filterManager = filterModule.getFilterDirectoryManager();
     }
@@ -196,7 +196,6 @@ public class FilterSelectionScreen extends KeystonePanel
         filterVariablesList.move(getViewport().getMinX(), getViewport().getMinY() + (getViewport().getHeight() / 2) - (filterVariablesList.getHeight() / 2));
         filterVariablesList.setMargins(new Margins(5, 0));
         addDrawableChild(filterVariablesList);
-        filterManager.getFilter(selectedFilterFile).undirtyEditor();
     }
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)

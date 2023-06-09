@@ -1,6 +1,5 @@
 package keystone.core.modules.brush;
 
-import keystone.core.gui.widgets.inputs.fields.EditableObject;
 import keystone.core.modules.brush.operations.ErodeBrushOperation;
 import keystone.core.modules.brush.operations.FillBrushOperation;
 import keystone.core.modules.brush.operations.GravityBrushOperation;
@@ -12,7 +11,7 @@ import net.minecraft.text.Text;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BrushOperation extends EditableObject
+public abstract class BrushOperation
 {
     public interface PositionValidator { boolean validate(int x, int y, int z); }
 

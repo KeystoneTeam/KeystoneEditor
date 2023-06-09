@@ -3,11 +3,14 @@ package keystone.core;
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.api.variables.DisplayModifiers;
+import keystone.api.variables.EditorDirtyFlag;
 import keystone.api.variables.FloatRange;
 import keystone.api.variables.Header;
 import keystone.api.variables.Hook;
 import keystone.api.variables.IntRange;
+import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
+import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.serialization.VariablesSerializer;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
@@ -17,6 +20,9 @@ import java.io.IOException;
 
 public class KeystoneConfig
 {
+    @EditorDirtyFlag private static boolean editorDirty;
+
+    //region Exposed Config Options
     @Header("Installation")
     @Variable public static String keystoneDirectory = "keystone";
     @Variable public static boolean startActive = false;
@@ -53,7 +59,8 @@ public class KeystoneConfig
     @Variable public static String sessionDirectory = "session";
     @Variable public static String backupDirectory = "backup";
     @Variable public static String historyDirectory = "history";
-    
+    //endregion
+    //region Code-Only Config Options
     public static boolean debugHistoryLog = false;
     
     public static int clickThreshold = 200;
@@ -63,7 +70,19 @@ public class KeystoneConfig
     public static float viewportBottomBorder = 0.075f;
     public static float viewportLeftBorder = 0.25f;
     public static float viewportRightBorder = 0.25f;
+    //endregion
+    //region Debugging Options
+    @Header("Debug Flags")
+    @Hook("trimCache")
+    @Tooltip("Clicking this box will trim the current version's filter cache.")
+    @Variable static boolean trimFilterCache = false;
 
+    @Hook("trimCacheAll")
+    @Tooltip("Clicking this box will trim all version's filter caches.")
+    @Variable static boolean trimAllFilterCaches = false;
+    //endregion
+
+    //region Serialization
     public static void save()
     {
         try
@@ -93,11 +112,26 @@ public class KeystoneConfig
             e.printStackTrace();
         }
     }
-    
+    //endregion
     //region Hooks
-    private static void flySpeedHook(float speed)
+    private static void flySpeedHook(float speed) { Keystone.setFlySpeed(speed); }
+    private static void trimCache()
     {
-        Keystone.setFlySpeed(speed);
+        if (trimFilterCache)
+        {
+            FilterCache.trim();
+            trimFilterCache = false;
+            editorDirty = true;
+        }
+    }
+    private static void trimCacheAll()
+    {
+        if (trimAllFilterCaches)
+        {
+            FilterCache.trimAllVersions();
+            trimAllFilterCaches = false;
+            editorDirty = true;
+        }
     }
     //endregion
 }

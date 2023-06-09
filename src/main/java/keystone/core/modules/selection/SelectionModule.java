@@ -8,6 +8,7 @@ import keystone.core.client.Player;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.events.keystone.KeystoneInputEvents;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
+import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.hotbar.KeystoneHotbar;
 import keystone.core.gui.hotbar.KeystoneHotbarSlot;
 import keystone.core.modules.IKeystoneModule;
@@ -222,7 +223,7 @@ public class SelectionModule implements IKeystoneModule
     {
         if (!isEnabled()) return;
 
-        if (!creatingSelection && !KeystoneGlobalState.MouseOverGUI)
+        if (!creatingSelection && !KeystoneOverlayHandler.isMouseOverGUI())
         {
             firstSelectionPoint = Player.getHighlightedBlock();
             creatingSelection = true;

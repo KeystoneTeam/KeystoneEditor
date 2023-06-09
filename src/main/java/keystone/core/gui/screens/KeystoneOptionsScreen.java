@@ -17,7 +17,8 @@ public class KeystoneOptionsScreen extends Screen
     
     private final Screen parent;
     private Viewport optionsViewport;
-    
+
+    private FieldWidgetList optionsWidgets;
     private ButtonNoHotkey resetButton;
     private ButtonNoHotkey doneButton;
     
@@ -37,7 +38,7 @@ public class KeystoneOptionsScreen extends Screen
     {
         optionsViewport = ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.MIDDLE, Viewport.TOP, Viewport.MIDDLE).offset(0, 40, 0, -40);
         
-        FieldWidgetList optionsWidgets = new FieldWidgetList(this, getTitle(), () -> null, KeystoneConfig.class, optionsViewport.getMinX(), optionsViewport.getMinY() + PADDING, optionsViewport.getWidth(), optionsViewport.getHeight() - PADDING, PADDING);
+        optionsWidgets = new FieldWidgetList(this, getTitle(), () -> null, KeystoneConfig.class, optionsViewport.getMinX(), optionsViewport.getMinY() + PADDING, optionsViewport.getWidth(), optionsViewport.getHeight() - PADDING, PADDING);
         optionsWidgets.bake();
         
         int buttonY = optionsViewport.getMaxY() + 10;
@@ -61,7 +62,12 @@ public class KeystoneOptionsScreen extends Screen
         
         super.render(matrices, mouseX, mouseY, delta);
     }
-    
+    @Override
+    public void tick()
+    {
+        optionsWidgets.tick();
+    }
+
     private void doneButton(ButtonWidget buttonWidget)
     {
         close();

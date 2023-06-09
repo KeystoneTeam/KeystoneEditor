@@ -6,8 +6,10 @@ import keystone.api.variables.Variable;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.core.gui.widgets.ITickableWidget;
 import keystone.core.gui.widgets.groups.VerticalLayoutGroup;
 import keystone.core.utils.AnnotationUtils;
+import keystone.core.utils.Result;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
@@ -21,7 +23,7 @@ import java.lang.reflect.Field;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-public class FieldWidgetList extends VerticalLayoutGroup
+public class FieldWidgetList extends VerticalLayoutGroup implements ITickableWidget
 {
     //region Widgets
     public static class HeaderWidget extends ClickableWidget
@@ -61,8 +63,11 @@ public class FieldWidgetList extends VerticalLayoutGroup
     //endregion
 
     protected final Screen parent;
+    protected final Class<?> clazz;
     protected final Supplier<Object> instance;
+    protected final Field dirtyFlag;
     protected final int intendedWidth;
+    protected final int padding;
     protected final BiConsumer<ClickableWidget, ClickableWidget> addDropdown;
 
     protected int nextWidgetY;
@@ -76,11 +81,42 @@ public class FieldWidgetList extends VerticalLayoutGroup
         super(x, y, width, maxHeight, padding, label);
 
         this.parent = screen;
+        this.clazz = clazz;
         this.instance = instance;
         this.intendedWidth = width - 2 * padding;
+        this.padding = padding;
         this.addDropdown = this::addPinnedWidget;
-        this.nextWidgetY = 0;
 
+        Result<Field> dirtyFlagResult = AnnotationUtils.findDirtyFlag(clazz);
+        if (dirtyFlagResult.isFailed()) dirtyFlagResult.logFailure();
+        this.dirtyFlag = dirtyFlagResult.get();
+
+        rebuild();
+    }
+
+    @Override
+    public void tick()
+    {
+        try
+        {
+            if (this.dirtyFlag != null && this.dirtyFlag.get(this.instance.get()).equals(true))
+            {
+                clear();
+                rebuild();
+                this.dirtyFlag.set(this.instance.get(), false);
+            }
+        }
+        catch (IllegalAccessException e)
+        {
+            Keystone.LOGGER.error("Failed to test dirty flag of FieldWidgetList '" + getMessage().getString() + "'!");
+            e.printStackTrace();
+        }
+    }
+
+    public int getNextWidgetY() { return this.nextWidgetY; }
+    public void rebuild()
+    {
+        this.nextWidgetY = 0;
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields)
         {
@@ -118,8 +154,6 @@ public class FieldWidgetList extends VerticalLayoutGroup
             }
         }
     }
-
-    public int getNextWidgetY() { return this.nextWidgetY; }
 
     private int createVariableEditor(Class<?> type, Field field, String name, int y) throws IllegalAccessException
     {

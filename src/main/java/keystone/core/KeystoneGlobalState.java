@@ -20,10 +20,6 @@ public class KeystoneGlobalState
     public static boolean AllowPlayerLook = false;
 
     /**
-     * Whether the mouse is hovering over an interactable overlay widget
-     */
-    public static boolean MouseOverGUI = false;
-    /**
      * If true, either a vanilla screen is open or a TextFieldWidget is focused. This will
      * disable any keybinds with the NO_GUI_OPEN condition and enable an keybinds with the
      * GUI_OPEN condition

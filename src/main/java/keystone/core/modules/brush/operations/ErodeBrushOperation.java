@@ -1,6 +1,7 @@
 package keystone.core.modules.brush.operations;
 
 import keystone.api.enums.RetrievalMode;
+import keystone.api.variables.EditorDirtyFlag;
 import keystone.api.variables.Hide;
 import keystone.api.variables.Hook;
 import keystone.api.variables.IntRange;
@@ -42,12 +43,13 @@ public class ErodeBrushOperation extends BrushOperation
     }
 
     private static final Map<BlockType, Integer> neighborBlockCounts = new HashMap<>();
+    @EditorDirtyFlag private boolean editorDirty;
+
+    @Tooltip("The number of times to perform the erosion operation.")
+    @Variable @IntRange(min = 1, max = 5) int strength = 1;
 
     @Tooltip("Select an erosion preset to use instead of custom values.")
     @Variable("Preset") @Hook("onPresetChanged") Preset preset = Preset.SMOOTH;
-    
-    @Tooltip("The number of times to perform the erosion operation.")
-    @Variable @IntRange(min = 1, max = 5) @Hook("onSettingsChanged") int strength = 1;
     
     @Tooltip("The minimum blocks surrounding a block to perform the erosion when melting.")
     @Variable @IntRange(min = 1, max = 6) @Hook("onSettingsChanged") int meltFaces;
@@ -152,7 +154,8 @@ public class ErodeBrushOperation extends BrushOperation
         if (total >= meltFaces) worldModifiers.blocks.setBlock(x, y, z, highestBlockType);
     }
 
-    public void onPresetChanged()
+    //region Hooks
+    private void onPresetChanged()
     {
         if (preset != Preset.CUSTOM)
         {
@@ -160,13 +163,14 @@ public class ErodeBrushOperation extends BrushOperation
             fillFaces = preset.fillFaces;
             melt = preset.doMelt;
             fill = preset.doFill;
-            dirtyEditor();
+            editorDirty = true;
         }
     }
-    public void onSettingsChanged()
+    private void onSettingsChanged()
     {
         preset = Preset.CUSTOM;
         for (Preset test : Preset.values()) if (meltFaces == test.meltFaces && fillFaces == test.fillFaces && melt == test.doMelt && fill == test.doFill) preset = test;
-        dirtyEditor();
+        editorDirty = true;
     }
+    //endregion
 }

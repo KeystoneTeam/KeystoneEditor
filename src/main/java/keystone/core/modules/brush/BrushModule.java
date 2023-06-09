@@ -70,8 +70,8 @@ public class BrushModule implements IKeystoneModule
 
         KeystoneInputEvents.MOUSE_CLICKED.register(this::onMouseClick);
         KeystoneInputEvents.START_MOUSE_DRAG.register(this::onMouseDragStart);
-        ClientTickEvents.START_CLIENT_TICK.register(this::onTick);
         KeystoneInputEvents.END_MOUSE_DRAG.register(this::onMouseDragEnd);
+        ClientTickEvents.START_CLIENT_TICK.register(this::onTick);
         ServerTickEvents.START_SERVER_TICK.register(this::onServerTick);
 
         this.renderer = ShapeRenderers.createComplexOverlay(RendererProperties.createFill(this::isCameraInsideShape), RendererProperties.createWireframe(4.0f).ignoreDepth());

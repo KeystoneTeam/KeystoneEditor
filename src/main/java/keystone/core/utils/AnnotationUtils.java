@@ -2,6 +2,7 @@ package keystone.core.utils;
 
 import keystone.api.Keystone;
 import keystone.api.utils.StringUtils;
+import keystone.api.variables.EditorDirtyFlag;
 import keystone.api.variables.Hook;
 import keystone.api.variables.Name;
 import keystone.api.variables.Tooltip;
@@ -19,6 +20,7 @@ import java.util.List;
 
 public final class AnnotationUtils
 {
+    //region Fields
     public static String getFieldName(Variable variable, Field field)
     {
         Name nameAnnotation = field.getAnnotation(Name.class);
@@ -37,6 +39,32 @@ public final class AnnotationUtils
         }
         else return null;
     }
+    public static Result<Field> findDirtyFlag(Class<?> clazz)
+    {
+        Field dirtyFlag = null;
+        boolean hasAnnotation = false;
+
+        for (Field field : clazz.getDeclaredFields())
+        {
+            EditorDirtyFlag annotation = field.getAnnotation(EditorDirtyFlag.class);
+            if (annotation != null)
+            {
+                if (!field.getType().equals(boolean.class)) return Result.failed("@EditorDirtyFlag can only be applied to a field of type 'boolean'! The field '" + field.getName() + "' is of type '" + field.getType().getName() + "'");
+                else if (hasAnnotation) return Result.failed("A class cannot have multiple @EditorDirtyFlag fields! Both '" + dirtyFlag.getName() + "' and '" + field.getName() + "' have the annotation");
+                else
+                {
+                    dirtyFlag = field;
+                    hasAnnotation = true;
+                }
+            }
+            else if (field.getName().equals("editorDirty") && field.getType().equals(boolean.class)) dirtyFlag = field;
+        }
+
+        if (dirtyFlag != null) dirtyFlag.setAccessible(true);
+        return Result.success(dirtyFlag);
+    }
+    //endregion
+    //region Enums
     public static <T extends Enum<?>> String getEnumValueName(T value)
     {
         Name nameAnnotation = getEnumAnnotation(value, Name.class);
@@ -57,6 +85,8 @@ public final class AnnotationUtils
         }
         return null;
     }
+    //endregion
+    //region Hooks
     public static void runHook(Object instance, Field field, Hook hook)
     {
         if (hook != null)
@@ -106,4 +136,5 @@ public final class AnnotationUtils
         Keystone.LOGGER.error(error);
         MinecraftClient.getInstance().player.sendMessage(Text.literal(error).styled(style -> style.withColor(Formatting.RED)));
     }
+    //endregion
 }

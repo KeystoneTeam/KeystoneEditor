@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
 import keystone.api.WorldRegion;
 import keystone.api.enums.RetrievalMode;
+import keystone.api.variables.EditorDirtyFlag;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.Item;
 import keystone.api.wrappers.blocks.Block;
@@ -15,7 +16,6 @@ import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
-import keystone.core.gui.widgets.inputs.fields.EditableObject;
 import keystone.core.modules.filter.execution.CustomFilterThread;
 import keystone.core.modules.filter.execution.FilterExecutor;
 import keystone.core.modules.filter.execution.IFilterThread;
@@ -46,12 +46,13 @@ import java.util.Optional;
  * Contains information relating to which {@link WorldRegion FilterBoxes} the filter is modifying, as well
  * as several API functions
  */
-public class KeystoneFilter extends EditableObject
+public class KeystoneFilter
 {
     private String name;
     private boolean compiledSuccessfully;
     private Throwable compilerException;
     private int iteration;
+    @EditorDirtyFlag private boolean editorDirty;
 
     //region Static
     public static String getFilterName(File filterFile, boolean removeSpaces)
@@ -582,6 +583,17 @@ public class KeystoneFilter extends EditableObject
         catch (IOException e) { throwException(e); }
     }
     //endregion
-    
+    //region Editor Utils
+
+    /**
+     * Run this method after changing the filter's settings to update the settings
+     * in the filter panel
+     */
+    protected void dirtyEditor()
+    {
+        this.editorDirty = true;
+    }
+    //endregion
+
     //endregion
 }

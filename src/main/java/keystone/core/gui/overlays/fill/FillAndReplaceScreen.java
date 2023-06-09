@@ -36,7 +36,7 @@ public class FillAndReplaceScreen extends KeystonePanel
 
     protected FillAndReplaceScreen()
     {
-        super(Text.translatable("keystone.screen.fill"));
+        super(Text.translatable("keystone.screen.fill"), true);
         previousMask = new BlockMask().blacklist();
         previousPalette = new BlockPalette();
     }

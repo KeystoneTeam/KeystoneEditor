@@ -30,7 +30,7 @@ public class BrushSelectionScreen extends KeystonePanel
 
     protected BrushSelectionScreen()
     {
-        super(Text.translatable("keystone.screen.brushPanel"));
+        super(Text.translatable("keystone.screen.brushPanel"), true);
         immediateMode = Text.literal("I");
         deferredMode = Text.literal("D");
     }
@@ -162,13 +162,10 @@ public class BrushSelectionScreen extends KeystonePanel
         brushVariablesList.move(0, y);
         brushVariablesList.setMargins(new Margins(5, 0));
         addDrawableChild(brushVariablesList);
-
-        brushModule.getBrushOperation().undirtyEditor();
     }
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        if (brushModule.getBrushOperation().isEditorDirtied()) init(client, width, height);
         fillPanel(matrixStack, 0x80000000);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }

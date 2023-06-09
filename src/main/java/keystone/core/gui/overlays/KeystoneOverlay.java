@@ -1,9 +1,10 @@
 package keystone.core.gui.overlays;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import keystone.core.KeystoneGlobalState;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
+import keystone.core.gui.widgets.IMouseBlocker;
+import keystone.core.gui.widgets.ITickableWidget;
 import keystone.core.modules.hotkeys.HotkeySet;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
@@ -15,7 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
-public class KeystoneOverlay extends Screen
+public class KeystoneOverlay extends Screen implements IMouseBlocker
 {
     private static final Identifier ROUNDED_BOX = new Identifier("keystone:textures/gui/rounded_box.png");
     
@@ -41,19 +42,23 @@ public class KeystoneOverlay extends Screen
     @Override
     public void tick()
     {
-        for (Element widget : children()) if (widget instanceof TextFieldWidget) ((TextFieldWidget) widget).tick();
+        for (Element widget : children())
+        {
+            if (widget instanceof TextFieldWidget textField) textField.tick();
+            else if (widget instanceof ITickableWidget tickable) tickable.tick();
+        }
     }
     //endregion
     //region Helper Functions
-    public void checkMouseOverGui()
+    @Override
+    public boolean isMouseBlocked(double mouseX, double mouseY)
     {
-        this.children().forEach(child ->
+        for (Element child : children())
         {
-            if (child instanceof ClickableWidget widget)
-            {
-                if (widget.isHovered() && widget.visible && widget.active) KeystoneGlobalState.MouseOverGUI = true;
-            }
-        });
+            if (child instanceof IMouseBlocker blocker && blocker.isMouseBlocked(mouseX, mouseY)) return true;
+            else if (child instanceof ClickableWidget widget && widget.isHovered() && widget.visible && widget.active) return true;
+        }
+        return false;
     }
     public static void fillRounded(MatrixStack stack, int minX, int minY, int maxX, int maxY)
     {

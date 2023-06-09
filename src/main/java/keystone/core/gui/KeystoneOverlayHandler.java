@@ -9,15 +9,18 @@ import keystone.core.gui.hotbar.KeystoneHotbar;
 import keystone.core.gui.overlays.KeystoneHudOverlay;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.viewports.ScreenViewports;
+import keystone.core.gui.widgets.IMouseBlocker;
 import keystone.core.modules.hotkeys.HotkeysModule;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Mouse;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.ParentElement;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -60,6 +63,7 @@ public class KeystoneOverlayHandler
     {
         tooltips.add(tooltip);
     }
+
     public static boolean isRendering()
     {
         return rendering;
@@ -69,6 +73,21 @@ public class KeystoneOverlayHandler
         if (MinecraftClient.getInstance().currentScreen != null && MinecraftClient.getInstance().currentScreen.shouldCloseOnEsc()) return true;
         for (Screen overlay : overlays) if (overlay.shouldCloseOnEsc()) return true;
         return false;
+    }
+    public static boolean isMouseOverGUI()
+    {
+        MinecraftClient client = MinecraftClient.getInstance();
+        Mouse mouse = MinecraftClient.getInstance().mouse;
+        Window window = client.getWindow();
+        double mouseX = mouse.getX() * (double)window.getScaledWidth() / (double)window.getWidth();
+        double mouseY = mouse.getY() * (double)window.getScaledHeight() / (double)window.getHeight();
+
+        if (MinecraftClient.getInstance().currentScreen != null) return true;
+        else
+        {
+            for (Screen overlay : overlays) if (overlay instanceof IMouseBlocker blocker && blocker.isMouseBlocked(mouseX, mouseY)) return true;
+            return false;
+        }
     }
 
     public static void registerEvents()
@@ -174,7 +193,6 @@ public class KeystoneOverlayHandler
         int mouseX = (int)(mc.mouse.getX() * mc.getWindow().getScaledWidth() / mc.getWindow().getWidth());
         int mouseY = (int)(mc.mouse.getY() * mc.getWindow().getScaledHeight() / mc.getWindow().getHeight());
 
-        KeystoneGlobalState.MouseOverGUI = mc.currentScreen != null;
         if (Keystone.isEnabled())
         {
             rendering = true;
@@ -193,8 +211,7 @@ public class KeystoneOverlayHandler
         
                     Screen screen = overlays.get(i);
                     screen.render(matrixStack, mouseX, mouseY, partialTicks);
-                    if (!KeystoneGlobalState.MouseOverGUI && screen instanceof KeystoneOverlay) ((KeystoneOverlay) screen).checkMouseOverGui();
-        
+
                     matrixStack.pop();
                 }
     

@@ -4,6 +4,7 @@ import keystone.api.Keystone;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.keystone.KeystoneInputEvents;
 import keystone.core.events.minecraft.InputEvents;
+import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.selection.SelectedFace;
 import keystone.core.modules.selection.SelectionModule;
@@ -132,7 +133,7 @@ public class MouseModule implements IKeystoneModule
     }
     private void onScroll(double offsetX, double offsetY)
     {
-        if (Keystone.isEnabled() && !KeystoneGlobalState.MouseOverGUI && KeystoneGlobalState.CloseSelection)
+        if (Keystone.isEnabled() && !KeystoneOverlayHandler.isMouseOverGUI() && KeystoneGlobalState.CloseSelection)
         {
             KeystoneGlobalState.CloseSelectionDistance += offsetY;
             if (KeystoneGlobalState.CloseSelectionDistance < 0) KeystoneGlobalState.CloseSelectionDistance = 0;

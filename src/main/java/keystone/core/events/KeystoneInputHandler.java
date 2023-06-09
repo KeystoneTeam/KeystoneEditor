@@ -4,6 +4,7 @@ import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.events.keystone.KeystoneInputEvents;
 import keystone.core.events.minecraft.InputEvents;
+import keystone.core.gui.KeystoneOverlayHandler;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
@@ -112,21 +113,21 @@ public class KeystoneInputHandler
                 leftClickTimestamp = System.currentTimeMillis();
                 leftClickModifiers = modifiers;
                 leftClickLocation = new Vec3d(mc.mouse.getX(), mc.mouse.getY(), 0);
-                leftClickGui = KeystoneGlobalState.MouseOverGUI;
+                leftClickGui = KeystoneOverlayHandler.isMouseOverGUI();
             }
             else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
             {
                 middleClickTimestamp = System.currentTimeMillis();
                 middleClickModifiers = modifiers;
                 middleClickLocation = new Vec3d(mc.mouse.getX(), mc.mouse.getY(), 0);
-                middleClickGui = KeystoneGlobalState.MouseOverGUI;
+                middleClickGui = KeystoneOverlayHandler.isMouseOverGUI();
             }
             else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT)
             {
                 rightClickTimestamp = System.currentTimeMillis();
                 rightClickModifiers = modifiers;
                 rightClickLocation = new Vec3d(mc.mouse.getX(), mc.mouse.getY(), 0);
-                rightClickGui = KeystoneGlobalState.MouseOverGUI;
+                rightClickGui = KeystoneOverlayHandler.isMouseOverGUI();
             }
         }
         else if (action == GLFW.GLFW_RELEASE) onRelease(button);

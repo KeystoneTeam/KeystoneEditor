@@ -242,6 +242,18 @@ public abstract class LayoutGroup extends WidgetList
             }
         }
     }
+    @Override
+    public void clear()
+    {
+        super.clear();
+        pinMap.clear();
+        layoutControlled.clear();
+        if (baked)
+        {
+            updateLayout();
+            postBake(layoutControlled);
+        }
+    }
     //endregion
     //region Getters and Setters
     protected boolean isBaked() { return baked; }

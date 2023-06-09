@@ -31,7 +31,7 @@ public class KeystoneHotbar extends KeystonePanel
 
     private KeystoneHotbar()
     {
-        super(Text.literal("keystone.screen.hotbar"));
+        super(Text.literal("keystone.screen.hotbar"), false);
         KeystoneHotbarEvents.CHANGED.register(this::onHotbarChanged);
     }
 
@@ -88,6 +88,16 @@ public class KeystoneHotbar extends KeystonePanel
         for (HotbarButton button : hotbarButtons) addDrawableChild(button);
 
         if (selectedSlot == null) setSelectedSlot(KeystoneHotbarSlot.SELECTION);
+    }
+
+    @Override
+    public boolean isMouseBlocked(double mouseX, double mouseY)
+    {
+        double minX = getViewport().getMinX();
+        double minY = getViewport().getMinY();
+        double dx = mouseX - minX;
+        double dy = mouseY - minY;
+        return mouseX >= minX && dx <= 142 && mouseY >= minY && dy <= 22;
     }
 
     @Override

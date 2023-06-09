@@ -7,10 +7,12 @@ import net.minecraft.text.Text;
 public abstract class KeystonePanel extends KeystoneOverlay
 {
     private Viewport viewport;
+    private boolean viewportBlocksMouse;
 
-    public KeystonePanel(Text titleIn)
+    public KeystonePanel(Text titleIn, boolean viewportBlocksMouse)
     {
         super(titleIn);
+        this.viewportBlocksMouse  = viewportBlocksMouse;
     }
 
     protected abstract Viewport createViewport();
@@ -21,6 +23,12 @@ public abstract class KeystonePanel extends KeystoneOverlay
     {
         setupViewport();
         setupPanel();
+    }
+    @Override
+    public boolean isMouseBlocked(double mouseX, double mouseY)
+    {
+        if (viewportBlocksMouse) return mouseX >= viewport.getMinX() && mouseX <= viewport.getMaxX() && mouseY >= viewport.getMinY() && mouseY <= viewport.getMaxY();
+        else return super.isMouseBlocked(mouseX, mouseY);
     }
     
     public final void setupViewport() { this.viewport = createViewport(); }

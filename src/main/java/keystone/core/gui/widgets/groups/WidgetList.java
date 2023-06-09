@@ -1,5 +1,6 @@
 package keystone.core.gui.widgets.groups;
 
+import keystone.core.gui.widgets.ITickableWidget;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.ParentElement;
@@ -7,6 +8,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
@@ -15,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class WidgetList extends ClickableWidget implements ParentElement
+public class WidgetList extends ClickableWidget implements ParentElement, ITickableWidget
 {
     private ClickableWidget focused;
     private boolean dragging;
@@ -55,6 +57,17 @@ public class WidgetList extends ClickableWidget implements ParentElement
         boolean successful = super.changeFocus(lookForwards);
         while (successful && getFocused() instanceof FieldWidgetList.HeaderWidget) successful = changeFocus(lookForwards);
         return successful;
+    }
+    //endregion
+    //region ITickableWidget Implementation
+    @Override
+    public void tick()
+    {
+        for (Element widget : children)
+        {
+            if (widget instanceof TextFieldWidget textField) textField.tick();
+            else if (widget instanceof ITickableWidget tickable) tickable.tick();
+        }
     }
     //endregion
     //region Widget Overrides
