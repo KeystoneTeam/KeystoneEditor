@@ -4,6 +4,7 @@ import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
+import keystone.api.Keystone;
 import keystone.api.KeystoneCache;
 import keystone.core.VersionChecker;
 import keystone.core.utils.FileUtils;
@@ -165,7 +166,7 @@ public final class FilterCache
     //region Private Helpers
     private static String currentVersion()
     {
-        return SharedConstants.getGameVersion().getName() + "-" + VersionChecker.getKeystoneVersion().getFriendlyString();
+        return SharedConstants.getGameVersion().getName() + "-" + Keystone.API_VERSION;
     }
     private static byte[] checksum(File file)
     {

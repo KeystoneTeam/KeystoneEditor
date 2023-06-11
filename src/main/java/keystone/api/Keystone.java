@@ -45,6 +45,7 @@ public final class Keystone
 {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final java.util.Random RANDOM = new java.util.Random();
+    public static final String API_VERSION = "1.0";
 
     private static FilterModule filterModule;
     private static GhostBlocksModule ghostBlocksModule;

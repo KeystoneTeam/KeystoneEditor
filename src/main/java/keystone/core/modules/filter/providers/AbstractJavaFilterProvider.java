@@ -1,10 +1,12 @@
 package keystone.core.modules.filter.providers;
 
+import keystone.api.Keystone;
 import keystone.api.KeystoneCache;
 import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.modules.filter.remapper.FilterRemapper;
 import keystone.core.utils.FileUtils;
 import keystone.core.utils.Result;
+import net.minecraft.SharedConstants;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.codehaus.commons.compiler.util.resource.FileResourceCreator;
 import org.codehaus.janino.ClassLoaderIClassLoader;
@@ -16,8 +18,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 public abstract class AbstractJavaFilterProvider extends AbstractRemappingFilterProvider
 {
@@ -57,12 +61,20 @@ public abstract class AbstractJavaFilterProvider extends AbstractRemappingFilter
     }
 
     //region JAR
+
     private void buildJar(Path classesDirectory, File outputFile) throws IOException
     {
         if (outputFile.exists()) FileUtils.deleteRecursively(outputFile, false);
 
+        Manifest manifest = new Manifest();
+        Attributes attributes = new Attributes();
+        manifest.getEntries().put("Keystone", attributes);
+
+        attributes.putValue("Minecraft-Version", SharedConstants.getGameVersion().getName());
+        attributes.putValue("Filter-API-Version", Keystone.API_VERSION);
+
         try (FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
-             JarOutputStream jar = new JarOutputStream(fileOutputStream))
+             JarOutputStream jar = new JarOutputStream(fileOutputStream, manifest))
         {
             addToJar(classesDirectory.toFile(), classesDirectory, jar);
         }
