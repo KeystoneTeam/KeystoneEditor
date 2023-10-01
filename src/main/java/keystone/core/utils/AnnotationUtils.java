@@ -2,11 +2,7 @@ package keystone.core.utils;
 
 import keystone.api.Keystone;
 import keystone.api.utils.StringUtils;
-import keystone.api.variables.EditorDirtyFlag;
-import keystone.api.variables.Hook;
-import keystone.api.variables.Name;
-import keystone.api.variables.Tooltip;
-import keystone.api.variables.Variable;
+import keystone.api.variables.*;
 import keystone.core.gui.IKeystoneTooltip;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;

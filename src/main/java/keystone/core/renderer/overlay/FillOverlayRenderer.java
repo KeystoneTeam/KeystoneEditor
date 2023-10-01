@@ -2,11 +2,7 @@ package keystone.core.renderer.overlay;
 
 import keystone.api.Keystone;
 import keystone.core.client.Camera;
-import keystone.core.renderer.Color4f;
-import keystone.core.renderer.RenderBox;
-import keystone.core.renderer.RendererProperties;
-import keystone.core.renderer.ShapeRenderer;
-import keystone.core.renderer.ShapeRenderers;
+import keystone.core.renderer.*;
 import keystone.core.renderer.interfaces.IAlphaProvider;
 import keystone.core.renderer.interfaces.IColorProvider;
 import keystone.core.renderer.shapes.SphereMesh;

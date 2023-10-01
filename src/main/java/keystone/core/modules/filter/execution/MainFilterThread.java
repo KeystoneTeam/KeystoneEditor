@@ -9,12 +9,7 @@ import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.utils.ProgressBar;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class MainFilterThread extends AbstractFilterThread

@@ -12,11 +12,7 @@ import org.codehaus.commons.compiler.util.resource.FileResourceCreator;
 import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.Compiler;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;

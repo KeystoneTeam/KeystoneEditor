@@ -6,7 +6,6 @@ import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import keystone.api.Keystone;
 import keystone.api.KeystoneCache;
-import keystone.core.VersionChecker;
 import keystone.core.utils.FileUtils;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.NbtCompound;
@@ -18,11 +17,7 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public final class FilterCache
 {

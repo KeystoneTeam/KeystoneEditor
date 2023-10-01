@@ -1,7 +1,6 @@
 package keystone.core.events;
 
 import keystone.core.KeystoneConfig;
-import keystone.core.KeystoneGlobalState;
 import keystone.core.events.keystone.KeystoneInputEvents;
 import keystone.core.events.minecraft.InputEvents;
 import keystone.core.gui.KeystoneOverlayHandler;

@@ -4,7 +4,6 @@ import keystone.api.Keystone;
 import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.modules.filter.providers.AbstractRemappingFilterProvider;
 import keystone.core.utils.Result;
-import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.impl.util.version.SemanticVersionImpl;
 import net.minecraft.SharedConstants;
 
