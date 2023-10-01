@@ -67,6 +67,23 @@ public class DefaultRendererModifiers
             RenderSystem.enableDepthTest();
         }
     };
+    public static final IRendererModifier IGNORE_FOG = new IRendererModifier()
+    {
+        private float fogStart;
+        
+        @Override
+        public void enable()
+        {
+            fogStart = RenderSystem.getShaderFogStart();
+            RenderSystem.setShaderFogStart(Float.MAX_VALUE);
+        }
+    
+        @Override
+        public void disable()
+        {
+            RenderSystem.setShaderFogStart(fogStart);
+        }
+    };
     public static final IRendererModifier TRANSLUCENT = new IRendererModifier()
     {
         @Override

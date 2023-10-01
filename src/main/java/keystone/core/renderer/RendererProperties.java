@@ -28,6 +28,7 @@ public record RendererProperties(VertexFormat.DrawMode drawMode, VertexFormat ve
                 .withModifier(DefaultRendererModifiers.LINES_SHADER)
                 .translucent()
                 .ignoreCull()
+                .ignoreFog()
                 .depthOffset(2)
                 .lineWidth(lineWidth);
     }
@@ -37,6 +38,7 @@ public record RendererProperties(VertexFormat.DrawMode drawMode, VertexFormat ve
                 .withModifier(DefaultRendererModifiers.POSITION_COLOR_SHADER)
                 .translucent()
                 .ignoreCull()
+                .ignoreFog()
                 .depthOffset(2);
     }
     public static RendererProperties createFill(Supplier<Boolean> cullingCondition)
@@ -44,6 +46,7 @@ public record RendererProperties(VertexFormat.DrawMode drawMode, VertexFormat ve
         return new RendererProperties(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
                 .withModifier(DefaultRendererModifiers.POSITION_COLOR_SHADER)
                 .translucent()
+                .ignoreFog()
                 .conditionalCull(cullingCondition)
                 .depthOffset(2);
     }
@@ -52,6 +55,7 @@ public record RendererProperties(VertexFormat.DrawMode drawMode, VertexFormat ve
     public RendererProperties translucent() { return withModifier(DefaultRendererModifiers.TRANSLUCENT); }
     public RendererProperties ignoreDepth() { return withModifier(DefaultRendererModifiers.IGNORE_DEPTH); }
     public RendererProperties ignoreCull() { return withModifier(DefaultRendererModifiers.IGNORE_CULL); }
+    public RendererProperties ignoreFog() { return withModifier(DefaultRendererModifiers.IGNORE_FOG); }
     public RendererProperties depthOffset(int scale) { return withModifier(new DefaultRendererModifiers.PolygonOffset(scale)); }
     public RendererProperties conditionalCull(Supplier<Boolean> shouldCull) { return withModifier(new DefaultRendererModifiers.ConditionalCull(shouldCull)); }
     public RendererProperties lineWidth(float lineWidth) { return withModifier(new DefaultRendererModifiers.LineWidth(lineWidth)); }

@@ -10,23 +10,13 @@ import net.fabricmc.loader.impl.launch.FabricLauncherBase;
 import net.fabricmc.loader.impl.util.mappings.TinyRemapperMappingsHelper;
 import net.fabricmc.mapping.tree.TinyMappingFactory;
 import net.fabricmc.mapping.tree.TinyTree;
-import net.fabricmc.tinyremapper.IMappingProvider;
-import net.fabricmc.tinyremapper.InputTag;
-import net.fabricmc.tinyremapper.NonClassCopyMode;
-import net.fabricmc.tinyremapper.OutputConsumerPath;
-import net.fabricmc.tinyremapper.TinyRemapper;
+import net.fabricmc.tinyremapper.*;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
+import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -153,14 +143,6 @@ public class FilterRemapper
         }
         
         // Cleanup temp files
-        for (Path p : depPaths)
-        {
-            try { p.getFileSystem().close(); }
-            catch (Exception ignored) { }
-            
-            try { FileSystems.getFileSystem(new URI("jar:" + p.toUri())).close(); }
-            catch (Exception ignored) { }
-        }
     
         List<Path> missing = new ArrayList<>();
     
@@ -193,8 +175,8 @@ public class FilterRemapper
         
         // Print Timing
         long duration = System.currentTimeMillis() - startTime;
-        Keystone.LOGGER.info("Finished remapping operation in " + duration + "ms.");
         FileUtils.deleteRecursively(tempDirectory.toFile(), false);
+        Keystone.LOGGER.info("Finished remapping operation in " + duration + "ms.");
     }
     
     public static void init() throws IOException
