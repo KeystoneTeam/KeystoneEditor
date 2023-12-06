@@ -1,5 +1,6 @@
 package keystone.api;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.enums.WorldType;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.blocks.BlockMask;
@@ -350,8 +351,13 @@ public final class Keystone
             
             if (Keystone.isEnabled())
             {
+                // Fix Render System model view matrix
+                RenderSystem.getModelViewStack().push();
+                RenderSystem.getModelViewStack().peek().getPositionMatrix().set(context.matrixStack().peek().getPositionMatrix());
+                RenderSystem.getModelViewStack().peek().getNormalMatrix().set(context.matrixStack().peek().getNormalMatrix());
+                
                 // Begin Shape Rendering
-                ShapeRenderers.beginRender(context);
+                ShapeRenderers.beginRender();
                 
                 // Render Ghost Blocks
                 ghostBlocksModule.renderGhostBlocks(context);
@@ -368,6 +374,9 @@ public final class Keystone
                 
                 // End Shape Rendering
                 ShapeRenderers.endRender();
+                
+                // Revert model view matrix
+                RenderSystem.getModelViewStack().pop();
             }
         });
 

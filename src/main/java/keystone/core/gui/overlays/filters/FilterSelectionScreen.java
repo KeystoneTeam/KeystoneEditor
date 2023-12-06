@@ -110,6 +110,8 @@ public class FilterSelectionScreen extends KeystonePanel
                     .setPadding(0);
 
             String error = selectedFilter.getCompilerException().getLocalizedMessage();
+            if (error == null) error = selectedFilter.getCompilerException().getClass().getName();
+            
             String splitRegex = "Line [0-9]+, Column [0-9]+:";
             String[] tokens = error.split(splitRegex, 2);
             if (tokens.length == 1) compileErrorDisplay.addText(Formatting.RED, error);

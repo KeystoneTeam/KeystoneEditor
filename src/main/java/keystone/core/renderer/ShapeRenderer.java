@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import keystone.core.renderer.interfaces.IRendererModifier;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Tessellator;
@@ -15,6 +16,7 @@ public class ShapeRenderer
 {
     private final Tessellator tessellator;
     private final BufferBuilder buffer;
+    private final VertexBuffer bufferUpload;
     private final Camera camera;
     
     private final RendererProperties properties;
@@ -28,6 +30,7 @@ public class ShapeRenderer
     {
         this.tessellator = new Tessellator();
         this.buffer = tessellator.getBuffer();
+        this.bufferUpload = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
         this.camera = MinecraftClient.getInstance().gameRenderer.getCamera();
         this.properties = properties;
     }
@@ -39,7 +42,6 @@ public class ShapeRenderer
     public void end()
     {
         // Configure Rendering
-        // TODO: See if this has to be in begin() instead
         RenderSystem.applyModelViewMatrix();
         RenderSystem.enableDepthTest();
         for (IRendererModifier modifier : properties.modifiers()) modifier.enable();
