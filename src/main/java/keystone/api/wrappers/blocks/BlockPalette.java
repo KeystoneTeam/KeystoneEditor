@@ -9,6 +9,7 @@ import keystone.core.modules.filter.blocks.BlockTypeProvider;
 import keystone.core.modules.filter.blocks.IBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.WeightedRandom;
+import keystone.core.utils.WorldRegistries;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -207,7 +208,7 @@ public class BlockPalette
     {
         try
         {
-            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(Registry.BLOCK, block, false);
+            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(WorldRegistries.blockLookup(), block, false);
             if (parser.left().isPresent()) return with(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()), weight);
             if (parser.right().isPresent()) return with(new BlockListProvider(parser.right().get().tag(), parser.right().get().vagueProperties()), weight);
         }
@@ -305,7 +306,7 @@ public class BlockPalette
     {
         try
         {
-            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(Registry.BLOCK, block, false);
+            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(WorldRegistries.blockLookup(), block, false);
             if (parser.left().isPresent()) return without(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()), weight);
             if (parser.right().isPresent()) return without(new BlockListProvider(parser.right().get().tag(), parser.right().get().vagueProperties()), weight);
         }

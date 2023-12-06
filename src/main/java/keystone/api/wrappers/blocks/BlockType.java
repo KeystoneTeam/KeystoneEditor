@@ -5,9 +5,11 @@ import keystone.api.Keystone;
 import keystone.core.client.Player;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.utils.WorldRegistries;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Property;
@@ -75,7 +77,7 @@ public class BlockType
     /**
      * @return The ID of the base block. [e.g. "minecraft:stone_slab"]
      */
-    public String block() { return Registry.BLOCK.getId(state.getBlock()).toString(); }
+    public String block() { return Registries.BLOCK.getId(state.getBlock()).toString(); }
     /**
      * @return This block's property set. [e.g. "type=top,waterlogged=true"]
      */
@@ -136,7 +138,7 @@ public class BlockType
                 else blockStr = blockStr + "[" + token + "]";
             }
 
-            BlockState state = BlockArgumentParser.block(Registry.BLOCK, blockStr, false).blockState();
+            BlockState state = BlockArgumentParser.block(WorldRegistries.blockLookup(), blockStr, false).blockState();
             return BlockTypeRegistry.fromMinecraftBlock(state);
         }
         catch (ArrayIndexOutOfBoundsException e)
@@ -174,7 +176,7 @@ public class BlockType
             }
             else blockStr = blockStr + "[" + property + "=" + value + "]";
 
-            BlockState state = BlockArgumentParser.block(Registry.BLOCK, blockStr, false).blockState();
+            BlockState state = BlockArgumentParser.block(WorldRegistries.blockLookup(), blockStr, false).blockState();
             return BlockTypeRegistry.fromMinecraftBlock(state);
         }
         catch (CommandSyntaxException e)
@@ -245,7 +247,7 @@ public class BlockType
     private void buildStrings()
     {
         // Full String
-        StringBuilder stringbuilder = new StringBuilder(Registry.BLOCK.getId(this.state.getBlock()).toString());
+        StringBuilder stringbuilder = new StringBuilder(Registries.BLOCK.getId(this.state.getBlock()).toString());
         if (!this.state.getEntries().isEmpty())
         {
             stringbuilder.append('[');
@@ -255,7 +257,7 @@ public class BlockType
         this.string = stringbuilder.toString();
         
         // Block ID
-        this.block = Registry.BLOCK.getId(this.state.getBlock()).toString();
+        this.block = Registries.BLOCK.getId(this.state.getBlock()).toString();
         
         // Modified Properties
         BlockState defaultState = this.state.getBlock().getDefaultState();

@@ -40,7 +40,7 @@ public class NBTCompound extends NBTWrapper<NbtCompound>
         {
             NbtPathArgumentType.NbtPath nbtPath = NbtPathArgumentType.nbtPath().parse(new StringReader(path));
             NbtElement nbt = NbtElementArgumentType.nbtElement().parse(new StringReader(data));
-            nbtPath.put(this.nbt, () -> nbt);
+            nbtPath.put(this.nbt, nbt);
         }
         catch (CommandSyntaxException e)
         {

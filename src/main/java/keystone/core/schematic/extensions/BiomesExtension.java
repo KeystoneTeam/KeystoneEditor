@@ -100,7 +100,7 @@ public class BiomesExtension implements ISchematicExtension
         // Load Biome Palette
         List<RegistryEntry<Biome>> palette = new ArrayList<>();
         NbtList paletteNBT = nbt.getList("palette", NbtElement.STRING_TYPE);
-        Registry<Biome> biomeRegistry = WorldRegistries.getBiomeRegistry();
+        Registry<Biome> biomeRegistry = WorldRegistries.biomes();
         for (int i = 0; i < paletteNBT.size(); i++)
         {
             String biomeID = paletteNBT.getString(i);

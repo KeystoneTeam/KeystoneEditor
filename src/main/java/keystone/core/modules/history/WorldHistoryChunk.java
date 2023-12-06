@@ -209,7 +209,7 @@ public class WorldHistoryChunk
             NbtCompound buffer1NBT = biomesNBT.getCompound("Buffer1");
             NbtCompound buffer2NBT = biomesNBT.getCompound("Buffer2");
 
-            Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.getBiomeRegistry(world.toServerWorld());
+            Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.biomes(world.toServerWorld());
             this.oldBiomes = new PalettedArray<>(oldNBT, serialized ->
             {
                 Identifier identifier = new Identifier(serialized.asString());
@@ -666,7 +666,7 @@ public class WorldHistoryChunk
     }
     private PalettedContainer<RegistryEntry<net.minecraft.world.biome.Biome>> createBiomeContainer(PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> array)
     {
-        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.getBiomeRegistry(world.toServerWorld());
+        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.biomes(world.toServerWorld());
         PalettedContainer<RegistryEntry<net.minecraft.world.biome.Biome>> container = new PalettedContainer<>(biomeRegistry.getIndexedEntries(), biomeRegistry.entryOf(BiomeKeys.THE_VOID), PalettedContainer.PaletteProvider.BIOME);
         
         for (int x = 0; x < 4; x++)

@@ -16,6 +16,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
@@ -64,7 +65,7 @@ public class Entity
      */
     public Entity(String id)
     {
-        Optional<EntityType<?>> type = Registry.ENTITY_TYPE.getOrEmpty(new Identifier(id));
+        Optional<EntityType<?>> type = Registries.ENTITY_TYPE.getOrEmpty(new Identifier(id));
         if (type.isEmpty())
         {
             Keystone.tryCancelFilter("Invalid entity type '" + id + "'!");
@@ -94,7 +95,7 @@ public class Entity
     public Entity(NbtCompound nbt, boolean useMinecraftEntity)
     {
         String id = nbt.getString(net.minecraft.entity.Entity.ID_KEY);
-        Optional<EntityType<?>> type = Registry.ENTITY_TYPE.getOrEmpty(new Identifier(id));
+        Optional<EntityType<?>> type = Registries.ENTITY_TYPE.getOrEmpty(new Identifier(id));
         if (type.isEmpty())
         {
             Keystone.tryCancelFilter("Invalid entity type '" + id + "'!");
@@ -418,7 +419,7 @@ public class Entity
             NbtElement nbt = NbtElementArgumentType.nbtElement().parse(new StringReader(data));
 
             NbtCompound previewNBT = EntityUtils.getEntityData(this.previewEntity);
-            nbtPath.put(previewNBT, () -> nbt);
+            nbtPath.put(previewNBT, nbt);
             this.previewEntity.readNbt(previewNBT);
             return this;
         }

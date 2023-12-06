@@ -64,13 +64,6 @@ public class Biome
     {
         return ((BiomeInvoker)(Object)biome.value()).invokeGetTemperature(new BlockPos(x, y, z));
     }
-    /**
-     * @return The type of rain in the biome. Can be [none, rain, snow]
-     */
-    public String rainType()
-    {
-        return biome.value().getPrecipitation().getName();
-    }
     //endregion
 
     @Override

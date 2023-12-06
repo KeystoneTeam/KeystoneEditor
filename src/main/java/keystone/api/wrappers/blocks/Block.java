@@ -5,12 +5,15 @@ import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.utils.WorldRegistries;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -36,7 +39,7 @@ public class Block
 
         try
         {
-            BlockArgumentParser.BlockResult parser = BlockArgumentParser.block(Registry.BLOCK, block, true);
+            BlockArgumentParser.BlockResult parser = BlockArgumentParser.block(WorldRegistries.blockLookup(), block, true);
             state = parser.blockState();
             tileEntity = parser.nbt();
         }

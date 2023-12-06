@@ -7,6 +7,7 @@ import keystone.core.modules.filter.blocks.BlockProviderTypes;
 import keystone.core.modules.filter.blocks.BlockTypeProvider;
 import keystone.core.modules.filter.blocks.IBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.utils.WorldRegistries;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.nbt.NbtCompound;
@@ -246,7 +247,7 @@ public class BlockMask
     {
         try
         {
-            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(Registry.BLOCK, block, false);
+            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(WorldRegistries.blockLookup(), block, false);
             if (parser.left().isPresent()) return with(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()));
             if (parser.right().isPresent())
             {
@@ -285,7 +286,7 @@ public class BlockMask
     {
         try
         {
-            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(Registry.BLOCK, block, false);
+            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(WorldRegistries.blockLookup(), block, false);
             if (parser.left().isPresent()) return withAllVariants(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()));
             if (parser.right().isPresent())
             {
@@ -322,7 +323,7 @@ public class BlockMask
     {
         try
         {
-            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(Registry.BLOCK, block, false);
+            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(WorldRegistries.blockLookup(), block, false);
             if (parser.left().isPresent()) return without(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()));
             if (parser.right().isPresent())
             {
@@ -361,7 +362,7 @@ public class BlockMask
     {
         try
         {
-            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(Registry.BLOCK, block, false);
+            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(WorldRegistries.blockLookup(), block, false);
             if (parser.left().isPresent()) return withoutAllVariants(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()));
             if (parser.right().isPresent())
             {

@@ -1,13 +1,12 @@
 package keystone.api.wrappers.coordinates;
 
-import net.minecraft.util.math.Vec3f;
 
 /**
- * A wrapper for a Minecraft Vec3f. Used in filters to prevent obfuscation issues
+ * A wrapper for a Minecraft Vector3f. Used in filters to prevent obfuscation issues
  */
 public class Vector3f
 {
-    private final Vec3f vec;
+    private final org.joml.Vector3f vec;
     public final float x;
     public final float y;
     public final float z;
@@ -18,22 +17,22 @@ public class Vector3f
      * @param y The y value
      * @param z The z value
      */
-    public Vector3f(float x, float y, float z) { this(new Vec3f(x, y, z)); }
+    public Vector3f(float x, float y, float z) { this(new org.joml.Vector3f(x, y, z)); }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param vec The Minecraft Vector3f
      */
-    public Vector3f(Vec3f vec)
+    public Vector3f(org.joml.Vector3f vec)
     {
         this.vec = vec;
-        this.x = vec.getX();
-        this.y = vec.getY();
-        this.z = vec.getZ();
+        this.x = vec.x;
+        this.y = vec.y;
+        this.z = vec.z;
     }
 
     public Vector3f cross(Vector3f other)
     {
-        Vec3f copy = vec.copy();
+        org.joml.Vector3f copy = new org.joml.Vector3f(vec);
         copy.cross(other.vec);
         return new Vector3f(copy);
     }
@@ -43,7 +42,7 @@ public class Vector3f
     }
     public Vector3f normalize()
     {
-        Vec3f copy = vec.copy();
+        org.joml.Vector3f copy = new org.joml.Vector3f(vec);
         copy.normalize();
         return new Vector3f(copy);
     }

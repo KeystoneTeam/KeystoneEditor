@@ -31,9 +31,9 @@ import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import java.io.File;
@@ -399,7 +399,7 @@ public class KeystoneFilter
 
         try
         {
-            BlockArgumentParser.BlockResult parser = BlockArgumentParser.block(Registry.BLOCK, blockType, false);
+            BlockArgumentParser.BlockResult parser = BlockArgumentParser.block(WorldRegistries.blockLookup(), blockType, false);
             state = parser.blockState();
         }
         catch (CommandSyntaxException e)
@@ -421,7 +421,7 @@ public class KeystoneFilter
 
         try
         {
-            ItemStringReader.ItemResult parser = ItemStringReader.item(RegistryWrapper.of(Registry.ITEM), new StringReader(item));
+            ItemStringReader.ItemResult parser = ItemStringReader.item(WorldRegistries.itemLookup(), new StringReader(item));
             stack = new ItemStack(parser.item(), 1);
             stack.setNbt(parser.nbt());
         }
@@ -440,7 +440,7 @@ public class KeystoneFilter
      */
     public final Entity entity(String id)
     {
-        Optional<net.minecraft.entity.EntityType<?>> optionalEntity = Registry.ENTITY_TYPE.getOrEmpty(new Identifier(id));
+        Optional<net.minecraft.entity.EntityType<?>> optionalEntity = Registries.ENTITY_TYPE.getOrEmpty(new Identifier(id));
         if (optionalEntity.isPresent()) return new Entity(id);
         else
         {
@@ -456,7 +456,7 @@ public class KeystoneFilter
      */
     public final Biome biome(String id)
     {
-        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.getBiomeRegistry();
+        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.biomes();
         Optional<net.minecraft.world.biome.Biome> optionalBiome = biomeRegistry.getOrEmpty(new Identifier(id));
         if (optionalBiome.isPresent())
         {

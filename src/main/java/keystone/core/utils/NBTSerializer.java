@@ -247,7 +247,7 @@ public class NBTSerializer
     }
     public static List<RegistryEntry<net.minecraft.world.biome.Biome>> deserializeBiomePalette(NbtList paletteNBT)
     {
-        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.getBiomeRegistry();
+        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.biomes();
         List<RegistryEntry<net.minecraft.world.biome.Biome>> palette = new ArrayList<>();
 
         for (int i = 0; i < paletteNBT.size(); i++)

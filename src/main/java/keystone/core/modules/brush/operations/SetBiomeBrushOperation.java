@@ -18,7 +18,7 @@ public class SetBiomeBrushOperation extends BrushOperation
     @Variable BlockMask mask = new BlockMask().blacklist();
 
     @Tooltip("The biome to change the brush shape to.")
-    @Variable Biome biome = new Biome(WorldRegistries.getBiomeRegistry().getEntry(BiomeKeys.PLAINS).get());
+    @Variable Biome biome = new Biome(WorldRegistries.biomes().getEntry(BiomeKeys.PLAINS).get());
 
     @Override
     public Text getName()

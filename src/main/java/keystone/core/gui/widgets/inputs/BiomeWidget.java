@@ -26,7 +26,7 @@ public class BiomeWidget extends LabeledDropdownWidget<Biome>
     @Override
     public void buildOptionsList(List<Dropdown.Option<Biome>> options)
     {
-        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.getBiomeRegistry();
+        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.biomes();
         biomeRegistry.getKeys().forEach(biomeKey ->
         {
             Biome biome = new Biome(biomeRegistry.entryOf(biomeKey));

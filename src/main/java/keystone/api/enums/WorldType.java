@@ -39,8 +39,7 @@ public class WorldType
         ServerInfo serverInfo = client.getCurrentServerEntry();
         
         // Check what type of world the player is connected to
-        if (client.isConnectedToRealms()) return REALMS;
-        else if (server != null)
+        if (server != null)
         {
             if (!server.isRemote()) return SINGLEPLAYER;
             else return HOSTING_LAN;
@@ -48,6 +47,7 @@ public class WorldType
         else if (serverInfo != null)
         {
             if (serverInfo.isLocal()) return CONNECTED_TO_LAN;
+            else if (serverInfo.isRealm()) return REALMS;
             else return SERVER;
         }
         else return NONE;
