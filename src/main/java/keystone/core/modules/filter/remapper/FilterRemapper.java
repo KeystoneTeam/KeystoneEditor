@@ -8,7 +8,6 @@ import keystone.core.utils.FileUtils;
 import net.fabricmc.loader.impl.launch.FabricLauncher;
 import net.fabricmc.loader.impl.launch.FabricLauncherBase;
 import net.fabricmc.loader.impl.lib.mappingio.format.tiny.Tiny2FileReader;
-import net.fabricmc.loader.impl.lib.mappingio.tree.MappingTree;
 import net.fabricmc.loader.impl.lib.mappingio.tree.MemoryMappingTree;
 import net.fabricmc.loader.impl.lib.tinyremapper.*;
 import net.fabricmc.loader.impl.util.mappings.TinyRemapperMappingsHelper;

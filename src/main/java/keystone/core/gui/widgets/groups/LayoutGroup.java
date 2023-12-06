@@ -5,7 +5,6 @@ import keystone.core.gui.GUIMaskStack;
 import keystone.core.gui.widgets.LocationListener;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;

@@ -25,7 +25,7 @@ public class HotbarButton extends ButtonNoHotkey
     }
     public HotbarButton(KeystoneHotbar parent, KeystoneHotbarSlot slot, int x, int y, Supplier<Boolean> enabledSupplier)
     {
-        super((int)(x * parent.getViewport().getScale()), (int)(y * parent.getViewport().getScale()), (int)(16 * parent.getViewport().getScale()), (int)(16 * parent.getViewport().getScale()), slot.getTitle(), (button) -> ((HotbarButton)button).onSlotClicked(), (stack, mouseX, mouseY, partialTicks) -> parent.renderToolName(stack, slot.getTitle(), mouseX, mouseY));
+        super((int)(x * parent.getViewport().getScale()), (int)(y * parent.getViewport().getScale()), (int)(16 * parent.getViewport().getScale()), (int)(16 * parent.getViewport().getScale()), slot.getTitle(), (button) -> ((HotbarButton)button).onSlotClicked(), (context, textRenderer, mouseX, mouseY, partialTicks) -> parent.renderToolName(context, slot.getTitle(), mouseX, mouseY));
 
         this.unscaledX = x;
         this.unscaledY = y;

@@ -3,7 +3,7 @@ package keystone.core.gui.overlays;
 import keystone.api.Keystone;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.modules.history.HistoryModule;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -19,7 +19,7 @@ public class KeystoneHudOverlay extends KeystoneOverlay
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         int unsavedChanges = Math.abs(historyModule.getUnsavedChanges());
         Text unsavedChangesLabel = Text.translatable("keystone.hud.unsavedChanges", unsavedChanges);
@@ -31,17 +31,17 @@ public class KeystoneHudOverlay extends KeystoneOverlay
         int statesWidth = client.textRenderer.getWidth(blockUpdatesLabel);
         if (unsavedChanges > 0) statesWidth = Math.max(statesWidth, client.textRenderer.getWidth(unsavedChangesLabel));
 
-        drawLabelWithBackground(matrixStack, blockUpdatesLabel, 0, height, statesWidth);
-        if (unsavedChanges != 0) drawLabelWithBackground(matrixStack, unsavedChangesLabel, 0, height - 15, statesWidth);
+        drawLabelWithBackground(context, blockUpdatesLabel, 0, height, statesWidth);
+        if (unsavedChanges != 0) drawLabelWithBackground(context, unsavedChangesLabel, 0, height - 15, statesWidth);
 
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        super.render(context, mouseX, mouseY, partialTicks);
     }
 
-    private void drawLabelWithBackground(MatrixStack matrixStack, Text label, int x, int y, int textWidth)
+    private void drawLabelWithBackground(DrawContext context, Text label, int x, int y, int textWidth)
     {
-        fill(matrixStack, x, y, x + 8 + textWidth, y - 15, 0x80000000);
-        fill(matrixStack, x + 2, y, x + 4 + textWidth, y + 1, 0xFF404040);
+        context.fill(x, y, x + 8 + textWidth, y - 15, 0x80000000);
+        context.fill(x + 2, y, x + 4 + textWidth, y + 1, 0xFF404040);
         //fill(matrixStack, x + 4, y + 1, x + textWidth, y + 1, 0xFFFF0000);
-        client.textRenderer.drawWithShadow(matrixStack, label, x + 4, y - 11, 0xFFFFFFFF);
+        context.drawTextWithShadow(textRenderer, label, x + 4, y - 11, 0xFFFFFFFF);
     }
 }

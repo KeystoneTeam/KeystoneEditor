@@ -18,6 +18,7 @@ import net.minecraft.client.sound.SoundManager;
 import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;

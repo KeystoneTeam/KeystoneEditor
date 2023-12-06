@@ -5,6 +5,7 @@ import keystone.core.utils.WorldRegistries;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiConsumer;

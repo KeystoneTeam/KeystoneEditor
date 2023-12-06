@@ -6,7 +6,6 @@ import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.CheckboxWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 public class BooleanWidget extends CheckboxWidget

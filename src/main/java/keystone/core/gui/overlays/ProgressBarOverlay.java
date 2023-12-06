@@ -5,7 +5,6 @@ import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.utils.ProgressBar;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.Window;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 public class ProgressBarOverlay extends KeystoneOverlay

@@ -5,7 +5,10 @@ import keystone.core.client.Player;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
-import net.minecraft.registry.*;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 

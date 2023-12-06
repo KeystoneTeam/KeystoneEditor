@@ -7,8 +7,8 @@ import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionModule;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Direction;
 import org.lwjgl.glfw.GLFW;
@@ -60,9 +60,9 @@ public class NudgeButton extends SimpleButton
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
+        super.renderButton(context, mouseX, mouseY, partialTicks);
     }
 
     public void tick()

@@ -5,7 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

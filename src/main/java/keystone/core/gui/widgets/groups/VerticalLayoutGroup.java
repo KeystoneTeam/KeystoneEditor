@@ -3,7 +3,6 @@ package keystone.core.gui.widgets.groups;
 import keystone.core.KeystoneConfig;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 import java.util.List;

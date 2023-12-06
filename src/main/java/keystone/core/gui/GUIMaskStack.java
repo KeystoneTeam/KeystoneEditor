@@ -3,7 +3,6 @@ package keystone.core.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;

@@ -4,7 +4,6 @@ import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
