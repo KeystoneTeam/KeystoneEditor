@@ -19,8 +19,8 @@ public class GameRendererMixin
     @Shadow @Final MinecraftClient client;
     @Shadow @Final private BufferBuilderStorage buffers;
     
-    @Inject(method = "render", at = @At("TAIL"))
-    public void render(float partialTicks, long nanoTime, boolean renderWorld, CallbackInfo callback)
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;draw()V", shift = At.Shift.BEFORE))
+    public void renderOverlays(float partialTicks, long nanoTime, boolean renderWorld, CallbackInfo callback)
     {
         if (!client.skipGameRender)
         {
@@ -28,12 +28,17 @@ public class GameRendererMixin
             int j = (int)(this.client.mouse.getY() * (double)this.client.getWindow().getScaledHeight() / (double)this.client.getWindow().getHeight());
             DrawContext drawContext = new DrawContext(this.client, this.buffers.getEntityVertexConsumers());
             KeystoneOverlayHandler.render(this.client, drawContext, i, j, this.client.getLastFrameDuration());
-            
-            if (KeystoneGlobalState.ReloadWorldRenderer)
-            {
-                client.worldRenderer.reload();
-                KeystoneGlobalState.ReloadWorldRenderer = false;
-            }
+            drawContext.draw();
+        }
+    }
+    
+    @Inject(method = "render", at = @At("RETURN"))
+    public void reloadWorldRenderer(float tickDelta, long startTime, boolean tick, CallbackInfo ci)
+    {
+        if (KeystoneGlobalState.ReloadWorldRenderer)
+        {
+            client.worldRenderer.reload();
+            KeystoneGlobalState.ReloadWorldRenderer = false;
         }
     }
 }

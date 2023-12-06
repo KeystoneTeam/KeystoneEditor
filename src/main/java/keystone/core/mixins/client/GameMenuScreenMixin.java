@@ -28,8 +28,8 @@ public abstract class GameMenuScreenMixin extends Screen
     @Inject(method = "initWidgets", at = @At("RETURN"))
     private void modifySaveAndQuit(CallbackInfo callback)
     {
-        ButtonWidget.PressAction originalAction = ((ButtonWidgetAccessor) exitButton).getOnPress();
-        ((ButtonWidgetAccessor) exitButton).setOnPress(button -> saveAndQuitButton(button, originalAction));
+        ButtonWidget.PressAction originalAction = exitButton.onPress;
+        exitButton.onPress = button -> saveAndQuitButton(button, originalAction);
     }
 
     @Unique

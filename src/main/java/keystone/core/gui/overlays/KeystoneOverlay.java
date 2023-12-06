@@ -31,11 +31,15 @@ public class KeystoneOverlay extends Screen implements IMouseBlocker
     {
         return false;
     }
-    
     @Override
     public void close()
     {
         KeystoneOverlayHandler.removeOverlay(this);
+    }
+    @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta)
+    {
+    
     }
     @Override
     public void tick()

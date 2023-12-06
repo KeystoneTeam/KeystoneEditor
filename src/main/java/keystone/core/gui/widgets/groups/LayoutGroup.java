@@ -105,8 +105,8 @@ public abstract class LayoutGroup extends WidgetList
         // Move widgets to the correct offset
         for (ClickableWidget widget : layoutControlled)
         {
-            widget.setX(getX() + margins.left());
-            widget.setY(getY() + margins.top());
+            widget.setX(getX() + widget.getX() + margins.left());
+            widget.setY(getY() + widget.getY() + margins.top());
         
             // Correct the element offsets of any child layout groups
             if (widget instanceof LayoutGroup layoutGroup) layoutGroup.correctOffset();
