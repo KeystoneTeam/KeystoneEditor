@@ -12,7 +12,9 @@ import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
+import org.joml.*;
 
+import java.lang.Math;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
@@ -21,7 +23,7 @@ public class SuperByteBuffer extends TemplateBuffer
 
     public interface IVertexLighter
     {
-        public int getPackedLight(float x, float y, float z);
+        int getPackedLight(float x, float y, float z);
     }
 
     // Vertex Position
@@ -52,7 +54,7 @@ public class SuperByteBuffer extends TemplateBuffer
     private static final Long2DoubleMap skyLightCache = new Long2DoubleOpenHashMap();
     private static final Long2DoubleMap blockLightCache = new Long2DoubleOpenHashMap();
     Vector4f pos = new Vector4f();
-    Vec3f normal = new Vec3f();
+    Vector3f normal = new Vector3f();
     Vector4f lightPos = new Vector4f();
 
     private float diffuseLight(float x, float y, float z)
@@ -67,18 +69,10 @@ public class SuperByteBuffer extends TemplateBuffer
             return;
         ((Buffer) buffer).rewind();
 
-        Matrix3f normalMat = transforms.peek()
-                .getNormalMatrix()
-                .copy();
-        // normalMat.multiply(transforms.peek().getNormal());
-
-        Matrix4f modelMat = input.peek()
-                .getPositionMatrix()
-                .copy();
-
-        Matrix4f localTransforms = transforms.peek()
-                .getPositionMatrix();
-        modelMat.multiply(localTransforms);
+        Matrix3f normalMat = new Matrix3f(transforms.peek().getNormalMatrix());
+        Matrix4f modelMat = new Matrix4f(input.peek().getPositionMatrix());
+        Matrix4f localTransforms = transforms.peek().getPositionMatrix();
+        modelMat.mul(localTransforms);
 
         if (shouldLight && lightTransform != null)
         {
@@ -103,15 +97,15 @@ public class SuperByteBuffer extends TemplateBuffer
 
             float staticDiffuse = diffuseLight(normalX, normalY, normalZ);
             normal.set(normalX, normalY, normalZ);
-            normal.transform(normalMat);
-            float nx = normal.getX();
-            float ny = normal.getY();
-            float nz = normal.getZ();
+            normal.mul(normalMat);
+            float nx = normal.x;
+            float ny = normal.y;
+            float nz = normal.z;
             float instanceDiffuse = diffuseLight(nx, ny, nz);
 
             pos.set(x, y, z, 1F);
-            pos.transform(modelMat);
-            builder.vertex(pos.getX(), pos.getY(), pos.getZ());
+            pos.mul(modelMat);
+            builder.vertex(pos.x, pos.y, pos.z);
 
             // builder.color((byte) Math.max(0, nx * 255), (byte) Math.max(0, ny * 255), (byte) Math.max(0, nz * 255), a);
             if (shouldColor)
@@ -145,8 +139,8 @@ public class SuperByteBuffer extends TemplateBuffer
                 if (lightTransform != null)
                 {
                     lightPos.set(((x - f) * 15 / 16f) + f, (y - f) * 15 / 16f + f, (z - f) * 15 / 16f + f, 1F);
-                    lightPos.transform(localTransforms);
-                    lightPos.transform(lightTransform);
+                    lightPos.mul(localTransforms);
+                    lightPos.mul(lightTransform);
 
                     light = getLight(MinecraftClient.getInstance().world, lightPos);
                     if (otherBlockLight >= 0)
@@ -189,11 +183,11 @@ public class SuperByteBuffer extends TemplateBuffer
     {
         transforms.peek()
                 .getPositionMatrix()
-                .multiply(stack.peek()
+                .mul(stack.peek()
                         .getPositionMatrix());
         transforms.peek()
                 .getNormalMatrix()
-                .multiply(stack.peek()
+                .mul(stack.peek()
                         .getNormalMatrix());
         return this;
     }
@@ -201,11 +195,11 @@ public class SuperByteBuffer extends TemplateBuffer
     public SuperByteBuffer rotate(Direction axis, float radians)
     {
         if (radians == 0) return this;
-        transforms.multiply(axis.getUnitVector().getRadialQuaternion(radians));
+        transforms.multiply(RotationAxis.of(axis.getUnitVector()).rotation(radians));
         return this;
     }
 
-    public SuperByteBuffer rotate(Quaternion q)
+    public SuperByteBuffer rotate(Quaternionf q)
     {
         transforms.multiply(q);
         return this;
@@ -217,7 +211,7 @@ public class SuperByteBuffer extends TemplateBuffer
                 .translate(-.5f, -.5f, -.5f);
     }
 
-    public SuperByteBuffer rotateCentered(Quaternion q)
+    public SuperByteBuffer rotateCentered(Quaternionf q)
     {
         return translate(.5f, .5f, .5f).rotate(q)
                 .translate(-.5f, -.5f, -.5f);
@@ -301,7 +295,7 @@ public class SuperByteBuffer extends TemplateBuffer
     }
 
     private static int getLight(World world, Vector4f lightPos) {
-        BlockPos pos = new BlockPos(lightPos.getX(), lightPos.getY(), lightPos.getZ());
+        BlockPos pos = BlockPos.ofFloored(lightPos.x, lightPos.y, lightPos.z);
         return WORLD_LIGHT_CACHE.computeIfAbsent(pos.asLong(), $ -> WorldRenderer.getLightmapCoordinates(world, pos));
     }
 }

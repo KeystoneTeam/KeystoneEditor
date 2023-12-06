@@ -1,6 +1,7 @@
 package keystone.core.renderer.blocks.world;
 
 import net.minecraft.util.TypeFilter;
+import net.minecraft.util.function.LazyIterationConsumer;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.entity.EntityLike;
 import net.minecraft.world.entity.EntityLookup;
@@ -31,11 +32,11 @@ public class DummyEntityLookup<T extends EntityLike> implements EntityLookup<T>
     {
         return Collections.emptyList();
     }
-
+    
     @Override
-    public <U extends T> void forEach(TypeFilter<T, U> filter, Consumer<U> action)
+    public <U extends T> void forEach(TypeFilter<T, U> filter, LazyIterationConsumer<U> consumer)
     {
-
+    
     }
 
     @Override
@@ -43,10 +44,10 @@ public class DummyEntityLookup<T extends EntityLike> implements EntityLookup<T>
     {
 
     }
-
+    
     @Override
-    public <U extends T> void forEachIntersects(TypeFilter<T, U> filter, Box box, Consumer<U> action)
+    public <U extends T> void forEachIntersects(TypeFilter<T, U> filter, Box box, LazyIterationConsumer<U> consumer)
     {
-
+    
     }
 }

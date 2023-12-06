@@ -15,8 +15,8 @@ import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,17 +74,17 @@ public class GhostWorldRenderer
         int zAxisSize = ghostBlocks.getRotation() == BlockRotation.NONE || ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getBlockCountZ() : ghostBlocks.getBounds().getBlockCountX();
         if (ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_90)
         {
-            ms.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-90));
+            ms.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-90));
             ms.translate(0, 0, -xAxisSize);
         }
         else if (ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_180)
         {
-            ms.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180));
+            ms.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
             ms.translate(-xAxisSize, 0, -zAxisSize);
         }
         else if (ghostBlocks.getRotation() == BlockRotation.COUNTERCLOCKWISE_90)
         {
-            ms.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(90));
+            ms.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90));
             ms.translate(-zAxisSize, 0, 0);
         }
 

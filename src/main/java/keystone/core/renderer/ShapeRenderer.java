@@ -1,14 +1,15 @@
 package keystone.core.renderer;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
 import keystone.core.renderer.interfaces.IRendererModifier;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Tessellator;
-import net.minecraft.util.math.Matrix3f;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Matrix3f;
+import org.joml.Vector3f;
 
 public class ShapeRenderer
 {
@@ -44,7 +45,7 @@ public class ShapeRenderer
         for (IRendererModifier modifier : properties.modifiers()) modifier.enable();
     
         // Sort and Draw
-        buffer.sortFrom((float)camera.getPos().x, (float)camera.getPos().y, (float)camera.getPos().z);
+        buffer.setSorter(VertexSorter.byDistance((float)camera.getPos().x, (float)camera.getPos().y, (float)camera.getPos().z));
         tessellator.draw();
         
         // Disable the Modifiers
@@ -53,13 +54,13 @@ public class ShapeRenderer
     public BufferBuilder getBuffer() { return this.buffer; }
     
     public ShapeRenderer vertex(Vec3d vertex) { return vertex(vertex.x, vertex.y, vertex.z); }
-    public ShapeRenderer normal(Vec3f normal) { return normal(normal.getX(), normal.getY(), normal.getZ()); }
+    public ShapeRenderer normal(Vector3f normal) { return normal(normal.x, normal.y, normal.z); }
     public ShapeRenderer normal(Vec3d normal) { return normal((float)normal.x, (float)normal.y, (float)normal.z); }
     public ShapeRenderer normal(Matrix3f transform, Vec3d normal)
     {
-        Vec3f vec = new Vec3f((float)normal.x, (float)normal.y, (float)normal.z);
-        vec.transform(transform);
-        normal(vec.getX(), vec.getY(), vec.getZ());
+        Vector3f vec = new Vector3f((float)normal.x, (float)normal.y, (float)normal.z);
+        vec.mul(transform);
+        normal(vec.x, vec.y, vec.z);
         return this;
     }
     

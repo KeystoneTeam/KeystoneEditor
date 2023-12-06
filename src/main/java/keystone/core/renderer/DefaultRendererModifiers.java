@@ -9,36 +9,8 @@ import java.util.function.Supplier;
 
 public class DefaultRendererModifiers
 {
-    public static final IRendererModifier POSITION_COLOR_SHADER = new IRendererModifier()
-    {
-        @Override
-        public void enable()
-        {
-            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-            RenderSystem.disableTexture();
-        }
-
-        @Override
-        public void disable()
-        {
-            RenderSystem.enableTexture();
-        }
-    };
-    public static final IRendererModifier LINES_SHADER = new IRendererModifier()
-    {
-        @Override
-        public void enable()
-        {
-            RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
-            RenderSystem.disableTexture();
-        }
-
-        @Override
-        public void disable()
-        {
-            RenderSystem.enableTexture();
-        }
-    };
+    public static final IRendererModifier POSITION_COLOR_SHADER = () -> RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+    public static final IRendererModifier LINES_SHADER = () -> RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
     public static final IRendererModifier IGNORE_CULL = new IRendererModifier()
     {
         @Override

@@ -9,6 +9,7 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -25,6 +26,7 @@ import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.QueryableTickScheduler;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +40,7 @@ public class WrappedWorld extends World
 
     public WrappedWorld(World world)
     {
-        super((MutableWorldProperties) world.getLevelProperties(), world.getRegistryKey(), world.getDimensionEntry(), world::getProfiler, world.isClient, world.isDebugWorld(), 0, -1);
+        super((MutableWorldProperties) world.getLevelProperties(), world.getRegistryKey(), world.getRegistryManager(), world.getDimensionEntry(), world.getProfilerSupplier(), world.isClient, world.isDebugWorld(), 0, -1);
         this.world = world;
     }
 
@@ -56,11 +58,14 @@ public class WrappedWorld extends World
     @Override
     public boolean spawnEntity(Entity entity)
     {
-        entity.world = world;
+        // TODO: See if this needs to be re-implemented
+        //entity.world = world;
         return world.spawnEntity(entity);
     }
 
     @Override public DynamicRegistryManager getRegistryManager() { return world.getRegistryManager(); }
+    @Override public FeatureSet getEnabledFeatures() { return world.getEnabledFeatures(); }
+    
     @Override public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) { return world.getGeneratorStoredBiome(biomeX, biomeY, biomeZ); }
     @Override public void updateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags) { world.updateListeners(pos, oldState, newState, flags); }
     @Override public float getBrightness(Direction direction, boolean shaded) { return world.getBrightness(direction, shaded); }
@@ -69,11 +74,8 @@ public class WrappedWorld extends World
     @Override public Scoreboard getScoreboard() { return world.getScoreboard(); }
     @Override public int getNextMapId() { return world.getNextMapId(); }
     @Override public LightingProvider getLightingProvider() { return world.getLightingProvider(); }
-    @Override public BlockState getBlockState(BlockPos pos)
-    {
-        return world.getBlockState(pos);
-    }
-
+    @Override public BlockState getBlockState(BlockPos pos) { return world.getBlockState(pos); }
+    
     @Override public RecipeManager getRecipeManager() { return world.getRecipeManager(); }
     @Override public String asString() { return world.asString(); }
 
@@ -82,8 +84,10 @@ public class WrappedWorld extends World
 
     @Override public void playSound(@org.jetbrains.annotations.Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
     @Override public void playSound(@org.jetbrains.annotations.Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) { }
+    @Override public void playSound(@Nullable PlayerEntity except, double x, double y, double z, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed) { }
+    @Override public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed) { }
+    
     @Override public void playSoundFromEntity(@org.jetbrains.annotations.Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
-    @Override public void playSoundFromEntity(@org.jetbrains.annotations.Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) { }
     @Override public void emitGameEvent(@org.jetbrains.annotations.Nullable Entity entity, GameEvent event, BlockPos pos) { }
     @Override public void emitGameEvent(GameEvent event, Vec3d emitterPos, GameEvent.Emitter emitter) { }
     @Override @org.jetbrains.annotations.Nullable public MapState getMapState(String id) { return null; }

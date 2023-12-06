@@ -1,5 +1,6 @@
 package keystone.core.renderer.blocks.world;
 
+import com.google.common.collect.Maps;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -11,10 +12,10 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.map.MapState;
 import net.minecraft.recipe.RecipeManager;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.resource.featuretoggle.FeatureFlags;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -37,7 +38,9 @@ import net.minecraft.world.tick.EmptyTickSchedulers;
 import net.minecraft.world.tick.QueryableTickScheduler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -93,19 +96,11 @@ public class GhostChunkManager extends ChunkManager
     {
         private static final class DummyWorld extends World
         {
-            private DynamicRegistryManager access;
-
-            private DummyWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> registryEntry, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed)
+            public DummyWorld(DynamicRegistryManager registryManager, RegistryKey<DimensionType> dimensionType)
             {
-                super(properties, registryRef, registryEntry, profiler, isClient, debugWorld, seed, -1);
+                super(null, null, registryManager, registryManager.get(RegistryKeys.DIMENSION_TYPE).getEntry(dimensionType).get(), null, false, false, 0, -1);
             }
-
-            public World withAccess(DynamicRegistryManager access)
-            {
-                this.access = access;
-                return this;
-            }
-
+    
             @Override
             public ChunkManager getChunkManager()
             {
@@ -122,12 +117,6 @@ public class GhostChunkManager extends ChunkManager
             public void emitGameEvent(Entity pEntity, GameEvent pEvent, BlockPos pPos) {}
 
             @Override
-            public DynamicRegistryManager getRegistryManager()
-            {
-                return access;
-            }
-
-            @Override
             public List<? extends PlayerEntity> getPlayers()
             {
                 return null;
@@ -138,7 +127,13 @@ public class GhostChunkManager extends ChunkManager
             {
                 return null;
             }
-
+    
+            @Override
+            public FeatureSet getEnabledFeatures()
+            {
+                return FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+            }
+    
             @Override
             public float getBrightness(Direction pDirection, boolean pShade)
             {
@@ -152,11 +147,13 @@ public class GhostChunkManager extends ChunkManager
             public QueryableTickScheduler<Fluid> getFluidTickScheduler() { return EmptyTickSchedulers.getClientTickScheduler(); }
 
             @Override public void updateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags) { }
-
+    
+            @Override public void playSound(@Nullable PlayerEntity except, double x, double y, double z, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed) { }
             @Override public void playSound(@org.jetbrains.annotations.Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
             @Override public void playSound(@org.jetbrains.annotations.Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) { }
+            @Override public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed) { }
             @Override public void playSoundFromEntity(@org.jetbrains.annotations.Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
-            @Override public void playSoundFromEntity(@org.jetbrains.annotations.Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) { }
+            
             @Override public String asString() { return null; }
             @org.jetbrains.annotations.Nullable @Override public Entity getEntityById(int id) { return null; }
             @org.jetbrains.annotations.Nullable @Override public MapState getMapState(String id) { return null; }
@@ -168,13 +165,11 @@ public class GhostChunkManager extends ChunkManager
             @Override protected EntityLookup<Entity> getEntityLookup() { return null; }
         }
 
-        private static final DummyWorld DUMMY_LEVEL = new DummyWorld(null, null, DynamicRegistryManager.BUILTIN.get()
-                .get(Registry.DIMENSION_TYPE_KEY)
-                .getEntry(DimensionTypes.OVERWORLD).get(), null, false, false, 0);
-
+        private static final Map<DynamicRegistryManager, DummyWorld> DUMMY_WORLDS = Maps.newHashMap();
+        
         public EmptierChunk(DynamicRegistryManager registryAccess)
         {
-            super(DUMMY_LEVEL.withAccess(registryAccess), null);
+            super(DUMMY_WORLDS.computeIfAbsent(registryAccess, key -> new DummyWorld(key, DimensionTypes.OVERWORLD)), null);
         }
 
         public BlockState getBlockState(BlockPos p_180495_1_)
@@ -197,12 +192,6 @@ public class GhostChunkManager extends ChunkManager
         {
             return 0;
         }
-
-        //@Nullable
-        //public BlockEntity getBlockEntity(BlockPos p_177424_1_, EntityCreationType p_177424_2_)
-        //{
-        //    return null;
-        //}
 
         public void addAndRegisterBlockEntity(BlockEntity p_150813_1_) {}
 

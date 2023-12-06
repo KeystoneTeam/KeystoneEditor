@@ -13,14 +13,17 @@ import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.registry.BuiltinRegistries;
 import net.minecraft.world.LightType;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
@@ -28,6 +31,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.tick.EmptyTickSchedulers;
 import net.minecraft.world.tick.QueryableTickScheduler;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -160,13 +164,31 @@ public class GhostBlocksWorld extends WrappedWorld implements ServerWorldAccess
     {
         return getBlockState(pos).getFluidState();
     }
-
+    
+    @Override
+    public void playSound(@Nullable PlayerEntity except, double x, double y, double z, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed)
+    {
+    
+    }
+    
+    @Override
+    public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed)
+    {
+    
+    }
+    
     @Override
     public RegistryEntry<Biome> getBiome(BlockPos pos)
     {
-        return BuiltinRegistries.BIOME.getEntry(BiomeKeys.THE_VOID).get();
+        return world.getRegistryManager().get(RegistryKeys.BIOME).getEntry(BiomeKeys.THE_VOID).get();
     }
-
+    
+    @Override
+    public FeatureSet getEnabledFeatures()
+    {
+        return world.getEnabledFeatures();
+    }
+    
     @Override
     public int getLightLevel(LightType p_226658_1_, BlockPos p_226658_2_)
     {

@@ -1,10 +1,8 @@
 package keystone.core.gui.hotbar;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
 import java.util.function.Supplier;
