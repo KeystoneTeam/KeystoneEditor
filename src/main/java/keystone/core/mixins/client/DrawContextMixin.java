@@ -13,13 +13,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class DrawContextMixin
 {
     @Inject(method = "fill(Lnet/minecraft/client/render/RenderLayer;IIIIII)V", at = @At("HEAD"))
-    private static void fillHead(RenderLayer layer, int x1, int y1, int x2, int y2, int z, int color, CallbackInfo ci)
+    private void fillHead(RenderLayer layer, int x1, int y1, int x2, int y2, int z, int color, CallbackInfo ci)
     {
         if (KeystoneOverlayHandler.isRendering()) RenderSystem.depthMask(false);
     }
 
     @Inject(method = "fill(Lnet/minecraft/client/render/RenderLayer;IIIIII)V", at = @At("RETURN"))
-    private static void fillReturn(RenderLayer layer, int x1, int y1, int x2, int y2, int z, int color, CallbackInfo ci)
+    private void fillReturn(RenderLayer layer, int x1, int y1, int x2, int y2, int z, int color, CallbackInfo ci)
     {
         if (KeystoneOverlayHandler.isRendering()) RenderSystem.depthMask(true);
     }

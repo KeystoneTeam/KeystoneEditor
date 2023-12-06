@@ -18,7 +18,8 @@ public abstract class BrushOperation
     public static final BrushOperation ERODE = new ErodeBrushOperation();
     public static final BrushOperation GRAVITY = new GravityBrushOperation();
     public static final BrushOperation STACK_FILL = new StackFillBrushOperation();
-    public static final BrushOperation SET_BIOME = new SetBiomeBrushOperation();
+    // TODO: Find out how to fix this
+    //public static final BrushOperation SET_BIOME = new SetBiomeBrushOperation();
 
     protected BrushOperation()
     {
