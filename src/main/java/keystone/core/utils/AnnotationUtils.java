@@ -28,11 +28,7 @@ public final class AnnotationUtils
     public static IKeystoneTooltip getFieldTooltip(Screen screen, Field field)
     {
         Tooltip tooltip = field.getAnnotation(Tooltip.class);
-        if (tooltip != null)
-        {
-            List<Text> builtTooltip = List.of(tooltip.translatable() ? Text.translatable(tooltip.value()) : Text.of(tooltip.value()));
-            return (stack, mouseX, mouseY, partialTicks) -> screen.renderTooltip(stack, builtTooltip, mouseX, mouseY);
-        }
+        if (tooltip != null) return IKeystoneTooltip.createSimple(tooltip.translatable() ? Text.translatable(tooltip.value()) : Text.of(tooltip.value()));
         else return null;
     }
     public static Result<Field> findDirtyFlag(Class<?> clazz)

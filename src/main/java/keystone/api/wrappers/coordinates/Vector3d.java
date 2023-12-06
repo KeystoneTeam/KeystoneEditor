@@ -38,6 +38,14 @@ public class Vector3d
         this.y = vec.getY();
         this.z = vec.getZ();
     }
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * @return The Minecraft Vec3d
+     */
+    public Vec3d getMinecraftVec3d()
+    {
+        return vec;
+    }
 
     public Vector3d add(Vector3d other) { return new Vector3d(x + other.x, y + other.y, z + other.z); }
     public Vector3d add(double x, double y, double z) { return new Vector3d(this.x + x, this.y + y, this.z + z); }

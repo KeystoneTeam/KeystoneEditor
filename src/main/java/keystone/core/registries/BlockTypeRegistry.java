@@ -4,6 +4,7 @@ import keystone.api.wrappers.blocks.BlockType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class BlockTypeRegistry
         List<BlockType> registryList = new ArrayList<>();
         registryList.add(null);
 
-        for (Block block : Registry.BLOCK)
+        for (Block block : Registries.BLOCK)
         {
             for (BlockState state : block.getStateManager().getStates())
             {

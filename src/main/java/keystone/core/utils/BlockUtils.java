@@ -5,6 +5,7 @@ import keystone.core.gui.overlays.block_selection.AbstractBlockSelectionScreen;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import java.util.HashMap;
@@ -23,8 +24,8 @@ public class BlockUtils
     public static Item getBlockItem(Block block)
     {
         Item item = block.asItem();
-        String blockIdentifier = Registry.BLOCK.getId(block).toString();
-        if (blockToItemMap.containsKey(blockIdentifier)) item = Registry.ITEM.get(new Identifier(blockToItemMap.get(blockIdentifier)));
+        String blockIdentifier = Registries.BLOCK.getId(block).toString();
+        if (blockToItemMap.containsKey(blockIdentifier)) item = Registries.ITEM.get(new Identifier(blockToItemMap.get(blockIdentifier)));
 
         if (item == null || item == Items.AIR)
         {

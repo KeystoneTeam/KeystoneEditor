@@ -134,7 +134,7 @@ public class NBTSerializer
         for (int i = 0; i < palette.length; i++)
         {
             NbtCompound entry = paletteNBT.getCompound(i);
-            BlockState blockState = NbtHelper.toBlockState(entry);
+            BlockState blockState = NbtHelper.toBlockState(WorldRegistries.blockLookup(), entry);
             palette[i] = BlockTypeRegistry.fromMinecraftBlock(blockState);
         }
         return palette;

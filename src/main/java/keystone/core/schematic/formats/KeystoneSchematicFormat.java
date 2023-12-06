@@ -6,17 +6,24 @@ import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
+import keystone.core.mixins.PalettedBlockInfoListInvoker;
+import keystone.core.mixins.StructureTemplateAccessor;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.extensions.ISchematicExtension;
 import keystone.core.utils.EntityUtils;
 import keystone.core.utils.NBTSerializer;
+import keystone.core.utils.WorldRegistries;
 import net.minecraft.SharedConstants;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.datafixer.DataFixTypes;
-import net.minecraft.datafixer.Schemas;
 import net.minecraft.nbt.*;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 
@@ -26,7 +33,7 @@ import java.util.*;
 public class KeystoneSchematicFormat implements ISchematicFormat
 {
     private static final String[] FILE_EXTENSIONS = new String[] { "nbt", "kschem" };
-    private static Map<Identifier, ISchematicExtension> dataExtensions = new HashMap<>();
+    private static final Map<Identifier, ISchematicExtension> dataExtensions = new HashMap<>();
 
     @Override
     public String[] getFileExtensions()
@@ -59,79 +66,26 @@ public class KeystoneSchematicFormat implements ISchematicFormat
     {
         NbtCompound nbt = new NbtCompound();
 
-        // Size
-        NbtList sizeNBT = new NbtList();
-        sizeNBT.add(0, NbtInt.of(schematic.getSize().getX()));
-        sizeNBT.add(1, NbtInt.of(schematic.getSize().getY()));
-        sizeNBT.add(2, NbtInt.of(schematic.getSize().getZ()));
-        nbt.put("size", sizeNBT);
-
-        // Palette
-        List<BlockState> palette = generatePalette(schematic);
-        NbtList paletteNBT = new NbtList();
-        for (int i = 0; i < palette.size(); i++)
-        {
-            BlockState entry = palette.get(i);
-            NbtCompound entryNBT = NbtHelper.fromBlockState(entry);
-            paletteNBT.add(i, entryNBT);
-        }
-        nbt.put("palette", paletteNBT);
-
+        // Structure
+        StructureTemplate template = new StructureTemplate();
+        StructureTemplateAccessor accessor = (StructureTemplateAccessor) template;
+        
         // Blocks
-        {
-            NbtList blocksNBT = new NbtList();
-            schematic.forEachBlock((pos, block) ->
-            {
-                NbtCompound blockNBT = new NbtCompound();
-
-                NbtList positionNBT = new NbtList();
-                positionNBT.add(0, NbtInt.of(pos.getX()));
-                positionNBT.add(1, NbtInt.of(pos.getY()));
-                positionNBT.add(2, NbtInt.of(pos.getZ()));
-
-                blockNBT.put("pos", positionNBT);
-                blockNBT.putInt("state", palette.indexOf(block.blockType().getMinecraftBlock()));
-
-                NBTCompound tileEntityNBT = block.tileEntity();
-                if (tileEntityNBT != null)
-                {
-                    tileEntityNBT.remove("x");
-                    tileEntityNBT.remove("y");
-                    tileEntityNBT.remove("z");
-                    blockNBT.put("nbt", tileEntityNBT.getMinecraftNBT());
-                }
-
-                blocksNBT.add(blockNBT);
-            });
-            nbt.put("blocks", blocksNBT);
-        }
-
+        List<StructureTemplate.StructureBlockInfo> blockList = new ArrayList<>();
+        schematic.forEachBlock((pos, block) -> blockList.add(new StructureTemplate.StructureBlockInfo(pos, block.blockType().getMinecraftBlock(), block.tileEntity().getMinecraftNBT())));
+        accessor.getBlockLists().add(PalettedBlockInfoListInvoker.invokeConstructor(blockList));
+        
         // Entities
-        if (schematic.getEntityCount() > 0)
+        schematic.forEachEntity(entity ->
         {
-            NbtList entitiesNBT = new NbtList();
-            int i = 0;
-            schematic.forEachEntity(entity ->
-            {
-                NbtCompound entityNBT = new NbtCompound();
-                NbtList positionNBT = new NbtList();
-                NbtList blockPositionNBT = new NbtList();
-                positionNBT.add(NbtDouble.of(entity.x()));
-                positionNBT.add(NbtDouble.of(entity.y()));
-                positionNBT.add(NbtDouble.of(entity.z()));
-                blockPositionNBT.add(NbtInt.of((int)entity.x()));
-                blockPositionNBT.add(NbtInt.of((int)entity.y()));
-                blockPositionNBT.add(NbtInt.of((int)entity.z()));
-
-                entityNBT.put("pos", positionNBT);
-                entityNBT.put("blockPos", blockPositionNBT);
-
-                entityNBT.put("nbt", EntityUtils.getEntityDataNoUuid(entity.getPreviewEntity()));
-                entitiesNBT.add(entityNBT);
-            });
-            nbt.put("entities", entitiesNBT);
-        }
-
+            Vec3d pos = entity.pos().getMinecraftVec3d();
+            BlockPos blockPos = BlockPos.ofFloored(pos.x, pos.y, pos.z);
+            accessor.getEntities().add(new StructureTemplate.StructureEntityInfo(pos, blockPos, entity.data().getMinecraftNBT()));
+        });
+        
+        // Write Structure
+        template.writeNbt(nbt);
+        
         // Extensions
         List<Identifier> ids = new ArrayList<>(dataExtensions.keySet());
         ids.sort(Identifier::compareTo);
@@ -149,19 +103,7 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         }
         nbt.put("extensions", extensionsNBT);
 
-        nbt.putInt("DataVersion", SharedConstants.getGameVersion().getSaveVersion().getId());
         return nbt;
-    }
-    private static List<BlockState> generatePalette(KeystoneSchematic schematic)
-    {
-        List<BlockState> palette = new ArrayList<>();
-        schematic.forEachBlock((pos, block) ->
-        {
-            BlockState paletteEntry = block.blockType().getMinecraftBlock();
-            if (!palette.contains(paletteEntry)) palette.add(paletteEntry);
-        });
-        palette.sort(Comparator.comparing(BlockState::toString));
-        return palette;
     }
     //endregion
     //region Loading
@@ -173,22 +115,24 @@ public class KeystoneSchematicFormat implements ISchematicFormat
     public KeystoneSchematic deserialize(NbtCompound nbt)
     {
         if (nbt.isEmpty()) return null;
-        nbt = NbtHelper.update(Schemas.getFixer(), DataFixTypes.STRUCTURE, nbt, nbt.getInt("DataVersion"));
-
-        // Size
-        NbtList sizeNBT = nbt.getList("size", NbtElement.INT_TYPE);
-        Vec3i size = new Vec3i(sizeNBT.getInt(0), sizeNBT.getInt(1), sizeNBT.getInt(2));
-
-        // Palette and Blocks
-        BlockType[] palette = loadPalette(nbt.getList("palette", NbtElement.COMPOUND_TYPE));
-        NbtList blocksNBT = nbt.getList("blocks", NbtElement.COMPOUND_TYPE);
+        int version = NbtHelper.getDataVersion(nbt, 500);
+        nbt = DataFixTypes.STRUCTURE.update(MinecraftClient.getInstance().getDataFixer(), nbt, version);
+    
+        // Load Structure
+        StructureTemplate template = new StructureTemplate();
+        StructureTemplateAccessor accessor = (StructureTemplateAccessor) template;
+        template.readNbt(WorldRegistries.blockLookup(), nbt);
+    
+        // Copy Data
+        Vec3i size = template.getSize();
         Block[] blocks = new Block[size.getX() * size.getY() * size.getZ()];
-        loadBlocks(size, blocks, blocksNBT, palette);
-
-        // Entities
-        NbtList entitiesNBT = nbt.getList("entities", NbtElement.COMPOUND_TYPE);
-        Entity[] entities = new Entity[entitiesNBT.size()];
-        loadEntities(entities, entitiesNBT);
+        Entity[] entities = new Entity[accessor.getEntities().size()];
+        for (StructureTemplate.StructureBlockInfo blockInfo : accessor.getBlockLists().get(0).getAll()) blocks[index(size, blockInfo.pos())] = new Block(blockInfo.state(), blockInfo.nbt());
+        for (int i = 0; i < entities.length; i++)
+        {
+            StructureTemplate.StructureEntityInfo entityInfo = accessor.getEntities().get(i);
+            entities[i] = new Entity(accessor.getEntities().get(i).nbt, false).position(entityInfo.pos.x, entityInfo.pos.y, entityInfo.pos.z);
+        }
 
         // Extensions
         Map<Identifier, ISchematicExtension> extensions = new HashMap<>();
@@ -208,46 +152,10 @@ public class KeystoneSchematicFormat implements ISchematicFormat
 
         return new KeystoneSchematic(size, blocks, entities, extensions);
     }
-
-    private BlockType[] loadPalette(NbtList paletteNBT)
+    
+    private static int index(Vec3i size, Vec3i pos)
     {
-        BlockType[] palette = new BlockType[paletteNBT.size()];
-        for (int i = 0; i < palette.length; i++)
-        {
-            NbtCompound entry = paletteNBT.getCompound(i);
-            BlockState blockState = NbtHelper.toBlockState(entry);
-            palette[i] = BlockTypeRegistry.fromMinecraftBlock(blockState);
-        }
-        return palette;
-    }
-    private void loadBlocks(Vec3i size, Block[] blocks, NbtList blocksNBT, BlockType[] palette)
-    {
-        for (int i = 0; i < blocksNBT.size(); i++)
-        {
-            NbtCompound blockNBT = blocksNBT.getCompound(i);
-            BlockType blockType = palette[blockNBT.getInt("state")];
-            Block block;
-            if (blockNBT.contains("nbt")) block = new Block(blockType, new NBTCompound(blockNBT.getCompound("nbt")));
-            else block = new Block(blockType);
-
-            NbtList posNBT = blockNBT.getList("pos", NbtElement.INT_TYPE);
-            blocks[index(size, new int[] { posNBT.getInt(0), posNBT.getInt(1), posNBT.getInt(2) })] = block;
-        }
-    }
-    private void loadEntities(Entity[] entities, NbtList entitiesNBT)
-    {
-        for (int i = 0; i < entitiesNBT.size(); i++)
-        {
-            NbtCompound entityNBT = entitiesNBT.getCompound(i);
-            NbtList posNBT = entityNBT.getList("pos", NbtElement.DOUBLE_TYPE);
-            NbtCompound nbt = entityNBT.getCompound("nbt");
-            entities[i] = new Entity(nbt, false).position(posNBT.getDouble(0), posNBT.getDouble(1), posNBT.getDouble(2));
-        }
-    }
-
-    private static int index(Vec3i size, int[] pos)
-    {
-        return pos[2] + pos[1] * size.getZ() + pos[0] * size.getZ() * size.getY();
+        return pos.getZ() + pos.getY() * size.getZ() + pos.getX() * size.getZ() * size.getY();
     }
     //endregion
 }

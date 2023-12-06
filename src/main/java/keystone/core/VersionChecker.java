@@ -50,7 +50,7 @@ public class VersionChecker
         {
             ModMetadata metadata = FabricLoader.getInstance().getModContainer(KeystoneMod.MODID).get().getMetadata();
             Version keystoneVersion = getKeystoneVersion();
-            String minecraftVersion = SharedConstants.getGameVersion().getReleaseTarget();
+            String minecraftVersion = SharedConstants.getGameVersion().getName();
             String homepage = metadata.getContact().get("homepage").get();
 
             IniFile updatesFile = IniFile.read(new URL("https://raw.githubusercontent.com/KeystoneTeam/KeystoneEditor/master/updates.ini"));

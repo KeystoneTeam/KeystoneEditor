@@ -40,7 +40,7 @@ public class StructureVoidsExtension implements ISchematicExtension
         {
             if (blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED).getMinecraftBlock().isOf(Blocks.STRUCTURE_VOID))
             {
-                structureVoidsList.add(new BlockPos(x - bounds.minX, y - bounds.minY, z - bounds.minZ));
+                structureVoidsList.add(BlockPos.ofFloored(x - bounds.minX, y - bounds.minY, z - bounds.minZ));
             }
         });
 
