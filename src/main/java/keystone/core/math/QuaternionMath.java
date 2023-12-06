@@ -1,11 +1,11 @@
 package keystone.core.math;
 
 
-import net.minecraft.util.math.Quaternion;
+import org.joml.Quaternionf;
 
 public class QuaternionMath
 {
-    public static Quaternion euler(double yaw, double pitch, double roll)
+    public static Quaternionf euler(double yaw, double pitch, double roll)
     {
         double cy = Math.cos(Math.toRadians(yaw * 0.5));
         double sy = Math.sin(Math.toRadians(yaw * 0.5));
@@ -14,7 +14,7 @@ public class QuaternionMath
         double cr = Math.cos(Math.toRadians(roll * 0.5));
         double sr = Math.sin(Math.toRadians(roll * 0.5));
 
-        return new Quaternion(
+        return new Quaternionf(
                 (float)(cr * cp * cy + sr * sp * sy),
                 (float)(sr * cp * cy - cr * sp * sy),
                 (float)(cr * sp * cy + sr * cp * sy),

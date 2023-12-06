@@ -10,7 +10,10 @@ import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -18,23 +21,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameMenuScreen.class)
 public abstract class GameMenuScreenMixin extends Screen
 {
+    @Shadow private @Nullable ButtonWidget exitButton;
+    
     protected GameMenuScreenMixin(Text title)
     {
         super(title);
     }
 
-    @Inject(method = "initWidgets", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/GameMenuScreen;addDrawableChild(Lnet/minecraft/client/gui/Element;)Lnet/minecraft/client/gui/Element;", ordinal = 8), cancellable = true)
-    private void initWidgets(CallbackInfo callback)
+    @Inject(method = "initWidgets", at = @At("RETURN"))
+    private void modifySaveAndQuit(CallbackInfo callback)
     {
-        GameMenuScreen _this = (GameMenuScreen)(Object)this;
-
-        MutableText text = client.isInSingleplayer() ? Text.translatable("menu.returnToMenu") : Text.translatable("menu.disconnect");
-        addDrawableChild(new ButtonWidget(_this.width / 2 - 102, _this.height / 4 + 120 + -16, 204, 20, text, this::saveAndQuitButton));
-
-        callback.cancel();
+        ButtonWidget.PressAction originalAction = ((ButtonWidgetAccessor) exitButton).getOnPress();
+        ((ButtonWidgetAccessor) exitButton).setOnPress(button -> saveAndQuitButton(button, originalAction));
     }
 
-    private void saveAndQuitButton(ButtonWidget button)
+    @Unique
+    private static void saveAndQuitButton(ButtonWidget button, ButtonWidget.PressAction originalAction)
     {
         WorldType type = WorldType.get();
         if (type.supportedFeatures.sessions())
@@ -43,28 +45,16 @@ public abstract class GameMenuScreenMixin extends Screen
             session.promptUncommittedChanges(() ->
                     {
                         session.commitChanges();
-                        vanillaSaveAndQuitButtonBehaviour(button, true);
+                        originalAction.onPress(button);
                     },
                     () ->
                     {
                         button.active = false;
                         session.revertChanges(true);
-                        vanillaSaveAndQuitButtonBehaviour(button, false);
+                        originalAction.onPress(button);
                     }, null
             );
         }
-        else vanillaSaveAndQuitButtonBehaviour(button, true);
-    }
-    private void vanillaSaveAndQuitButtonBehaviour(ButtonWidget button, boolean disconnect)
-    {
-        button.active = false;
-
-        if (disconnect)
-        {
-            client.world.disconnect();
-            client.disconnect(new MessageScreen(Text.translatable("menu.savingLevel")));
-        }
-
-        client.setScreen(new TitleScreen());
+        else originalAction.onPress(button);
     }
 }

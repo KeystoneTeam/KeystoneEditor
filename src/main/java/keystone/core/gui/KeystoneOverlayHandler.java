@@ -183,12 +183,8 @@ public class KeystoneOverlayHandler
         addList.forEach(screen -> screen.resize(minecraft, width, height));
         overlays.forEach(screen -> screen.resize(minecraft, width, height));
     }
-    public static void render(DrawContext context, float partialTicks)
+    public static void render(MinecraftClient client, DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        int mouseX = (int)(mc.mouse.getX() * mc.getWindow().getScaledWidth() / mc.getWindow().getWidth());
-        int mouseY = (int)(mc.mouse.getY() * mc.getWindow().getScaledHeight() / mc.getWindow().getHeight());
-
         if (Keystone.isEnabled())
         {
             rendering = true;
@@ -217,7 +213,7 @@ public class KeystoneOverlayHandler
                 IKeystoneTooltip tooltip = tooltips.poll();
                 while (tooltip != null)
                 {
-                    tooltip.render(context, mc.textRenderer, mouseX, mouseY, partialTicks);
+                    tooltip.render(context, client.textRenderer, mouseX, mouseY, partialTicks);
                     tooltip = tooltips.poll();
                 }
                 context.getMatrices().pop();

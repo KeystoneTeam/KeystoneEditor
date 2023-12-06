@@ -1,6 +1,7 @@
 package keystone.core.mixins.client;
 
 import keystone.api.Keystone;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.SpectatorHud;
 import net.minecraft.client.util.math.MatrixStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class SpectatorHudMixin
 {
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    public void render(MatrixStack matrices, CallbackInfo callback)
+    public void render(DrawContext context, CallbackInfo callback)
     {
         if (Keystone.isEnabled()) callback.cancel();
     }

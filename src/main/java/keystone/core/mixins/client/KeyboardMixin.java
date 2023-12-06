@@ -20,9 +20,6 @@ public class KeyboardMixin
     @Final
     private MinecraftClient client;
 
-    @Shadow
-    private boolean repeatEvents;
-
     @Inject(method = "onKey", at = @At("HEAD"), cancellable = true)
     public void keyPress(long windowPointer, int key, int scanCode, int action, int modifiers, CallbackInfo callback)
     {
@@ -32,7 +29,7 @@ public class KeyboardMixin
             if (cancelEvent) callback.cancel();
             else if (Keystone.isEnabled())
             {
-                if (action != GLFW.GLFW_PRESS && (action != GLFW.GLFW_REPEAT || !repeatEvents))
+                if (action != GLFW.GLFW_PRESS && (action != GLFW.GLFW_REPEAT))
                 {
                     if (action == GLFW.GLFW_RELEASE) KeystoneOverlayHandler.keyReleased(key, scanCode, modifiers);
                 }

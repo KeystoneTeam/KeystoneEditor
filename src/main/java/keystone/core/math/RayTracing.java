@@ -8,6 +8,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector4f;
 
 public class RayTracing
 {
@@ -81,7 +84,7 @@ public class RayTracing
         Vec3d vector3d = origin;
         Vec3d vector3d1 = direction;
         Vec3d vector3d2 = vector3d.add(vector3d1.x * rayTraceDistance, vector3d1.y * rayTraceDistance, vector3d1.z * rayTraceDistance);
-        return entity.world.raycast(new RaycastContext(vector3d, vector3d2, RaycastContext.ShapeType.OUTLINE, rayTraceFluids ? RaycastContext.FluidHandling.ANY : RaycastContext.FluidHandling.NONE, entity));
+        return entity.getEntityWorld().raycast(new RaycastContext(vector3d, vector3d2, RaycastContext.ShapeType.OUTLINE, rayTraceFluids ? RaycastContext.FluidHandling.ANY : RaycastContext.FluidHandling.NONE, entity));
     }
 
     public static Vec3d screenPointToRayDirection(float partialTicks)
@@ -96,11 +99,10 @@ public class RayTracing
         float yaw = mc.getCameraEntity().getYaw(partialTicks) + 180.0f;
 
         MatrixStack stack = new MatrixStack();
-        stack.peek().getPositionMatrix().multiply(gr.getBasicProjectionMatrix(((GameRendererInvoker)gr).invokeGetFov(gr.getCamera(), partialTicks, true)));
-        stack.multiply(new Quaternion(Vec3f.POSITIVE_X, pitch, true));
-        stack.multiply(new Quaternion(Vec3f.POSITIVE_Y, yaw, true));
-        Matrix4f matrix = stack.peek().getPositionMatrix();
-        if (!matrix.invert()) return Vec3d.ZERO;
+        stack.peek().getPositionMatrix().mul(gr.getBasicProjectionMatrix(((GameRendererInvoker)gr).invokeGetFov(gr.getCamera(), partialTicks, true)));
+        stack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(pitch));
+        stack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(yaw));
+        Matrix4f matrix = stack.peek().getPositionMatrix().invert();
 
         int[] viewport = new int[] { 0, 0, mc.getWindow().getWidth(), mc.getWindow().getHeight() };
 
@@ -119,11 +121,11 @@ public class RayTracing
                 ((float)point.x - (float)viewport[0]) / (float)viewport[2] * 2.0f - 1.0f,
                 ((float)point.y - (float)viewport[1]) / (float)viewport[3] * 2.0f - 1.0f,
                 2.0f * (float)point.z - 1.0f, 1.0f);
-        unprojected.transform(projection);
+        unprojected.mul(projection);
         
-        if(unprojected.getW() == 0.0f) return null;
-        float w = 1.0f / unprojected.getW();
+        if(unprojected.w == 0.0f) return null;
+        float w = 1.0f / unprojected.w;
 
-        return new Vec3d(unprojected.getX() * w, unprojected.getY() * w, unprojected.getZ() * w);
+        return new Vec3d(unprojected.x * w, unprojected.y * w, unprojected.z * w);
     }
 }

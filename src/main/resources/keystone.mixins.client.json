@@ -4,11 +4,12 @@
   "package": "keystone.core.mixins.client",
   "compatibilityLevel": "JAVA_17",
   "client": [
+    "ButtonWidgetAccessor",
     "ClientPlayerEntityMixin",
     "ClientPlayerInteractionManagerMixin",
     "ClientWorldMixin",
     "CreateWorldScreenMixin",
-    "DrawableHelperMixin",
+    "DrawContextMixin",
     "FramebufferMixin",
     "GameMenuScreenMixin",
     "GameRendererInvoker",

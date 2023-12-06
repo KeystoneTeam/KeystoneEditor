@@ -1,8 +1,8 @@
 package keystone.core.client;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
+import org.joml.Quaternionf;
 
 public class Camera
 {
@@ -10,7 +10,7 @@ public class Camera
     {
         return MinecraftClient.getInstance().gameRenderer.getCamera().getPos();
     }
-    public static Quaternion getRotation()
+    public static Quaternionf getRotation()
     {
         return MinecraftClient.getInstance().gameRenderer.getCamera().getRotation();
     }

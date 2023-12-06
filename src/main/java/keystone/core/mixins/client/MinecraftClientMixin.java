@@ -23,7 +23,7 @@ public class MinecraftClientMixin
         KeystoneMod.tryGameLoaded();
     }
     
-    @Inject(method = "openPauseMenu", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "openGameMenu", at = @At("HEAD"), cancellable = true)
     public void pauseGame(boolean pauseOnly, CallbackInfo callback)
     {
         if (Keystone.isEnabled()) callback.cancel();

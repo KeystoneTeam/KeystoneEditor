@@ -35,7 +35,7 @@ public class Player
         eyePosition = player.getEyePos();
         lookDirection = KeystoneGlobalState.CloseSelection ? player.getRotationVec((float)partialTicks) : RayTracing.screenPointToRayDirection((float)partialTicks);
 
-        dimension = player.world.getRegistryKey();
+        dimension = player.getEntityWorld().getRegistryKey();
         updateHighlightedBlock();
     }
 
@@ -60,7 +60,7 @@ public class Player
 
     public static BlockPos getHighlightedBlock()
     {
-        if (rayTrace == null || rayTrace.getType() != HitResult.Type.BLOCK) return new BlockPos(getEyePosition().add(lookDirection.multiply(KeystoneGlobalState.CloseSelectionDistance)));
+        if (rayTrace == null || rayTrace.getType() != HitResult.Type.BLOCK) return BlockPos.ofFloored(getEyePosition().add(lookDirection.multiply(KeystoneGlobalState.CloseSelectionDistance)));
         else
         {
             BlockHitResult blockRay = (BlockHitResult)rayTrace;
