@@ -14,6 +14,7 @@ import keystone.core.gui.widgets.groups.Margins;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
 import keystone.core.modules.brush.BrushModule;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -91,7 +92,7 @@ public class BrushSelectionScreen extends KeystonePanel
         {
             brushModule.setImmediateMode(!brushModule.isImmediateMode());
             init(client, width, height);
-        }).setTooltip(IKeystoneTooltip.createSimple(this, brushModule.isImmediateMode() ? Text.translatable("keystone.brush.immediateMode.tooltip") : Text.translatable("keystone.brush.deferredMode.tooltip"))));
+        }).setTooltip(IKeystoneTooltip.createSimple(brushModule.isImmediateMode() ? Text.translatable("keystone.brush.immediateMode.tooltip") : Text.translatable("keystone.brush.deferredMode.tooltip"))));
         y += 20 + PADDING;
 
         // Change Shape Button
@@ -146,7 +147,7 @@ public class BrushSelectionScreen extends KeystonePanel
                 brushModule.setMinSpacing(value);
                 return true;
             }
-        }.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.brush.minimumSpacing.tooltip"))));
+        }.setTooltip(IKeystoneTooltip.createSimple(Text.translatable("keystone.brush.minimumSpacing.tooltip"))));
         addDrawableChild(new IntegerWidget(Text.translatable("keystone.brush.noise"), PADDING + spacingNoiseWidth + PADDING, y, spacingNoiseWidth, brushModule.getNoise(), 1, 100)
         {
             @Override
@@ -155,7 +156,7 @@ public class BrushSelectionScreen extends KeystonePanel
                 brushModule.setNoise(value);
                 return true;
             }
-        }.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.brush.noise.tooltip"))));
+        }.setTooltip(IKeystoneTooltip.createSimple(Text.translatable("keystone.brush.noise.tooltip"))));
         y += IntegerWidget.getFinalHeight() + PADDING;
 
         // Brush variables
@@ -164,10 +165,10 @@ public class BrushSelectionScreen extends KeystonePanel
         addDrawableChild(brushVariablesList);
     }
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        fillPanel(matrixStack, 0x80000000);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        fillPanel(context, 0x80000000);
+        super.render(context, mouseX, mouseY, partialTicks);
     }
     //endregion
 }

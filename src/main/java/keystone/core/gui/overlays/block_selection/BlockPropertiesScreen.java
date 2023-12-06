@@ -7,6 +7,7 @@ import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.groups.Margins;
 import keystone.core.gui.widgets.inputs.properties.BlockPropertiesWidgetList;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
@@ -79,11 +80,11 @@ public class BlockPropertiesScreen extends KeystoneOverlay
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        fill(matrixStack, panelX, panelY, panelX + panelWidth, panelY + panelHeight, 0xFF808080);
-        fill(matrixStack, panelX + 1, panelY + 1, panelX + panelWidth - 1, panelY + panelHeight - 1, 0xFF404040);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        context.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, 0xFF808080);
+        context.fill(panelX + 1, panelY + 1, panelX + panelWidth - 1, panelY + panelHeight - 1, 0xFF404040);
+        super.render(context, mouseX, mouseY, partialTicks);
     }
 
     @Override

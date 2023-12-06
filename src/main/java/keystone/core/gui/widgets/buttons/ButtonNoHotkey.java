@@ -4,9 +4,11 @@ import keystone.core.KeystoneConfig;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+
+import java.util.function.Supplier;
 
 public class ButtonNoHotkey extends ButtonWidget
 {
@@ -15,14 +17,14 @@ public class ButtonNoHotkey extends ButtonWidget
     private float tooltipTimer;
     private int tooltipX;
     private int tooltipY;
-
+    
     public ButtonNoHotkey(int x, int y, int width, int height, Text title, PressAction pressedAction)
     {
         this(x, y, width, height, title, pressedAction, null);
     }
     public ButtonNoHotkey(int x, int y, int width, int height, Text title, PressAction pressedAction, IKeystoneTooltip tooltip)
     {
-        super(x, y, width, height, title, pressedAction);
+        super(x, y, width, height, title, pressedAction, Supplier::get);
         this.tooltip = tooltip;
         this.tooltipDelay = KeystoneConfig.tooltipDelay;
     }
@@ -37,7 +39,13 @@ public class ButtonNoHotkey extends ButtonWidget
     }
     
     @Override
-    public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY)
+    public void render(DrawContext context, int mouseX, int mouseY, float delta)
+    {
+        super.render(context, mouseX, mouseY, delta);
+        renderTooltip(context, mouseX, mouseY);
+    }
+    
+    public void renderTooltip(DrawContext context, int mouseX, int mouseY)
     {
         if (this.tooltip != null)
         {

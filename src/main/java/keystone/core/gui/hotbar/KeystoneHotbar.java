@@ -1,6 +1,5 @@
 package keystone.core.gui.hotbar;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
 import keystone.core.client.Player;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
@@ -11,6 +10,7 @@ import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.hotkeys.HotkeysModule;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionModule;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -101,23 +101,20 @@ public class KeystoneHotbar extends KeystonePanel
     }
 
     @Override
-    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        stack.push();
-        stack.scale(getViewport().getScale(), getViewport().getScale(), getViewport().getScale());
+        context.getMatrices().push();
+        context.getMatrices().scale(getViewport().getScale(), getViewport().getScale(), getViewport().getScale());
 
         // Draw hotbar
-        RenderSystem.setShaderTexture(0, hotbarTexture);
-        drawTexture(stack, getViewport().getMinX(), getViewport().getMinY(), 142, 22, 0, 0, 142, 22, 256, 256);
-        super.render(stack, mouseX, mouseY, partialTicks);
+        context.drawTexture(hotbarTexture, getViewport().getMinX(), getViewport().getMinY(), 142, 22, 0, 0, 142, 22, 256, 256);
+        super.render(context, mouseX, mouseY, partialTicks);
 
-        stack.pop();
+        context.getMatrices().pop();
     }
-    public void renderToolName(MatrixStack stack, Text toolName, int mouseX, int mouseY)
+    public void renderToolName(DrawContext context, Text toolName, int mouseX, int mouseY)
     {
-        List<Text> text = new ArrayList<>();
-        text.add(toolName);
-        renderTooltip(stack, text, mouseX, mouseY);
+        context.drawTooltip(textRenderer, toolName, mouseX, mouseY);
     }
 
     public static KeystoneHotbarSlot getSelectedSlot()

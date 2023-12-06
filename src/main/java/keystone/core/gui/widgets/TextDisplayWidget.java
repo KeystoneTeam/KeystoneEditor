@@ -1,6 +1,7 @@
 package keystone.core.gui.widgets;
 
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.ChatMessages;
@@ -103,25 +104,25 @@ public class TextDisplayWidget extends ClickableWidget
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        matrixStack.push();
-        matrixStack.scale(scale, scale, scale);
+        context.getMatrices().push();
+        context.getMatrices().scale(scale, scale, scale);
 
-        fill(matrixStack, (int)(x / scale), (int)(y / scale), (int)((x + width) / scale), (int)((y + height) / scale), background);
+        context.fill((int)(getX() / scale), (int)(getY() / scale), (int)((getX() + width) / scale), (int)((getY() + height) / scale), background);
 
-        float y = this.y + padding / scale;
+        float y = getY() + padding / scale;
         for (OrderedText line : trimmedLines)
         {
-            font.drawWithShadow(matrixStack, line, (x + padding / scale) / scale, y / scale, 0xFFFFFFFF);
+            context.drawTextWithShadow(font, line, (int)((getX() + padding / scale) / scale), (int)(y / scale), 0xFFFFFFFF);
             y += 10 * scale + spacing / scale;
         }
 
-        matrixStack.pop();
+        context.getMatrices().pop();
     }
 
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder)
+    public void appendClickableNarrations(NarrationMessageBuilder builder)
     {
 
     }

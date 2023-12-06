@@ -26,6 +26,7 @@ import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.extensions.ISchematicExtension;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -170,12 +171,12 @@ public class CloneScreen extends KeystonePanel
         SimpleButton mirrorButton = createButton(y, "keystone.schematic_import.mirror", this::mirrorButton);
         rotateButton.setWidth(Math.max(rotateButton.getWidth(), mirrorButton.getWidth()));
         mirrorButton.setWidth(Math.max(rotateButton.getWidth(), mirrorButton.getWidth()));
-        mirrorButton.x += rotateButton.getWidth() + PADDING;
+        mirrorButton.setX(mirrorButton.getX() + rotateButton.getWidth() + PADDING);
         int idealWidth = 2 * (PADDING + rotateButton.getWidth()) - PADDING + 2 * MARGINS;
         y += BUTTON_HEIGHT + PADDING;
 
         nudgeImports = createNudgeButton(y, this::nudgeButton);
-        nudgeImports.x = (idealWidth - nudgeImports.getWidth()) / 2;
+        nudgeImports.setX((idealWidth - nudgeImports.getWidth()) / 2);
         y += BUTTON_HEIGHT + PADDING + OPTIONS_PADDING;
 
         addDrawableChild(rotateButton);
@@ -229,7 +230,7 @@ public class CloneScreen extends KeystonePanel
                 repeat = value;
                 return true;
             }
-        }.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.clone.repeat.tooltip"))));
+        }.setTooltip(IKeystoneTooltip.createSimple(Text.translatable("keystone.clone.repeat.tooltip"))));
         y += IntegerWidget.getFinalHeight() + PADDING;
 
         // Scale Field
@@ -242,13 +243,13 @@ public class CloneScreen extends KeystonePanel
                 scale = value;
                 return true;
             }
-        }.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.schematic_import.scale.tooltip")));
+        }.setTooltip(IKeystoneTooltip.createSimple(Text.translatable("keystone.schematic_import.scale.tooltip")));
         y += scaleField.getHeight() + PADDING;
         addDrawableChild(scaleField);
 
         // Copy Air Field
         copyAir = new BooleanWidget(x, y, getViewport().getWidth() - 2 * MARGINS, 20, Text.translatable("keystone.clone.copyAir"), true, true);
-        copyAir.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.clone.copyAir.tooltip")));
+        copyAir.setTooltip(IKeystoneTooltip.createSimple(Text.translatable("keystone.clone.copyAir.tooltip")));
         y += copyAir.getHeight() + PADDING;
         addDrawableChild(copyAir);
 
@@ -259,23 +260,23 @@ public class CloneScreen extends KeystonePanel
             addDrawableChild(extensionOption);
         }
 
-        rotateButton.x += (getViewport().getWidth() - idealWidth) / 2;
-        mirrorButton.x += (getViewport().getWidth() - idealWidth) / 2;
-        nudgeImports.x += (getViewport().getWidth() - idealWidth) / 2;
-        repeatField.x += (getViewport().getWidth() - idealWidth) / 2;
-        scaleField.x += (getViewport().getWidth() - idealWidth) / 2;
+        rotateButton.setX(rotateButton.getX() + (getViewport().getWidth() - idealWidth) / 2);
+        mirrorButton.setX(mirrorButton.getX() + (getViewport().getWidth() - idealWidth) / 2);
+        nudgeImports.setX(nudgeImports.getX() + (getViewport().getWidth() - idealWidth) / 2);
+        repeatField.setX(repeatField.getX() + (getViewport().getWidth() - idealWidth) / 2);
+        scaleField.setX(scaleField.getX() + (getViewport().getWidth() - idealWidth) / 2);
 
         y += OPTIONS_PADDING;
         SimpleButton cloneButton = createButton(y, "keystone.clone.clone", this::cloneButton);
-        cloneButton.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.clone.clone.tooltip")));
-        cloneButton.x = (getViewport().getWidth() - cloneButton.getWidth()) / 2;
+        cloneButton.setTooltip(IKeystoneTooltip.createSimple(Text.translatable("keystone.clone.clone.tooltip")));
+        cloneButton.setX((getViewport().getWidth() - cloneButton.getWidth()) / 2);
         addDrawableChild(cloneButton);
     }
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        fillPanel(matrixStack, 0x80000000);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        fillPanel(context, 0x80000000);
+        super.render(context, mouseX, mouseY, partialTicks);
     }
     @Override
     public void tick()
@@ -337,7 +338,7 @@ public class CloneScreen extends KeystonePanel
     {
         Text label = Text.translatable(translationKey);
         int buttonWidth = 2 * PADDING + textRenderer.getWidth(label.getString());
-        return new SimpleButton(getViewport().getMinX() + MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, IKeystoneTooltip.createSimple(this, Text.translatable(translationKey + ".tooltip")));
+        return new SimpleButton(getViewport().getMinX() + MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, IKeystoneTooltip.createSimple(Text.translatable(translationKey + ".tooltip")));
     }
     private BooleanWidget createExtensionOption(int y, Identifier extensionID)
     {
@@ -350,7 +351,7 @@ public class CloneScreen extends KeystonePanel
                 super.onPress();
                 extensionsToPlace.put(extensionID, isChecked());
             }
-        }.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable(translationKey + ".tooltip")));
+        }.setTooltip(IKeystoneTooltip.createSimple(Text.translatable(translationKey + ".tooltip")));
     }
     private void addCloseHistoryEntry()
     {

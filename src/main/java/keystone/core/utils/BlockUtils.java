@@ -5,9 +5,8 @@ import keystone.core.gui.overlays.block_selection.AbstractBlockSelectionScreen;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-
 import java.util.HashMap;
 import java.util.Map;
 

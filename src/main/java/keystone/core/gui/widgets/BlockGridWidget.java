@@ -10,15 +10,14 @@ import keystone.core.modules.filter.blocks.IBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.sound.SoundManager;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.registry.RegistryEntryList;
-
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -139,24 +138,24 @@ public class BlockGridWidget extends ClickableWidget
 
     //region Widget Overrides
     @Override
-    public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         // If more buttons than can fit, draw scrollbar
         if (blockCount > buttonsInPanel)
         {
-            fill(stack, x + width, y, x + width + 4, y + height, 0x80000000);
+            context.fill(getX() + width, getY(), getX() + width + 4, getY() + height, 0x80000000);
 
             double rows = Math.ceil(blockCount / (double)buttonsPerRow);
             double normalizedStart = scrollOffset / rows;
             double normalizedEnd = normalizedStart + buttonsPerColumn / rows;
-            int handleStart = (int)Math.floor(y + normalizedStart * height);
-            int handleEnd = (int)Math.ceil(y + normalizedEnd * height);
-            fill(stack, x + width + 2, handleStart, x + width + 4, handleEnd, 0xFF808080);
+            int handleStart = (int)Math.floor(getY() + normalizedStart * height);
+            int handleEnd = (int)Math.ceil(getY() + normalizedEnd * height);
+            context.fill(getX() + width + 2, handleStart, getX() + width + 4, handleEnd, 0xFF808080);
         }
 
         // Draw button panel
-        fill(stack, x, y, x + width, y + height, 0x80000000);
-        for (ClickableWidget button : this.buttons) button.render(stack, mouseX, mouseY, partialTicks);
+        context.fill(getX(), getY(), getX() + width, getY() + height, 0x80000000);
+        for (ClickableWidget button : this.buttons) button.render(context, mouseX, mouseY, partialTicks);
     }
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button)
@@ -171,16 +170,16 @@ public class BlockGridWidget extends ClickableWidget
         return false;
     }
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount)
     {
-        if (isHovered())
+        if (isSelected())
         {
             // Try to scroll buttons
-            for (BlockGridButton blockButton : buttons) if (blockButton.mouseScrolled(mouseX, mouseY, delta)) return true;
+            for (BlockGridButton blockButton : buttons) if (blockButton.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) return true;
     
             // Scroll panel
             int rows = (int)Math.ceil(blockCount / (double)buttonsPerRow);
-            scrollOffset -= delta;
+            scrollOffset -= verticalAmount;
             if (scrollOffset < 0) scrollOffset = 0;
             else if (scrollOffset + buttonsPerColumn > rows) scrollOffset = rows - buttonsPerColumn;
             rebuildButtons();
@@ -191,7 +190,7 @@ public class BlockGridWidget extends ClickableWidget
     @Override
     public void playDownSound(SoundManager manager) {}
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder)
+    public void appendClickableNarrations(NarrationMessageBuilder builder)
     {
 
     }

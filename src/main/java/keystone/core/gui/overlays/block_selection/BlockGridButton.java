@@ -2,6 +2,7 @@ package keystone.core.gui.overlays.block_selection;
 
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.modules.filter.blocks.IBlockProvider;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
 import org.lwjgl.glfw.GLFW;
@@ -60,11 +61,11 @@ public class BlockGridButton extends AbstractBlockButton
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         active = parent.active;
         visible = parent.visible;
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        super.render(context, mouseX, mouseY, partialTicks);
     }
 
     @Override
@@ -79,9 +80,9 @@ public class BlockGridButton extends AbstractBlockButton
         else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) rightClickConsumer.accept(this, button, getBlockProvider());
     }
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount)
     {
-        if (active && visible && isHovered()) return scrollConsumer.accept(this, delta);
+        if (active && visible && isSelected()) return scrollConsumer.accept(this, verticalAmount);
         return false;
     }
 }

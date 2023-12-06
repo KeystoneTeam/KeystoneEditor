@@ -16,6 +16,7 @@ import keystone.core.gui.widgets.inputs.IntegerWidget;
 import keystone.core.modules.hotkeys.HotkeySet;
 import keystone.core.modules.schematic_import.ImportBoundingBox;
 import keystone.core.modules.schematic_import.ImportModule;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.CheckboxWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -104,12 +105,12 @@ public class ImportScreen extends KeystonePanel
         SimpleButton mirrorButton = createButton(y, "keystone.schematic_import.mirror", this::mirrorButton);
         rotateButton.setWidth(Math.max(rotateButton.getWidth(), mirrorButton.getWidth()));
         mirrorButton.setWidth(Math.max(rotateButton.getWidth(), mirrorButton.getWidth()));
-        mirrorButton.x += rotateButton.getWidth() + PADDING;
+        mirrorButton.setX(mirrorButton.getX() + rotateButton.getWidth() + PADDING);
         int idealWidth = 2 * (PADDING + rotateButton.getWidth()) - PADDING + 2 * MARGINS;
         y += BUTTON_HEIGHT + PADDING;
 
         nudgeImports = createNudgeButton(y, this::nudgeButton);
-        nudgeImports.x = (idealWidth - nudgeImports.getWidth()) / 2;
+        nudgeImports.setX((idealWidth - nudgeImports.getWidth()) / 2);
         y += BUTTON_HEIGHT + PADDING + OPTIONS_PADDING;
 
         addDrawableChild(rotateButton);
@@ -125,13 +126,13 @@ public class ImportScreen extends KeystonePanel
                 importModule.setScaleAll(value);
                 return true;
             }
-        }.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.schematic_import.scale.tooltip")));
+        }.setTooltip(IKeystoneTooltip.createSimple(Text.translatable("keystone.schematic_import.scale.tooltip")));
         y += scale.getHeight() + PADDING;
         addDrawableChild(scale);
     
         // Copy Air Field
         copyAir = new BooleanWidget(x, y, getViewport().getWidth() - 2 * MARGINS, 20, Text.translatable("keystone.clone.copyAir"), true, true);
-        copyAir.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.clone.copyAir.tooltip")));
+        copyAir.setTooltip(IKeystoneTooltip.createSimple(Text.translatable("keystone.clone.copyAir.tooltip")));
         y += copyAir.getHeight() + PADDING;
         addDrawableChild(copyAir);
 
@@ -145,9 +146,9 @@ public class ImportScreen extends KeystonePanel
             extensionOptions.add(extensionOption);
         }
 
-        rotateButton.x += (getViewport().getWidth() - idealWidth) / 2;
-        mirrorButton.x += (getViewport().getWidth() - idealWidth) / 2;
-        nudgeImports.x += (getViewport().getWidth() - idealWidth) / 2;
+        rotateButton.setX(rotateButton.getX() + (getViewport().getWidth() - idealWidth) / 2);
+        mirrorButton.setX(mirrorButton.getX() + (getViewport().getWidth() - idealWidth) / 2);
+        nudgeImports.setX(nudgeImports.getX() + (getViewport().getWidth() - idealWidth) / 2);
         for (CheckboxWidget extensionOption : extensionOptions)
         {
             extensionOption.setWidth(getViewport().getWidth() - 2);
@@ -156,14 +157,14 @@ public class ImportScreen extends KeystonePanel
 
         y += OPTIONS_PADDING;
         SimpleButton importButton = createButton(y, "keystone.schematic_import.import", this::importButton);
-        importButton.x = (getViewport().getWidth() - importButton.getWidth()) / 2;
+        importButton.setX((getViewport().getWidth() - importButton.getWidth()) / 2);
         addDrawableChild(importButton);
     }
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        fillPanel(matrixStack, 0x80000000);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        fillPanel(context, 0x80000000);
+        super.render(context, mouseX, mouseY, partialTicks);
     }
     @Override
     public void tick()
@@ -206,11 +207,10 @@ public class ImportScreen extends KeystonePanel
     private SimpleButton createButton(int y, String translationKey, ButtonWidget.PressAction pressable)
     {
         Text label = Text.translatable(translationKey);
-        List<Text> tooltip = new ArrayList<>();
-        tooltip.add(Text.translatable(translationKey + ".tooltip"));
+        Text tooltip = Text.translatable(translationKey + ".tooltip");
 
         int buttonWidth = 2 * PADDING + textRenderer.getWidth(label.getString());
-        return new SimpleButton(getViewport().getMinX() + MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, (stack, mouseX, mouseY, partialTicks) -> renderTooltip(stack, tooltip, mouseX, mouseY));
+        return new SimpleButton(getViewport().getMinX() + MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, IKeystoneTooltip.createSimple(tooltip));
     }
     private CheckboxWidget createExtensionOption(int y, Identifier extensionID)
     {
@@ -223,7 +223,7 @@ public class ImportScreen extends KeystonePanel
                 super.onPress();
                 extensionsToPlace.put(extensionID, isChecked());
             }
-        }.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable(translationKey + ".tooltip")));
+        }.setTooltip(IKeystoneTooltip.createSimple(Text.translatable(translationKey + ".tooltip")));
     }
     //endregion
     //region Button Callbacks

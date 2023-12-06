@@ -82,7 +82,7 @@ public class WorldHighlightModule implements IKeystoneModule
                 if (entity != null && !entity.getUuid().equals(MinecraftClient.getInstance().cameraEntity.getUuid()))
                 {
                     Box box = entity.getBoundingBox();
-                    if (box.getXLength() == 0 && box.getYLength() == 0 && box.getZLength() == 0)
+                    if (box.getLengthX() == 0 && box.getLengthY() == 0 && box.getLengthZ() == 0)
                     {
                         box = box.expand(-0.125, -0.125, -0.125);
                         this.renderer.drawMode(ComplexOverlayRenderer.DrawMode.FILL).drawCuboid(box, specialEntityFill);

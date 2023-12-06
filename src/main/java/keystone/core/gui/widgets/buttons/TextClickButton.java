@@ -3,7 +3,7 @@ package keystone.core.gui.widgets.buttons;
 import keystone.core.gui.IKeystoneTooltip;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 
 public class TextClickButton extends ButtonNoHotkey
@@ -23,8 +23,8 @@ public class TextClickButton extends ButtonNoHotkey
     }
 
     @Override
-    public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        drawTextWithShadow(stack, textRenderer, getMessage(), x, y, color);
+        context.drawTextWithShadow(textRenderer, getMessage(), getX(), getY(), color);
     }
 }

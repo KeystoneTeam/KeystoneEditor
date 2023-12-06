@@ -17,6 +17,7 @@ import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.BlockMaskWidget;
 import keystone.core.gui.widgets.inputs.BlockPaletteWidget;
 import keystone.core.modules.hotkeys.HotkeySet;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -115,8 +116,8 @@ public class FillAndReplaceScreen extends KeystonePanel
         palette = new BlockPaletteWidget(Text.translatable("keystone.fill.palette"), PADDING, y, width, previousPalette);
         y += palette.getHeight() + PADDING;
 
-        mask.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.fill.mask.tooltip")));
-        palette.setTooltip(IKeystoneTooltip.createSimple(this, Text.translatable("keystone.fill.palette.tooltip")));
+        mask.setTooltip(IKeystoneTooltip.createSimple(Text.translatable("keystone.fill.mask.tooltip")));
+        palette.setTooltip(IKeystoneTooltip.createSimple(Text.translatable("keystone.fill.palette.tooltip")));
 
         int buttonWidth = (getViewport().getWidth() - 3 * PADDING) >> 1;
         ButtonNoHotkey fillButton = new ButtonNoHotkey(PADDING, y, buttonWidth, 20, Text.translatable("keystone.fill.fill"), this::fillButton);
@@ -137,10 +138,10 @@ public class FillAndReplaceScreen extends KeystonePanel
     }
     
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        fillPanel(matrixStack, 0x80000000);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        fillPanel(context, 0x80000000);
+        super.render(context, mouseX, mouseY, partialTicks);
     }
 
     private void fillButton(ButtonWidget button)

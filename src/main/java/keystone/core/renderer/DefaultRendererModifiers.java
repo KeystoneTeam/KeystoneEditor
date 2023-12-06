@@ -14,7 +14,7 @@ public class DefaultRendererModifiers
         @Override
         public void enable()
         {
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
             RenderSystem.disableTexture();
         }
 
@@ -29,7 +29,7 @@ public class DefaultRendererModifiers
         @Override
         public void enable()
         {
-            RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
+            RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
             RenderSystem.disableTexture();
         }
 

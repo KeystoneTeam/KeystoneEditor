@@ -59,13 +59,13 @@ public class FloatFieldWidget extends ParsableTextFieldWidget<Float>
     }
     
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount)
     {
-        if (isHovered() && active && Screen.hasControlDown())
+        if (isSelected() && active && Screen.hasControlDown())
         {
             float step = range != null ? range.scrollStep() : 1;
             if (displayModifiers != null) step /= displayModifiers.numberScale();
-            setTypedValue(getTypedValue() + (float)delta * step);
+            setTypedValue(getTypedValue() + (float)verticalAmount * step);
             return true;
         }
         return false;

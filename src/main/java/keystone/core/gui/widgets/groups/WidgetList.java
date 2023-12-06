@@ -2,6 +2,7 @@ package keystone.core.gui.widgets.groups;
 
 import keystone.core.gui.widgets.ITickableWidget;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.ParentElement;
 import net.minecraft.client.gui.screen.Screen;
@@ -12,6 +13,7 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +38,10 @@ public class WidgetList extends ClickableWidget implements ParentElement, ITicka
     @Nullable @Override public Element getFocused() { return this.focused; }
     @Override public void setFocused(@Nullable Element focused) { this.focused = (ClickableWidget)focused; }
     
+    
+    
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder)
+    public void appendClickableNarrations(NarrationMessageBuilder builder)
     {
         Screen.SelectedElementNarrationData selectedElementNarrationData = Screen.findSelectedElementData(children, this.focused);
         if (selectedElementNarrationData != null)
@@ -51,13 +55,14 @@ public class WidgetList extends ClickableWidget implements ParentElement, ITicka
         }
     }
     
-    @Override
-    public boolean changeFocus(boolean lookForwards)
-    {
-        boolean successful = super.changeFocus(lookForwards);
-        while (successful && getFocused() instanceof FieldWidgetList.HeaderWidget) successful = changeFocus(lookForwards);
-        return successful;
-    }
+    // TODO: Figure out how to reimplement this
+    //@Override
+    //public boolean changeFocus(boolean lookForwards)
+    //{
+    //    boolean successful = super.changeFocus(lookForwards);
+    //    while (successful && getFocused() instanceof FieldWidgetList.HeaderWidget) successful = changeFocus(lookForwards);
+    //    return successful;
+    //}
     //endregion
     //region ITickableWidget Implementation
     @Override
@@ -65,20 +70,22 @@ public class WidgetList extends ClickableWidget implements ParentElement, ITicka
     {
         for (Element widget : children)
         {
-            if (widget instanceof TextFieldWidget textField) textField.tick();
-            else if (widget instanceof ITickableWidget tickable) tickable.tick();
+            if (widget instanceof ITickableWidget tickable) tickable.tick();
         }
     }
     //endregion
     //region Widget Overrides
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta)
+    public void render(DrawContext context, int mouseX, int mouseY, float delta)
     {
         if (visible)
         {
-            for (ClickableWidget child : children) child.render(matrices, mouseX, mouseY, delta);
+            for (ClickableWidget child : children) child.render(context, mouseX, mouseY, delta);
         }
     }
+    
+    @Override
+    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) { }
     
     @Override
     public boolean isMouseOver(double mouseX, double mouseY)
@@ -110,9 +117,9 @@ public class WidgetList extends ClickableWidget implements ParentElement, ITicka
     }
     
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount)
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount)
     {
-        if (active && visible) return ParentElement.super.mouseScrolled(mouseX, mouseY, amount);
+        if (active && visible) return ParentElement.super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         return false;
     }
     

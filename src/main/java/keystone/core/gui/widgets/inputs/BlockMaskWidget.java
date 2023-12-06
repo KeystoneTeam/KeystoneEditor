@@ -7,6 +7,7 @@ import keystone.core.gui.overlays.block_selection.BlockMaskEditScreen;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -56,28 +57,28 @@ public class BlockMaskWidget extends ButtonNoHotkey
         return getFinalHeight();
     }
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        int y = this.y + getMaskOffset();
-        drawCenteredText(matrixStack, font, getMessage(), x + width / 2, y - getMaskOffset(), 0xFFFFFF);
-        fill(matrixStack, x, y, x + width, y + height - getMaskOffset(), 0x80FFFFFF);
+        int y = this.getY() + getMaskOffset();
+        context.drawCenteredTextWithShadow(font, getMessage(), getX() + width / 2, y - getMaskOffset(), 0xFFFFFF);
+        context.fill(getX(), y, getX() + width, y + height - getMaskOffset(), 0x80FFFFFF);
 
-        if (mask.isBlacklist()) fill(matrixStack, x + width - 4, y, x + width, y + 4, 0xFF000000);
-        else fill(matrixStack, x + width - 4, y, x + width, y + 4, 0xFFFFFFFF);
+        if (mask.isBlacklist()) context.fill(getX() + width - 4, y, getX() + width, y + 4, 0xFF000000);
+        else context.fill(getX() + width - 4, y, getX() + width, y + 4, 0xFFFFFFFF);
         
         // Render IBlockProvider Displays
-        AtomicInteger x = new AtomicInteger(this.x + 1);
+        AtomicInteger x = new AtomicInteger(this.getX() + 1);
         this.mask.forEach(variant ->
         {
-            KeystoneOverlay.drawItem(this, mc, variant.getDisplayItem(), x.get(), y + 1);
+            KeystoneOverlay.drawItem(context, variant.getDisplayItem(), x.get(), y + 1);
             x.addAndGet(20);
         }, anyVariant ->
         {
-            KeystoneOverlay.drawItem(this, mc, anyVariant.getDisplayItem(), x.get(), y + 1);
+            KeystoneOverlay.drawItem(context, anyVariant.getDisplayItem(), x.get(), y + 1);
             x.addAndGet(20);
         });
         
-        renderTooltip(matrixStack, mouseX, mouseY);
+        renderTooltip(context, mouseX, mouseY);
     }
 
     public BlockMask getMask() { return mask; }

@@ -1,21 +1,27 @@
 package keystone.core.gui;
 
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 public interface IKeystoneTooltip
 {
-    void render(MatrixStack matrices, int mouseX, int mouseY, float partialTicks);
+    void render(DrawContext context, TextRenderer textRenderer, int mouseX, int mouseY, float partialTicks);
     
-    static IKeystoneTooltip createSimple(Screen screen, Text text)
+    static IKeystoneTooltip createSimple(Text text)
     {
-        return (matrices, mouseX, mouseY, partialTicks) -> screen.renderTooltip(matrices, text, mouseX, mouseY);
+        return (context, textRenderer, mouseX, mouseY, partialTicks) -> context.drawTooltip(textRenderer, text, mouseX, mouseY);
     }
-    static IKeystoneTooltip createSimple(Screen screen, Supplier<Text> textSupplier)
+    static IKeystoneTooltip createSimple(List<Text> text)
     {
-        return (matrices, mouseX, mouseY, partialTicks) -> screen.renderTooltip(matrices, textSupplier.get(), mouseX, mouseY);
+        return (context, textRenderer, mouseX, mouseY, partialTicks) -> context.drawTooltip(textRenderer, text, mouseX, mouseY);
+    }
+    static IKeystoneTooltip createSimple(Supplier<Text> textSupplier)
+    {
+        return (context, textRenderer, mouseX, mouseY, partialTicks) -> context.drawTooltip(textRenderer, textSupplier.get(), mouseX, mouseY);
     }
 }

@@ -3,6 +3,7 @@ package keystone.core.gui.overlays;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.utils.ProgressBar;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -64,15 +65,15 @@ public class ProgressBarOverlay extends KeystoneOverlay
         }
     }
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        fill(matrixStack, minX - 1, panelMinY, maxX + 1, panelMaxY, 0xFF404040);
+        context.fill(minX - 1, panelMinY, maxX + 1, panelMaxY, 0xFF404040);
         int fillMaxX = minX + (int)(ProgressBar.getCurrentProgress() * WIDTH);
-        fill(matrixStack, minX, minY, fillMaxX, maxY, 0xFFFFFF00);
+        context.fill(minX, minY, fillMaxX, maxY, 0xFFFFFF00);
 
         String string = ProgressBar.getIterations() > 1 ? barTitle + " (" + ProgressBar.getCompletedIterations() + "/" + ProgressBar.getIterations() + ")" : barTitle;
-        drawCenteredText(matrixStack, textRenderer, string, centerX, centerY - (HEIGHT >> 1) - 11, 0xFFFFFF00);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        context.drawCenteredTextWithShadow(textRenderer, string, centerX, centerY - (HEIGHT >> 1) - 11, 0xFFFFFF00);
+        super.render(context, mouseX, mouseY, partialTicks);
 
         if (ProgressBar.isFinished()) close();
     }

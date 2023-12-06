@@ -14,7 +14,7 @@ public class TemplateBuffer
     public TemplateBuffer(BufferBuilder buf)
     {
         BufferBuilder.BuiltBuffer state = buf.end();
-        BufferBuilder.DrawArrayParameters parameters = state.getParameters();
+        BufferBuilder.DrawParameters parameters = state.getParameters();
         // TODO: Check if this is the right buffer to get, and if I need to do anything with the index buffer
         ByteBuffer rendered = state.getVertexBuffer();
 

@@ -8,6 +8,7 @@ import keystone.core.gui.widgets.groups.Margins;
 import keystone.core.gui.widgets.groups.VerticalLayoutGroup;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -41,17 +42,17 @@ public class Dropdown<T> extends VerticalLayoutGroup implements ILocationObserva
         }
 
         @Override
-        public void renderButton(MatrixStack stack, int mouseX, int mouseY, float delta)
+        public void renderButton(DrawContext context, int mouseX, int mouseY, float delta)
         {
             Text label = getMessage();
 
             int fillColor = 0x404040;
             int textColor = (label.getStyle().getColor() != null) ? label.getStyle().getColor().getRgb() : 0xFFFFFFFF;
             
-            if (isHovered()) fillColor *= 2;
+            if (isSelected()) fillColor *= 2;
             
-            fill(stack, this.x, this.y, this.x + this.width, this.y + 12, 0xFF000000 | fillColor);
-            font.draw(stack, label.getString(), this.x + 2, this.y + 3, textColor);
+            context.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + 12, 0xFF000000 | fillColor);
+            context.drawText(font, label, getX() + 2, getY() + 3, textColor, false);
         }
     }
 
@@ -77,15 +78,17 @@ public class Dropdown<T> extends VerticalLayoutGroup implements ILocationObserva
     }
     
     @Override
-    protected void prepareRender(MatrixStack matrices, int mouseX, int mouseY, float delta)
+    protected void prepareRender(DrawContext context, int mouseX, int mouseY, float delta)
     {
-        matrices.translate(0, 0, 200);
+        context.getMatrices().translate(0, 0, 200);
     }
     @Override
-    protected void renderBackground(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+    protected void renderBackground(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        fill(stack, this.x, this.y, this.x + width, this.y + this.height + 2, 0xFFFFFFFF);
+        context.fill(this.getX(), this.getY(), this.getX() + width, this.getY() + this.height + 2, 0xFFFFFFFF);
     }
+    
+    
     @Override
     public void onLocationChanged(int x, int y, int width, int height)
     {

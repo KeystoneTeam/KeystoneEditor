@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.ParentElement;
 import net.minecraft.client.gui.screen.Screen;
@@ -148,7 +149,7 @@ public class KeystoneOverlayHandler
             MinecraftClient mc = MinecraftClient.getInstance();
             double mouseX = mc.mouse.getX() * mc.getWindow().getScaledWidth() / mc.getWindow().getWidth();
             double mouseY = mc.mouse.getY() * mc.getWindow().getScaledHeight() / mc.getWindow().getHeight();
-            mouseScrolled(mouseX, mouseY, offsetY);
+            mouseScrolled(mouseX, mouseY, offsetX, offsetY);
         }
     }
     public static void mouseDragged(int button, double mouseX, double mouseY, double dragX, double dragY, boolean gui)
@@ -182,7 +183,7 @@ public class KeystoneOverlayHandler
         addList.forEach(screen -> screen.resize(minecraft, width, height));
         overlays.forEach(screen -> screen.resize(minecraft, width, height));
     }
-    public static void render(MatrixStack matrixStack, float partialTicks)
+    public static void render(DrawContext context, float partialTicks)
     {
         MinecraftClient mc = MinecraftClient.getInstance();
         int mouseX = (int)(mc.mouse.getX() * mc.getWindow().getScaledWidth() / mc.getWindow().getWidth());
@@ -201,28 +202,28 @@ public class KeystoneOverlayHandler
                 {
                     if (MinecraftClient.getInstance().currentScreen != null && i > 0) continue;
         
-                    matrixStack.push();
-                    matrixStack.translate(0, 0, i * 55);
+                    context.getMatrices().push();
+                    context.getMatrices().translate(0, 0, i * 55);
         
                     Screen screen = overlays.get(i);
-                    screen.render(matrixStack, mouseX, mouseY, partialTicks);
+                    screen.render(context, mouseX, mouseY, partialTicks);
 
-                    matrixStack.pop();
+                    context.getMatrices().pop();
                 }
     
                 // Render tooltips
-                matrixStack.push();
-                matrixStack.translate(0, 0, overlays.size() * 55);
+                context.getMatrices().push();
+                context.getMatrices().translate(0, 0, overlays.size() * 55);
                 IKeystoneTooltip tooltip = tooltips.poll();
                 while (tooltip != null)
                 {
-                    tooltip.render(matrixStack, mouseX, mouseY, partialTicks);
+                    tooltip.render(context, mc.textRenderer, mouseX, mouseY, partialTicks);
                     tooltip = tooltips.poll();
                 }
-                matrixStack.pop();
+                context.getMatrices().pop();
             }
 
-            removeList.forEach(remove -> overlays.remove(remove));
+            removeList.forEach(overlays::remove);
             removeList.clear();
             rendering = false;
         }
@@ -283,14 +284,14 @@ public class KeystoneOverlayHandler
         }
         return false;
     }
-    private static boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    private static boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount)
     {
         if (MinecraftClient.getInstance().currentScreen != null) return false;
 
         for (int i = overlays.size() - 1; i >= 0; i--)
         {
             Screen screen = overlays.get(i);
-            if (screen.mouseScrolled(mouseX, mouseY, delta)) return true;
+            if (screen.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) return true;
         }
         return false;
     }

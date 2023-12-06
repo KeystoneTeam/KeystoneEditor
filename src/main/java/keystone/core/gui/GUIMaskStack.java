@@ -2,7 +2,7 @@ package keystone.core.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.Keystone;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import org.lwjgl.opengl.GL11;
 
@@ -12,7 +12,7 @@ import java.util.Stack;
 
 public final class GUIMaskStack
 {
-    private record MaskBox(MatrixStack stack, int x, int y, int width, int height) { }
+    private record MaskBox(DrawContext context, int x, int y, int width, int height) { }
     
     private static final Stack<List<MaskBox>> masks = new Stack<>();
     
@@ -28,7 +28,7 @@ public final class GUIMaskStack
         recreateScissorBuffer();
     }
     
-    public static void addMaskBox(MatrixStack stack, int x, int y, int width, int height)
+    public static void addMaskBox(DrawContext context, int x, int y, int width, int height)
     {
         if (masks.size() == 0)
         {
@@ -36,7 +36,7 @@ public final class GUIMaskStack
             push(true);
         }
         
-        MaskBox maskBox = new MaskBox(stack, x, y, width, height);
+        MaskBox maskBox = new MaskBox(context, x, y, width, height);
         masks.peek().add(maskBox);
         recreateScissorBuffer();
     }
@@ -56,7 +56,7 @@ public final class GUIMaskStack
             RenderSystem.colorMask(false, false, false, false);
             RenderSystem.depthMask(false);
             
-            for (MaskBox mask : maskFrame) DrawableHelper.fill(mask.stack, mask.x, mask.y, mask.x + mask.width, mask.y + mask.height, 0xFFFFFFFF);
+            for (MaskBox mask : maskFrame) mask.context.fill(mask.x, mask.y, mask.x + mask.width, mask.y + mask.height, 0xFFFFFFFF);
             
             RenderSystem.depthMask(true);
             RenderSystem.colorMask(true, true, true, true);

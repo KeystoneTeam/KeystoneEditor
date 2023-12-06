@@ -3,6 +3,7 @@ package keystone.core.gui.hotbar;
 import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
@@ -45,33 +46,32 @@ public class HotbarButton extends ButtonNoHotkey
     }
 
     @Override
-    public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         if (active)
         {
             if (enabledSupplier.get())
             {
-                if (isHovered())
+                if (isSelected())
                 {
-                    colorSlot(stack, 0x80FFFFFF);
-                    renderTooltip(stack, mouseX, mouseY);
+                    colorSlot(context, 0x80FFFFFF);
+                    renderTooltip(context, mouseX, mouseY);
                 }
                 if (KeystoneHotbar.getSelectedSlot() == slot)
                 {
-                    RenderSystem.setShaderTexture(0, selectionTexture);
-                    drawTexture(stack, unscaledX - 4, unscaledY - 4, 24, 24, 0, 22, 24, 24, 256, 256);
+                    context.drawTexture(selectionTexture, unscaledX - 4, unscaledY - 4, 24, 24, 0, 22, 24, 24, 256, 256);
                 }
             }
-            else colorSlot(stack, 0x80FF0000);
+            else colorSlot(context, 0x80FF0000);
         }
     }
     @Override
-    public boolean isHovered() { return hovered && enabledSupplier.get(); }
+    public boolean isSelected() { return hovered && enabledSupplier.get(); }
 
     public KeystoneHotbarSlot getSlot() { return slot; }
 
-    public void colorSlot(MatrixStack stack, int color)
+    public void colorSlot(DrawContext context, int color)
     {
-        fill(stack, unscaledX, unscaledY, unscaledX + 16, unscaledY + 16, color);
+        context.fill(unscaledX, unscaledY, unscaledX + 16, unscaledY + 16, color);
     }
 }

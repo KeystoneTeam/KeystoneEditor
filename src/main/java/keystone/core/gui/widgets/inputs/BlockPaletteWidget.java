@@ -7,6 +7,7 @@ import keystone.core.gui.overlays.block_selection.BlockPaletteEditScreen;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
@@ -57,24 +58,24 @@ public class BlockPaletteWidget extends ButtonNoHotkey
         return getFinalHeight();
     }
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        int y = this.y + getPaletteOffset();
+        int y = this.getY() + getPaletteOffset();
 
-        drawCenteredText(matrixStack, font, getMessage(), x + width / 2, y - getPaletteOffset(), 0xFFFFFF);
-        fill(matrixStack, x, y, x + width, y + height - getPaletteOffset(), 0x80FFFFFF);
+        context.drawCenteredTextWithShadow(font, getMessage(), getX() + width / 2, y - getPaletteOffset(), 0xFFFFFF);
+        context.fill(getX(), y, getX() + width, y + height - getPaletteOffset(), 0x80FFFFFF);
 
         // Render IBlockProvider Displays
-        AtomicInteger x = new AtomicInteger(this.x + 1);
+        AtomicInteger x = new AtomicInteger(this.getX() + 1);
         this.palette.forEach(((provider, integer) ->
         {
             ItemStack display = provider.getDisplayItem();
             display.setCount(integer);
-            KeystoneOverlay.drawItem(this, mc, display, x.get(), y + 1);
+            KeystoneOverlay.drawItem(context, display, x.get(), y + 1);
             x.addAndGet(20);
         }));
     
-        renderTooltip(matrixStack, mouseX, mouseY);
+        renderTooltip(context, mouseX, mouseY);
     }
     
     public BlockPalette getPalette() { return palette; }

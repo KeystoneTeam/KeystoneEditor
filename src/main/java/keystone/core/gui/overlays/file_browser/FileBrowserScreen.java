@@ -2,9 +2,9 @@ package keystone.core.gui.overlays.file_browser;
 
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.buttons.SimpleButton;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.apache.commons.io.FilenameUtils;
 
@@ -76,8 +76,8 @@ public abstract class FileBrowserScreen extends Screen
             }
             else
             {
-                this.x = panelX + MARGINS;
-                this.y = panelY + MARGINS + (index - minIndex) * (BUTTON_HEIGHT + PADDING);
+                this.setX(panelX + MARGINS);
+                this.setY(panelY + MARGINS + (index - minIndex) * (BUTTON_HEIGHT + PADDING));
                 this.active = true;
                 this.visible = true;
             }
@@ -98,12 +98,13 @@ public abstract class FileBrowserScreen extends Screen
             this.path = Text.literal(parent.path + "/" + file.getName());
         }
 
-        @Override
-        protected int getYImage(boolean hovered)
-        {
-            hovered = hovered || selected;
-            return super.getYImage(hovered);
-        }
+        // TODO: Figure out what this is and if it needs to be replaced
+        //@Override
+        //protected int getYImage(boolean hovered)
+        //{
+        //    hovered = hovered || selected;
+        //    return super.getYImage(hovered);
+        //}
     }
     protected class DirectoryButton extends IndexedButton
     {
@@ -194,26 +195,26 @@ public abstract class FileBrowserScreen extends Screen
     }
 
     @Override
-    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        drawCenteredText(stack, textRenderer, getPromptLabel(), panelX + panelWidth / 2, panelY - 14, 0xFFFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, getPromptLabel(), panelX + panelWidth / 2, panelY - 14, 0xFFFFFFFF);
 
-        fill(stack, panelX, panelY, panelX + panelWidth, panelY + filePanelHeight, 0x80000000);
+        context.fill(panelX, panelY, panelX + panelWidth, panelY + filePanelHeight, 0x80000000);
         if (maxFilesOnScreen < allButtons.size())
         {
             int scrollbarY = panelY + (int)(scroll * (filePanelHeight / (float)allButtons.size()));
             int scrollbarHeight = (int)(maxFilesOnScreen * (filePanelHeight / (float)allButtons.size()));
-            fill(stack, panelX + panelWidth, scrollbarY, panelX + panelWidth + 2, scrollbarY + scrollbarHeight, 0xFF808080);
+            context.fill(panelX + panelWidth, scrollbarY, panelX + panelWidth + 2, scrollbarY + scrollbarHeight, 0xFF808080);
         }
-        super.render(stack, mouseX, mouseY, partialTicks);
+        super.render(context, mouseX, mouseY, partialTicks);
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount)
     {
         if (maxFilesOnScreen < allButtons.size())
         {
-            scroll += (delta < 0) ? 1 : -1;
+            scroll += (verticalAmount < 0) ? 1 : -1;
             int maxScrollSteps = allButtons.size() - maxFilesOnScreen;
             scroll = Math.min(maxScrollSteps, Math.max(0, scroll));
             updateScroll();

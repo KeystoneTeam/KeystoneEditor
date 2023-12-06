@@ -3,6 +3,7 @@ package keystone.core.gui.widgets.buttons;
 import keystone.core.gui.IKeystoneTooltip;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -63,22 +64,22 @@ public class SimpleButton extends ButtonNoHotkey
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         if (active)
         {
-            fill(matrixStack, x, y, x + width, y + height, borderColor);
-            if (buttonColor != borderColor) fill(matrixStack, x + 1, y + 1, x + width - 1, y + height - 1, buttonColor);
-            if (isHovered()) drawCenteredText(matrixStack, textRenderer, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, textColorHovered);
-            else drawCenteredText(matrixStack, textRenderer, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, textColor);
+            context.fill(getX(), getY(), getX() + width, getY() + height, borderColor);
+            if (buttonColor != borderColor) context.fill(getX() + 1, getY() + 1, getX() + width - 1, getY() + height - 1, buttonColor);
+            if (isSelected()) context.drawCenteredTextWithShadow(textRenderer, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, textColorHovered);
+            else context.drawCenteredTextWithShadow(textRenderer, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, textColor);
         }
         else
         {
-            fill(matrixStack, x, y, x + width, y + height, borderColor);
-            if (buttonColor != borderColor) fill(matrixStack, x + 1, y + 1, x + width - 1, y + height - 1, buttonColor);
-            drawCenteredText(matrixStack, textRenderer, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, textColorDisabled);
+            context.fill(getX(), getY(), getX() + width, getY() + height, borderColor);
+            if (buttonColor != borderColor) context.fill(getX() + 1, getY() + 1, getX() + width - 1, getY() + height - 1, buttonColor);
+            context.drawCenteredTextWithShadow(textRenderer, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, textColorDisabled);
         }
     
-        renderTooltip(matrixStack, mouseX, mouseY);
+        renderTooltip(context, mouseX, mouseY);
     }
 }

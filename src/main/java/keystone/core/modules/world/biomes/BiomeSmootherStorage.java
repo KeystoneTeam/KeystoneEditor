@@ -4,7 +4,7 @@ import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.WorldHistoryChunk;
-import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.biome.source.BiomeCoords;

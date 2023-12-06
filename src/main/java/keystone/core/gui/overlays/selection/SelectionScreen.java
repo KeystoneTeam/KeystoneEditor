@@ -8,6 +8,7 @@ import keystone.api.tools.DeleteEntitiesTool;
 import keystone.api.tools.FillTool;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
+import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.hotbar.KeystoneHotbar;
 import keystone.core.gui.hotbar.KeystoneHotbarSlot;
@@ -24,6 +25,7 @@ import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -118,7 +120,7 @@ public class SelectionScreen extends KeystoneOverlay
         }
         for (SimpleButton button : buttons)
         {
-            button.x = (panelWidth - textRenderer.getWidth(button.getMessage().getString())) / 2;
+            button.setX((panelWidth - textRenderer.getWidth(button.getMessage().getString())) / 2);
             addDrawableChild(button);
         }
         panelWidth += 2 * (PADDING + MARGINS);
@@ -132,10 +134,10 @@ public class SelectionScreen extends KeystoneOverlay
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        fill(matrixStack, 0, panelMinY, panelWidth, panelMaxY, 0x80000000);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        context.fill(0, panelMinY, panelWidth, panelMaxY, 0x80000000);
+        super.render(context, mouseX, mouseY, partialTicks);
     }
     //endregion
     //region Helpers
@@ -158,12 +160,11 @@ public class SelectionScreen extends KeystoneOverlay
     private SimpleButton createButton(int startY, int index, String translationKey, ButtonWidget.PressAction pressable)
     {
         Text label = Text.translatable(translationKey);
-        List<Text> tooltip = new ArrayList<>();
-        tooltip.add(Text.translatable(translationKey + ".tooltip"));
+        Text tooltip = Text.translatable(translationKey + ".tooltip");
 
         int y = startY + index * (BUTTON_HEIGHT + PADDING);
         int buttonWidth = 2 * PADDING + textRenderer.getWidth(label.getString());
-        return new SimpleButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, (stack, mouseX, mouseY, partialTicks) -> renderTooltip(stack, tooltip, mouseX, mouseY));
+        return new SimpleButton(MARGINS, y, buttonWidth, BUTTON_HEIGHT, label, pressable, IKeystoneTooltip.createSimple(tooltip));
     }
     //endregion
     //region Button Callbacks

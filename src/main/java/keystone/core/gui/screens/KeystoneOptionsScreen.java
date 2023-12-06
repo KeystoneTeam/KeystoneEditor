@@ -5,6 +5,7 @@ import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.inputs.fields.FieldWidgetList;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -48,19 +49,19 @@ public class KeystoneOptionsScreen extends Screen
         addDrawableChild(optionsWidgets);
     }
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta)
+    public void render(DrawContext context, int mouseX, int mouseY, float delta)
     {
         // Draw Background
-        renderBackgroundTexture(0);
-        fill(matrices, 0, optionsViewport.getMinY(), width, optionsViewport.getMaxY(), 0x80000000);
+        renderBackgroundTexture(context);
+        context.fill(0, optionsViewport.getMinY(), width, optionsViewport.getMaxY(), 0x80000000);
         
         // Draw Label
-        matrices.push();
-        matrices.scale(2, 2, 2);
-        drawCenteredText(matrices, textRenderer, getTitle(), width / 4, 6, 0xFFFFFFFF);
-        matrices.pop();
+        context.getMatrices().push();
+        context.getMatrices().scale(2, 2, 2);
+        context.drawCenteredTextWithShadow(textRenderer, getTitle(), width / 4, 6, 0xFFFFFFFF);
+        context.getMatrices().pop();
         
-        super.render(matrices, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta);
     }
     @Override
     public void tick()

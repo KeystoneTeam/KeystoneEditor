@@ -9,12 +9,11 @@ import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.*;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryEntry;
-import net.minecraft.util.registry.RegistryKey;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;

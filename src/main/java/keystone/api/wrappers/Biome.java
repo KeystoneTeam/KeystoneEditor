@@ -1,10 +1,10 @@
 package keystone.api.wrappers;
 
 import keystone.core.mixins.BiomeInvoker;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.RegistryEntry;
 
 /**
  * A wrapper for a Minecraft biome.
@@ -20,7 +20,7 @@ public class Biome
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param minecraftBiome The Minecraft Biome
      */
-    public Biome(net.minecraft.util.registry.RegistryEntry<net.minecraft.world.biome.Biome> minecraftBiome)
+    public Biome(net.minecraft.registry.entry.RegistryEntry<net.minecraft.world.biome.Biome> minecraftBiome)
     {
         this.biome = minecraftBiome;
         this.id = minecraftBiome.getKey().get().getValue();

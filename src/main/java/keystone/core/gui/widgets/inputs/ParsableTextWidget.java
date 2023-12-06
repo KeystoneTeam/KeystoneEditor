@@ -6,6 +6,7 @@ import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -58,29 +59,28 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         // Draw Label
-        drawCenteredText(matrixStack, textRenderer, getMessage(), x + width / 2, y, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, getMessage(), getX() + width / 2, getY(), 0xFFFFFF);
         
         // Offset Position and Size of Text Field
-        x++;
-        y += getFieldOffset();
+        setX(getX() + 1);
+        setY(getY() + getFieldOffset());
         width -= 2;
         height -= getFieldOffset() + 1;
         
         // Render Text Field and Tooltip
-        super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
-        renderTooltip(matrixStack, mouseX, mouseY);
+        super.renderButton(context, mouseX, mouseY, partialTicks);
+        renderTooltip(context, mouseX, mouseY);
         
         // Revert Offset
         height += getFieldOffset() + 1;
         width += 2;
-        y -= getFieldOffset();
-        x--;
+        setY(getY() - getFieldOffset());
+        setX(getX() - 1);
     }
-    @Override
-    public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY)
+    public void renderTooltip(DrawContext context, int mouseX, int mouseY)
     {
         if (this.tooltip != null)
         {
@@ -105,7 +105,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     }
 
     @Override
-    protected void setFocused(boolean focus)
+    public void setFocused(boolean focus)
     {
         if (focus != isFocused())
         {
@@ -113,8 +113,7 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
             onFocusedChanged(focus);
         }
     }
-
-    @Override
+    
     protected void onFocusedChanged(boolean focused)
     {
         if (!focused)
@@ -135,7 +134,6 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
                 setText(displayValue);
             }
         }
-        super.onFocusedChanged(focused);
     }
 
     @Override

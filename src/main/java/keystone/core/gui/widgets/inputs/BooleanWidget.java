@@ -4,6 +4,7 @@ import keystone.core.KeystoneConfig;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.CheckboxWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -26,13 +27,12 @@ public class BooleanWidget extends CheckboxWidget
     public BooleanWidget setTooltipDelay(float delay) { this.tooltipDelay = delay; return this; }
     
     @Override
-    public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta)
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta)
     {
-        super.renderButton(matrices, mouseX, mouseY, delta);
-        renderTooltip(matrices, mouseX, mouseY);
+        super.renderButton(context, mouseX, mouseY, delta);
+        renderTooltip(context, mouseX, mouseY);
     }
-    @Override
-    public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY)
+    public void renderTooltip(DrawContext context, int mouseX, int mouseY)
     {
         if (this.tooltip != null)
         {

@@ -1,6 +1,7 @@
 package keystone.core.gui.screens;
 
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -76,8 +77,8 @@ public class PromptQuestionScreen extends Screen
 
             ButtonWidget button = buttons.get(0);
             button.setWidth(questionWidth >> 1);
-            button.x = questionX + (questionWidth - button.getWidth()) >> 1;
-            button.y = questionY + 14;
+            button.setX(questionX + (questionWidth - button.getWidth()) >> 1);
+            button.setY(questionY + 14);
         }
         else if (buttons.size() == 2)
         {
@@ -85,13 +86,13 @@ public class PromptQuestionScreen extends Screen
 
             ButtonWidget button = buttons.get(0);
             button.setWidth((questionWidth >> 1) - 2);
-            button.x = questionX;
-            button.y = questionY + 14;
+            button.setX(questionX);
+            button.setY(questionY + 14);
 
             button = buttons.get(1);
             button.setWidth((questionWidth >> 1) - 2);
-            button.x = questionX + button.getWidth() + 4;
-            button.y = questionY + 14;
+            button.setX(questionX + button.getWidth() + 4);
+            button.setY(questionY + 14);
         }
         else
         {
@@ -99,26 +100,26 @@ public class PromptQuestionScreen extends Screen
 
             ButtonWidget button = buttons.get(0);
             button.setWidth((questionWidth >> 1) - 2);
-            button.x = questionX;
-            button.y = questionY + 14;
+            button.setX(questionX);
+            button.setY(questionY + 14);
 
             button = buttons.get(1);
             button.setWidth((questionWidth >> 1) - 2);
-            button.x = questionX + button.getWidth() + 4;
-            button.y = questionY + 14;
+            button.setX(questionX + button.getWidth() + 4);
+            button.setY(questionY + 14);
 
             button = buttons.get(2);
             button.setWidth(questionWidth);
-            button.x = questionX;
-            button.y = questionY + 38;
+            button.setX(questionX);
+            button.setY(questionY + 38);
         }
         for (ButtonWidget button : buttons) addDrawableChild(button);
     }
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta)
+    public void render(DrawContext context, int mouseX, int mouseY, float delta)
     {
-        fill(matrices, 0, 0, width, height, 0xB0000000);
-        super.render(matrices, mouseX, mouseY, delta);
-        drawCenteredTextWithShadow(matrices, client.textRenderer, question, width >> 1, questionY, 0xFFFFFFFF);
+        context.fill(0, 0, width, height, 0xB0000000);
+        super.render(context, mouseX, mouseY, delta);
+        context.drawCenteredTextWithShadow(client.textRenderer, question, width >> 1, questionY, 0xFFFFFFFF);
     }
 }

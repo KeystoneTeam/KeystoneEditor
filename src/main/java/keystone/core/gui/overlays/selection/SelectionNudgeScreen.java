@@ -11,6 +11,7 @@ import keystone.core.gui.widgets.buttons.NudgeButton;
 import keystone.core.gui.widgets.buttons.SimpleButton;
 import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -138,18 +139,18 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         addDrawableChild(this.nudgeCorner2);
     }
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         // Update visibility of previous and next box buttons
         this.previousBoxButton.visible = selectionModule.getSelectionBoxCount() > 1;
         this.nextBoxButton.visible = this.previousBoxButton.visible;
 
         // Background
-        fill(matrixStack, x, y, x + panelWidth, y + panelHeight, 0x80000000);
+        context.fill(x, y, x + panelWidth, y + panelHeight, 0x80000000);
 
         // Selected Box Size and Widgets
-        drawCenteredText(matrixStack, textRenderer, boxSize, x + panelWidth / 2, sizeStrY, 0xFFFFFF);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        context.drawCenteredTextWithShadow(textRenderer, boxSize, x + panelWidth / 2, sizeStrY, 0xFFFFFF);
+        super.render(context, mouseX, mouseY, partialTicks);
     }
 
     @Override
@@ -198,13 +199,13 @@ public class SelectionNudgeScreen extends KeystoneOverlay
         if (this.previousBoxButton != null)
         {
             int panelCenter = x + panelWidth / 2;
-            this.previousBoxButton.x = x - MARGINS - 16;
-            this.nextBoxButton.x = x + panelWidth + MARGINS;
-            this.nudgeBox.x = panelCenter - buttonWidth / 2;
+            this.previousBoxButton.setX(x - MARGINS - 16);
+            this.nextBoxButton.setX(x + panelWidth + MARGINS);
+            this.nudgeBox.setX(panelCenter - buttonWidth / 2);
             this.nudgeBox.setWidth(buttonWidth);
-            this.nudgeCorner1.x = panelCenter - PADDING - buttonWidth;
+            this.nudgeCorner1.setX(panelCenter - PADDING - buttonWidth);
             this.nudgeCorner1.setWidth(buttonWidth);
-            this.nudgeCorner2.x = panelCenter + PADDING;
+            this.nudgeCorner2.setX(panelCenter + PADDING);
             this.nudgeCorner2.setWidth(buttonWidth);
         }
     }

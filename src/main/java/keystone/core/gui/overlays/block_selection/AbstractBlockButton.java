@@ -1,13 +1,14 @@
 package keystone.core.gui.overlays.block_selection;
 
+import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.modules.filter.blocks.IBlockProvider;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
@@ -51,18 +52,17 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
     protected abstract void onClicked(int button);
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        if (active && visible && isHovered())
+        if (active && visible && isSelected())
         {
-            MinecraftClient mc = MinecraftClient.getInstance();
-            fill(matrixStack, x, y, x + width, y + height, 0x80FFFFFF);
-            KeystoneOverlayHandler.addTooltip((stack, mX, mY, pT) -> screen.renderTooltip(matrixStack, tooltip, mX, mY));
+            context.fill(getX(), getY(), getX() + width, getY() + height, 0x80FFFFFF);
+            KeystoneOverlayHandler.addTooltip(IKeystoneTooltip.createSimple(tooltip));
         }
         
         ItemStack display = blockProvider.getDisplayItem();
         display.setCount(count);
-        KeystoneOverlay.drawItem(this, mc, display, x + (width - 18) / 2 + 1, y + (height - 18) / 2 + 1);
+        KeystoneOverlay.drawItem(context, display, getX() + (width - 18) / 2 + 1, getY() + (height - 18) / 2 + 1);
     }
 
     @Override

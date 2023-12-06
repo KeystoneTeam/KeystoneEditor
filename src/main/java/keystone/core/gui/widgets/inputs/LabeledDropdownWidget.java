@@ -5,6 +5,7 @@ import keystone.core.gui.WidgetDisabler;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -40,7 +41,7 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
             {
                 searchBar.visible = true;
                 searchBar.active = true;
-                searchBar.setTextFieldFocused(true);
+                searchBar.setFocused(true);
             }
         }
 
@@ -72,7 +73,7 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
         {
             LabeledDropdownWidget<?> widget = (LabeledDropdownWidget<?>)button;
             widget.widgetDisabler.disableAll();
-            widget.dropdown.y = widget.y + widget.getDropdownOffset() + (widget.searchable ? 12 : 20);
+            widget.dropdown.setY(widget.getY() + widget.getDropdownOffset() + (widget.searchable ? 12 : 20));
 
             widget.dropdown.show();
         });
@@ -118,13 +119,13 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
 
             widgetDisabler.restoreAll();
 
-            searchBar = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, x + 1, y + 12, width, 12, Text.translatable("keystone.search"));
+            searchBar = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, getX() + 1, getY() + 12, width, 12, Text.translatable("keystone.search"));
             searchBar.setMaxLength(256);
             searchBar.setDrawsBackground(true);
             searchBar.setText("");
             searchBar.setChangedListener(str -> dropdown.search(option -> option.label().getString().toLowerCase().contains(str.toLowerCase())));
 
-            this.dropdown = new LabeledDropdown(x, y + getDropdownOffset() + (searchable ? 12 : 20), width, getMessage(), optionsList);
+            this.dropdown = new LabeledDropdown(getX(), getY() + getDropdownOffset() + (searchable ? 12 : 20), width, getMessage(), optionsList);
             this.dropdown.setSelectedOption(this.value, false);
             configureDropdown(dropdown);
 
@@ -146,16 +147,16 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
         return getFinalHeight();
     }
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        drawCenteredText(matrixStack, font, name, x + width / 2, y, 0xFFFFFF);
-        matrixStack.push();
-        y += getDropdownOffset();
+        context.drawCenteredTextWithShadow(font, name, getX() + width / 2, getY(), 0xFFFFFF);
+        context.getMatrices().push();
+        setY(getY() + getDropdownOffset());
         height -= getDropdownOffset();
-        super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
+        super.renderButton(context, mouseX, mouseY, partialTicks);
         height += getDropdownOffset();
-        y -= getDropdownOffset();
-        matrixStack.pop();
+        setY(getY() - getDropdownOffset());
+        context.getMatrices().pop();
     }
 
     public T getValue() { return value; }

@@ -9,10 +9,10 @@ import keystone.core.modules.filter.blocks.BlockTypeProvider;
 import keystone.core.modules.filter.blocks.IBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
-import net.minecraft.util.registry.Registry;
 
 public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
 {
@@ -44,27 +44,20 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
     @Override
     protected void init()
     {
-        this.client.keyboard.setRepeatEvents(true);
-
         // Main Panel
         this.panel = createMainPanel();
-        Registry.BLOCK.forEach(block -> this.panel.addBlockProvider(new BlockTypeProvider(BlockTypeRegistry.fromMinecraftBlock(block.getDefaultState())), BlockGridWidget.NAME_TOOLTIP, false));
-        Registry.BLOCK.streamTagsAndEntries().forEach(pair -> this.panel.addBlockProvider(new BlockListProvider(pair.getSecond(), null), BlockGridWidget.NAME_TOOLTIP, false));
+        Registries.BLOCK.forEach(block -> this.panel.addBlockProvider(new BlockTypeProvider(BlockTypeRegistry.fromMinecraftBlock(block.getDefaultState())), BlockGridWidget.NAME_TOOLTIP, false));
+        Registries.BLOCK.streamTagsAndEntries().forEach(pair -> this.panel.addBlockProvider(new BlockListProvider(pair.getSecond(), null), BlockGridWidget.NAME_TOOLTIP, false));
         this.panel.rebuildButtons();
         addDrawableChild(this.panel);
 
-        this.searchBar = new TextFieldWidget(textRenderer, panel.x + 1, panel.y - 13, panel.getWidth() - 1, 12, Text.translatable("keystone.search"));
+        this.searchBar = new TextFieldWidget(textRenderer, panel.getX() + 1, panel.getY() - 13, panel.getWidth() - 1, 12, Text.translatable("keystone.search"));
         this.searchBar.setMaxLength(256);
         this.searchBar.setDrawsBackground(false);
         this.searchBar.setText("");
         this.searchBar.setChangedListener((str) -> this.panel.filter(str));
         addDrawableChild(this.searchBar);
         this.setInitialFocus(this.searchBar);
-    }
-    @Override
-    public void removed()
-    {
-        this.client.keyboard.setRepeatEvents(false);
     }
 
     @Override
@@ -76,12 +69,12 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
     }
 
     @Override
-    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         if (panel.getBlockCount() > panel.getButtonsInPanel()) searchBar.setWidth(panel.getWidth() + 3);
         else searchBar.setWidth(panel.getWidth() - 1);
-        fill(stack, panel.x, panel.y - 14, panel.x + searchBar.getWidth() + 1, panel.y - 2, 0x80000000);
+        context.fill(panel.getX(), panel.getY() - 14, panel.getX() + searchBar.getWidth() + 1, panel.getY() - 2, 0x80000000);
 
-        super.render(stack, mouseX, mouseY, partialTicks);
+        super.render(context, mouseX, mouseY, partialTicks);
     }
 }

@@ -65,7 +65,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         addDrawableChild(maskPanel);
         
         // Blacklist Toggle
-        addDrawableChild(new BooleanWidget(maskPanel.x, maskPanel.y + maskPanel.getHeight() + 5, maskPanel.getWidth(), 20, Text.translatable("keystone.blacklist"), this.mask.isBlacklist(), true)
+        addDrawableChild(new BooleanWidget(maskPanel.getX(), maskPanel.getY() + maskPanel.getHeight() + 5, maskPanel.getWidth(), 20, Text.translatable("keystone.blacklist"), this.mask.isBlacklist(), true)
         {
             @Override
             public void onPress()
@@ -74,16 +74,16 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
                 if (isChecked()) mask.blacklist();
                 else mask.whitelist();
             }
-        }.setTooltip(IKeystoneTooltip.createSimple(this, () -> mask.isBlacklist() ? Text.translatable("keystone.blacklist.tooltip") : Text.translatable("keystone.whitelist.tooltip"))));
+        }.setTooltip(IKeystoneTooltip.createSimple(() -> mask.isBlacklist() ? Text.translatable("keystone.blacklist.tooltip") : Text.translatable("keystone.whitelist.tooltip"))));
         
         // Save and Load Buttons
         int buttonWidth = (maskPanel.getWidth() - 5) / 2;
-        addDrawableChild(new ButtonNoHotkey(maskPanel.x, maskPanel.y + maskPanel.getHeight() + 30, buttonWidth, 20, Text.translatable("keystone.save"), button ->
+        addDrawableChild(new ButtonNoHotkey(maskPanel.getX(), maskPanel.getY() + maskPanel.getHeight() + 30, buttonWidth, 20, Text.translatable("keystone.save"), button ->
         {
             // Save Mask
             SaveFileScreen.saveFile("nbt", KeystoneDirectories.getMasksDirectory(), true, mask::write);
         }));
-        addDrawableChild(new ButtonNoHotkey(maskPanel.x + maskPanel.getWidth() - buttonWidth, maskPanel.y + maskPanel.getHeight() + 30, buttonWidth, 20, Text.translatable("keystone.load"), button ->
+        addDrawableChild(new ButtonNoHotkey(maskPanel.getX() + maskPanel.getWidth() - buttonWidth, maskPanel.getY() + maskPanel.getHeight() + 30, buttonWidth, 20, Text.translatable("keystone.load"), button ->
         {
             // Load Mask
             OpenFilesScreen.openFile(Text.translatable("keystone.load.mask"), Set.of("nbt"), KeystoneDirectories.getMasksDirectory(), true, file ->
@@ -94,7 +94,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         }));
         
         // Done and Cancel Buttons
-        addDrawableChild(new ButtonNoHotkey(maskPanel.x, maskPanel.y + maskPanel.getHeight() + 55, maskPanel.getWidth(), 20, Text.translatable("keystone.done"), button ->
+        addDrawableChild(new ButtonNoHotkey(maskPanel.getX(), maskPanel.getY() + maskPanel.getHeight() + 55, maskPanel.getWidth(), 20, Text.translatable("keystone.done"), button ->
         {
             if (!ranCallback)
             {
@@ -103,7 +103,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
             }
             close();
         }));
-        addDrawableChild(new ButtonNoHotkey(maskPanel.x, maskPanel.y + maskPanel.getHeight() + 80, maskPanel.getWidth(), 20, Text.translatable("keystone.cancel"), button -> close()));
+        addDrawableChild(new ButtonNoHotkey(maskPanel.getX(), maskPanel.getY() + maskPanel.getHeight() + 80, maskPanel.getWidth(), 20, Text.translatable("keystone.cancel"), button -> close()));
     }
 
     @Override

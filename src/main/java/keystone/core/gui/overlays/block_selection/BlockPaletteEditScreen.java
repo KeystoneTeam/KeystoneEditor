@@ -9,7 +9,7 @@ import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
@@ -56,12 +56,12 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
         
         // Add Save and Load Buttons
         int buttonWidth = (palettePanel.getWidth() - 5) / 2;
-        addDrawableChild(new ButtonNoHotkey(palettePanel.x, palettePanel.y + palettePanel.getHeight() + 5, buttonWidth, 20, Text.translatable("keystone.save"), button ->
+        addDrawableChild(new ButtonNoHotkey(palettePanel.getX(), palettePanel.getY() + palettePanel.getHeight() + 5, buttonWidth, 20, Text.translatable("keystone.save"), button ->
         {
             // Save Palette
             SaveFileScreen.saveFile("nbt", KeystoneDirectories.getPalettesDirectory(), true, palette::write);
         }));
-        addDrawableChild(new ButtonNoHotkey(palettePanel.x + palettePanel.getWidth() - buttonWidth, palettePanel.y + palettePanel.getHeight() + 5, buttonWidth, 20, Text.translatable("keystone.load"), button ->
+        addDrawableChild(new ButtonNoHotkey(palettePanel.getX() + palettePanel.getWidth() - buttonWidth, palettePanel.getY() + palettePanel.getHeight() + 5, buttonWidth, 20, Text.translatable("keystone.load"), button ->
         {
             // Load Palette
             OpenFilesScreen.openFile(Text.translatable("keystone.load.palette"), Set.of("nbt"), KeystoneDirectories.getPalettesDirectory(), true, file ->
@@ -73,7 +73,7 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
         
         
         // Done and Cancel Buttons
-        addDrawableChild(new ButtonNoHotkey(palettePanel.x, palettePanel.y + palettePanel.getHeight() + 30, palettePanel.getWidth(), 20, Text.translatable("keystone.done"), button ->
+        addDrawableChild(new ButtonNoHotkey(palettePanel.getX(), palettePanel.getY() + palettePanel.getHeight() + 30, palettePanel.getWidth(), 20, Text.translatable("keystone.done"), button ->
         {
             if (!ranCallback)
             {
@@ -83,12 +83,12 @@ public class BlockPaletteEditScreen extends AbstractBlockSelectionScreen
             close();
         }));
 
-        addDrawableChild(new ButtonNoHotkey(palettePanel.x, palettePanel.y + palettePanel.getHeight() + 55, palettePanel.getWidth(), 20, Text.translatable("keystone.cancel"), button -> close()));
+        addDrawableChild(new ButtonNoHotkey(palettePanel.getX(), palettePanel.getY() + palettePanel.getHeight() + 55, palettePanel.getWidth(), 20, Text.translatable("keystone.cancel"), button -> close()));
     }
     @Override
-    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        super.render(stack, mouseX, mouseY, partialTicks);
+        super.render(context, mouseX, mouseY, partialTicks);
     }
 
     @Override

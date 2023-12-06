@@ -12,10 +12,10 @@ import keystone.core.utils.AnnotationUtils;
 import keystone.core.utils.Result;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -45,20 +45,20 @@ public class FieldWidgetList extends VerticalLayoutGroup implements ITickableWid
         }
 
         @Override
-        public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta)
+        public void renderButton(DrawContext context, int mouseX, int mouseY, float delta)
         {
             if (textWidth > 0)
             {
                 int lineWidth = (width - textWidth) >> 1;
-                fill(matrices, x, y + height - 6, x + lineWidth, y + height - 5, 0xFFFFFFFF);
-                fill(matrices, x + lineWidth + textWidth, y + height - 6, x + width, y + height - 5, 0xFFFFFFFF);
-                drawCenteredText(matrices, textRenderer, getMessage(), x + width / 2, y + height - 10, 0xFFFFFFFF);
+                context.fill(getX(), getY() + height - 6, getX() + lineWidth, getY() + height - 5, 0xFFFFFFFF);
+                context.fill(getX() + lineWidth + textWidth, getY() + height - 6, getX() + width, getY() + height - 5, 0xFFFFFFFF);
+                context.drawCenteredTextWithShadow(textRenderer, getMessage(), getX() + width / 2, getY() + height - 10, 0xFFFFFFFF);
             }
-            else fill(matrices, x, y + height - 6, x + width, y + height - 5, 0xFFFFFFFF);
+            else context.fill(getX(), getY() + height - 6, getX() + width, getY() + height - 5, 0xFFFFFFFF);
         }
 
         @Override
-        public void appendNarrations(NarrationMessageBuilder builder) { }
+        public void appendClickableNarrations(NarrationMessageBuilder builder) { }
     }
     //endregion
 

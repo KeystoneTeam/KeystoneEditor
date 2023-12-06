@@ -3,9 +3,8 @@ package keystone.core.gui.widgets.inputs;
 import keystone.api.wrappers.Biome;
 import keystone.core.utils.WorldRegistries;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
-import net.minecraft.util.registry.Registry;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiConsumer;

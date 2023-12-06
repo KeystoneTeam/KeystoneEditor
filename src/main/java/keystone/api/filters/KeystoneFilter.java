@@ -27,16 +27,15 @@ import keystone.core.utils.WorldRegistries;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.command.CommandRegistryWrapper;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
@@ -422,7 +421,7 @@ public class KeystoneFilter
 
         try
         {
-            ItemStringReader.ItemResult parser = ItemStringReader.item(CommandRegistryWrapper.of(Registry.ITEM), new StringReader(item));
+            ItemStringReader.ItemResult parser = ItemStringReader.item(RegistryWrapper.of(Registry.ITEM), new StringReader(item));
             stack = new ItemStack(parser.item(), 1);
             stack.setNbt(parser.nbt());
         }

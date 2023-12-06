@@ -60,15 +60,15 @@ public class IntegerFieldWidget extends ParsableTextFieldWidget<Integer>
     }
     
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount)
     {
-        if (isHovered() && active && Screen.hasControlDown())
+        if (isSelected() && active && Screen.hasControlDown())
         {
             int step = range != null ? range.scrollStep() : 1;
             if (displayModifiers != null) step /= displayModifiers.numberScale();
 
-            if (delta > 0) setTypedValue(getTypedValue() + step);
-            else if (delta < 0) setTypedValue(getTypedValue() - step);
+            if (verticalAmount > 0) setTypedValue(getTypedValue() + step);
+            else if (verticalAmount < 0) setTypedValue(getTypedValue() - step);
             return true;
         }
         return false;

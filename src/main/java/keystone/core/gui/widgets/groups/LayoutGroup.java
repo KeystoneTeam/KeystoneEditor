@@ -3,6 +3,7 @@ package keystone.core.gui.widgets.groups;
 import keystone.core.DebugFlags;
 import keystone.core.gui.GUIMaskStack;
 import keystone.core.gui.widgets.LocationListener;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -18,7 +19,7 @@ public abstract class LayoutGroup extends WidgetList
     {
         public PinnedLocation(ClickableWidget pinnedWidget, ClickableWidget relativeTo)
         {
-            this(relativeTo, pinnedWidget.x - relativeTo.x, pinnedWidget.y - relativeTo.y);
+            this(relativeTo, pinnedWidget.getX() - relativeTo.getX(), pinnedWidget.getY() - relativeTo.getY());
         }
     }
     
@@ -66,20 +67,20 @@ public abstract class LayoutGroup extends WidgetList
      */
     protected void postBake(List<ClickableWidget> widgets) { }
     
-    protected void prepareRender(MatrixStack matrices, int mouseX, int mouseY, float delta) { }
-    protected void renderBackground(MatrixStack matrices, int mouseX, int mouseY, float delta) { }
-    protected void renderForeground(MatrixStack matrices, int mouseX, int mouseY, float delta) { }
+    protected void prepareRender(DrawContext context, int mouseX, int mouseY, float delta) { }
+    protected void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) { }
+    protected void renderForeground(DrawContext context, int mouseX, int mouseY, float delta) { }
     
-    protected void renderDebug(MatrixStack matrices, int mouseX, int mouseY, float delta)
+    protected void renderDebug(DrawContext context, int mouseX, int mouseY, float delta)
     {
         // Individual Widget Bounds
-        for (ClickableWidget widget : layoutControlled) fill(matrices, widget.x, widget.y, widget.x + widget.getWidth(), widget.y + widget.getHeight(), 0x80FF0000);
+        for (ClickableWidget widget : layoutControlled) context.fill(widget.getX(), widget.getY(), widget.getX() + widget.getWidth(), widget.getY() + widget.getHeight(), 0x80FF0000);
     
         // Display Bounds
-        fill(matrices, x + 2, y, x + width - 2, y + 2, 0x800000FF);
-        fill(matrices, x + width - 2, y, x + width, y + height, 0x800000FF);
-        fill(matrices, x + 2, y + height - 2, x + width - 2, y + height, 0x800000FF);
-        fill(matrices, x, y, x + 2, y + height, 0x800000FF);
+        context.fill(getX() + 2, getY(), getX() + width - 2, getY() + 2, 0x800000FF);
+        context.fill(getX() + width - 2, getY(), getX() + width, getY() + height, 0x800000FF);
+        context.fill(getX() + 2, getY() + height - 2, getX() + width - 2, getY() + height, 0x800000FF);
+        context.fill(getX(), getY(), getX() + 2, getY() + height, 0x800000FF);
     }
     
     //region Layout Application
@@ -105,12 +106,12 @@ public abstract class LayoutGroup extends WidgetList
         // Move widgets to the correct offset
         for (ClickableWidget widget : layoutControlled)
         {
-            widget.x += this.x + margins.left();
-            widget.y += this.y + margins.top();
+            widget.setX(getX() + margins.left());
+            widget.setY(getY() + margins.top());
         
             // Correct the element offsets of any child layout groups
             if (widget instanceof LayoutGroup layoutGroup) layoutGroup.correctOffset();
-            if (widget instanceof LocationListener locationListener) locationListener.onLocationChanged(widget.x, widget.y, widget.getWidth(), widget.getHeight());
+            if (widget instanceof LocationListener locationListener) locationListener.onLocationChanged(widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight());
         }
         
         // Update pin locations
@@ -118,12 +119,12 @@ public abstract class LayoutGroup extends WidgetList
         {
             ClickableWidget pinned = pin.getKey();
             PinnedLocation pinnedLocation = pin.getValue();
-            pinned.x = pinnedLocation.relativeTo.x + pinnedLocation.offsetX;
-            pinned.y = pinnedLocation.relativeTo.y + pinnedLocation.offsetY;
+            pinned.setX(pinnedLocation.relativeTo.getX() + pinnedLocation.offsetX);
+            pinned.setY(pinnedLocation.relativeTo.getY() + pinnedLocation.offsetY);
     
             // Correct the element offsets of any child layout groups
             if (pinned instanceof LayoutGroup layoutGroup) layoutGroup.correctOffset();
-            if (pinned instanceof LocationListener locationListener) locationListener.onLocationChanged(pinned.x, pinned.y, pinned.getWidth(), pinned.getHeight());
+            if (pinned instanceof LocationListener locationListener) locationListener.onLocationChanged(pinned.getX(), pinned.getY(), pinned.getWidth(), pinned.getHeight());
         }
     }
     
@@ -138,8 +139,8 @@ public abstract class LayoutGroup extends WidgetList
     protected int applyLayout(ClickableWidget widget, int x, int y, int width)
     {
         // Apply new position and width
-        widget.x = x;
-        widget.y = y;
+        widget.setX(x);
+        widget.setY(y);
         widget.setWidth(width);
         
         return 0;
@@ -163,46 +164,46 @@ public abstract class LayoutGroup extends WidgetList
     //region Helpers
     public void move(int newX, int newY)
     {
-        this.x = newX;
-        this.y = newY;
+        this.setX(newX);
+        this.setY(newY);
         updateLayout();
     }
     //endregion
     //region WidgetList Overrides
     @Override
-    public final void render(MatrixStack matrices, int mouseX, int mouseY, float delta)
+    public final void render(DrawContext context, int mouseX, int mouseY, float delta)
     {
         if (visible)
         {
             // Prepare Render
-            matrices.push();
-            prepareRender(matrices, mouseX, mouseY, delta);
+            context.getMatrices().push();
+            prepareRender(context, mouseX, mouseY, delta);
     
             // Render Background
             GUIMaskStack.push(true);
-            renderBackground(matrices, mouseX, mouseY, delta);
+            renderBackground(context, mouseX, mouseY, delta);
             GUIMaskStack.pop();
             
             // Start Masking
             if (maskGroup)
             {
                 GUIMaskStack.push(true);
-                GUIMaskStack.addMaskBox(matrices, x + margins.left(), y + margins.top(), width - margins.left() - margins.right(), height);
+                GUIMaskStack.addMaskBox(context, getX() + margins.left(), getY() + margins.top(), width - margins.left() - margins.right(), height);
             }
             
             // Render Widgets
-            for (ClickableWidget widget : layoutControlled) widget.render(matrices, mouseX, mouseY, delta);
-            for (ClickableWidget widget : pinMap.keySet()) if (widget.visible) widget.render(matrices, mouseX, mouseY, delta);
+            for (ClickableWidget widget : layoutControlled) widget.render(context, mouseX, mouseY, delta);
+            for (ClickableWidget widget : pinMap.keySet()) if (widget.visible) widget.render(context, mouseX, mouseY, delta);
             
             // End Masking
             if (maskGroup) GUIMaskStack.pop();
             
             // Render Foreground and Debug
-            renderForeground(matrices, mouseX, mouseY, delta);
-            if (DebugFlags.isFlagSet("debugLayoutGroups")) renderDebug(matrices, mouseX, mouseY, delta);
+            renderForeground(context, mouseX, mouseY, delta);
+            if (DebugFlags.isFlagSet("debugLayoutGroups")) renderDebug(context, mouseX, mouseY, delta);
             
             // Finish Render
-            matrices.pop();
+            context.getMatrices().pop();
         }
     }
     @Override
