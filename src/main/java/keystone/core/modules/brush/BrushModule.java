@@ -136,7 +136,7 @@ public class BrushModule implements IKeystoneModule
     {
         Vec3d center = Vec3d.of(Player.getHighlightedBlock());
         center = center.add(brushSize[0] % 2 == 1 ? 0.5: 0, brushSize[1] % 2 == 1 ? 0.5: 0, brushSize[2] % 2 == 1 ? 0.5: 0);
-        Vec3i centerBlock = new Vec3i(center.x, center.y, center.z);
+        Vec3i centerBlock = new Vec3i((int)center.x, (int)center.y, (int)center.z);
         return brushShape.isPositionInShape(Player.getEyePosition(), centerBlock, brushSize[0], brushSize[1], brushSize[2]);
     }
     @Override

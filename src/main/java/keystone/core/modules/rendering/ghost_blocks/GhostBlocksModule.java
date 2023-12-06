@@ -63,7 +63,8 @@ public class GhostBlocksModule implements IKeystoneModule
             RenderSystem.enablePolygonOffset();
             RenderSystem.polygonOffset(-0.1f, -0.2f);
     
-            RenderSystem.setShader(GameRenderer::getBlockShader);
+            // TODO: Figure out how to replace this
+            //RenderSystem.setShader(GameRenderer::getBlockShader);
             SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();
             ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().render(stack, buffer, context.tickDelta()));
             buffer.draw();

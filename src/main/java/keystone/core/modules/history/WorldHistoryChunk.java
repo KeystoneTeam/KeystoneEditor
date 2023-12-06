@@ -25,13 +25,13 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.util.registry.BuiltinRegistries;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeKeys;
@@ -171,9 +171,9 @@ public class WorldHistoryChunk
             NbtCompound buffer1NBT = blocksNBT.getCompound("Buffer1");
             NbtCompound buffer2NBT = blocksNBT.getCompound("Buffer2");
 
-            this.oldBlockStates = new PalettedArray<>(oldNBT, serialized -> NbtHelper.toBlockState((NbtCompound)serialized));
-            this.blockStateBuffer1 = new PalettedArray<>(buffer1NBT, serialized -> NbtHelper.toBlockState((NbtCompound)serialized));
-            this.blockStateBuffer2 = new PalettedArray<>(buffer2NBT, serialized -> NbtHelper.toBlockState((NbtCompound)serialized));
+            this.oldBlockStates = new PalettedArray<>(oldNBT, serialized -> NbtHelper.toBlockState(world.createCommandRegistryWrapper(RegistryKeys.BLOCK), (NbtCompound)serialized));
+            this.blockStateBuffer1 = new PalettedArray<>(buffer1NBT, serialized -> NbtHelper.toBlockState(world.createCommandRegistryWrapper(RegistryKeys.BLOCK), (NbtCompound)serialized));
+            this.blockStateBuffer2 = new PalettedArray<>(buffer2NBT, serialized -> NbtHelper.toBlockState(world.createCommandRegistryWrapper(RegistryKeys.BLOCK), (NbtCompound)serialized));
 
             this.swappedBlocks = blocksNBT.getBoolean("Swapped");
         }
@@ -213,17 +213,17 @@ public class WorldHistoryChunk
             this.oldBiomes = new PalettedArray<>(oldNBT, serialized ->
             {
                 Identifier identifier = new Identifier(serialized.asString());
-                return biomeRegistry.getEntry(RegistryKey.of(Registry.BIOME_KEY, identifier)).get();
+                return biomeRegistry.getEntry(RegistryKey.of(RegistryKeys.BIOME, identifier)).get();
             });
             this.biomeBuffer1 = new PalettedArray<>(buffer1NBT, serialized ->
             {
                 Identifier identifier = new Identifier(serialized.asString());
-                return biomeRegistry.getEntry(RegistryKey.of(Registry.BIOME_KEY, identifier)).get();
+                return biomeRegistry.getEntry(RegistryKey.of(RegistryKeys.BIOME, identifier)).get();
             });
             this.biomeBuffer2 = new PalettedArray<>(buffer2NBT, serialized ->
             {
                 Identifier identifier = new Identifier(serialized.asString());
-                return biomeRegistry.getEntry(RegistryKey.of(Registry.BIOME_KEY, identifier)).get();
+                return biomeRegistry.getEntry(RegistryKey.of(RegistryKeys.BIOME, identifier)).get();
             });
 
             this.swappedBiomes = biomesNBT.getBoolean("Swapped");
@@ -231,9 +231,9 @@ public class WorldHistoryChunk
         }
         else
         {
-            this.oldBiomes = new PalettedArray<>(64, 1, BuiltinRegistries.BIOME.entryOf(BiomeKeys.THE_VOID));
-            this.biomeBuffer1 = new PalettedArray<>(64, 1, BuiltinRegistries.BIOME.entryOf(BiomeKeys.THE_VOID));
-            this.biomeBuffer2 = new PalettedArray<>(64, 1, BuiltinRegistries.BIOME.entryOf(BiomeKeys.THE_VOID));
+            this.oldBiomes = new PalettedArray<>(64, 1, WorldRegistries.biomes(world.toServerWorld()).entryOf(BiomeKeys.THE_VOID));
+            this.biomeBuffer1 = new PalettedArray<>(64, 1, WorldRegistries.biomes(world.toServerWorld()).entryOf(BiomeKeys.THE_VOID));
+            this.biomeBuffer2 = new PalettedArray<>(64, 1, WorldRegistries.biomes(world.toServerWorld()).entryOf(BiomeKeys.THE_VOID));
             this.swappedBiomes = false;
             this.biomesChanged = false;
         }

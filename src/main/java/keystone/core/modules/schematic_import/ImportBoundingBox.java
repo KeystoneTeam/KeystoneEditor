@@ -165,7 +165,7 @@ public class ImportBoundingBox extends SelectableCuboid
         if (dragLockX != Integer.MAX_VALUE) x = dragLockX;
         if (dragLockY != Integer.MAX_VALUE) y = dragLockY;
         if (dragLockZ != Integer.MAX_VALUE) z = dragLockZ;
-        face.getBox().move(new Vec3i(x, y, z));
+        face.getBox().move(new Vec3i((int)x, (int)y, (int)z));
         return false;
     }
     @Override

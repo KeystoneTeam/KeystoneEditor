@@ -79,7 +79,7 @@ public class SelectedFace
         }
 
         isDraggingFace = false;
-        relativeSelectedBlock = new Vec3i(selectionPoint.x - box.getMin().getX(), selectionPoint.y - box.getMin().getY(), selectionPoint.z - box.getMin().getZ());
+        relativeSelectedBlock = new Vec3i((int)(selectionPoint.x - box.getMin().getX()), (int)(selectionPoint.y - box.getMin().getY()), (int)(selectionPoint.z - box.getMin().getZ()));
     }
 
     public void startDrag() { this.isDraggingFace = true; }

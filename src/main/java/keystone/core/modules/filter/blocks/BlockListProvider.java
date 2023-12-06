@@ -5,6 +5,7 @@ import keystone.api.utils.StringUtils;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.BlockUtils;
+import keystone.core.utils.WorldRegistries;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
@@ -13,7 +14,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.state.property.Property;
@@ -57,7 +60,7 @@ public class BlockListProvider implements IBlockProvider
     {
         if (tag != null)
         {
-            Optional<RegistryEntryList.Named<Block>> tagContents = Registry.BLOCK.getEntryList(this.tag);
+            Optional<RegistryEntryList.Named<Block>> tagContents = Registries.BLOCK.getEntryList(this.tag);
             if (tagContents.isPresent())
             {
                 Map<String, String> clonedProperties = new HashMap<>(vagueProperties);
@@ -123,9 +126,9 @@ public class BlockListProvider implements IBlockProvider
             
             // Tag
             Identifier tagID = new Identifier(nbt.getString("Tag"));
-            this.tag = TagKey.of(Registry.BLOCK_KEY, tagID);
+            this.tag = TagKey.of(RegistryKeys.BLOCK, tagID);
             this.states.clear();
-            Registry.BLOCK.getEntryList(this.tag).ifPresent(contents -> addTagContents(contents, this.vagueProperties));
+            Registries.BLOCK.getEntryList(this.tag).ifPresent(contents -> addTagContents(contents, this.vagueProperties));
         }
         
         // From States
@@ -133,7 +136,7 @@ public class BlockListProvider implements IBlockProvider
         {
             states.clear();
             NbtList statesNBT = nbt.getList("States", NbtElement.COMPOUND_TYPE);
-            for (int i = 0; i < statesNBT.size(); i++) states.add(NbtHelper.toBlockState(statesNBT.getCompound(i)));
+            for (int i = 0; i < statesNBT.size(); i++) states.add(NbtHelper.toBlockState(WorldRegistries.blockLookup(), statesNBT.getCompound(i)));
         }
     }
     
@@ -152,7 +155,7 @@ public class BlockListProvider implements IBlockProvider
                 String propertyValue = vagueProperty.getValue();
         
                 Property<?> property = block.getStateManager().getProperty(propertyName);
-                if (property == null) Keystone.LOGGER.warn("Trying to set unknown vague property '" + propertyName + "' for block '" + Registry.BLOCK.getId(block) + "'!");
+                if (property == null) Keystone.LOGGER.warn("Trying to set unknown vague property '" + propertyName + "' for block '" + Registries.BLOCK.getId(block) + "'!");
                 else state = parsePropertyValue(state, property, propertyValue);
             }
             

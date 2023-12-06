@@ -4,6 +4,7 @@ import keystone.api.utils.StringUtils;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.BlockUtils;
+import keystone.core.utils.WorldRegistries;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -40,7 +41,7 @@ public class BlockTypeProvider implements IBlockProvider
     @Override public boolean containsBlock(BlockType block) { return this.blockType.getMinecraftBlock().getBlock().equals(block.getMinecraftBlock().getBlock()); }
     
     @Override public NbtCompound write() { return NbtHelper.fromBlockState(blockType.getMinecraftBlock()); }
-    @Override public void read(NbtCompound nbt) { blockType = BlockTypeRegistry.fromMinecraftBlock(NbtHelper.toBlockState(nbt)); }
+    @Override public void read(NbtCompound nbt) { blockType = BlockTypeRegistry.fromMinecraftBlock(NbtHelper.toBlockState(WorldRegistries.blockLookup(), nbt)); }
     
     @Override public Text getName() { return this.blockType.getMinecraftBlock().getBlock().getName(); }
     @Override

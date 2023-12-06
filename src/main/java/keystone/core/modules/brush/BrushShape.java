@@ -2,8 +2,8 @@ package keystone.core.modules.brush;
 
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.Vec3i;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +61,7 @@ public abstract class BrushShape
     public final ShapeMask getShapeMask(int sizeX, int sizeY, int sizeZ)
     {
         // Calculate block centers, offset by -0.5 on each even axis
-        Vec3f[] blockCenters = new Vec3f[sizeX * sizeY * sizeZ];
+        Vector3f[] blockCenters = new Vector3f[sizeX * sizeY * sizeZ];
         float[] halfSize = new float[]
         {
                 (sizeX >> 1) - ((sizeX & 1) == 0 ? 0.5f : 0),
@@ -74,7 +74,7 @@ public abstract class BrushShape
             {
                 for (int x = 0; x < sizeX; x++)
                 {
-                    blockCenters[getArrayIndex(x, y, z, sizeX, sizeY, sizeZ)] = new Vec3f(x - halfSize[0], y - halfSize[1], z - halfSize[2]);
+                    blockCenters[getArrayIndex(x, y, z, sizeX, sizeY, sizeZ)] = new Vector3f(x - halfSize[0], y - halfSize[1], z - halfSize[2]);
                 }
             }
         }
@@ -83,8 +83,8 @@ public abstract class BrushShape
         byte[] mask = new byte[sizeX * sizeY * sizeZ];
         for (int i = 0; i < mask.length; i++)
         {
-            Vec3f center = blockCenters[i];
-            mask[i] = isLocalizedPositionInShape(center.getX(), center.getY(), center.getZ(), sizeX, sizeY, sizeZ) ? (byte)2 : (byte)0;
+            Vector3f center = blockCenters[i];
+            mask[i] = isLocalizedPositionInShape(center.x, center.y, center.z, sizeX, sizeY, sizeZ) ? (byte)2 : (byte)0;
         }
         for (int z = 1; z < sizeZ - 1; z++)
         {

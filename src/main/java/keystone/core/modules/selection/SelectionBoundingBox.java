@@ -25,8 +25,8 @@ public class SelectionBoundingBox extends SelectableCuboid
     }
     public static SelectionBoundingBox createFromBoundingBox(BoundingBox boundingBox)
     {
-        Vec3i corner1 = new Vec3i(boundingBox.minX, boundingBox.minY, boundingBox.minZ);
-        Vec3i corner2 = new Vec3i(boundingBox.maxX - 1, boundingBox.maxY - 1, boundingBox.maxZ - 1);
+        Vec3i corner1 = new Vec3i((int)boundingBox.minX, (int)boundingBox.minY, (int)boundingBox.minZ);
+        Vec3i corner2 = new Vec3i((int)(boundingBox.maxX - 1), (int)(boundingBox.maxY - 1), (int)(boundingBox.maxZ - 1));
         return new SelectionBoundingBox(corner1, corner2);
     }
     public static SelectionBoundingBox create(int corner1X, int corner1Y, int corner1Z, int corner2X, int corner2Y, int corner2Z)

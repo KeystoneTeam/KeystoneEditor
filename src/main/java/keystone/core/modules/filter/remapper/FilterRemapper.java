@@ -7,10 +7,11 @@ import keystone.core.modules.filter.MultiClassLoader;
 import keystone.core.utils.FileUtils;
 import net.fabricmc.loader.impl.launch.FabricLauncher;
 import net.fabricmc.loader.impl.launch.FabricLauncherBase;
+import net.fabricmc.loader.impl.lib.mappingio.format.tiny.Tiny2FileReader;
+import net.fabricmc.loader.impl.lib.mappingio.tree.MappingTree;
+import net.fabricmc.loader.impl.lib.mappingio.tree.MemoryMappingTree;
+import net.fabricmc.loader.impl.lib.tinyremapper.*;
 import net.fabricmc.loader.impl.util.mappings.TinyRemapperMappingsHelper;
-import net.fabricmc.mapping.tree.TinyMappingFactory;
-import net.fabricmc.mapping.tree.TinyTree;
-import net.fabricmc.tinyremapper.*;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
 
@@ -28,7 +29,7 @@ import java.util.jar.JarFile;
 public class FilterRemapper
 {
     private static final FabricLauncher LAUNCHER;
-    private static final TinyTree MAPPINGS;
+    private static final MemoryMappingTree MAPPINGS;
 
     public static final IMappingProvider TARGET_TO_NAMED;
     public static final IMappingProvider NAMED_TO_TARGET;
@@ -57,7 +58,9 @@ public class FilterRemapper
                  InputStreamReader resourceStreamReader = new InputStreamReader(resourceStream);
                  BufferedReader mappingsReader = new BufferedReader(resourceStreamReader))
             {
-                MAPPINGS = TinyMappingFactory.load(mappingsReader, true);
+                MAPPINGS = new MemoryMappingTree();
+                Tiny2FileReader.read(mappingsReader, MAPPINGS);
+                
                 TARGET_TO_NAMED = mappings(LAUNCHER.getMappingConfiguration().getTargetNamespace(), "named");
                 NAMED_TO_TARGET = mappings("named", LAUNCHER.getMappingConfiguration().getTargetNamespace());
             }

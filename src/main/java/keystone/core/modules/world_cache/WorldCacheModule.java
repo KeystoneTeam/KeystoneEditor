@@ -6,6 +6,7 @@ import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.BlockMirror;
@@ -43,7 +44,7 @@ public class WorldCacheModule implements IKeystoneModule
 
     public static RegistryKey<World> getDimensionKey(Identifier dimension)
     {
-        return RegistryKey.of(Registry.WORLD_KEY, dimension);
+        return RegistryKey.of(RegistryKeys.WORLD, dimension);
     }
 
     public boolean hasDimensionWorld(RegistryKey<World> dimensionId)
