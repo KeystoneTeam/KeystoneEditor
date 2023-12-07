@@ -139,23 +139,23 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
     protected boolean autoBuild() { return true; }
     protected boolean isValueAllowed(T value) { return true; }
     protected void onSetValue(T value) {  }
-
-    @Override
-    public int getHeight()
-    {
-        return getFinalHeight();
-    }
+    
     @Override
     public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
+        // Draw Label
         context.drawCenteredTextWithShadow(font, name, getX() + width / 2, getY(), 0xFFFFFF);
-        context.getMatrices().push();
+        
+        // Shift Dropdown Button
         setY(getY() + getDropdownOffset());
         height -= getDropdownOffset();
+        
+        // Render Button
         super.renderButton(context, mouseX, mouseY, partialTicks);
+        
+        // Undo Dropdown Button Shift
         height += getDropdownOffset();
         setY(getY() - getDropdownOffset());
-        context.getMatrices().pop();
     }
 
     public T getValue() { return value; }

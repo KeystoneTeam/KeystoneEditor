@@ -52,32 +52,22 @@ public abstract class ParsableTextWidget<T> extends TextFieldWidget
     protected boolean onSetValue(T value) { return true; }
 
     @Override
-    public int getHeight()
-    {
-        return getFinalHeight();
-    }
-
-    @Override
     public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         // Draw Label
         context.drawCenteredTextWithShadow(textRenderer, getMessage(), getX() + width / 2, getY(), 0xFFFFFF);
         
         // Offset Position and Size of Text Field
-        setX(getX() + 1);
         setY(getY() + getFieldOffset());
-        width -= 2;
-        height -= getFieldOffset() + 1;
+        height -= getFieldOffset();
         
         // Render Text Field and Tooltip
         super.renderButton(context, mouseX, mouseY, partialTicks);
         renderTooltip(context, mouseX, mouseY);
         
         // Revert Offset
-        height += getFieldOffset() + 1;
-        width += 2;
+        height += getFieldOffset();
         setY(getY() - getFieldOffset());
-        setX(getX() - 1);
     }
     public void renderTooltip(DrawContext context, int mouseX, int mouseY)
     {
