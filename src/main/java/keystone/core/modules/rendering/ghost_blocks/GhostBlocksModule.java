@@ -55,15 +55,13 @@ public class GhostBlocksModule implements IKeystoneModule
         if (isEnabled())
         {
             Vec3d cameraPos = Camera.getPosition();
-            MatrixStack stack = new MatrixStack();
+            MatrixStack stack = context.matrixStack();
             stack.push();
             stack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
     
             RenderSystem.enablePolygonOffset();
             RenderSystem.polygonOffset(-0.1f, -0.2f);
     
-            // TODO: Figure out how to replace this
-            //RenderSystem.setShader(GameRenderer::getBlockShader);
             SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();
             ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().render(stack, buffer, context.tickDelta()));
             buffer.draw();
