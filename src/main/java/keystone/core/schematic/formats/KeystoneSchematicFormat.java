@@ -65,6 +65,9 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         StructureTemplate template = new StructureTemplate();
         StructureTemplateAccessor accessor = (StructureTemplateAccessor) template;
         
+        // Size
+        accessor.setSize(schematic.getSize());
+        
         // Blocks
         List<StructureTemplate.StructureBlockInfo> blockList = new ArrayList<>();
         schematic.forEachBlock((pos, block) -> blockList.add(new StructureTemplate.StructureBlockInfo(pos, block.blockType().getMinecraftBlock(), block.tileEntity().getMinecraftNBT())));
