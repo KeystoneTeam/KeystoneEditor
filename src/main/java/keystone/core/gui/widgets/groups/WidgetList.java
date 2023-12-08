@@ -1,14 +1,13 @@
 package keystone.core.gui.widgets.groups;
 
 import keystone.core.gui.widgets.ITickableWidget;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ParentElement;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
+import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -32,9 +31,14 @@ public class WidgetList extends ClickableWidget implements ParentElement, ITicka
     @Override public boolean isDragging() { return this.dragging; }
     @Override public void setDragging(boolean dragging) { this.dragging = dragging; }
     @Nullable @Override public Element getFocused() { return this.focused; }
-    @Override public void setFocused(@Nullable Element focused) { this.focused = (ClickableWidget)focused; }
-    
-    
+    @Override
+    public void setFocused(@Nullable Element focused)
+    {
+        assert focused == null || focused instanceof ClickableWidget;
+        if (this.focused != null) this.focused.setFocused(false);
+        if (focused != null) focused.setFocused(true);
+        this.focused = (ClickableWidget) focused;
+    }
     
     @Override
     public void appendClickableNarrations(NarrationMessageBuilder builder)
@@ -50,15 +54,6 @@ public class WidgetList extends ClickableWidget implements ParentElement, ITicka
             selectedElementNarrationData.selectable.appendNarrations(builder.nextMessage());
         }
     }
-    
-    // TODO: Figure out how to reimplement this
-    //@Override
-    //public boolean changeFocus(boolean lookForwards)
-    //{
-    //    boolean successful = super.changeFocus(lookForwards);
-    //    while (successful && getFocused() instanceof FieldWidgetList.HeaderWidget) successful = changeFocus(lookForwards);
-    //    return successful;
-    //}
     //endregion
     //region ITickableWidget Implementation
     @Override
