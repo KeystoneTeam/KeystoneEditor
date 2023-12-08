@@ -49,7 +49,7 @@ public class FilterSelectionScreen extends KeystonePanel
 
     protected FilterSelectionScreen()
     {
-        super(Text.literal("keystone.screen.filterPanel"), true);
+        super(Text.literal("keystone.screen.filterPanel"));
         this.filterModule = Keystone.getModule(FilterModule.class);
         this.filterManager = filterModule.getFilterDirectoryManager();
     }

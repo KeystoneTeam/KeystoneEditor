@@ -71,7 +71,7 @@ public class CloneScreen extends KeystonePanel
 
     protected CloneScreen(BoundingBox selectionBounds, KeystoneSchematic schematic, Vec3i anchor, BlockRotation rotation, BlockMirror mirror, Vector3i offset, int repeat, int scale)
     {
-        super(Text.translatable("keystone.screen.clone"), true);
+        super(Text.translatable("keystone.screen.clone"));
 
         importModule = Keystone.getModule(ImportModule.class);
         historyModule = Keystone.getModule(HistoryModule.class);

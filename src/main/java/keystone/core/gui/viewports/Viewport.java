@@ -1,6 +1,7 @@
 package keystone.core.gui.viewports;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.Window;
 
 public class Viewport
@@ -91,6 +92,19 @@ public class Viewport
     public int getMaxXOffset() { return maxXOffset; }
     public int getMaxYOffset() { return maxYOffset; }
     public float getScale() { return scale; }
+    
+    public void renderDebug(DrawContext context)
+    {
+        int x1 = getMinX();
+        int y1 = getMinY();
+        int x2 = getMaxX();
+        int y2 = getMaxY();
+        
+        context.fill(x1, y1, x2, y1 + 1, 0x80FF00FF);
+        context.fill(x1, y2 - 1, x2, y2, 0x80FF00FF);
+        context.fill(x1, y1, x1 + 1, y2, 0x80FF00FF);
+        context.fill(x2 - 1, y1, x2, y2, 0x80FF00FF);
+    }
 
     @Override
     public String toString()

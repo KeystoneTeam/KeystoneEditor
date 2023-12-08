@@ -30,7 +30,7 @@ public class BrushSelectionScreen extends KeystonePanel
 
     protected BrushSelectionScreen()
     {
-        super(Text.translatable("keystone.screen.brushPanel"), true);
+        super(Text.translatable("keystone.screen.brushPanel"));
         immediateMode = Text.literal("I");
         deferredMode = Text.literal("D");
     }

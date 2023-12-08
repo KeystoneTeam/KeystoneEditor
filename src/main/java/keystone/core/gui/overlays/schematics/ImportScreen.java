@@ -46,7 +46,7 @@ public class ImportScreen extends KeystonePanel
     
     protected ImportScreen()
     {
-        super(Text.literal("keystone.screen.import"), true);
+        super(Text.literal("keystone.screen.import"));
         importModule = Keystone.getModule(ImportModule.class);
 
         extensionsToPlace = new HashMap<>();

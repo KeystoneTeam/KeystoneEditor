@@ -76,7 +76,7 @@ public class KeystoneOverlayHandler
         Window window = client.getWindow();
         double mouseX = mouse.getX() * (double)window.getScaledWidth() / (double)window.getWidth();
         double mouseY = mouse.getY() * (double)window.getScaledHeight() / (double)window.getHeight();
-
+    
         if (MinecraftClient.getInstance().currentScreen != null) return true;
         else
         {
