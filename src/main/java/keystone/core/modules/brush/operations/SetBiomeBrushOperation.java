@@ -8,7 +8,6 @@ import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
-import keystone.core.utils.WorldRegistries;
 import net.minecraft.text.Text;
 import net.minecraft.world.biome.BiomeKeys;
 
@@ -18,7 +17,7 @@ public class SetBiomeBrushOperation extends BrushOperation
     @Variable BlockMask mask = new BlockMask().blacklist();
 
     @Tooltip("The biome to change the brush shape to.")
-    @Variable Biome biome = new Biome(WorldRegistries.biomes().getEntry(BiomeKeys.PLAINS).get());
+    @Variable Biome biome = Biome.lazyConstruct(BiomeKeys.PLAINS);
 
     @Override
     public Text getName()

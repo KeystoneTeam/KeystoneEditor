@@ -3,6 +3,7 @@ package keystone.core;
 import keystone.api.Keystone;
 import keystone.api.KeystoneCache;
 import keystone.api.KeystoneDirectories;
+import keystone.api.wrappers.Biome;
 import keystone.core.events.KeystoneInputHandler;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.keystone.KeystoneRegistryEvents;
@@ -198,6 +199,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         }
     
         KeystoneKeyBindings.configureKeyConditions();
+        Biome.finalizeLazyConstruction(world);
     }
     private void onCloseWorld()
     {
