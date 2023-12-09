@@ -9,12 +9,13 @@ import net.minecraft.util.Formatting;
 
 public class KeystoneHudOverlay extends KeystoneOverlay
 {
+    public static KeystoneHudOverlay INSTANCE = new KeystoneHudOverlay();
+    
     private final HistoryModule historyModule;
 
-    public KeystoneHudOverlay()
+    private KeystoneHudOverlay()
     {
         super(Text.literal("Keystone HUD"));
-
         historyModule = Keystone.getModule(HistoryModule.class);
     }
 

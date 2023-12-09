@@ -81,4 +81,11 @@ public class SimpleButton extends ButtonNoHotkey
     
         renderTooltip(context, mouseX, mouseY);
     }
+    
+    @Override
+    public void onPress()
+    {
+        super.onPress();
+        setFocused(false);
+    }
 }

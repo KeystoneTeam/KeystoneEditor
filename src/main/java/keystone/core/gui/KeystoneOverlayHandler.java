@@ -39,6 +39,16 @@ public class KeystoneOverlayHandler
 
     private static boolean rendering;
     
+    public static boolean isOverlayOpen(Screen overlay)
+    {
+        return overlays.contains(overlay) || addList.contains(overlay);
+    }
+    public static boolean isOverlayOpen(Class<? extends Screen> clazz)
+    {
+        for (Screen overlay : overlays) if (overlay.getClass().equals(clazz)) return true;
+        for (Screen overlay : addList) if (overlay.getClass().equals(clazz)) return true;
+        return false;
+    }
     public static void addOverlay(Screen overlay)
     {
         if (overlay instanceof KeystoneOverlay casted) Keystone.getModule(HotkeysModule.class).addHotkeySet(casted.getHotkeySet());
@@ -48,8 +58,13 @@ public class KeystoneOverlayHandler
         overlay.init(mc, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
         addList.add(overlay);
     }
+    public static void addUniqueOverlay(Screen overlay)
+    {
+        if (!isOverlayOpen(overlay)) addOverlay(overlay);
+    }
     public static void removeOverlay(Screen overlay)
     {
+        if (!isOverlayOpen(overlay)) return;
         if (overlay instanceof KeystoneOverlay casted) Keystone.getModule(HotkeysModule.class).removeHotkeySet(casted.getHotkeySet());
         overlay.removed();
         removeList.add(overlay);
@@ -92,8 +107,8 @@ public class KeystoneOverlayHandler
             overlays.clear();
             addList.clear();
             removeList.clear();
-            addOverlay(KeystoneHotbar.INSTANCE);
-            addOverlay(new KeystoneHudOverlay());
+            addUniqueOverlay(KeystoneHotbar.INSTANCE);
+            addUniqueOverlay(KeystoneHudOverlay.INSTANCE);
         });
         KeystoneLifecycleEvents.CLOSE_WORLD.register(() ->
         {

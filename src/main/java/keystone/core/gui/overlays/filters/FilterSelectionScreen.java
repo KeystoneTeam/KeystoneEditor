@@ -34,8 +34,9 @@ import java.util.regex.Pattern;
 
 public class FilterSelectionScreen extends KeystonePanel
 {
+    private static FilterSelectionScreen INSTANCE;
+    
     private static final int PADDING = 5;
-    private static FilterSelectionScreen open;
     private static File selectedFilterFile;
     private static boolean dirtied;
 
@@ -55,11 +56,8 @@ public class FilterSelectionScreen extends KeystonePanel
     }
     public static void open()
     {
-        if (open == null)
-        {
-            open = new FilterSelectionScreen();
-            KeystoneOverlayHandler.addOverlay(open);
-        }
+        if (INSTANCE == null) INSTANCE = new FilterSelectionScreen();
+        KeystoneOverlayHandler.addUniqueOverlay(INSTANCE);
     }
     public static void registerEvents()
     {
@@ -74,16 +72,11 @@ public class FilterSelectionScreen extends KeystonePanel
     public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
         if (slot == KeystoneHotbarSlot.FILTER) open();
-        else if (open != null) open.close();
+        else if (INSTANCE != null) INSTANCE.close();
     }
     //endregion
 
     //region Screen Overrides
-    @Override
-    public void removed()
-    {
-        open = null;
-    }
     @Override
     protected Viewport createViewport()
     {
@@ -220,7 +213,6 @@ public class FilterSelectionScreen extends KeystonePanel
     }
     //endregion
     //region Getters
-    public static FilterSelectionScreen getOpenInstance() { return open; }
     public KeystoneFilter getFilter() { return filterManager.getFilter(selectedFilterFile); }
     //endregion
     //region Helpers

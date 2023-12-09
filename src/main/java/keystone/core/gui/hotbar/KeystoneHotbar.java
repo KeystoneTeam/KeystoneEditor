@@ -123,6 +123,14 @@ public class KeystoneHotbar extends KeystonePanel
             }
         }
     }
+    public static void clearSelectedSlot()
+    {
+        if (selectedSlot != null)
+        {
+            Keystone.getModule(HotkeysModule.class).removeHotkeySet(selectedSlot.getHotkeys());
+            selectedSlot = null;
+        }
+    }
 
     private int getSlotX(int slot)
     {

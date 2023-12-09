@@ -1,6 +1,5 @@
 package keystone.core.mixins.client;
 
-import keystone.core.KeystoneGlobalState;
 import keystone.core.gui.KeystoneOverlayHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -29,16 +28,6 @@ public class GameRendererMixin
             DrawContext drawContext = new DrawContext(this.client, this.buffers.getEntityVertexConsumers());
             KeystoneOverlayHandler.render(this.client, drawContext, i, j, this.client.getLastFrameDuration());
             drawContext.draw();
-        }
-    }
-    
-    @Inject(method = "render", at = @At("RETURN"))
-    public void reloadWorldRenderer(float tickDelta, long startTime, boolean tick, CallbackInfo ci)
-    {
-        if (KeystoneGlobalState.ReloadWorldRenderer)
-        {
-            client.worldRenderer.reload();
-            KeystoneGlobalState.ReloadWorldRenderer = false;
         }
     }
 }

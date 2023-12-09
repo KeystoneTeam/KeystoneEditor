@@ -1,7 +1,5 @@
 package keystone.core.mixins;
 
-import keystone.api.enums.WorldType;
-import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ConnectedClientData;
@@ -14,9 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(PlayerManager.class)
 public class PlayerManagerMixin
 {
-    @Inject(method = "onPlayerConnect", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;onSpawn()V"))
+    @Inject(method = "onPlayerConnect", at = @At(value = "RETURN"))
     public void connectedToWorld(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo callback)
     {
-        if (WorldType.get().supportsKeystone) KeystoneLifecycleEvents.OPEN_WORLD.invoker().join(player.getEntityWorld());
     }
 }

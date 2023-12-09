@@ -9,6 +9,8 @@ import keystone.core.KeystoneGlobalState;
 import keystone.core.client.Player;
 import keystone.core.events.minecraft.ClientPlayerEvents;
 import keystone.core.events.minecraft.ServerPlayerEvents;
+import keystone.core.gui.hotbar.KeystoneHotbar;
+import keystone.core.gui.hotbar.KeystoneHotbarSlot;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.filter.execution.IFilterThread;
@@ -77,6 +79,7 @@ public final class Keystone
             KeystoneGlobalState.AllowPlayerLook = false;
             client.mouse.unlockCursor();
             client.onResolutionChanged();
+            KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
         }
     }
     /**

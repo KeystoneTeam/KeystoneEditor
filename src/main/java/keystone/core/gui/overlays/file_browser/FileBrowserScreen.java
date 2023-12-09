@@ -97,14 +97,6 @@ public abstract class FileBrowserScreen extends Screen
             this.selected = selected;
             this.path = Text.literal(parent.path + "/" + file.getName());
         }
-
-        // TODO: Figure out what this is and if it needs to be replaced
-        //@Override
-        //protected int getYImage(boolean hovered)
-        //{
-        //    hovered = hovered || selected;
-        //    return super.getYImage(hovered);
-        //}
     }
     protected class DirectoryButton extends IndexedButton
     {

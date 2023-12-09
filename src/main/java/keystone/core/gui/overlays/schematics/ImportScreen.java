@@ -31,20 +31,20 @@ import java.util.Map;
 
 public class ImportScreen extends KeystonePanel
 {
+    private static ImportScreen INSTANCE;
+    
     private static final int MARGINS = 2;
     private static final int PADDING = 5;
     private static final int OPTIONS_PADDING = 5;
     private static final int BUTTON_HEIGHT = 14;
-
-    private static ImportScreen open;
-
+    
     private final ImportModule importModule;
     private final Map<Identifier, Boolean> extensionsToPlace;
     
     private NudgeButton nudgeImports;
     private BooleanWidget copyAir;
     
-    protected ImportScreen()
+    private ImportScreen()
     {
         super(Text.literal("keystone.screen.import"));
         importModule = Keystone.getModule(ImportModule.class);
@@ -60,11 +60,8 @@ public class ImportScreen extends KeystonePanel
     }
     public static void open()
     {
-        if (open == null)
-        {
-            open = new ImportScreen();
-            KeystoneOverlayHandler.addOverlay(open);
-        }
+        if (INSTANCE != null) INSTANCE = new ImportScreen();
+        KeystoneOverlayHandler.addUniqueOverlay(INSTANCE);
     }
     public static void registerEvents()
     {
@@ -75,15 +72,10 @@ public class ImportScreen extends KeystonePanel
     public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
         if (slot == KeystoneHotbarSlot.IMPORT && Keystone.getModule(ImportModule.class).getImportBoxes().size() > 0) open();
-        else if (open != null) open.close();
+        else if (INSTANCE != null) INSTANCE.close();
     }
     //endregion
     //region Screen Overrides
-    @Override
-    public void removed()
-    {
-        open = null;
-    }
     @Override
     protected Viewport createViewport()
     {

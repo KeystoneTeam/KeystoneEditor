@@ -8,6 +8,7 @@ import keystone.core.events.KeystoneInputHandler;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.events.keystone.KeystoneRegistryEvents;
 import keystone.core.gui.KeystoneOverlayHandler;
+import keystone.core.gui.hotbar.KeystoneHotbar;
 import keystone.core.gui.overlays.brush.BrushSelectionScreen;
 import keystone.core.gui.overlays.fill.FillAndReplaceScreen;
 import keystone.core.gui.overlays.filters.FilterSelectionScreen;
@@ -207,5 +208,6 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
         Keystone.disableKeystone();
         Keystone.forEachModule(module -> module.resetModule());
         KeystoneCache.cleanTempFiles();
+        KeystoneHotbar.clearSelectedSlot();
     }
 }

@@ -19,8 +19,9 @@ import net.minecraft.text.Text;
 
 public class BrushSelectionScreen extends KeystonePanel
 {
+    private static final BrushSelectionScreen INSTANCE = new BrushSelectionScreen();
+    
     public static final int PADDING = 5;
-    private static BrushSelectionScreen open;
     private static BrushModule brushModule;
 
     private Text immediateMode;
@@ -36,11 +37,7 @@ public class BrushSelectionScreen extends KeystonePanel
     }
     public static void open()
     {
-        if (open == null)
-        {
-            open = new BrushSelectionScreen();
-            KeystoneOverlayHandler.addOverlay(open);
-        }
+        KeystoneOverlayHandler.addUniqueOverlay(INSTANCE);
     }
     public static void registerEvents()
     {
@@ -51,16 +48,10 @@ public class BrushSelectionScreen extends KeystonePanel
     public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
         if (slot == KeystoneHotbarSlot.BRUSH) open();
-        else if (open != null) open.close();
+        else INSTANCE.close();
     }
     //endregion
     //region Screen Overrides
-    @Override
-    public void removed()
-    {
-        open = null;
-    }
-
     @Override
     protected Viewport createViewport()
     {

@@ -8,6 +8,7 @@ import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
+import keystone.core.KeystoneGlobalState;
 import keystone.core.mixins.ChunkSectionAccessor;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
@@ -39,6 +40,7 @@ import net.minecraft.world.biome.source.BiomeCoords;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.PalettedContainer;
+import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -604,8 +606,9 @@ public class WorldHistoryChunk
             Chunk chunk = world.getChunk(chunkX, chunkZ);
             ChunkSection chunkSection = world.getChunk(chunkX, chunkZ).getSection(chunk.getSectionIndex(chunkY << 4));
             ((ChunkSectionAccessor)chunkSection).setBiomeStorage(biomeContainer.copy());
+            KeystoneGlobalState.DirtyChunks.computeIfAbsent(this.world.toServerWorld(), key -> Lists.newArrayList()).add(chunk);
         }
-    
+        
         // Apply Blocks
         BlockPos start = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
         for (int x = 0; x < 16; x++)
@@ -647,6 +650,8 @@ public class WorldHistoryChunk
             }
             else entities.get(entityID).updateMinecraftEntity(world);
         }
+    
+        chunk.setNeedsSaving(true);
     }
     private <T> PalettedArray<T> copyContainer(PalettedContainer<T> container, int sizeX, int sizeY, int sizeZ)
     {

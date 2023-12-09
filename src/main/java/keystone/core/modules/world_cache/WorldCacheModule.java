@@ -1,5 +1,6 @@
 package keystone.core.modules.world_cache;
 
+import keystone.api.enums.WorldType;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
@@ -20,6 +21,7 @@ public class WorldCacheModule implements IKeystoneModule
 {
     private Map<RegistryKey<World>, ServerWorld> loadedWorlds;
     private Map<RegistryKey<World>, GhostBlocksWorld> ghostWorlds;
+    private ServerWorld primaryWorld;
 
     public WorldCacheModule()
     {
@@ -54,6 +56,10 @@ public class WorldCacheModule implements IKeystoneModule
     {
         return loadedWorlds.getOrDefault(dimension, null);
     }
+    public ServerWorld getPrimaryWorld()
+    {
+        return primaryWorld;
+    }
     public GhostBlocksWorld getGhostWorld(RegistryKey<World> dimension)
     {
         return ghostWorlds.getOrDefault(dimension, null);
@@ -61,11 +67,22 @@ public class WorldCacheModule implements IKeystoneModule
 
     private void onWorldLoaded(MinecraftServer server, ServerWorld world)
     {
+        // Register World
         RegistryKey<World> dimensionId = world.getRegistryKey();
         if (loadedWorlds.containsKey(dimensionId)) loadedWorlds.clear();
         loadedWorlds.put(dimensionId, world);
+        
+        // Register Ghost World
         if (ghostWorlds.containsKey(dimensionId)) ghostWorlds.clear();
         ghostWorlds.put(dimensionId, new GhostBlocksWorld(world, BlockRotation.NONE, BlockMirror.NONE));
+        
+        // Fire KeystoneLifecycleEvents.OPEN_WORLD if this is the first loaded world
+        if (loadedWorlds.size() == 1 && WorldType.get().supportsKeystone)
+        {
+            this.primaryWorld = world;
+            KeystoneLifecycleEvents.OPEN_WORLD.invoker().join(world);
+        }
+    
     }
     private void onSaveUnloaded()
     {

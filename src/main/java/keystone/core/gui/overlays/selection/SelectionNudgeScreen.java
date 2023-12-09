@@ -18,10 +18,11 @@ import java.util.List;
 
 public class SelectionNudgeScreen extends KeystoneOverlay
 {
+    private static SelectionNudgeScreen INSTANCE;
+    
     private static final int MARGINS = 2;
     private static final int PADDING = 2;
     private static final int BUTTON_HEIGHT = 14;
-    private static SelectionNudgeScreen open;
     private static SelectionBoundingBox selectedBox;
     private static int selectionToNudge;
 
@@ -50,21 +51,21 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     }
     public static void open()
     {
-        if (open == null)
-        {
-            open = new SelectionNudgeScreen();
-            if (selectedBox != null) KeystoneOverlayHandler.addOverlay(open);
-            else open = null;
-        }
+        if (INSTANCE == null) INSTANCE = new SelectionNudgeScreen();
+        selectedBox = INSTANCE.resolveSelectionIndex();
+        
+        if (selectedBox != null) KeystoneOverlayHandler.addUniqueOverlay(INSTANCE);
+        else INSTANCE.close();
     }
     public static void setSelectedIndex(int value)
     {
         selectionToNudge = value;
-        if (open != null)
+        if (INSTANCE == null) INSTANCE = new SelectionNudgeScreen();
+        if (KeystoneOverlayHandler.isOverlayOpen(INSTANCE))
         {
-            selectedBox = open.resolveSelectionIndex();
-            if (selectedBox == null) open.close();
-            else open.updateSize();
+            selectedBox = INSTANCE.resolveSelectionIndex();
+            if (selectedBox == null) INSTANCE.close();
+            else INSTANCE.updateSize();
         }
     }
     public static void registerEvents()
@@ -77,34 +78,26 @@ public class SelectionNudgeScreen extends KeystoneOverlay
     public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
         if (slot == KeystoneHotbarSlot.SELECTION && Keystone.getModule(SelectionModule.class).getSelectionBoxCount() > 0) open();
-        else if (open != null) open.close();
+        else if (INSTANCE != null) INSTANCE.close();
     }
     public static void onSelectionsChanged(List<SelectionBoundingBox> selections, boolean createdSelection, boolean createHistoryEntry)
     {
         if (selections.size() == 0) selectedBox = null;
 
-        if (open == null)
+        if (INSTANCE != null && KeystoneOverlayHandler.isOverlayOpen(INSTANCE))
         {
-            if (selections.size() > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
-        }
-        else
-        {
-            if (selections.size() == 0) open.close();
+            if (selections.size() == 0) INSTANCE.close();
             else
             {
                 if (createdSelection && selectionToNudge >= selections.size() - 2) setSelectedIndex(selections.size() - 1);
-                open.updateSize();
+                INSTANCE.updateSize();
             }
+            
         }
+        else if (selections.size() > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
     }
     //endregion
     //region Screen Overrides
-    @Override
-    public void removed()
-    {
-        open = null;
-    }
-
     @Override
     protected void init()
     {

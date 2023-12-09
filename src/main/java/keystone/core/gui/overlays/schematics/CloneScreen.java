@@ -95,7 +95,7 @@ public class CloneScreen extends KeystonePanel
     }
     public static void open()
     {
-        if (open == null)
+        if (!KeystoneOverlayHandler.isOverlayOpen(CloneScreen.class))
         {
             SelectionBoundingBox selection = SelectionNudgeScreen.getSelectionToNudge();
             open = new CloneScreen(selection.getBoundingBox(),

@@ -1,6 +1,12 @@
 package keystone.core;
 
+import com.google.common.collect.Maps;
 import keystone.core.modules.world.change_queue.WorldChangeQueueModule;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.chunk.Chunk;
+
+import java.util.List;
+import java.util.Map;
 
 public class KeystoneGlobalState
 {
@@ -46,8 +52,8 @@ public class KeystoneGlobalState
      */
     public static boolean HideSelectionBoxes = false;
     /**
-     * If true, the Minecraft world renderer will be reloaded. This is used to
-     * redraw biomes
+     * A list of all chunks that were modified during the current change set. Used to refresh
+     * biomes
      */
-    public static boolean ReloadWorldRenderer = false;
+    public static Map<ServerWorld, List<Chunk>> DirtyChunks = Maps.newHashMap();
 }

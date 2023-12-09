@@ -57,7 +57,7 @@ public class KeystoneOverlay extends Screen implements IMouseBlocker
         for (Element child : children())
         {
             if (child instanceof IMouseBlocker blocker && blocker.isMouseBlocked(mouseX, mouseY)) return true;
-            else if (child instanceof ClickableWidget widget && widget.isSelected() && widget.visible && widget.active) return true;
+            else if (child instanceof ClickableWidget widget && widget.isSelected() && widget.visible && widget.active) return widget.isHovered();
         }
         return false;
     }

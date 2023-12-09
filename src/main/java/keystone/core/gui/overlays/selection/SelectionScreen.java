@@ -36,13 +36,13 @@ import java.util.List;
 
 public class SelectionScreen extends KeystoneOverlay
 {
+    private static final SelectionScreen INSTANCE = new SelectionScreen();
+    
     private static final int MARGINS = 2;
     private static final int PADDING = 5;
     private static final int BUTTON_HEIGHT = 14;
     private static final double tooltipWidth = 0.2;
-
-    private static SelectionScreen open;
-
+    
     private final SelectionModule selectionModule;
     private final HistoryModule historyModule;
     private int panelMinY;
@@ -50,7 +50,7 @@ public class SelectionScreen extends KeystoneOverlay
     private int panelWidth;
     private NudgeButton nudgeButton;
 
-    protected SelectionScreen()
+    private SelectionScreen()
     {
         super(Text.literal("keystone.screen.selection"));
         selectionModule = Keystone.getModule(SelectionModule.class);
@@ -58,11 +58,7 @@ public class SelectionScreen extends KeystoneOverlay
     }
     public static void open()
     {
-        if (open == null)
-        {
-            open = new SelectionScreen();
-            KeystoneOverlayHandler.addOverlay(open);
-        }
+        KeystoneOverlayHandler.addUniqueOverlay(INSTANCE);
     }
     public static void registerEvents()
     {
@@ -73,21 +69,15 @@ public class SelectionScreen extends KeystoneOverlay
     public static void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
     {
         if (slot == KeystoneHotbarSlot.SELECTION && Keystone.getModule(SelectionModule.class).getSelectionBoxCount() > 0) open();
-        else if (open != null) open.close();
+        else INSTANCE.close();
     }
     public static void onSelectionsChanged(List<SelectionBoundingBox> selections, boolean createdSelection, boolean createHistoryEntry)
     {
         if (selections.size() > 0 && KeystoneHotbar.getSelectedSlot() == KeystoneHotbarSlot.SELECTION) open();
-        else if (open != null) open.close();
+        else INSTANCE.close();
     }
     //endregion
     //region Screen Overrides
-    @Override
-    public void removed()
-    {
-        open = null;
-    }
-
     @Override
     protected void init()
     {

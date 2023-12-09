@@ -12,18 +12,13 @@ public class ProgressBarOverlay extends KeystoneOverlay
     public static final int WIDTH = 200;
     public static final int HEIGHT = 12;
 
-    private static boolean open;
     private static final ProgressBarOverlay overlay = new ProgressBarOverlay();
     protected ProgressBarOverlay() { super(Text.literal("Progress Bar")); }
 
     public static void open(String title)
     {
         overlay.barTitle = title;
-        if (!open)
-        {
-            KeystoneOverlayHandler.addOverlay(overlay);
-            open = true;
-        }
+        KeystoneOverlayHandler.addUniqueOverlay(overlay);
     }
 
 
@@ -36,9 +31,6 @@ public class ProgressBarOverlay extends KeystoneOverlay
     private int maxY;
     private int panelMinY;
     private int panelMaxY;
-
-    @Override
-    public void removed() { open = false; }
 
     @Override
     protected void init()

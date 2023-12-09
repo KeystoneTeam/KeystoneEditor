@@ -28,8 +28,7 @@ public class FillAndReplaceScreen extends KeystonePanel
     private static final int PADDING = 5;
 
     //region Static
-    private static final FillAndReplaceScreen instance = new FillAndReplaceScreen();
-    private static boolean open;
+    private static final FillAndReplaceScreen INSTANCE = new FillAndReplaceScreen();
     private static BlockMask previousMask;
     private static BlockPalette previousPalette;
     private static SingleBlockSelectionScreen quickFill;
@@ -42,11 +41,7 @@ public class FillAndReplaceScreen extends KeystonePanel
     }
     public static void open()
     {
-        if (!open)
-        {
-            KeystoneOverlayHandler.addOverlay(instance);
-            open = true;
-        }
+        KeystoneOverlayHandler.addUniqueOverlay(INSTANCE);
     }
     public static void registerEvents()
     {
@@ -61,14 +56,14 @@ public class FillAndReplaceScreen extends KeystonePanel
     {
         if (slot != KeystoneHotbarSlot.FILL)
         {
-            if (open) instance.close();
+            INSTANCE.close();
             if (quickFill != null)
             {
                 quickFill.close();
                 quickFill = null;
             }
         }
-        else if (!open && quickFill == null)
+        else if (!KeystoneOverlayHandler.isOverlayOpen(INSTANCE) && quickFill == null)
         {
             if (Screen.hasControlDown())
             {
@@ -92,7 +87,6 @@ public class FillAndReplaceScreen extends KeystonePanel
     @Override
     public void removed()
     {
-        open = false;
         previousMask = mask.getMask();
         previousPalette = palette.getPalette();
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);

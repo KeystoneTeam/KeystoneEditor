@@ -5,10 +5,13 @@ import keystone.core.KeystoneGlobalState;
 import keystone.core.modules.history.WorldHistoryChunk;
 import keystone.core.modules.session.SessionModule;
 import keystone.core.utils.ProgressBar;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.chunk.Chunk;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class ChangeSet
 {
@@ -163,8 +166,11 @@ public class ChangeSet
         if (callback != null) callback.run();
     
         KeystoneGlobalState.WaitingForChangeQueue = false;
-        // TODO: Find a way to only reload chunks with biome changes
-        if (redrawBiomes) KeystoneGlobalState.ReloadWorldRenderer = true;
+        if (redrawBiomes)
+        {
+            for (Map.Entry<ServerWorld, List<Chunk>> chunkList : KeystoneGlobalState.DirtyChunks.entrySet()) chunkList.getKey().getChunkManager().threadedAnvilChunkStorage.sendChunkBiomePackets(chunkList.getValue());
+            KeystoneGlobalState.DirtyChunks.clear();
+        }
         if (hasProgressBar) ProgressBar.finish();
     }
     //endregion
