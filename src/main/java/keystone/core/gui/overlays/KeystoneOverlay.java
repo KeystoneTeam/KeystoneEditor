@@ -1,7 +1,6 @@
 package keystone.core.gui.overlays;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.widgets.IMouseBlocker;
 import keystone.core.gui.widgets.ITickableWidget;
@@ -36,11 +35,13 @@ public class KeystoneOverlay extends Screen implements IMouseBlocker
     {
         KeystoneOverlayHandler.removeOverlay(this);
     }
+    
     @Override
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta)
     {
     
     }
+    
     @Override
     public void tick()
     {
@@ -50,7 +51,7 @@ public class KeystoneOverlay extends Screen implements IMouseBlocker
         }
     }
     //endregion
-    //region Helper Functions
+    
     @Override
     public boolean isMouseBlocked(double mouseX, double mouseY)
     {
@@ -61,7 +62,9 @@ public class KeystoneOverlay extends Screen implements IMouseBlocker
         }
         return false;
     }
-    public static void fillRounded(DrawContext context, int minX, int minY, int maxX, int maxY)
+    
+    //region Helper Functions
+    public void fillRounded(DrawContext context, int minX, int minY, int maxX, int maxY)
     {
         int cornerSize = 8;
         RenderSystem.enableBlend();
@@ -90,10 +93,6 @@ public class KeystoneOverlay extends Screen implements IMouseBlocker
     {
         context.drawItem(stack, x, y);
         //mc.getItemRenderer().renderGuiItemOverlay(mc.textRenderer, stack, x, y, text);
-    }
-    public static void drawTooltip(IKeystoneTooltip tooltip)
-    {
-        KeystoneOverlayHandler.addTooltip(tooltip);
     }
     //endregion
 }

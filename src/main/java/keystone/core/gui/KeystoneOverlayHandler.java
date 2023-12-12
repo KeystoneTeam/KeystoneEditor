@@ -24,12 +24,13 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.Window;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import org.joml.Vector4i;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 import java.util.function.Consumer;
 
-public class KeystoneOverlayHandler
+public final class KeystoneOverlayHandler
 {
     private static boolean worldFinishedLoading = false;
     private static final Queue<IKeystoneTooltip> tooltips = new ArrayDeque<>();
@@ -38,6 +39,9 @@ public class KeystoneOverlayHandler
     private static final List<Screen> removeList = Collections.synchronizedList(new ArrayList<>());
 
     private static boolean rendering;
+    
+    private static final Queue<Vector4i> BOX_POOL = new ArrayDeque<>();
+    private static final List<Vector4i> MOUSE_BLOCKING_REGIONS = new ArrayList<>();
     
     public static boolean isOverlayOpen(Screen overlay)
     {
@@ -95,9 +99,20 @@ public class KeystoneOverlayHandler
         if (MinecraftClient.getInstance().currentScreen != null) return true;
         else
         {
+            // Query Blocking Regions
+            for (Vector4i blockingRegion : MOUSE_BLOCKING_REGIONS) if (mouseX >= blockingRegion.x && mouseY >= blockingRegion.y && mouseX <= blockingRegion.z && mouseY <= blockingRegion.w) return true;
+            
+            // Query Overlays
             for (Screen overlay : overlays) if (overlay instanceof IMouseBlocker blocker && blocker.isMouseBlocked(mouseX, mouseY)) return true;
+            
             return false;
         }
+    }
+    public static void addMouseBlockingRegion(int x1, int y1, int x2, int y2)
+    {
+        Vector4i box = BOX_POOL.isEmpty() ? new Vector4i() : BOX_POOL.remove();
+        box.set(Math.min(x1, x2), Math.min(y1, y2), Math.max(x1, x2), Math.max(y1, y2));
+        MOUSE_BLOCKING_REGIONS.add(box);
     }
 
     public static void registerEvents()
@@ -201,9 +216,14 @@ public class KeystoneOverlayHandler
     {
         if (Keystone.isEnabled())
         {
+            // Add Queued Overlays
             rendering = true;
             overlays.addAll(addList);
             addList.clear();
+            
+            // Reset Mouse Blocking Regions
+            BOX_POOL.addAll(MOUSE_BLOCKING_REGIONS);
+            MOUSE_BLOCKING_REGIONS.clear();
     
             if (MinecraftClient.getInstance().currentScreen == null)
             {
@@ -233,6 +253,7 @@ public class KeystoneOverlayHandler
                 context.getMatrices().pop();
             }
 
+            // Remove Queued Overlays
             removeList.forEach(overlays::remove);
             removeList.clear();
             rendering = false;

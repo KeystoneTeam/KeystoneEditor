@@ -15,7 +15,11 @@ public class DrawContextMixin
     @Inject(method = "fill(Lnet/minecraft/client/render/RenderLayer;IIIIII)V", at = @At("HEAD"))
     private void fillHead(RenderLayer layer, int x1, int y1, int x2, int y2, int z, int color, CallbackInfo ci)
     {
-        if (KeystoneOverlayHandler.isRendering()) RenderSystem.depthMask(false);
+        if (KeystoneOverlayHandler.isRendering())
+        {
+            KeystoneOverlayHandler.addMouseBlockingRegion(x1, y1, x2, y2);
+            RenderSystem.depthMask(false);
+        }
     }
 
     @Inject(method = "fill(Lnet/minecraft/client/render/RenderLayer;IIIIII)V", at = @At("RETURN"))

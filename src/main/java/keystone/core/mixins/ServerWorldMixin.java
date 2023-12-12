@@ -1,7 +1,5 @@
 package keystone.core.mixins;
 
-import keystone.api.Keystone;
-import keystone.core.KeystoneGlobalState;
 import net.minecraft.block.Block;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -16,6 +14,7 @@ public class ServerWorldMixin
     @Inject(method = "tickBlock", at = @At("HEAD"), cancellable = true)
     private void tickBlock(BlockPos pos, Block block, CallbackInfo callback)
     {
-        if (Keystone.isEnabled() && KeystoneGlobalState.SuppressingBlockTicks) callback.cancel();
+        // TODO: Find a way to reimplement this
+        //if (Keystone.isEnabled() && KeystoneGlobalState.SuppressingBlockTicks) callback.cancel();
     }
 }

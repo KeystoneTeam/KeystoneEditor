@@ -51,7 +51,7 @@ public final class Keystone
 
     //region Active Toggle
     private static boolean enabled;
-    private static boolean revertPlayer;
+    private static boolean revertPlayerGamemode;
     private static float flySpeed = KeystoneConfig.flySpeed;
 
     /**
@@ -92,7 +92,7 @@ public final class Keystone
 
         enabled = false;
         client.mouse.lockCursor();
-        revertPlayer = true;
+        revertPlayerGamemode = true;
 
         client.onResolutionChanged();
     }
@@ -133,7 +133,14 @@ public final class Keystone
     public static <T extends IKeystoneModule> T getModule(Class<T> clazz)
     {
         if (modules.containsKey(clazz)) return (T)modules.get(clazz);
-        else LOGGER.error("Trying to get unregistered keystone module '" + clazz.getSimpleName() + "'!");
+        else
+        {
+            StringBuilder error = new StringBuilder("Trying to get unregistered Keystone module '");
+            error.append(clazz.getSimpleName());
+            error.append("'!\n");
+            for (StackTraceElement traceElement : Thread.currentThread().getStackTrace()) error.append(traceElement).append('\n');
+            LOGGER.error(error);
+        }
         return null;
     }
     /**
@@ -430,7 +437,7 @@ public final class Keystone
     {
         ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
         if (clientPlayer == null) return;
-
+        
         if (Keystone.isEnabled())
         {
             if (player.getAbilities().getFlySpeed() != flySpeed)
@@ -440,15 +447,18 @@ public final class Keystone
             }
             if (player.interactionManager.getGameMode() != GameMode.SPECTATOR) player.changeGameMode(GameMode.SPECTATOR);
         }
-        else if (revertPlayer)
+        else if (revertPlayerGamemode)
         {
             if (player.getUuid().equals(clientPlayer.getUuid()))
             {
                 player.getAbilities().setFlySpeed(0.05f);
                 MinecraftClient.getInstance().player.getAbilities().setFlySpeed(0.05f);
 
-                if (player.interactionManager.getPreviousGameMode().getId() != -1) player.changeGameMode(player.interactionManager.getPreviousGameMode());
-                revertPlayer = false;
+                GameMode revertGameMode = MinecraftClient.getInstance().interactionManager.getPreviousGameMode();
+                if (revertGameMode == null || revertGameMode.getId() < 0) revertGameMode = player.getServer().getDefaultGameMode();
+                if (revertGameMode == null || revertGameMode.getId() < 0) revertGameMode = GameMode.CREATIVE;
+                player.changeGameMode(revertGameMode);
+                revertPlayerGamemode = false;
             }
         }
     }

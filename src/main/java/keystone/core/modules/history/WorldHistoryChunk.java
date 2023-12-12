@@ -587,7 +587,7 @@ public class WorldHistoryChunk
                     BlockState newState = newBlocks.get(index);
                     BlockPos pos = start.add(x, y, z);
                     world.updateNeighbors(pos, newState.getBlock());
-                    newState.updateNeighbors(world, pos, net.minecraft.block.Block.NOTIFY_ALL);
+                    newState.updateNeighbors(world, pos, net.minecraft.block.Block.NOTIFY_ALL | net.minecraft.block.Block.SKIP_DROPS);
                     index++;
                 }
             }

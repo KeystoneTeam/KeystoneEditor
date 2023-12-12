@@ -42,7 +42,6 @@ public class KeystoneHudOverlay extends KeystoneOverlay
     {
         context.fill(x, y, x + 8 + textWidth, y - 15, 0x80000000);
         context.fill(x + 2, y, x + 4 + textWidth, y + 1, 0xFF404040);
-        //fill(matrixStack, x + 4, y + 1, x + textWidth, y + 1, 0xFFFF0000);
         context.drawTextWithShadow(textRenderer, label, x + 4, y - 11, 0xFFFFFFFF);
     }
 }

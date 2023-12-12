@@ -60,7 +60,7 @@ public class ImportScreen extends KeystonePanel
     }
     public static void open()
     {
-        if (INSTANCE != null) INSTANCE = new ImportScreen();
+        if (INSTANCE == null) INSTANCE = new ImportScreen();
         KeystoneOverlayHandler.addUniqueOverlay(INSTANCE);
     }
     public static void registerEvents()
