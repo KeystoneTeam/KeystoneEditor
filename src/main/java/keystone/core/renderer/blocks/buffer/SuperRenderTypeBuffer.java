@@ -67,7 +67,11 @@ public class SuperRenderTypeBuffer implements VertexConsumerProvider
     private static class SuperRenderTypeBufferPhase extends VertexConsumerProvider.Immediate
     {
         static final BlockBufferBuilderStorage blockBuilders = new BlockBufferBuilderStorage();
-
+    
+        /**
+         * Create a mapping between RenderLayers and BufferBuilders. Look at {@link BufferBuilderStorage} for guidance.
+         * @return
+         */
         static SortedMap<RenderLayer, BufferBuilder> createEntityBuilders()
         {
             return Util.make(new Object2ObjectLinkedOpenHashMap<>(), (map) ->
@@ -80,8 +84,8 @@ public class SuperRenderTypeBuffer implements VertexConsumerProvider
                 put(map, TexturedRenderLayers.getBeds());
                 put(map, TexturedRenderLayers.getShulkerBoxes());
                 put(map, TexturedRenderLayers.getSign());
+                put(map, TexturedRenderLayers.getHangingSign());
                 put(map, TexturedRenderLayers.getChest());
-                put(map, RenderLayer.getTranslucentNoCrumbling());
                 put(map, RenderLayer.getArmorGlint());
                 put(map, RenderLayer.getArmorEntityGlint());
                 put(map, RenderLayer.getGlint());

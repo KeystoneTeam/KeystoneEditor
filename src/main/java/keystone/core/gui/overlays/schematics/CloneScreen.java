@@ -247,7 +247,7 @@ public class CloneScreen extends KeystonePanel
         addDrawableChild(scaleField);
 
         // Copy Air Field
-        copyAir = new BooleanWidget(x, y, getViewport().getWidth() - 2 * MARGINS, 20, Text.translatable("keystone.clone.copyAir"), true, true);
+        copyAir = new BooleanWidget(x, y, getViewport().getWidth() - 2 * MARGINS, 20, Text.translatable("keystone.clone.copyAir"), true);
         copyAir.setTooltip(IKeystoneTooltip.createSimple(Text.translatable("keystone.clone.copyAir.tooltip")));
         y += copyAir.getHeight() + PADDING;
         addDrawableChild(copyAir);
@@ -342,7 +342,7 @@ public class CloneScreen extends KeystonePanel
     private BooleanWidget createExtensionOption(int y, Identifier extensionID)
     {
         String translationKey = extensionID.getNamespace() + "." + extensionID.getPath();
-        return new BooleanWidget(getViewport().getMinX() + MARGINS, y, getViewport().getWidth() - 2 * MARGINS, 20, Text.translatable(translationKey + ".shouldPlace"), extensionsToPlace.get(extensionID), true)
+        return new BooleanWidget(getViewport().getMinX() + MARGINS, y, getViewport().getWidth() - 2 * MARGINS, 20, Text.translatable(translationKey + ".shouldPlace"), extensionsToPlace.get(extensionID))
         {
             @Override
             public void onPress()

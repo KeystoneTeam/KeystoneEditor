@@ -16,13 +16,16 @@ import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.filter.execution.IFilterThread;
 import keystone.core.modules.rendering.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.world.change_queue.WorldChangeQueueModule;
+import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.renderer.ShapeRenderers;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.client.Keyboard;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.TickCommand;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -93,7 +96,6 @@ public final class Keystone
         enabled = false;
         client.mouse.lockCursor();
         revertPlayerGamemode = true;
-
         client.onResolutionChanged();
     }
     /**

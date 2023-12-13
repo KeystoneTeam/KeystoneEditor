@@ -58,7 +58,7 @@ public class BoundingBox
      */
     public BoundingBox(BlockPos min, BlockPos max)
     {
-        this(new Box(min.getMinecraftBlockPos(), max.getMinecraftBlockPos().add(1, 1, 1)));
+        this(new Box(min.x, min.y, min.z, max.x + 1, max.y + 1, max.z + 1));
     }
     /**
      * @param minX The minimum x-coordinate contained within the bounding box

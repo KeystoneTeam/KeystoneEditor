@@ -3,6 +3,7 @@ package keystone.core.gui.widgets.inputs;
 import keystone.core.KeystoneConfig;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
+import keystone.core.gui.widgets.inputs.properties.BooleanPropertyWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.CheckboxWidget;
@@ -16,19 +17,22 @@ public class BooleanWidget extends CheckboxWidget
     private int tooltipX;
     private int tooltipY;
 
-    public BooleanWidget(int x, int y, int width, int height, Text message, boolean checked) { this(x, y, width, height, message, checked, true); }
-    public BooleanWidget(int x, int y, int width, int height, Text message, boolean checked, boolean showMessage)
+    public BooleanWidget(int x, int y, int width, int height, Text message, boolean checked)
     {
-        super(x, y, width, height, message, checked, showMessage);
+        super(x, y, message, MinecraftClient.getInstance().textRenderer, checked, (checkbox, newChecked) -> ((BooleanWidget) checkbox).onChanged(newChecked));
+        this.width = width;
+        this.height = height;
         this.tooltipDelay = KeystoneConfig.tooltipDelay;
     }
     public BooleanWidget setTooltip(IKeystoneTooltip tooltip) { this.tooltip = tooltip; return this; }
     public BooleanWidget setTooltipDelay(float delay) { this.tooltipDelay = delay; return this; }
     
+    public void onChanged(boolean checked) {}
+    
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta)
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta)
     {
-        super.renderButton(context, mouseX, mouseY, delta);
+        super.renderWidget(context, mouseX, mouseY, delta);
         renderTooltip(context, mouseX, mouseY);
     }
     public void renderTooltip(DrawContext context, int mouseX, int mouseY)

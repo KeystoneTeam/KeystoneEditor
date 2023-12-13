@@ -56,7 +56,7 @@ public class BlockMaskWidget extends ButtonNoHotkey
         return getFinalHeight();
     }
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         int y = this.getY() + getMaskOffset();
         context.drawCenteredTextWithShadow(font, getMessage(), getX() + width / 2, y - getMaskOffset(), 0xFFFFFF);

@@ -139,7 +139,7 @@ public class BlockGridWidget extends ClickableWidget
 
     //region Widget Overrides
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         // If more buttons than can fit, draw scrollbar
         if (blockCount > buttonsInPanel)

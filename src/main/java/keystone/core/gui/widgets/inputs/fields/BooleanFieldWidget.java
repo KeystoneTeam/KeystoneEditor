@@ -21,7 +21,7 @@ public class BooleanFieldWidget extends BooleanWidget
 
     public BooleanFieldWidget(Screen screen, Supplier<Object> instance, Field field, String name, int x, int y, int width) throws IllegalAccessException
     {
-        super(x, y, width, getFinalHeight(), Text.literal(name), (boolean)field.get(instance.get()), true);
+        super(x, y, width, getFinalHeight(), Text.literal(name), (boolean)field.get(instance.get()));
 
         this.instance = instance;
         this.field = field;

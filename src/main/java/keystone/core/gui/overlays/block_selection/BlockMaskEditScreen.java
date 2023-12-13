@@ -65,7 +65,7 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         addDrawableChild(maskPanel);
         
         // Blacklist Toggle
-        addDrawableChild(new BooleanWidget(maskPanel.getX(), maskPanel.getY() + maskPanel.getHeight() + 5, maskPanel.getWidth(), 20, Text.translatable("keystone.blacklist"), this.mask.isBlacklist(), true)
+        addDrawableChild(new BooleanWidget(maskPanel.getX(), maskPanel.getY() + maskPanel.getHeight() + 5, maskPanel.getWidth(), 20, Text.translatable("keystone.blacklist"), this.mask.isBlacklist())
         {
             @Override
             public void onPress()

@@ -36,6 +36,7 @@ import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.EmptyTickSchedulers;
 import net.minecraft.world.tick.QueryableTickScheduler;
+import net.minecraft.world.tick.TickManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -154,6 +155,9 @@ public class GhostChunkManager extends ChunkManager
             
             @Override public String asString() { return null; }
             @org.jetbrains.annotations.Nullable @Override public Entity getEntityById(int id) { return null; }
+    
+            @Override public TickManager getTickManager() { return null; }
+    
             @org.jetbrains.annotations.Nullable @Override public MapState getMapState(String id) { return null; }
             @Override public void putMapState(String id, MapState state) { }
             @Override public int getNextMapId() { return 0; }
@@ -208,10 +212,5 @@ public class GhostChunkManager extends ChunkManager
         {
             return true;
         }
-
-        //public ChunkHolder.FullChunkStatus getFullStatus()
-        //{
-        //    return ChunkHolder.FullChunkStatus.BORDER;
-        //}
     }
 }

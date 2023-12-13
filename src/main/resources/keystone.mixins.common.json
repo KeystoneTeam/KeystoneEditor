@@ -19,7 +19,6 @@
     "ThreadedAnvilChunkStorageInvoker",
     "WindowMixin",
     "WorldAccessor",
-    "WorldEntryMixin",
     "WorldAccessMixin"
   ],
   "injectors": {

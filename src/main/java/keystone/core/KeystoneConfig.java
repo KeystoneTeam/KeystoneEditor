@@ -81,7 +81,7 @@ public class KeystoneConfig
         try
         {
             NbtCompound nbt = VariablesSerializer.write(KeystoneConfig.class, null);
-            NbtIo.write(nbt, KeystoneDirectories.getKeystoneDirectory().resolve("config.nbt").toFile());
+            NbtIo.write(nbt, KeystoneDirectories.getKeystoneDirectory().resolve("config.nbt"));
         }
         catch (IOException e)
         {
@@ -95,7 +95,7 @@ public class KeystoneConfig
             File configFile = KeystoneDirectories.getKeystoneDirectory().resolve("config.nbt").toFile();
             if (configFile.exists() && configFile.isFile())
             {
-                NbtCompound nbt = NbtIo.read(configFile);
+                NbtCompound nbt = NbtIo.read(configFile.toPath());
                 if (nbt != null) VariablesSerializer.read(KeystoneConfig.class, nbt, () -> null);
             }
             else save();

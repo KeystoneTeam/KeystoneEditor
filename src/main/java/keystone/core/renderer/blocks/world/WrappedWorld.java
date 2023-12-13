@@ -26,6 +26,7 @@ import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.QueryableTickScheduler;
+import net.minecraft.world.tick.TickManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -93,6 +94,8 @@ public class WrappedWorld extends World
     @Override @org.jetbrains.annotations.Nullable public MapState getMapState(String id) { return null; }
     @Override public void putMapState(String id, MapState state) { }
     @Override @org.jetbrains.annotations.Nullable public Entity getEntityById(int id) { return null; }
+    @Override public TickManager getTickManager() { return world.getTickManager(); }
+    
     @Override public void setBlockBreakingInfo(int entityId, BlockPos pos, int progress) { }
     @Override public int getMaxLightLevel() { return 15; }
 

@@ -60,9 +60,9 @@ public class NudgeButton extends SimpleButton
     }
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
-        super.renderButton(context, mouseX, mouseY, partialTicks);
+        super.renderWidget(context, mouseX, mouseY, partialTicks);
     }
 
     public void tick()

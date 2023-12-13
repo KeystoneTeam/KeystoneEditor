@@ -63,7 +63,7 @@ public class SimpleButton extends ButtonNoHotkey
     }
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         if (active)
         {

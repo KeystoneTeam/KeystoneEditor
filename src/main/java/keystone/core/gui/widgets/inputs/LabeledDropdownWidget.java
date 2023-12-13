@@ -141,7 +141,7 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
     protected void onSetValue(T value) {  }
     
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         // Draw Label
         context.drawCenteredTextWithShadow(font, name, getX() + width / 2, getY(), 0xFFFFFF);
@@ -151,7 +151,7 @@ public abstract class LabeledDropdownWidget<T> extends ButtonNoHotkey
         height -= getDropdownOffset();
         
         // Render Button
-        super.renderButton(context, mouseX, mouseY, partialTicks);
+        super.renderWidget(context, mouseX, mouseY, partialTicks);
         
         // Undo Dropdown Button Shift
         height += getDropdownOffset();

@@ -77,7 +77,7 @@ public class WidgetList extends ClickableWidget implements ParentElement, ITicka
     }
     
     @Override
-    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) { }
+    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) { }
     
     @Override
     public boolean isMouseOver(double mouseX, double mouseY)

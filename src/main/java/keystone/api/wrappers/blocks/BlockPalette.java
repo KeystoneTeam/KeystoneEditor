@@ -143,7 +143,7 @@ public class BlockPalette
     {
         try
         {
-            NbtIo.write(write(), file);
+            NbtIo.write(write(), file.toPath());
         }
         catch (IOException e)
         {
@@ -159,7 +159,7 @@ public class BlockPalette
     {
         try
         {
-            read(NbtIo.read(file));
+            read(NbtIo.read(file.toPath()));
         }
         catch (IOException e)
         {

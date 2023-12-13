@@ -109,7 +109,7 @@ public final class FilterCache
         {
             try
             {
-                NbtCompound nbt = NbtIo.read(cacheFile);
+                NbtCompound nbt = NbtIo.read(cacheFile.toPath());
                 NbtList entriesNBT = nbt.getList("entries", NbtElement.COMPOUND_TYPE);
                 for (int i = 0; i < entriesNBT.size(); i++)
                 {
@@ -147,7 +147,7 @@ public final class FilterCache
 
         try
         {
-            File cacheFile = KeystoneCache.getCacheDirectory().resolve("filter_cache.nbt").toFile();
+            Path cacheFile = KeystoneCache.getCacheDirectory().resolve("filter_cache.nbt");
             NbtIo.write(nbt, cacheFile);
         }
         catch (IOException e)

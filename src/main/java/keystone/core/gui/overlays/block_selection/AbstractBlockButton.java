@@ -52,7 +52,7 @@ public abstract class AbstractBlockButton extends ButtonNoHotkey
     protected abstract void onClicked(int button);
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         if (active && visible && isSelected())
         {

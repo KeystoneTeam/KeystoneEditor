@@ -564,7 +564,7 @@ public class KeystoneFilter
         File file = new File(path);
         if (!file.exists()) return null;
         
-        try { return new NBTCompound(NbtIo.read(file)); }
+        try { return new NBTCompound(NbtIo.read(file.toPath())); }
         catch (IOException e)
         {
             throwException(e);
@@ -579,7 +579,7 @@ public class KeystoneFilter
     public void writeNBT(NBTCompound nbt, String path)
     {
         File file = new File(path);
-        try { NbtIo.write(nbt.getMinecraftNBT(), file); }
+        try { NbtIo.write(nbt.getMinecraftNBT(), file.toPath()); }
         catch (IOException e) { throwException(e); }
     }
     //endregion

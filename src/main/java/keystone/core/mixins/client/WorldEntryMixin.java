@@ -18,11 +18,13 @@ import java.nio.file.Path;
 @Mixin(WorldListWidget.WorldEntry.class)
 public abstract class WorldEntryMixin
 {
-    @Shadow @Final private LevelSummary level;
+    @Shadow @Final LevelSummary level;
     
-    @Inject(method = "start", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/world/WorldListWidget$WorldEntry;openReadingWorldScreen()V"))
+    @Inject(method = "play", at = @At(value = "HEAD"))
     private void start_repairSession(CallbackInfo callback)
     {
+        Keystone.getModule(SessionModule.class).setLevel(level);
+        
         // Update Current Save Directory
         Path worldPath = MinecraftClient.getInstance().getLevelStorage().getSavesDirectory().resolve(level.getName());
         KeystoneDirectories.setCurrentSaveDirectory(worldPath);

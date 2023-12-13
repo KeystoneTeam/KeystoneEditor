@@ -71,7 +71,7 @@ public class NBTSerializer
 
         try (InputStream inputStream = new FileInputStream(file))
         {
-            NbtCompound nbt = NbtIo.readCompressed(inputStream);
+            NbtCompound nbt = NbtIo.readCompressed(inputStream, NbtSizeTracker.ofUnlimitedBytes());
             if (nbt == null) nbt = new NbtCompound();
             return nbt;
         }

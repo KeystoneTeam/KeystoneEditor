@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocatio
 
 plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.2'
-    id 'fabric-loom' version '1.0-SNAPSHOT'
+    id 'fabric-loom' version '1.4-SNAPSHOT'
     id 'maven-publish'
     id 'java'
 }
@@ -50,7 +50,7 @@ dependencies {
 processResources {
     def variables = [
             "version": project.version,
-            "target_minecraft_versions": project.target_minecraft_versions,
+            "minecraft_version": project.minecraft_version,
             "loader_version": project.loader_version,
             "fabric_version": project.fabric_version
     ]
@@ -85,7 +85,7 @@ java {
 
 // Shadow Configuration
 shadowJar {
-    classifier = 'shadow'
+    archiveClassifier = 'shadow'
     configurations = [project.configurations.shade, project.configurations.shadeIntransitive]
 
     exclude 'org/codehaus/commons/compiler/samples/**'
@@ -97,7 +97,7 @@ task relocateShadowJar(type: ConfigureShadowRelocation) {
     prefix = "keystone.shadow"
 }
 remapJar {
-    classifier = 'fabric'
+    archiveClassifier = 'fabric'
 
     dependsOn shadowJar
     input.set shadowJar.archiveFile.get()

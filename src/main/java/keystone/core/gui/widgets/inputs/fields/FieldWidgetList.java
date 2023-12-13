@@ -45,7 +45,7 @@ public class FieldWidgetList extends VerticalLayoutGroup implements ITickableWid
         }
 
         @Override
-        public void renderButton(DrawContext context, int mouseX, int mouseY, float delta)
+        public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta)
         {
             if (textWidth > 0)
             {

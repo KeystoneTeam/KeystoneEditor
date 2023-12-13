@@ -103,7 +103,7 @@ public class TextDisplayWidget extends ClickableWidget
     }
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float partialTicks)
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {
         context.getMatrices().push();
         context.getMatrices().scale(scale, scale, scale);

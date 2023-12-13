@@ -119,7 +119,7 @@ public class SessionModule implements IKeystoneModule
             this.revertingSessionChanges = true;
             if (!closeWorld)
             {
-                client.createIntegratedServerLoader().start(new SelectWorldScreen(new TitleScreen()), level.getName());
+                client.createIntegratedServerLoader().start(level.getName(), () -> client.setScreen(new SelectWorldScreen(new TitleScreen())));
                 if (keystoneEnabled) Keystone.enableKeystone();
             }
             Keystone.LOGGER.info("Done Reverting Session");

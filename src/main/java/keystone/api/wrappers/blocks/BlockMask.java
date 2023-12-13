@@ -210,7 +210,7 @@ public class BlockMask
     {
         try
         {
-            NbtIo.write(write(), file);
+            NbtIo.write(write(), file.toPath());
         }
         catch (IOException e)
         {
@@ -226,7 +226,7 @@ public class BlockMask
     {
         try
         {
-            read(NbtIo.read(file));
+            read(NbtIo.read(file.toPath()));
         }
         catch (IOException e)
         {
