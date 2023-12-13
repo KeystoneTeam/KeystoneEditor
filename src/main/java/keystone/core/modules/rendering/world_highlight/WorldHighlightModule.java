@@ -77,7 +77,8 @@ public class WorldHighlightModule implements IKeystoneModule
         if (KeystoneConfig.highlightEntities)
         {
             ServerWorld serverWorld = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
-            for (Entity entity : serverWorld.iterateEntities())
+            Iterable<Entity> entities = serverWorld.iterateEntities();
+            for (Entity entity : entities)
             {
                 if (entity != null && !entity.getUuid().equals(MinecraftClient.getInstance().cameraEntity.getUuid()))
                 {

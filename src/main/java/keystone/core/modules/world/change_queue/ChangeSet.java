@@ -142,7 +142,11 @@ public class ChangeSet
             queueIndex = 0;
         
             // If queue was placing blocks, transition to processing updates
-            if (state == QueueState.PLACING_BLOCKS) transitionToUpdates();
+            if (state == QueueState.PLACING_BLOCKS)
+            {
+                if (KeystoneGlobalState.SuppressingBlockTicks) transitionToIdle();
+                else transitionToUpdates();
+            }
             
             // If queue was processing updates, finalize changes and transition to idle
             else if (state == QueueState.PROCESSING_UPDATES) transitionToIdle();

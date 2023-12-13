@@ -41,6 +41,7 @@ public class KeystoneGlobalState
      * things like ignoring block gravity
      */
     public static boolean SuppressingBlockTicks = false;
+    public static boolean BlockTickScheduling = false;
     /**
      * If true, block states will not check if they can be placed at a location before being
      * placed in the world
