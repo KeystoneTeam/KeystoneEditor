@@ -14,7 +14,6 @@
     "PlayerManagerMixin",
     "ServerPlayerEntityMixin",
     "ServerPlayerInteractionManagerMixin",
-    "ServerWorldMixin",
     "StructureTemplateAccessor",
     "ThreadedAnvilChunkStorageInvoker",
     "WindowMixin",

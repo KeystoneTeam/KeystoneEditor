@@ -21,11 +21,9 @@ import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.renderer.ShapeRenderers;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.client.Keyboard;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.TickCommand;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -83,6 +81,7 @@ public final class Keystone
             client.mouse.unlockCursor();
             client.onResolutionChanged();
             KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
+            Keystone.getModule(WorldCacheModule.class).getPrimaryWorld().getServer().getTickManager().setFrozen(true);
         }
     }
     /**
@@ -97,6 +96,7 @@ public final class Keystone
         client.mouse.lockCursor();
         revertPlayerGamemode = true;
         client.onResolutionChanged();
+        Keystone.getModule(WorldCacheModule.class).getPrimaryWorld().getServer().getTickManager().setFrozen(false);
     }
     /**
      * @return If Keystone is enabled, a world is loaded, and Keystone is not waiting for

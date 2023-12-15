@@ -611,7 +611,6 @@ public class WorldHistoryChunk
         }
         
         // Apply Blocks
-        KeystoneGlobalState.BlockTickScheduling = true;
         BlockPos start = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
         for (int x = 0; x < 16; x++)
         {
@@ -622,7 +621,9 @@ public class WorldHistoryChunk
                     BlockPos pos = start.add(x, y, z);
                     BlockState state = blockStates.get(z + y * 16 + x * 256);
     
+                    KeystoneGlobalState.BlockTickScheduling = true;
                     world.toServerWorld().setBlockState(pos, state, PLACE_FLAGS);
+                    KeystoneGlobalState.BlockTickScheduling = false;
                     
                     NBTCompound blockData = tileEntities.getOrDefault(pos, null);
                     if (blockData != null)
@@ -637,7 +638,6 @@ public class WorldHistoryChunk
                 }
             }
         }
-        KeystoneGlobalState.BlockTickScheduling = false;
     
         // Apply Entities
         for (UUID entityID : allEntities.keySet())

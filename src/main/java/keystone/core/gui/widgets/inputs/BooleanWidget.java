@@ -3,7 +3,6 @@ package keystone.core.gui.widgets.inputs;
 import keystone.core.KeystoneConfig;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
-import keystone.core.gui.widgets.inputs.properties.BooleanPropertyWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.CheckboxWidget;
