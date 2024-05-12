@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class ExtractPalette extends KeystoneFilter
 {
-    @Variable BlockMask includeMask = blacklist();
+    @Variable BlockMask includeMask = whitelist();
     @Variable String name = "Palette";
     @Variable @IntRange(min = 1) int resolution = 250;
     

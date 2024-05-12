@@ -5,6 +5,7 @@ import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.widgets.IMouseBlocker;
 import keystone.core.gui.widgets.ITickableWidget;
 import keystone.core.modules.hotkeys.HotkeySet;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
@@ -87,12 +88,10 @@ public class KeystoneOverlay extends Screen implements IMouseBlocker
 
     public static void drawItem(DrawContext context, ItemStack stack, int x, int y)
     {
-        drawItem(context, stack, x, y, null);
-    }
-    public static void drawItem(DrawContext context, ItemStack stack, int x, int y, String text)
-    {
+        context.getMatrices().push();
+        context.getMatrices().translate(0, 0, -150);
         context.drawItem(stack, x, y);
-        //mc.getItemRenderer().renderGuiItemOverlay(mc.textRenderer, stack, x, y, text);
+        context.getMatrices().pop();
     }
     //endregion
 }

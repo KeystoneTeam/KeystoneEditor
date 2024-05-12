@@ -2,6 +2,9 @@ package keystone.core.modules.filter.blocks;
 
 import keystone.api.utils.StringUtils;
 import keystone.api.wrappers.blocks.BlockType;
+import keystone.core.gui.overlays.block_selection.BlockGridButton;
+import keystone.core.gui.overlays.block_selection.BlockPropertiesScreen;
+import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.BlockUtils;
 import keystone.core.utils.WorldRegistries;
@@ -14,6 +17,7 @@ import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,14 +70,13 @@ public class BlockTypeProvider implements IBlockProvider
         return new ItemStack(item);
     }
     @Override
-    public void openEditPropertiesScreen()
+    public void openEditPropertiesScreen(BlockGridButton gridButton, int mouseButton)
     {
-        // TODO: Implement Property Edit Menu
-//        BlockPropertiesScreen.editBlockProperties(BlockTypeRegistry.fromMinecraftBlock(blockType.getMinecraftBlock()), block ->
-//        {
-//            if (block != null) grid.onEntryClicked(new BlockGridWidget.Entry(block.getMinecraftBlock(), button.getTooltipBuilder()), mouseButton);
-//            button.parent.restoreWidgets();
-//        });
+        BlockPropertiesScreen.editBlockProperties(BlockTypeRegistry.fromMinecraftBlock(blockType.getMinecraftBlock()), block ->
+        {
+            if (block != null) gridButton.getParent().onEntryClicked(new BlockGridWidget.Entry(block.getMinecraftBlock(), gridButton.getTooltipBuilder()), mouseButton);
+            gridButton.getParent().restoreWidgets();
+        });
     }
     
     @Override

@@ -13,7 +13,7 @@ public class Resurface extends KeystoneFilter
     @Variable BlockMask airMask = whitelist("minecraft:air");
     
     @Tooltip("The blocks that make up the old surface.")
-    @Variable BlockMask surfaceMask = blacklist();
+    @Variable BlockMask surfaceMask = whitelist();
     
     @Tooltip("The blocks to replace the surface with.")
     @Variable BlockPalette surfacePalette = palette("minecraft:white_stained_glass");

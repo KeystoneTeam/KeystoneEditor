@@ -24,11 +24,8 @@ public class BlockGridButton extends AbstractBlockButton
     public static ClickConsumer PASS_UNMODIFIED = (button, mouseButton, blockProvider) -> button.parent.onEntryClicked(new BlockGridWidget.Entry(blockProvider, button.getTooltipBuilder()), mouseButton);
     public static ClickConsumer EDIT_PROPERTIES = (button, mouseButton, blockProvider) ->
     {
-        PASS_UNMODIFIED.accept(button, mouseButton, blockProvider);
-        
-        // TODO: Implement EDIT_PROPERTIES
-//        button.parent.disableWidgets();
-//        blockProvider.openEditPropertiesScreen();
+        button.parent.disableWidgets();
+        blockProvider.openEditPropertiesScreen(button, mouseButton);
     };
     public static ScrollConsumer NO_SCROLLING = (button, delta) -> false;
     public static ScrollConsumer CHANGE_AMOUNT = (button, delta) ->
@@ -59,6 +56,8 @@ public class BlockGridButton extends AbstractBlockButton
         return new BlockGridButton(screen, parent, blockProvider, count, x, y, leftClickMutator, rightClickMutator, scrollConsumer, tooltipBuilder);
     }
 
+    public BlockGridWidget getParent() { return parent; }
+    
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float partialTicks)
     {

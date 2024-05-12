@@ -8,7 +8,7 @@ import keystone.api.wrappers.blocks.BlockMask;
 public class SetBiome extends KeystoneFilter
 {
     @Tooltip("Only blocks matching this mask will have their biomes changed.")
-    @Variable BlockMask mask = blacklist();
+    @Variable BlockMask mask = whitelist();
     
     @Tooltip("The biome to change the selection to.")
     @Variable Biome biome = biome("minecraft:plains");

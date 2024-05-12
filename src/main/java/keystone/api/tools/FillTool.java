@@ -5,6 +5,7 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
+import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.core.modules.filter.blocks.IBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
@@ -39,5 +40,6 @@ public class FillTool extends KeystoneFilter
     public void processBlock(int x, int y, int z, WorldRegion region)
     {
         if (mask.valid(region.getBlockType(x, y, z))) region.setBlock(x, y, z, palette);
+        else print("Invalid black at " + new BlockPos(x, y, z));
     }
 }

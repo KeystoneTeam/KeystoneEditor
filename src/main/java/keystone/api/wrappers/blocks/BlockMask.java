@@ -433,6 +433,9 @@ public class BlockMask
      */
     public boolean valid(@NotNull BlockType blockType)
     {
+        // Always return valid for empty masks
+        if (mask.size() == 0 && anyVariantMask.size() == 0) return true;
+        
         boolean matches = false;
         
         // Check Property-Specific Mask

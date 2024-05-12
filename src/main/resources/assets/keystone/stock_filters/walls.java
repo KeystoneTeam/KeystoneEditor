@@ -8,7 +8,7 @@ import keystone.api.wrappers.blocks.BlockPalette;
 public class Walls extends KeystoneFilter
 {
     @Tooltip("Only blocks matching this mask will be replaced.")
-    @Variable BlockMask mask = blacklist();
+    @Variable BlockMask mask = whitelist();
     
     @Tooltip("The palette to create the walls out of.")
     @Variable BlockPalette palette = palette("minecraft:stone");

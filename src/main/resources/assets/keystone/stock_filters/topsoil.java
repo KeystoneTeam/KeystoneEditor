@@ -19,7 +19,7 @@ public class Topsoil extends KeystoneFilter
     @Variable @IntRange(min = 0) int yOffset = 0;
     
     @Tooltip("Only blocks matching this will perform topsoil operations.")
-    @Variable BlockMask surfaceMask = blacklist();
+    @Variable BlockMask surfaceMask = whitelist();
     
     @Tooltip("The blocks that represent empty space.")
     @Variable BlockMask airMask = whitelist("minecraft:air");

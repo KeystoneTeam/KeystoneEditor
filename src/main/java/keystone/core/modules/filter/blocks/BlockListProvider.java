@@ -3,6 +3,7 @@ package keystone.core.modules.filter.blocks;
 import keystone.api.Keystone;
 import keystone.api.utils.StringUtils;
 import keystone.api.wrappers.blocks.BlockType;
+import keystone.core.gui.overlays.block_selection.BlockGridButton;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.BlockUtils;
 import keystone.core.utils.WorldRegistries;
@@ -196,7 +197,7 @@ public class BlockListProvider implements IBlockProvider
     }
     
     @Override
-    public void openEditPropertiesScreen()
+    public void openEditPropertiesScreen(BlockGridButton gridButton, int mouseButton)
     {
         // TODO: Implement Vague Property Edit Menu
     }

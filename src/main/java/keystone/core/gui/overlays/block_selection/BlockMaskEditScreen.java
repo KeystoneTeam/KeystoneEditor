@@ -38,17 +38,6 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
     }
 
     @Override
-    public void onLeftClick(BlockGridButton button, int mouseButton, IBlockProvider blockProvider)
-    {
-        BlockGridButton.EDIT_PROPERTIES.accept(button, mouseButton, blockProvider);
-    }
-    @Override
-    public void onRightClick(BlockGridButton button, int mouseButton, IBlockProvider blockProvider)
-    {
-        BlockGridButton.PASS_UNMODIFIED.accept(button, mouseButton, blockProvider);
-    }
-
-    @Override
     protected void init()
     {
         super.init();
@@ -130,16 +119,15 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
     @Override
     public void onEntrySelected(BlockGridWidget.Entry entry, int mouseButton)
     {
-        // TODO: CRITICAL - Finish implementing this
         if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT)
-        {
-            this.mask.with(entry.provider());
-            this.maskPanel.addBlockProvider(entry.provider(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
-        }
-        else if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT)
         {
             this.mask.withAllVariants(entry.provider());
             this.maskPanel.addBlockProvider(entry.provider(), BlockGridWidget.ANY_VARIANT_TOOLTIP);
+        }
+        else if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT)
+        {
+            this.mask.with(entry.provider());
+            this.maskPanel.addBlockProvider(entry.provider(), BlockGridWidget.NAME_AND_PROPERTIES_TOOLTIP);
         }
     }
 }
