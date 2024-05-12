@@ -28,6 +28,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.command.argument.ItemStackArgument;
+import net.minecraft.command.argument.ItemStackArgumentType;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtIo;
@@ -422,9 +424,8 @@ public class KeystoneFilter
 
         try
         {
-            ItemStringReader.ItemResult parser = ItemStringReader.item(WorldRegistries.itemLookup(), new StringReader(item));
-            stack = new ItemStack(parser.item(), 1);
-            stack.setNbt(parser.nbt());
+            ItemStackArgument parsed = ItemStackArgumentType.itemStack(WorldRegistries.commandRegistryLookup()).parse(new StringReader(item));
+            stack = parsed.createStack(1, true);
         }
         catch (CommandSyntaxException e)
         {

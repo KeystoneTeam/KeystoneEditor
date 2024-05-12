@@ -51,7 +51,7 @@ public class KeystoneOptionsScreen extends Screen
     public void render(DrawContext context, int mouseX, int mouseY, float delta)
     {
         // Draw Background
-        renderBackgroundTexture(context);
+        renderDarkening(context);
         context.fill(0, optionsViewport.getMinY(), width, optionsViewport.getMaxY(), 0x80000000);
         
         // Draw Label

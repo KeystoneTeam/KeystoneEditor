@@ -95,14 +95,13 @@ public class GhostBlocksWorld extends WrappedWorld implements ServerWorldAccess
     @Override
     public boolean spawnEntity(Entity entityIn)
     {
-        if (entityIn instanceof ItemFrameEntity)
-            ((ItemFrameEntity) entityIn).getHeldItemStack()
-                    .setNbt(null);
-        if (entityIn instanceof ArmorStandEntity armorStandEntity)
-        {
-            armorStandEntity.getItemsEquipped()
-                    .forEach(stack -> stack.setNbt(null));
-        }
+        // CRITICAL TODO: See if this needs to be reimplemented
+        //if (entityIn instanceof ItemFrameEntity) ((ItemFrameEntity) entityIn).getHeldItemStack().setNbt(null);
+        //if (entityIn instanceof ArmorStandEntity armorStandEntity)
+        //{
+        //    armorStandEntity.getItemsEquipped()
+        //            .forEach(stack -> stack.setNbt(null));
+        //}
 
         this.renderer.markDirty();
         return entities.add(entityIn);

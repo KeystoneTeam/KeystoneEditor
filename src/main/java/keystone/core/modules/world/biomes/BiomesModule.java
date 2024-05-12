@@ -22,7 +22,7 @@ public class BiomesModule implements IKeystoneModule
     private HistoryModule historyModule;
     private WorldCacheModule worldCacheModule;
 
-    private Map<RegistryKey<DimensionType>, Map<RetrievalMode, BiomeAccess>> biomeSmoothers;
+    private Map<DimensionType, Map<RetrievalMode, BiomeAccess>> biomeSmoothers;
 
     @Override
     public void postInit()
@@ -70,12 +70,12 @@ public class BiomesModule implements IKeystoneModule
 
     private BiomeAccess getSmoother(World world, RetrievalMode retrievalMode)
     {
-        Map<RetrievalMode, BiomeAccess> dimensionSmoothers = biomeSmoothers.get(world.getDimensionKey());
+        Map<RetrievalMode, BiomeAccess> dimensionSmoothers = biomeSmoothers.get(world.getDimension());
         if (dimensionSmoothers == null)
         {
             dimensionSmoothers = new HashMap<>();
             for (RetrievalMode mode : RetrievalMode.values()) dimensionSmoothers.put(mode, world.getBiomeAccess().withSource(new BiomeSmootherStorage(mode)));
-            biomeSmoothers.put(world.getDimensionKey(), dimensionSmoothers);
+            biomeSmoothers.put(world.getDimension(), dimensionSmoothers);
         }
         return dimensionSmoothers.get(retrievalMode);
     }

@@ -9,7 +9,7 @@ import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.KeystoneGlobalState;
-import keystone.core.mixins.ChunkSectionAccessor;
+import keystone.core.mixins.common.ChunkSectionAccessor;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.NBTSerializer;
@@ -111,7 +111,7 @@ public class WorldHistoryChunk
             {
                 if (ChunkSectionPos.getSectionCoord(pos.getY()) != chunkY) continue;
                 BlockEntity tileEntity = chunk.getBlockEntity(pos);
-                NbtCompound nbt = tileEntity.createNbtWithIdentifyingData();
+                NbtCompound nbt = tileEntity.createNbtWithIdentifyingData(WorldRegistries.registryLookup());
                 oldTileEntities.put(pos, new NBTCompound(nbt.copy()));
                 tileEntityBuffer1.put(pos, new NBTCompound(nbt.copy()));
                 tileEntityBuffer2.put(pos, new NBTCompound(nbt.copy()));
@@ -633,7 +633,7 @@ public class WorldHistoryChunk
                         tileEntityData.putInt("y", y);
                         tileEntityData.putInt("z", z);
                         BlockEntity tileEntity = world.getBlockEntity(pos);
-                        if (tileEntity != null) tileEntity.readNbt(tileEntityData);
+                        if (tileEntity != null) tileEntity.read(tileEntityData, WorldRegistries.registryLookup());
                     }
                 }
             }

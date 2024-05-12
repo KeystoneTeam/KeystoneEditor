@@ -57,7 +57,7 @@ public class Block
      * @param state The Minecraft BlockState
      * @param tileEntity The Minecraft BlockEntity
      */
-    public Block(@NotNull BlockState state, BlockEntity tileEntity) { this(BlockTypeRegistry.fromMinecraftBlock(state), tileEntity == null ? null : new NBTCompound(tileEntity.createNbt())); }
+    public Block(@NotNull BlockState state, BlockEntity tileEntity) { this(BlockTypeRegistry.fromMinecraftBlock(state), tileEntity == null ? null : new NBTCompound(tileEntity.createNbt(WorldRegistries.registryLookup()))); }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param state The Minecraft BlockState

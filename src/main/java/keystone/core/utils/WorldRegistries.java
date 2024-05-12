@@ -3,6 +3,7 @@ package keystone.core.utils;
 import keystone.api.Keystone;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import net.minecraft.block.Block;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -39,5 +40,15 @@ public final class WorldRegistries
     public static Registry<Biome> biomes(World world)
     {
         return world.getRegistryManager().get(RegistryKeys.BIOME);
+    }
+    
+    // CRITICAL TODO: Implement this
+    public static RegistryWrapper.WrapperLookup registryLookup()
+    {
+        throw new UnsupportedOperationException();
+    }
+    public static CommandRegistryAccess commandRegistryLookup()
+    {
+        throw new UnsupportedOperationException();
     }
 }

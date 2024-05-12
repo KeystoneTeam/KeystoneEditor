@@ -55,7 +55,7 @@ public class Item
     {
         ItemStack newStack = this.stack.copy();
 
-        if (useUnbreaking) newStack.damage(damage, RandomWrapper.INSTANCE, null);
+        if (useUnbreaking) newStack.damage(damage, RandomWrapper.INSTANCE, null, () -> newStack.setCount(0));
         else newStack.setDamage(newStack.getDamage() + damage);
 
         while (newStack.getDamage() >= newStack.getMaxDamage())

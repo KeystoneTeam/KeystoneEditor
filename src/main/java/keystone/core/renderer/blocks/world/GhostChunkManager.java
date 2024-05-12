@@ -5,12 +5,14 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.map.MapState;
+import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKey;
@@ -106,15 +108,9 @@ public class GhostChunkManager extends ChunkManager
                 return null;
             }
 
-            @Override
-            public void syncWorldEvent(PlayerEntity pPlayer, int pType, BlockPos pPos, int pData) {}
-
-            @Override
-            public void emitGameEvent(GameEvent event, Vec3d emitterPos, GameEvent.Emitter emitter) {}
-
-            @Override
-            public void emitGameEvent(Entity pEntity, GameEvent pEvent, BlockPos pPos) {}
-
+            @Override public void syncWorldEvent(PlayerEntity pPlayer, int pType, BlockPos pPos, int pData) {}
+            @Override public void emitGameEvent(RegistryEntry<GameEvent> event, Vec3d emitterPos, GameEvent.Emitter emitter) { }
+    
             @Override
             public List<? extends PlayerEntity> getPlayers()
             {
@@ -158,12 +154,14 @@ public class GhostChunkManager extends ChunkManager
     
             @Override public TickManager getTickManager() { return null; }
     
-            @org.jetbrains.annotations.Nullable @Override public MapState getMapState(String id) { return null; }
-            @Override public void putMapState(String id, MapState state) { }
-            @Override public int getNextMapId() { return 0; }
+            @Nullable @Override public MapState getMapState(MapIdComponent id) { return null; }
+            @Override public void putMapState(MapIdComponent id, MapState state) { }
+            @Override public MapIdComponent getNextMapId() { return new MapIdComponent(0); }
+    
             @Override public void setBlockBreakingInfo(int entityId, BlockPos pos, int progress) { }
             @Override public Scoreboard getScoreboard() { return null; }
             @Override public RecipeManager getRecipeManager() { return null; }
+            @Override public BrewingRecipeRegistry getBrewingRecipeRegistry() { return null; }
             @Override protected EntityLookup<Entity> getEntityLookup() { return null; }
         }
 

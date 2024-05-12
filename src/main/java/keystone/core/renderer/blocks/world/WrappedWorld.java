@@ -2,10 +2,12 @@ package keystone.core.renderer.blocks.world;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.map.MapState;
+import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -65,6 +67,7 @@ public class WrappedWorld extends World
     }
 
     @Override public DynamicRegistryManager getRegistryManager() { return world.getRegistryManager(); }
+    @Override public BrewingRecipeRegistry getBrewingRecipeRegistry() { return world.getBrewingRecipeRegistry(); }
     @Override public FeatureSet getEnabledFeatures() { return world.getEnabledFeatures(); }
     
     @Override public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) { return world.getGeneratorStoredBiome(biomeX, biomeY, biomeZ); }
@@ -73,7 +76,6 @@ public class WrappedWorld extends World
     @Override public QueryableTickScheduler<Block> getBlockTickScheduler() { return world.getBlockTickScheduler(); }
     @Override public QueryableTickScheduler<Fluid> getFluidTickScheduler() { return world.getFluidTickScheduler(); }
     @Override public Scoreboard getScoreboard() { return world.getScoreboard(); }
-    @Override public int getNextMapId() { return world.getNextMapId(); }
     @Override public LightingProvider getLightingProvider() { return world.getLightingProvider(); }
     @Override public BlockState getBlockState(BlockPos pos) { return world.getBlockState(pos); }
     
@@ -82,19 +84,20 @@ public class WrappedWorld extends World
 
     @Override public List<? extends PlayerEntity> getPlayers() { return Collections.emptyList(); }
     @Override public void syncWorldEvent(@org.jetbrains.annotations.Nullable PlayerEntity player, int eventId, BlockPos pos, int data) { }
-
+    @Override public void emitGameEvent(RegistryEntry<GameEvent> event, Vec3d emitterPos, GameEvent.Emitter emitter) { }
+    
     @Override public void playSound(@org.jetbrains.annotations.Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
     @Override public void playSound(@org.jetbrains.annotations.Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) { }
     @Override public void playSound(@Nullable PlayerEntity except, double x, double y, double z, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed) { }
     @Override public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed) { }
     
     @Override public void playSoundFromEntity(@org.jetbrains.annotations.Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
-    @Override public void emitGameEvent(@org.jetbrains.annotations.Nullable Entity entity, GameEvent event, BlockPos pos) { }
-    @Override public void emitGameEvent(GameEvent event, Vec3d emitterPos, GameEvent.Emitter emitter) { }
-    @Override @org.jetbrains.annotations.Nullable public MapState getMapState(String id) { return null; }
-    @Override public void putMapState(String id, MapState state) { }
     @Override @org.jetbrains.annotations.Nullable public Entity getEntityById(int id) { return null; }
     @Override public TickManager getTickManager() { return world.getTickManager(); }
+    
+    @Override public MapIdComponent getNextMapId() { return world.getNextMapId(); }
+    @Nullable @Override public MapState getMapState(MapIdComponent id) { return null; }
+    @Override public void putMapState(MapIdComponent id, MapState state) { }
     
     @Override public void setBlockBreakingInfo(int entityId, BlockPos pos, int progress) { }
     @Override public int getMaxLightLevel() { return 15; }

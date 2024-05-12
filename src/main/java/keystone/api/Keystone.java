@@ -364,9 +364,10 @@ public final class Keystone
             if (Keystone.isEnabled())
             {
                 // Fix Render System model view matrix
-                RenderSystem.getModelViewStack().push();
-                RenderSystem.getModelViewStack().peek().getPositionMatrix().set(context.matrixStack().peek().getPositionMatrix());
-                RenderSystem.getModelViewStack().peek().getNormalMatrix().set(context.matrixStack().peek().getNormalMatrix());
+                // CRITICAL TODO: Reimplement
+                //RenderSystem.getModelViewStack().push();
+                //RenderSystem.getModelViewStack().peek().getPositionMatrix().set(context.matrixStack().peek().getPositionMatrix());
+                //RenderSystem.getModelViewStack().peek().getNormalMatrix().set(context.matrixStack().peek().getNormalMatrix());
                 
                 // Begin Shape Rendering
                 ShapeRenderers.beginRender();
@@ -388,7 +389,8 @@ public final class Keystone
                 ShapeRenderers.endRender();
                 
                 // Revert model view matrix
-                RenderSystem.getModelViewStack().pop();
+                // CRITICAL TODO: Reimplement
+                //RenderSystem.getModelViewStack().pop();
             }
         });
 

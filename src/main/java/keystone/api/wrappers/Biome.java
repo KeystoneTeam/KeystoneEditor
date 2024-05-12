@@ -1,6 +1,6 @@
 package keystone.api.wrappers;
 
-import keystone.core.mixins.BiomeInvoker;
+import keystone.core.mixins.common.BiomeInvoker;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
