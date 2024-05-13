@@ -8,6 +8,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.BlockRenderManager;
+import net.minecraft.client.render.chunk.BlockBufferBuilderStorage;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.fluid.FluidState;
@@ -168,11 +169,12 @@ public class GhostWorldRenderer
             {
                 renderLayer = RenderLayers.getFluidLayer(fluidState);
                 if (!fluidBuffers.containsKey(renderLayer)) fluidBuffers.put(renderLayer, new HashMap<>());
-                if (!fluidBuffers.get(renderLayer).containsKey(chunkSectionPos)) fluidBuffers.get(renderLayer).put(chunkSectionPos, new BufferBuilder(VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL.getVertexSizeInteger()));
+                
+                if (!fluidBuffers.get(renderLayer).containsKey(chunkSectionPos)) fluidBuffers.get(renderLayer).put(chunkSectionPos, new BufferBuilder(renderLayer.getExpectedBufferSize()));
                 bufferBuilder = fluidBuffers.get(renderLayer).get(chunkSectionPos);
 
                 if (!startedFluidBufferBuilders.containsKey(renderLayer)) startedFluidBufferBuilders.put(renderLayer, new HashSet<>());
-                if (startedFluidBufferBuilders.get(renderLayer).add(chunkSectionPos)) bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
+                if (startedFluidBufferBuilders.get(renderLayer).add(chunkSectionPos)) bufferBuilder.begin(renderLayer.getDrawMode(), renderLayer.getVertexFormat());
 
                 // TODO: Check if I need to find a way to re-implement the if statement before adding the layer to usedFluidRendersLayers
                 blockRendererDispatcher.renderFluid(localPos, blockAccess, bufferBuilder, blockState, fluidState);
@@ -183,9 +185,9 @@ public class GhostWorldRenderer
             if (blockState.getRenderType() != BlockRenderType.INVISIBLE)
             {
                 renderLayer = RenderLayers.getBlockLayer(blockState);
-                if (!blockBuffers.containsKey(renderLayer)) blockBuffers.put(renderLayer, new BufferBuilder(VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL.getVertexSizeInteger()));
+                if (!blockBuffers.containsKey(renderLayer)) blockBuffers.put(renderLayer, new BufferBuilder(renderLayer.getExpectedBufferSize()));
                 bufferBuilder = blockBuffers.get(renderLayer);
-                if (startedBufferBuilders.add(renderLayer)) bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
+                if (startedBufferBuilders.add(renderLayer)) bufferBuilder.begin(renderLayer.getDrawMode(), renderLayer.getVertexFormat());
 
                 // TODO: Check if I need to find a way to re-implement the if statement before adding the layer to usedBlockRenderLayers
                 blockRendererDispatcher.renderBlock(blockState, localPos, blockAccess, ms, bufferBuilder, true, minecraft.world.random);
