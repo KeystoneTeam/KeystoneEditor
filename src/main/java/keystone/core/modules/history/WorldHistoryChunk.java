@@ -14,7 +14,7 @@ import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.NBTSerializer;
 import keystone.core.utils.PalettedArray;
-import keystone.core.utils.WorldRegistries;
+import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -27,6 +27,7 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -111,7 +112,7 @@ public class WorldHistoryChunk
             {
                 if (ChunkSectionPos.getSectionCoord(pos.getY()) != chunkY) continue;
                 BlockEntity tileEntity = chunk.getBlockEntity(pos);
-                NbtCompound nbt = tileEntity.createNbtWithIdentifyingData(WorldRegistries.registryLookup());
+                NbtCompound nbt = tileEntity.createNbtWithIdentifyingData(RegistryLookups.registryLookup());
                 oldTileEntities.put(pos, new NBTCompound(nbt.copy()));
                 tileEntityBuffer1.put(pos, new NBTCompound(nbt.copy()));
                 tileEntityBuffer2.put(pos, new NBTCompound(nbt.copy()));
@@ -212,21 +213,21 @@ public class WorldHistoryChunk
             NbtCompound buffer1NBT = biomesNBT.getCompound("Buffer1");
             NbtCompound buffer2NBT = biomesNBT.getCompound("Buffer2");
 
-            Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.biomes(world.toServerWorld());
+            RegistryWrapper<net.minecraft.world.biome.Biome> biomeRegistry = RegistryLookups.registryLookup(RegistryKeys.BIOME);
             this.oldBiomes = new PalettedArray<>(oldNBT, serialized ->
             {
                 Identifier identifier = new Identifier(serialized.asString());
-                return biomeRegistry.getEntry(RegistryKey.of(RegistryKeys.BIOME, identifier)).get();
+                return biomeRegistry.getOrThrow(RegistryKey.of(RegistryKeys.BIOME, identifier));
             });
             this.biomeBuffer1 = new PalettedArray<>(buffer1NBT, serialized ->
             {
                 Identifier identifier = new Identifier(serialized.asString());
-                return biomeRegistry.getEntry(RegistryKey.of(RegistryKeys.BIOME, identifier)).get();
+                return biomeRegistry.getOrThrow(RegistryKey.of(RegistryKeys.BIOME, identifier));
             });
             this.biomeBuffer2 = new PalettedArray<>(buffer2NBT, serialized ->
             {
                 Identifier identifier = new Identifier(serialized.asString());
-                return biomeRegistry.getEntry(RegistryKey.of(RegistryKeys.BIOME, identifier)).get();
+                return biomeRegistry.getOrThrow(RegistryKey.of(RegistryKeys.BIOME, identifier));
             });
 
             this.swappedBiomes = biomesNBT.getBoolean("Swapped");
@@ -234,9 +235,10 @@ public class WorldHistoryChunk
         }
         else
         {
-            this.oldBiomes = new PalettedArray<>(64, 1, WorldRegistries.biomes(world.toServerWorld()).entryOf(BiomeKeys.THE_VOID));
-            this.biomeBuffer1 = new PalettedArray<>(64, 1, WorldRegistries.biomes(world.toServerWorld()).entryOf(BiomeKeys.THE_VOID));
-            this.biomeBuffer2 = new PalettedArray<>(64, 1, WorldRegistries.biomes(world.toServerWorld()).entryOf(BiomeKeys.THE_VOID));
+            RegistryWrapper<net.minecraft.world.biome.Biome> biomeRegistry = RegistryLookups.registryLookup(RegistryKeys.BIOME);
+            this.oldBiomes = new PalettedArray<>(64, 1, biomeRegistry.getOrThrow(BiomeKeys.THE_VOID));
+            this.biomeBuffer1 = new PalettedArray<>(64, 1, biomeRegistry.getOrThrow(BiomeKeys.THE_VOID));
+            this.biomeBuffer2 = new PalettedArray<>(64, 1, biomeRegistry.getOrThrow(BiomeKeys.THE_VOID));
             this.swappedBiomes = false;
             this.biomesChanged = false;
         }
@@ -633,7 +635,7 @@ public class WorldHistoryChunk
                         tileEntityData.putInt("y", y);
                         tileEntityData.putInt("z", z);
                         BlockEntity tileEntity = world.getBlockEntity(pos);
-                        if (tileEntity != null) tileEntity.read(tileEntityData, WorldRegistries.registryLookup());
+                        if (tileEntity != null) tileEntity.read(tileEntityData, RegistryLookups.registryLookup());
                     }
                 }
             }
@@ -675,7 +677,7 @@ public class WorldHistoryChunk
     }
     private PalettedContainer<RegistryEntry<net.minecraft.world.biome.Biome>> createBiomeContainer(PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> array)
     {
-        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.biomes(world.toServerWorld());
+        Registry<net.minecraft.world.biome.Biome> biomeRegistry = RegistryLookups.registry(RegistryKeys.BIOME);
         PalettedContainer<RegistryEntry<net.minecraft.world.biome.Biome>> container = new PalettedContainer<>(biomeRegistry.getIndexedEntries(), biomeRegistry.entryOf(BiomeKeys.THE_VOID), PalettedContainer.PaletteProvider.BIOME);
         
         for (int x = 0; x < 4; x++)

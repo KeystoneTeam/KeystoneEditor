@@ -1,14 +1,17 @@
 package keystone.api.wrappers.blocks;
 
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
 import keystone.core.client.Player;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
-import keystone.core.utils.WorldRegistries;
+import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.command.argument.BlockStateArgument;
+import net.minecraft.command.argument.BlockStateArgumentType;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Property;
@@ -136,9 +139,9 @@ public class BlockType
                 }
                 else blockStr = blockStr + "[" + token + "]";
             }
-
-            BlockState state = BlockArgumentParser.block(WorldRegistries.blockLookup(), blockStr, false).blockState();
-            return BlockTypeRegistry.fromMinecraftBlock(state);
+            
+            BlockStateArgument parsed = BlockStateArgumentType.blockState(RegistryLookups.commandRegistryLookup()).parse(new StringReader(blockStr));
+            return BlockTypeRegistry.fromMinecraftBlock(parsed.getBlockState());
         }
         catch (ArrayIndexOutOfBoundsException e)
         {
@@ -174,9 +177,9 @@ public class BlockType
                 blockStr = newBlockStr.toString();
             }
             else blockStr = blockStr + "[" + property + "=" + value + "]";
-
-            BlockState state = BlockArgumentParser.block(WorldRegistries.blockLookup(), blockStr, false).blockState();
-            return BlockTypeRegistry.fromMinecraftBlock(state);
+            
+            BlockStateArgument parsed = BlockStateArgumentType.blockState(RegistryLookups.commandRegistryLookup()).parse(new StringReader(blockStr));
+            return BlockTypeRegistry.fromMinecraftBlock(parsed.getBlockState());
         }
         catch (CommandSyntaxException e)
         {

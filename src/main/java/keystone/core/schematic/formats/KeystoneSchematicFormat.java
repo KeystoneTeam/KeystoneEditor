@@ -9,12 +9,13 @@ import keystone.core.mixins.common.StructureTemplateAccessor;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.extensions.ISchematicExtension;
 import keystone.core.utils.NBTSerializer;
-import keystone.core.utils.WorldRegistries;
+import keystone.core.utils.RegistryLookups;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -119,7 +120,7 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         // Load Structure
         StructureTemplate template = new StructureTemplate();
         StructureTemplateAccessor accessor = (StructureTemplateAccessor) template;
-        template.readNbt(WorldRegistries.blockLookup(), nbt);
+        template.readNbt(RegistryLookups.registryLookup(RegistryKeys.BLOCK), nbt);
     
         // Copy Data
         Vec3i size = template.getSize();

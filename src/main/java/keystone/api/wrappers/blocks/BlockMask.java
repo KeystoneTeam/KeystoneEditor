@@ -1,21 +1,20 @@
 package keystone.api.wrappers.blocks;
 
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.datafixers.util.Either;
 import keystone.api.Keystone;
+import keystone.core.modules.filter.blocks.BlockListProvider;
 import keystone.core.modules.filter.blocks.BlockProviderTypes;
 import keystone.core.modules.filter.blocks.BlockTypeProvider;
 import keystone.core.modules.filter.blocks.IBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
-import keystone.core.utils.WorldRegistries;
+import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.Blocks;
-import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.command.argument.BlockPredicateArgumentType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
@@ -246,14 +245,9 @@ public class BlockMask
     {
         try
         {
-            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(WorldRegistries.blockLookup(), block, false);
-            if (parser.left().isPresent()) return with(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()));
-            if (parser.right().isPresent())
-            {
-                RegistryEntryList<net.minecraft.block.Block> tag = parser.right().get().tag();
-                for (RegistryEntry<net.minecraft.block.Block> tagElement : tag) with(BlockTypeRegistry.fromMinecraftBlock(tagElement.value().getDefaultState()));
-                return this;
-            }
+            BlockPredicateArgumentType.BlockPredicate parsed = BlockPredicateArgumentType.blockPredicate(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
+            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return with(BlockTypeRegistry.fromMinecraftBlock(statePredicate.state));
+            else if (parsed instanceof BlockPredicateArgumentType.TagPredicate tagPredicate) return with(new BlockListProvider(tagPredicate.tag, tagPredicate.properties));
         } catch (CommandSyntaxException e)
         {
             e.printStackTrace();
@@ -285,14 +279,9 @@ public class BlockMask
     {
         try
         {
-            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(WorldRegistries.blockLookup(), block, false);
-            if (parser.left().isPresent()) return withAllVariants(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()));
-            if (parser.right().isPresent())
-            {
-                RegistryEntryList<net.minecraft.block.Block> tag = parser.right().get().tag();
-                for (RegistryEntry<net.minecraft.block.Block> tagElement : tag) withAllVariants(BlockTypeRegistry.fromMinecraftBlock(tagElement.value().getDefaultState()));
-                return this;
-            }
+            BlockPredicateArgumentType.BlockPredicate parsed = BlockPredicateArgumentType.blockPredicate(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
+            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return withAllVariants(BlockTypeRegistry.fromMinecraftBlock(statePredicate.state));
+            else if (parsed instanceof BlockPredicateArgumentType.TagPredicate tagPredicate) return withAllVariants(new BlockListProvider(tagPredicate.tag, tagPredicate.properties));
         } catch (CommandSyntaxException e)
         {
             e.printStackTrace();
@@ -322,14 +311,9 @@ public class BlockMask
     {
         try
         {
-            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(WorldRegistries.blockLookup(), block, false);
-            if (parser.left().isPresent()) return without(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()));
-            if (parser.right().isPresent())
-            {
-                RegistryEntryList<net.minecraft.block.Block> tag = parser.right().get().tag();
-                for (RegistryEntry<net.minecraft.block.Block> tagElement : tag) without(BlockTypeRegistry.fromMinecraftBlock(tagElement.value().getDefaultState()));
-                return this;
-            }
+            BlockPredicateArgumentType.BlockPredicate parsed = BlockPredicateArgumentType.blockPredicate(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
+            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return without(BlockTypeRegistry.fromMinecraftBlock(statePredicate.state));
+            else if (parsed instanceof BlockPredicateArgumentType.TagPredicate tagPredicate) return without(new BlockListProvider(tagPredicate.tag, tagPredicate.properties));
         }
         catch (CommandSyntaxException e)
         {
@@ -361,14 +345,9 @@ public class BlockMask
     {
         try
         {
-            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(WorldRegistries.blockLookup(), block, false);
-            if (parser.left().isPresent()) return withoutAllVariants(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()));
-            if (parser.right().isPresent())
-            {
-                RegistryEntryList<net.minecraft.block.Block> tag = parser.right().get().tag();
-                for (RegistryEntry<net.minecraft.block.Block> tagElement : tag) withoutAllVariants(BlockTypeRegistry.fromMinecraftBlock(tagElement.value().getDefaultState()));
-                return this;
-            }
+            BlockPredicateArgumentType.BlockPredicate parsed = BlockPredicateArgumentType.blockPredicate(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
+            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return withoutAllVariants(BlockTypeRegistry.fromMinecraftBlock(statePredicate.state));
+            else if (parsed instanceof BlockPredicateArgumentType.TagPredicate tagPredicate) return withoutAllVariants(new BlockListProvider(tagPredicate.tag, tagPredicate.properties));
         } catch (CommandSyntaxException e)
         {
             e.printStackTrace();

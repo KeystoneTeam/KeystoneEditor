@@ -1,9 +1,11 @@
 package keystone.core.gui.widgets.inputs;
 
 import keystone.api.wrappers.Biome;
-import keystone.core.utils.WorldRegistries;
+import keystone.core.utils.RegistryLookups;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.Text;
 
 import java.util.Comparator;
@@ -27,10 +29,10 @@ public class BiomeWidget extends LabeledDropdownWidget<Biome>
     @Override
     public void buildOptionsList(List<Dropdown.Option<Biome>> options)
     {
-        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.biomes();
-        biomeRegistry.getKeys().forEach(biomeKey ->
+        RegistryWrapper<net.minecraft.world.biome.Biome> biomeRegistry = RegistryLookups.registryLookup(RegistryKeys.BIOME);
+        biomeRegistry.streamKeys().forEach(biomeKey ->
         {
-            Biome biome = new Biome(biomeRegistry.entryOf(biomeKey));
+            Biome biome = new Biome(biomeRegistry.getOrThrow(biomeKey));
             Text registryName = Text.literal(biomeKey.getValue().toString());
             options.add(new Dropdown.Option<>(biome, registryName, false));
         });

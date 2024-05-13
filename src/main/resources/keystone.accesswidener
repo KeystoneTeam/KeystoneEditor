@@ -1,6 +1,17 @@
-accessWidener   v1  named
+accessWidener   v2  named
 
 accessible class net/minecraft/client/world/ClientChunkManager$ClientChunkMap
+accessible class net/minecraft/server/DataPackContents$ConfigurableWrapperLookup
+accessible method net/minecraft/server/DataPackContents$ConfigurableWrapperLookup <init> (Lnet/minecraft/registry/DynamicRegistryManager;)V
+
+# Block Parsing
+accessible class net/minecraft/command/argument/BlockPredicateArgumentType$StatePredicate
+accessible class net/minecraft/command/argument/BlockPredicateArgumentType$TagPredicate
+accessible field net/minecraft/command/argument/BlockStateArgument data Lnet/minecraft/nbt/NbtCompound;
+accessible field net/minecraft/command/argument/BlockPredicateArgumentType$StatePredicate state Lnet/minecraft/block/BlockState;
+accessible field net/minecraft/command/argument/BlockPredicateArgumentType$StatePredicate nbt Lnet/minecraft/nbt/NbtCompound;
+accessible field net/minecraft/command/argument/BlockPredicateArgumentType$TagPredicate tag Lnet/minecraft/registry/entry/RegistryEntryList;
+accessible field net/minecraft/command/argument/BlockPredicateArgumentType$TagPredicate properties Ljava/util/Map;
 
 extendable method net/minecraft/client/gui/widget/ClickableWidget render (Lnet/minecraft/client/gui/DrawContext;IIF)V
 extendable method net/minecraft/client/gui/widget/CheckboxWidget <init> (IILnet/minecraft/text/Text;Lnet/minecraft/client/font/TextRenderer;ZLnet/minecraft/client/gui/widget/CheckboxWidget$Callback;)V

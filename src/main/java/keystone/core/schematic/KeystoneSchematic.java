@@ -15,7 +15,7 @@ import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import keystone.core.schematic.extensions.ISchematicExtension;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
-import keystone.core.utils.WorldRegistries;
+import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -261,7 +261,7 @@ public class KeystoneSchematic
                                     tileEntityData.putInt("z", z);
 
                                     BlockEntity tileEntity = ghostWorld.getBlockEntity(localPos);
-                                    if (tileEntity != null) tileEntity.read(tileEntityData, WorldRegistries.registryLookup());
+                                    if (tileEntity != null) tileEntity.read(tileEntityData, RegistryLookups.registryLookup());
                                 }
                             }
                         }

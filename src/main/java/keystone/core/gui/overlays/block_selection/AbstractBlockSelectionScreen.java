@@ -47,7 +47,7 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
         // Main Panel
         this.panel = createMainPanel();
         Registries.BLOCK.forEach(block -> this.panel.addBlockProvider(new BlockTypeProvider(BlockTypeRegistry.fromMinecraftBlock(block.getDefaultState())), BlockGridWidget.NAME_TOOLTIP, false));
-        Registries.BLOCK.streamTagsAndEntries().forEach(pair -> this.panel.addBlockProvider(new BlockListProvider(pair.getSecond(), null), BlockGridWidget.NAME_TOOLTIP, false));
+        Registries.BLOCK.streamTagsAndEntries().forEach(pair -> { if (pair.getSecond().size() > 0) this.panel.addBlockProvider(new BlockListProvider(pair.getSecond(), null), BlockGridWidget.NAME_TOOLTIP, false); });
         this.panel.rebuildButtons();
         addDrawableChild(this.panel);
 

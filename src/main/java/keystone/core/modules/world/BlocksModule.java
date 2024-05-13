@@ -11,7 +11,7 @@ import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.WorldHistoryChunk;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
-import keystone.core.utils.WorldRegistries;
+import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -81,7 +81,7 @@ public class BlocksModule implements IKeystoneModule
             BlockPos pos = new BlockPos(x, y, z);
             BlockEntity tileEntity = world.getBlockEntity(pos);
             if (tileEntity == null) return null;
-            else return new NBTCompound(tileEntity.createNbtWithIdentifyingData(WorldRegistries.registryLookup()));
+            else return new NBTCompound(tileEntity.createNbtWithIdentifyingData(RegistryLookups.registryLookup()));
         }
 
         WorldHistoryChunk chunk = historyModule.getOpenEntry().getOrAddChunk(x, y, z);
@@ -95,7 +95,7 @@ public class BlocksModule implements IKeystoneModule
             BlockPos pos = new BlockPos(x, y, z);
             BlockEntity tileEntity = world.getBlockEntity(pos);
             if (tileEntity == null) return new Block(BlockTypeRegistry.fromMinecraftBlock(world.getBlockState(pos)));
-            else return new Block(BlockTypeRegistry.fromMinecraftBlock(world.getBlockState(pos)), new NBTCompound(tileEntity.createNbtWithIdentifyingData(WorldRegistries.registryLookup())));
+            else return new Block(BlockTypeRegistry.fromMinecraftBlock(world.getBlockState(pos)), new NBTCompound(tileEntity.createNbtWithIdentifyingData(RegistryLookups.registryLookup())));
         }
 
         WorldHistoryChunk chunk = historyModule.getOpenEntry().getOrAddChunk(x, y, z);

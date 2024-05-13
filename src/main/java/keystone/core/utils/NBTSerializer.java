@@ -11,6 +11,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -135,7 +137,7 @@ public class NBTSerializer
         for (int i = 0; i < palette.length; i++)
         {
             NbtCompound entry = paletteNBT.getCompound(i);
-            BlockState blockState = NbtHelper.toBlockState(WorldRegistries.blockLookup(), entry);
+            BlockState blockState = NbtHelper.toBlockState(RegistryLookups.registryLookup(RegistryKeys.BLOCK), entry);
             palette[i] = BlockTypeRegistry.fromMinecraftBlock(blockState);
         }
         return palette;
@@ -248,26 +250,19 @@ public class NBTSerializer
     }
     public static List<RegistryEntry<net.minecraft.world.biome.Biome>> deserializeBiomePalette(NbtList paletteNBT)
     {
-        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.biomes();
+        RegistryWrapper<net.minecraft.world.biome.Biome> biomeRegistry = RegistryLookups.registryLookup(RegistryKeys.BIOME);
         List<RegistryEntry<net.minecraft.world.biome.Biome>> palette = new ArrayList<>();
 
         for (int i = 0; i < paletteNBT.size(); i++)
         {
-            Optional<net.minecraft.world.biome.Biome> biome = biomeRegistry.getOrEmpty(new Identifier(paletteNBT.getString(i)));
-            if (biome.isEmpty())
-            {
-                Keystone.LOGGER.error("Trying to deserialize unregistered biome '" + paletteNBT.getString(i) + "'!");
-                return null;
-            }
+            RegistryKey<net.minecraft.world.biome.Biome> biomeKey = RegistryKey.of(RegistryKeys.BIOME, new Identifier(paletteNBT.getString(i)));
+            Optional<RegistryEntry.Reference<net.minecraft.world.biome.Biome>> biome = biomeRegistry.getOptional(biomeKey);
+            
+            if (biome.isPresent()) palette.add(biome.get());
             else
             {
-                Optional<RegistryKey<net.minecraft.world.biome.Biome>> biomeKey = biomeRegistry.getKey(biome.get());
-                if (biomeKey.isPresent()) palette.add(biomeRegistry.getEntry(biomeKey.get()).get());
-                else
-                {
-                    Keystone.LOGGER.error("Trying to deserialize unregistered biome entry '" + paletteNBT.getString(i) + "'!");
-                    return null;
-                }
+                Keystone.LOGGER.error("Trying to deserialize unregistered biome '{}'!", paletteNBT.getString(i));
+                return null;
             }
         }
         return palette;

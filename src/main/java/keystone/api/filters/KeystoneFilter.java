@@ -23,19 +23,19 @@ import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
-import keystone.core.utils.WorldRegistries;
+import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.command.argument.BlockArgumentParser;
-import net.minecraft.command.argument.ItemStackArgument;
-import net.minecraft.command.argument.ItemStackArgumentType;
-import net.minecraft.command.argument.ItemStringReader;
+import net.minecraft.command.argument.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.command.FillBiomeCommand;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -402,8 +402,8 @@ public class KeystoneFilter
 
         try
         {
-            BlockArgumentParser.BlockResult parser = BlockArgumentParser.block(WorldRegistries.blockLookup(), blockType, false);
-            state = parser.blockState();
+            BlockStateArgument parsed = BlockStateArgumentType.blockState(RegistryLookups.commandRegistryLookup()).parse(new StringReader(blockType));
+            state = parsed.getBlockState();
         }
         catch (CommandSyntaxException e)
         {
@@ -424,7 +424,7 @@ public class KeystoneFilter
 
         try
         {
-            ItemStackArgument parsed = ItemStackArgumentType.itemStack(WorldRegistries.commandRegistryLookup()).parse(new StringReader(item));
+            ItemStackArgument parsed = ItemStackArgumentType.itemStack(RegistryLookups.commandRegistryLookup()).parse(new StringReader(item));
             stack = parsed.createStack(1, true);
         }
         catch (CommandSyntaxException e)
@@ -458,23 +458,8 @@ public class KeystoneFilter
      */
     public final Biome biome(String id)
     {
-        Registry<net.minecraft.world.biome.Biome> biomeRegistry = WorldRegistries.biomes();
-        Optional<net.minecraft.world.biome.Biome> optionalBiome = biomeRegistry.getOrEmpty(new Identifier(id));
-        if (optionalBiome.isPresent())
-        {
-            Optional<RegistryKey<net.minecraft.world.biome.Biome>> optionalBiomeKey = biomeRegistry.getKey(optionalBiome.get());
-            if (optionalBiomeKey.isPresent()) return new Biome(biomeRegistry.getEntry(optionalBiomeKey.get()).get());
-            else
-            {
-                getExecutor().cancel("Invalid biome entry ID: '" + id + "'!");
-                return null;
-            }
-        }
-        else
-        {
-            getExecutor().cancel("Invalid biome ID: '" + id + "'!");
-            return null;
-        }
+        RegistryEntry<net.minecraft.world.biome.Biome> parsed = RegistryLookups.parseRegistryEntry(RegistryKeys.BIOME, id);
+        return new Biome(parsed);
     }
     //endregion
     //region Schematic Creation

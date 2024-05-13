@@ -7,17 +7,17 @@ import keystone.core.gui.overlays.block_selection.BlockPropertiesScreen;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.BlockUtils;
-import keystone.core.utils.WorldRegistries;
+import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +45,7 @@ public class BlockTypeProvider implements IBlockProvider
     @Override public boolean containsBlock(BlockType block) { return this.blockType.getMinecraftBlock().getBlock().equals(block.getMinecraftBlock().getBlock()); }
     
     @Override public NbtCompound write() { return NbtHelper.fromBlockState(blockType.getMinecraftBlock()); }
-    @Override public void read(NbtCompound nbt) { blockType = BlockTypeRegistry.fromMinecraftBlock(NbtHelper.toBlockState(WorldRegistries.blockLookup(), nbt)); }
+    @Override public void read(NbtCompound nbt) { blockType = BlockTypeRegistry.fromMinecraftBlock(NbtHelper.toBlockState(RegistryLookups.registryLookup(RegistryKeys.BLOCK), nbt)); }
     
     @Override public Text getName() { return this.blockType.getMinecraftBlock().getBlock().getName(); }
     @Override

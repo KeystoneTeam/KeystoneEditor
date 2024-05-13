@@ -1,7 +1,7 @@
 package keystone.api.wrappers.blocks;
 
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.datafixers.util.Either;
 import keystone.api.Keystone;
 import keystone.core.modules.filter.blocks.BlockListProvider;
 import keystone.core.modules.filter.blocks.BlockProviderTypes;
@@ -9,8 +9,8 @@ import keystone.core.modules.filter.blocks.BlockTypeProvider;
 import keystone.core.modules.filter.blocks.IBlockProvider;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.WeightedRandom;
-import keystone.core.utils.WorldRegistries;
-import net.minecraft.command.argument.BlockArgumentParser;
+import keystone.core.utils.RegistryLookups;
+import net.minecraft.command.argument.BlockPredicateArgumentType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtIo;
@@ -208,9 +208,9 @@ public class BlockPalette
     {
         try
         {
-            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(WorldRegistries.blockLookup(), block, false);
-            if (parser.left().isPresent()) return with(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()), weight);
-            if (parser.right().isPresent()) return with(new BlockListProvider(parser.right().get().tag(), parser.right().get().vagueProperties()), weight);
+            BlockPredicateArgumentType.BlockPredicate parsed = BlockPredicateArgumentType.blockPredicate(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
+            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return with(BlockTypeRegistry.fromMinecraftBlock(statePredicate.state), weight);
+            else if (parsed instanceof BlockPredicateArgumentType.TagPredicate tagPredicate) return with(new BlockListProvider(tagPredicate.tag, tagPredicate.properties));
         }
         catch (CommandSyntaxException e)
         {
@@ -306,9 +306,9 @@ public class BlockPalette
     {
         try
         {
-            Either<BlockArgumentParser.BlockResult, BlockArgumentParser.TagResult> parser = BlockArgumentParser.blockOrTag(WorldRegistries.blockLookup(), block, false);
-            if (parser.left().isPresent()) return without(BlockTypeRegistry.fromMinecraftBlock(parser.left().get().blockState()), weight);
-            if (parser.right().isPresent()) return without(new BlockListProvider(parser.right().get().tag(), parser.right().get().vagueProperties()), weight);
+            BlockPredicateArgumentType.BlockPredicate parsed = BlockPredicateArgumentType.blockPredicate(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
+            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return without(BlockTypeRegistry.fromMinecraftBlock(statePredicate.state), weight);
+            else if (parsed instanceof BlockPredicateArgumentType.TagPredicate tagPredicate) return without(new BlockListProvider(tagPredicate.tag, tagPredicate.properties));
         }
         catch (CommandSyntaxException e)
         {

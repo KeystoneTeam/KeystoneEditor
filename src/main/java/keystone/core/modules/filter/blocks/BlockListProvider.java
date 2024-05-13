@@ -6,7 +6,7 @@ import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.overlays.block_selection.BlockGridButton;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.BlockUtils;
-import keystone.core.utils.WorldRegistries;
+import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
@@ -137,7 +137,7 @@ public class BlockListProvider implements IBlockProvider
         {
             states.clear();
             NbtList statesNBT = nbt.getList("States", NbtElement.COMPOUND_TYPE);
-            for (int i = 0; i < statesNBT.size(); i++) states.add(NbtHelper.toBlockState(WorldRegistries.blockLookup(), statesNBT.getCompound(i)));
+            for (int i = 0; i < statesNBT.size(); i++) states.add(NbtHelper.toBlockState(RegistryLookups.registryLookup(RegistryKeys.BLOCK), statesNBT.getCompound(i)));
         }
     }
     

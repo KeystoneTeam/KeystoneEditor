@@ -7,11 +7,13 @@ import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.modules.world.BlocksModule;
 import keystone.core.schematic.KeystoneSchematic;
-import keystone.core.utils.WorldRegistries;
+import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -100,25 +102,19 @@ public class BiomesExtension implements ISchematicExtension
         // Load Biome Palette
         List<RegistryEntry<Biome>> palette = new ArrayList<>();
         NbtList paletteNBT = nbt.getList("palette", NbtElement.STRING_TYPE);
-        Registry<Biome> biomeRegistry = WorldRegistries.biomes();
+        RegistryWrapper<Biome> biomeRegistry = RegistryLookups.registryLookup(RegistryKeys.BIOME);
+        
         for (int i = 0; i < paletteNBT.size(); i++)
         {
             String biomeID = paletteNBT.getString(i);
-            Optional<Biome> biome = biomeRegistry.getOrEmpty(new Identifier(biomeID));
-            if (biome.isEmpty())
-            {
-                Keystone.LOGGER.warn("Trying to load schematic with unregistered biome '" + biomeID + "'!");
-                return null;
-            }
+            RegistryKey<Biome> biomeKey = RegistryKey.of(RegistryKeys.BIOME, new Identifier(biomeID));
+            Optional<RegistryEntry.Reference<Biome>> biome = biomeRegistry.getOptional(biomeKey);
+            
+            if (biome.isPresent()) palette.add(biome.get());
             else
             {
-                Optional<RegistryKey<Biome>> biomeKey = biomeRegistry.getKey(biome.get());
-                if (biomeKey.isPresent()) palette.add(biomeRegistry.getEntry(biomeKey.get()).get());
-                else
-                {
-                    Keystone.LOGGER.warn("Trying to load schematic with unregistered biome entry '" + biomeID + "'!");
-                    return null;
-                }
+                Keystone.LOGGER.warn("Trying to load schematic with unregistered biome '{}'!", biomeID);
+                return null;
             }
         }
 

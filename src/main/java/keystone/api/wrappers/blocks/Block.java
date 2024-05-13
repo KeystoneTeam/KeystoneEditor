@@ -1,15 +1,17 @@
 package keystone.api.wrappers.blocks;
 
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.registries.BlockTypeRegistry;
-import keystone.core.utils.WorldRegistries;
+import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.command.argument.BlockStateArgument;
+import net.minecraft.command.argument.BlockStateArgumentType;
 import net.minecraft.nbt.NbtCompound;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,9 +38,9 @@ public class Block
 
         try
         {
-            BlockArgumentParser.BlockResult parser = BlockArgumentParser.block(WorldRegistries.blockLookup(), block, true);
-            state = parser.blockState();
-            tileEntity = parser.nbt();
+            BlockStateArgument parsed = BlockStateArgumentType.blockState(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
+            state = parsed.getBlockState();
+            tileEntity = parsed.data;
         }
         catch (CommandSyntaxException e)
         {
@@ -57,7 +59,7 @@ public class Block
      * @param state The Minecraft BlockState
      * @param tileEntity The Minecraft BlockEntity
      */
-    public Block(@NotNull BlockState state, BlockEntity tileEntity) { this(BlockTypeRegistry.fromMinecraftBlock(state), tileEntity == null ? null : new NBTCompound(tileEntity.createNbt(WorldRegistries.registryLookup()))); }
+    public Block(@NotNull BlockState state, BlockEntity tileEntity) { this(BlockTypeRegistry.fromMinecraftBlock(state), tileEntity == null ? null : new NBTCompound(tileEntity.createNbt(RegistryLookups.registryLookup()))); }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
      * @param state The Minecraft BlockState
