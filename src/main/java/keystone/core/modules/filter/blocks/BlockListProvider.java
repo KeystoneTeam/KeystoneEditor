@@ -9,6 +9,7 @@ import keystone.core.utils.BlockUtils;
 import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -30,6 +31,8 @@ import java.util.function.Consumer;
 
 public class BlockListProvider implements IBlockProvider
 {
+    private static final BlockType ERROR = BlockTypeRegistry.fromMinecraftBlock(Blocks.RED_STAINED_GLASS.getDefaultState());
+    
     private final List<BlockState> states = new ArrayList<>();
     private final Map<String, String> vagueProperties = new HashMap<>();
     private TagKey<Block> tag;
@@ -53,8 +56,20 @@ public class BlockListProvider implements IBlockProvider
         if (blockTag instanceof RegistryEntryList.Named<Block> namedTag) this.tag = namedTag.getTag();
     }
 
-    @Override public BlockType get() { return BlockTypeRegistry.fromMinecraftBlock(states.get(Keystone.RANDOM.nextInt(states.size()))); }
-    @Override public BlockType getFirst() { return BlockTypeRegistry.fromMinecraftBlock(this.states.get(0)); }
+    @Override public int size() { return states.size(); }
+    
+    @Override
+    public BlockType get()
+    {
+        if (this.states.isEmpty()) return ERROR;
+        return BlockTypeRegistry.fromMinecraftBlock(states.get(Keystone.RANDOM.nextInt(states.size())));
+    }
+    @Override
+    public BlockType getFirst()
+    {
+        if (this.states.isEmpty()) return ERROR;
+        return BlockTypeRegistry.fromMinecraftBlock(this.states.get(0));
+    }
     @Override public void forEach(Consumer<BlockType> consumer) { this.states.forEach(state -> consumer.accept(BlockTypeRegistry.fromMinecraftBlock(state))); }
     @Override
     public IBlockProvider clone()

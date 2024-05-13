@@ -11,6 +11,8 @@ import java.util.function.Consumer;
 
 public interface IBlockProvider
 {
+    int size();
+    
     BlockType get();
     BlockType getFirst();
     void forEach(Consumer<BlockType> consumer);

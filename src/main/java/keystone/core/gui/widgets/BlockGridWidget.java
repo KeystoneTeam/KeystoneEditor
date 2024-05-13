@@ -202,6 +202,8 @@ public class BlockGridWidget extends ClickableWidget
     public void addBlockProvider(IBlockProvider blockProvider, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, boolean rebuildButtons) { addBlockProvider(blockProvider, tooltipBuilder, 1, rebuildButtons); }
     public void addBlockProvider(IBlockProvider blockProvider, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder, int amount, boolean rebuildButtons)
     {
+        if (blockProvider.size() == 0) return;
+        
         // Increase Block Count
         Entry entry = new Entry(blockProvider, tooltipBuilder);
         if (!blockCounts.containsKey(entry))
@@ -240,38 +242,34 @@ public class BlockGridWidget extends ClickableWidget
     }
     public void filter(String searchString)
     {
-        if (searchString == null || searchString.isEmpty()) filter((Predicate<IBlockProvider>)null);
+        String filterString = searchString == null ? "" : searchString.toLowerCase().trim();
+        
+        // Tag Search
+        if (filterString.startsWith("#"))
+        {
+            filter(blockProvider ->
+            {
+                if (blockProvider instanceof BlockListProvider)
+                {
+                    String providerName = blockProvider.getName().getString().toLowerCase().trim();
+                    return providerName.contains(filterString.substring(1));
+                }
+                else return false;
+            });
+        }
+        
+        // Block Search
         else
         {
-            String filterString = searchString.toLowerCase().trim();
-    
-            // Tag Search
-            if (filterString.startsWith("#"))
+            filter(blockProvider ->
             {
-                filter(blockProvider ->
+                if (!(blockProvider instanceof BlockListProvider))
                 {
-                    if (blockProvider instanceof BlockListProvider)
-                    {
-                        String providerName = blockProvider.getName().getString().toLowerCase().trim();
-                        return providerName.contains(filterString.substring(1));
-                    }
-                    else return false;
-                });
-            }
-            
-            // Block Search
-            else
-            {
-                filter(blockProvider ->
-                {
-                    if (!(blockProvider instanceof BlockListProvider))
-                    {
-                        String providerName = blockProvider.getName().getString().toLowerCase().trim();
-                        return providerName.contains(filterString);
-                    }
-                    else return false;
-                });
-            }
+                    String providerName = blockProvider.getName().getString().toLowerCase().trim();
+                    return providerName.contains(filterString);
+                }
+                else return false;
+            });
         }
     }
     public void filter(Predicate<IBlockProvider> filter)

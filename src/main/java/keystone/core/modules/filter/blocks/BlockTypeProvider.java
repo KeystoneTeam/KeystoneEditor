@@ -36,6 +36,7 @@ public class BlockTypeProvider implements IBlockProvider
         this.blockType = blockType;
     }
 
+    @Override public int size() { return 1; }
     @Override public BlockType get() { return blockType; }
     @Override public BlockType getFirst() { return blockType; }
     @Override public void forEach(Consumer<BlockType> consumer) { consumer.accept(blockType); }
