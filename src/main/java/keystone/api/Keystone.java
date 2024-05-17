@@ -29,6 +29,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.GameMode;
+import net.minecraft.world.GameRules;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,6 +54,8 @@ public final class Keystone
     //region Active Toggle
     private static boolean enabled;
     private static boolean revertPlayerGamemode;
+    private static boolean revertTileDrops;
+    private static boolean revertMobLoot;
     private static float flySpeed = KeystoneConfig.flySpeed;
 
     /**
@@ -81,7 +84,11 @@ public final class Keystone
             client.mouse.unlockCursor();
             client.onResolutionChanged();
             KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
-            Keystone.getModule(WorldCacheModule.class).getPrimaryWorld().getServer().getTickManager().setFrozen(true);
+            
+            MinecraftServer server = Keystone.getModule(WorldCacheModule.class).getPrimaryWorld().getServer();
+            server.getTickManager().setFrozen(true);
+            revertTileDrops = server.getGameRules().get(GameRules.DO_TILE_DROPS).get(); server.getGameRules().get(GameRules.DO_TILE_DROPS).set(false, server);
+            revertMobLoot = server.getGameRules().get(GameRules.DO_MOB_LOOT).get(); server.getGameRules().get(GameRules.DO_MOB_LOOT).set(false, server);
         }
     }
     /**
@@ -96,7 +103,11 @@ public final class Keystone
         client.mouse.lockCursor();
         revertPlayerGamemode = true;
         client.onResolutionChanged();
-        Keystone.getModule(WorldCacheModule.class).getPrimaryWorld().getServer().getTickManager().setFrozen(false);
+        
+        MinecraftServer server = Keystone.getModule(WorldCacheModule.class).getPrimaryWorld().getServer();
+        server.getTickManager().setFrozen(false);
+        server.getGameRules().get(GameRules.DO_TILE_DROPS).set(revertTileDrops, server);
+        server.getGameRules().get(GameRules.DO_MOB_LOOT).set(revertMobLoot, server);
     }
     /**
      * @return If Keystone is enabled, a world is loaded, and Keystone is not waiting for
@@ -363,12 +374,6 @@ public final class Keystone
             
             if (Keystone.isEnabled())
             {
-                // Fix Render System model view matrix
-                // CRITICAL TODO: Reimplement
-                //RenderSystem.getModelViewStack().push();
-                //RenderSystem.getModelViewStack().peek().getPositionMatrix().set(context.matrixStack().peek().getPositionMatrix());
-                //RenderSystem.getModelViewStack().peek().getNormalMatrix().set(context.matrixStack().peek().getNormalMatrix());
-                
                 // Begin Shape Rendering
                 ShapeRenderers.beginRender();
                 
@@ -387,10 +392,6 @@ public final class Keystone
                 
                 // End Shape Rendering
                 ShapeRenderers.endRender();
-                
-                // Revert model view matrix
-                // CRITICAL TODO: Reimplement
-                //RenderSystem.getModelViewStack().pop();
             }
         });
 

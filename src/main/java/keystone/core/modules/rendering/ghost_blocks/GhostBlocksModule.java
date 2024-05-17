@@ -26,7 +26,6 @@ public class GhostBlocksModule implements IKeystoneModule
 {
     private final Set<GhostBlocksWorld> ghostWorlds = Collections.synchronizedSet(new HashSet<>());
     private WorldCacheModule worldCache;
-    private boolean irisLoaded;
     
     public GhostBlocksModule()
     {
@@ -36,13 +35,12 @@ public class GhostBlocksModule implements IKeystoneModule
     @Override
     public boolean isEnabled()
     {
-        return !irisLoaded;
+        return true;
     }
     @Override
     public void postInit()
     {
         this.worldCache = Keystone.getModule(WorldCacheModule.class);
-        this.irisLoaded = FabricLoader.getInstance().isModLoaded("iris");
     }
     @Override
     public void resetModule()

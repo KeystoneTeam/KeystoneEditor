@@ -61,8 +61,6 @@ public class WrappedWorld extends World
     @Override
     public boolean spawnEntity(Entity entity)
     {
-        // TODO: See if this needs to be re-implemented
-        //entity.world = world;
         return world.spawnEntity(entity);
     }
 

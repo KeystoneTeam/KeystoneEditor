@@ -7,6 +7,7 @@
     "BiomeInvoker",
     "ChunkSectionAccessor",
     "DataPackContentsMixin",
+    "ItemScattererMixin",
     "LivingEntityMixin",
     "MinecraftServerMixin",
     "PalettedBlockInfoListInvoker",
