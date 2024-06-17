@@ -1,7 +1,5 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'fabric-loom' version '1.6-SNAPSHOT'
     id 'maven-publish'
     id 'java'
@@ -88,10 +86,9 @@ shadowJar {
     exclude 'org/codehaus/commons/compiler/samples/**'
     exclude 'org/codehaus/janino/samples/**'
     exclude 'META-INF/maven/**'
-}
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-    target = tasks.shadowJar
-    prefix = "keystone.shadow"
+
+    enableRelocation true
+    relocationPrefix "keystone.shadow"
 }
 remapJar {
     archiveClassifier = 'fabric'
@@ -107,7 +104,6 @@ artifacts {
     archives shadowJar
     shadow shadowJar
 }
-tasks.shadowJar.dependsOn tasks.relocateShadowJar
 tasks.shadowJar.finalizedBy tasks.remapJar
 
 javadoc {

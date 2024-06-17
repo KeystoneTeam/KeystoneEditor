@@ -622,10 +622,14 @@ public class WorldHistoryChunk
                 {
                     BlockPos pos = start.add(x, y, z);
                     BlockState state = blockStates.get(z + y * 16 + x * 256);
-    
-                    KeystoneGlobalState.BlockTickScheduling = true;
-                    world.toServerWorld().setBlockState(pos, state, PLACE_FLAGS);
-                    KeystoneGlobalState.BlockTickScheduling = false;
+                    BlockState existing = world.getBlockState(pos);
+                    
+                    if (!state.equals(existing))
+                    {
+                        KeystoneGlobalState.BlockTickScheduling = true;
+                        world.toServerWorld().setBlockState(pos, state, PLACE_FLAGS);
+                        KeystoneGlobalState.BlockTickScheduling = false;
+                    }
                     
                     NBTCompound blockData = tileEntities.getOrDefault(pos, null);
                     if (blockData != null)
