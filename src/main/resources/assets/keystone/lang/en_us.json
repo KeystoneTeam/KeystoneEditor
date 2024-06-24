@@ -8,6 +8,8 @@
   "keystone.version_check.releasesLink": "To download the update, click",
   "keystone.version_check.releasesLink.hyperlink": "here",
   "keystone.version_check.changelog": "Changes:",
+  "keystone.version_check.error.timeout": "Keystone version check timed out!",
+  "keystone.version_check.error.generic": "Failed to perform Keystone version check!",
 
   "keystone.screen.options": "Keystone Options",
   "keystone.screen.selection": "Selection tools",

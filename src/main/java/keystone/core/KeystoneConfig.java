@@ -52,6 +52,9 @@ public class KeystoneConfig
     @Variable public static String sessionDirectory = "session";
     @Variable public static String backupDirectory = "backup";
     @Variable public static String historyDirectory = "history";
+    
+    @Header("Misc.")
+    @Variable @FloatRange(min = 0, scrollStep = 0.25f) @DisplayModifiers(numberScale = 0.05f) public static float unvisitedTimeCutoff = 100;
     //endregion
     //region Code-Only Config Options
     public static boolean debugHistoryLog = false;

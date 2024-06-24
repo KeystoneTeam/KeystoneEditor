@@ -1,6 +1,5 @@
 package keystone.core.modules.world_cache;
 
-import keystone.api.enums.WorldType;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
@@ -76,13 +75,8 @@ public class WorldCacheModule implements IKeystoneModule
         if (ghostWorlds.containsKey(dimensionId)) ghostWorlds.clear();
         ghostWorlds.put(dimensionId, new GhostBlocksWorld(world, BlockRotation.NONE, BlockMirror.NONE));
         
-        // Fire KeystoneLifecycleEvents.OPEN_WORLD if this is the first loaded world
-        if (loadedWorlds.size() == 1 && WorldType.get().supportsKeystone)
-        {
-            this.primaryWorld = world;
-            KeystoneLifecycleEvents.OPEN_WORLD.invoker().join(world);
-        }
-    
+        // Register Primary World
+        if (loadedWorlds.isEmpty()) primaryWorld = world;
     }
     private void onSaveUnloaded()
     {

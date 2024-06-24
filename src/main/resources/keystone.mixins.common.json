@@ -13,6 +13,7 @@
     "PalettedBlockInfoListInvoker",
     "PersistentStateManagerAccessor",
     "PlayerManagerMixin",
+    "RegionUpdateMixin",
     "ServerPlayerEntityMixin",
     "ServerPlayerInteractionManagerMixin",
     "StructureTemplateAccessor",

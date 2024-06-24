@@ -3,8 +3,10 @@
   "package": "keystone.core.mixins.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "BackupPromptScreenMixin",
     "ClientPlayerEntityMixin",
     "ClientPlayerInteractionManagerMixin",
+    "ClientPlayNetworkHandlerMixin",
     "ClientWorldMixin",
     "CreateWorldScreenMixin",
     "DrawContextMixin",
@@ -18,10 +20,11 @@
     "KeyboardMixin",
     "MinecraftClientMixin",
     "MouseMixin",
+    "OptimizeWorldScreenMixin",
     "SpectatorHudMixin",
     "WorldEntryMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-	}
+  }
 }

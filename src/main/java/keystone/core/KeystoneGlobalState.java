@@ -57,4 +57,7 @@ public class KeystoneGlobalState
      * biomes
      */
     public static Map<ServerWorld, List<Chunk>> DirtyChunks = Maps.newHashMap();
+    
+    public static boolean PurgeUnvisitedChunks;
+    public static int UnvisitedChunkCutoff;
 }

@@ -4,6 +4,12 @@ accessible class net/minecraft/client/world/ClientChunkManager$ClientChunkMap
 accessible class net/minecraft/server/DataPackContents$ConfigurableWrapperLookup
 accessible method net/minecraft/server/DataPackContents$ConfigurableWrapperLookup <init> (Lnet/minecraft/registry/DynamicRegistryManager;)V
 
+# accessible class net/minecraft/world/updater/WorldUpdater$RegionUpdate
+# accessible class net/minecraft/world/updater/WorldUpdater$Update
+# accessible class net/minecraft/world/updater/WorldUpdater$Region
+# accessible class net/minecraft/world/updater/WorldUpdater$WorldData
+# accessible method net/minecraft/world/updater/WorldUpdater$Update <init> (Lnet/minecraft/world/updater/WorldUpdater;Lnet/minecraft/datafixer/DataFixTypes;Ljava/lang/String;Ljava/lang/String;Lnet/minecraft/text/MutableText;Lnet/minecraft/text/MutableText;)V
+
 # Block Parsing
 accessible class net/minecraft/command/argument/BlockPredicateArgumentType$StatePredicate
 accessible class net/minecraft/command/argument/BlockPredicateArgumentType$TagPredicate
