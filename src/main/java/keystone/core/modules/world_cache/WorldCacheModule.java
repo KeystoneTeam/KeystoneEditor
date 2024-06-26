@@ -66,6 +66,9 @@ public class WorldCacheModule implements IKeystoneModule
 
     private void onWorldLoaded(MinecraftServer server, ServerWorld world)
     {
+        // Register Primary World
+        if (loadedWorlds.isEmpty() || primaryWorld == null) primaryWorld = world;
+        
         // Register World
         RegistryKey<World> dimensionId = world.getRegistryKey();
         if (loadedWorlds.containsKey(dimensionId)) loadedWorlds.clear();
@@ -74,9 +77,6 @@ public class WorldCacheModule implements IKeystoneModule
         // Register Ghost World
         if (ghostWorlds.containsKey(dimensionId)) ghostWorlds.clear();
         ghostWorlds.put(dimensionId, new GhostBlocksWorld(world, BlockRotation.NONE, BlockMirror.NONE));
-        
-        // Register Primary World
-        if (loadedWorlds.isEmpty()) primaryWorld = world;
     }
     private void onSaveUnloaded()
     {
