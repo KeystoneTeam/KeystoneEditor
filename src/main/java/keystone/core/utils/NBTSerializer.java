@@ -255,7 +255,7 @@ public class NBTSerializer
 
         for (int i = 0; i < paletteNBT.size(); i++)
         {
-            RegistryKey<net.minecraft.world.biome.Biome> biomeKey = RegistryKey.of(RegistryKeys.BIOME, new Identifier(paletteNBT.getString(i)));
+            RegistryKey<net.minecraft.world.biome.Biome> biomeKey = RegistryKey.of(RegistryKeys.BIOME, Identifier.of(paletteNBT.getString(i)));
             Optional<RegistryEntry.Reference<net.minecraft.world.biome.Biome>> biome = biomeRegistry.getOptional(biomeKey);
             
             if (biome.isPresent()) palette.add(biome.get());

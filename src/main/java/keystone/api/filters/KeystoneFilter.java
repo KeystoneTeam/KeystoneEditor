@@ -442,7 +442,7 @@ public class KeystoneFilter
      */
     public final Entity entity(String id)
     {
-        Optional<net.minecraft.entity.EntityType<?>> optionalEntity = Registries.ENTITY_TYPE.getOrEmpty(new Identifier(id));
+        Optional<net.minecraft.entity.EntityType<?>> optionalEntity = Registries.ENTITY_TYPE.getOrEmpty(Identifier.of(id));
         if (optionalEntity.isPresent()) return new Entity(id);
         else
         {

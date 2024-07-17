@@ -132,8 +132,8 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
             @Override
             public void onRegister()
             {
-                register(new Identifier("keystone:block_type"), BlockTypeProvider.class);
-                register(new Identifier("keystone:block_list"), BlockListProvider.class);
+                register(Identifier.of("keystone:block_type"), BlockTypeProvider.class);
+                register(Identifier.of("keystone:block_list"), BlockListProvider.class);
             }
         });
     }

@@ -25,7 +25,7 @@ public class BlockUtils
     {
         Item item = block.asItem();
         String blockIdentifier = Registries.BLOCK.getId(block).toString();
-        if (blockToItemMap.containsKey(blockIdentifier)) item = Registries.ITEM.get(new Identifier(blockToItemMap.get(blockIdentifier)));
+        if (blockToItemMap.containsKey(blockIdentifier)) item = Registries.ITEM.get(Identifier.of(blockToItemMap.get(blockIdentifier)));
 
         if (item == null || item == Items.AIR)
         {

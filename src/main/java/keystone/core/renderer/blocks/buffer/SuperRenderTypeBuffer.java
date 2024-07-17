@@ -4,7 +4,7 @@ package keystone.core.renderer.blocks.buffer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.minecraft.client.render.*;
-import net.minecraft.client.render.chunk.BlockBufferBuilderStorage;
+import net.minecraft.client.render.chunk.BlockBufferAllocatorStorage;
 import net.minecraft.client.render.model.ModelLoader;
 import net.minecraft.util.Util;
 
@@ -66,7 +66,7 @@ public class SuperRenderTypeBuffer implements VertexConsumerProvider
 
     private static class SuperRenderTypeBufferPhase extends VertexConsumerProvider.Immediate
     {
-        static final BlockBufferBuilderStorage blockBuilders = new BlockBufferBuilderStorage();
+        static final BlockBufferAllocatorStorage blockBuilders = new BlockBufferAllocatorStorage();
     
         /**
          * Create a mapping between RenderLayers and BufferBuilders. Look at {@link BufferBuilderStorage} for guidance.

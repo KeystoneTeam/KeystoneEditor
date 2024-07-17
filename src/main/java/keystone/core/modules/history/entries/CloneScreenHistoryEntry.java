@@ -117,7 +117,7 @@ public class CloneScreenHistoryEntry implements IHistoryEntry
 
             NbtCompound extensionsNBT = nbt.getCompound("extensions");
             this.extensionsToPlace = new HashMap<>(extensionsNBT.getKeys().size());
-            for (String key : extensionsNBT.getKeys()) extensionsToPlace.put(new Identifier(key), extensionsNBT.getBoolean(key));
+            for (String key : extensionsNBT.getKeys()) extensionsToPlace.put(Identifier.of(key), extensionsNBT.getBoolean(key));
         }
     }
 }

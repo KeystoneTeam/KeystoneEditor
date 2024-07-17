@@ -16,7 +16,7 @@ import net.minecraft.util.Identifier;
 
 public class KeystoneOverlay extends Screen implements IMouseBlocker
 {
-    private static final Identifier ROUNDED_BOX = new Identifier("keystone:textures/gui/rounded_box.png");
+    private static final Identifier ROUNDED_BOX = Identifier.of("keystone:textures/gui/rounded_box.png");
     
     protected KeystoneOverlay(Text titleIn)
     {

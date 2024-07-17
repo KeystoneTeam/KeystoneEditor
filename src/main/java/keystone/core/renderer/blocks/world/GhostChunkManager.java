@@ -156,7 +156,7 @@ public class GhostChunkManager extends ChunkManager
     
             @Nullable @Override public MapState getMapState(MapIdComponent id) { return null; }
             @Override public void putMapState(MapIdComponent id, MapState state) { }
-            @Override public MapIdComponent getNextMapId() { return new MapIdComponent(0); }
+            @Override public MapIdComponent increaseAndGetMapId() { return new MapIdComponent(0); }
     
             @Override public void setBlockBreakingInfo(int entityId, BlockPos pos, int progress) { }
             @Override public Scoreboard getScoreboard() { return null; }

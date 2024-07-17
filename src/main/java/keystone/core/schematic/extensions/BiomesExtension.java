@@ -55,7 +55,7 @@ public class BiomesExtension implements ISchematicExtension
     @Override
     public Identifier id()
     {
-        return new Identifier("keystone:biomes");
+        return Identifier.of("keystone:biomes");
     }
 
     @Override
@@ -107,7 +107,7 @@ public class BiomesExtension implements ISchematicExtension
         for (int i = 0; i < paletteNBT.size(); i++)
         {
             String biomeID = paletteNBT.getString(i);
-            RegistryKey<Biome> biomeKey = RegistryKey.of(RegistryKeys.BIOME, new Identifier(biomeID));
+            RegistryKey<Biome> biomeKey = RegistryKey.of(RegistryKeys.BIOME, Identifier.of(biomeID));
             Optional<RegistryEntry.Reference<Biome>> biome = biomeRegistry.getOptional(biomeKey);
             
             if (biome.isPresent()) palette.add(biome.get());

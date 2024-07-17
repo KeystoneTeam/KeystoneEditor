@@ -19,7 +19,7 @@ public class KeystoneHotbar extends KeystonePanel
     public static KeystoneHotbar INSTANCE = new KeystoneHotbar();
 
     private static KeystoneHotbarSlot selectedSlot;
-    private static final Identifier hotbarTexture = new Identifier("keystone:textures/gui/hotbar.png");
+    private static final Identifier hotbarTexture = Identifier.of("keystone:textures/gui/hotbar.png");
     private static final float aspectRatio = 142 / 22.0f;
 
     private HotbarButton[] hotbarButtons;

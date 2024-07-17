@@ -141,7 +141,7 @@ public class KeystoneSchematicFormat implements ISchematicFormat
             NbtCompound namespaceNBT = extensionsNBT.getCompound(namespace);
             for (String path : namespaceNBT.getKeys())
             {
-                Identifier id = new Identifier(namespace, path);
+                Identifier id = Identifier.of(namespace, path);
                 if (!dataExtensions.containsKey(id)) continue;
 
                 ISchematicExtension extension = dataExtensions.get(id).deserialize(size, blocks, entities, namespaceNBT.getCompound(path));

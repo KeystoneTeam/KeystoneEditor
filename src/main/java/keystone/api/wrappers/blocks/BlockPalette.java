@@ -95,7 +95,7 @@ public class BlockPalette
             
             // Block Provider
             NbtCompound providerNBT = entryNBT.getCompound("BlockProvider");
-            Identifier providerTypeID = new Identifier(providerNBT.getString("ID"));
+            Identifier providerTypeID = Identifier.of(providerNBT.getString("ID"));
             IBlockProvider provider = BlockProviderTypes.createFromID(providerTypeID);
             provider.read(providerNBT);
             

@@ -93,7 +93,7 @@ public class WrappedWorld extends World
     @Override @org.jetbrains.annotations.Nullable public Entity getEntityById(int id) { return null; }
     @Override public TickManager getTickManager() { return world.getTickManager(); }
     
-    @Override public MapIdComponent getNextMapId() { return world.getNextMapId(); }
+    @Override public MapIdComponent increaseAndGetMapId() { return world.increaseAndGetMapId(); }
     @Nullable @Override public MapState getMapState(MapIdComponent id) { return null; }
     @Override public void putMapState(MapIdComponent id, MapState state) { }
     

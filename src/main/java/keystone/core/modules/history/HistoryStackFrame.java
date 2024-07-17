@@ -82,7 +82,7 @@ public class HistoryStackFrame
     public void deserialize(NbtCompound nbt)
     {
         WorldCacheModule worldCacheModule = Keystone.getModule(WorldCacheModule.class);
-        world = worldCacheModule.getDimensionWorld(WorldCacheModule.getDimensionKey(new Identifier(nbt.getString("world"))));
+        world = worldCacheModule.getDimensionWorld(WorldCacheModule.getDimensionKey(Identifier.of(nbt.getString("world"))));
 
         NbtList revertNBT = nbt.getList("revert", NbtElement.COMPOUND_TYPE);
         revertEntries.clear();

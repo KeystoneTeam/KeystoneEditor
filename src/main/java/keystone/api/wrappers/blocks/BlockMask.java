@@ -109,7 +109,7 @@ public class BlockMask
             for (int i = 0; i < maskNBT.size(); i++)
             {
                 NbtCompound entryNBT = maskNBT.getCompound(i);
-                Identifier providerID = new Identifier(entryNBT.getString("ID"));
+                Identifier providerID = Identifier.of(entryNBT.getString("ID"));
                 IBlockProvider provider = BlockProviderTypes.createFromID(providerID);
                 provider.read(entryNBT);
                 this.mask.add(provider);
@@ -124,7 +124,7 @@ public class BlockMask
             for (int i = 0; i < anyVariantNBT.size(); i++)
             {
                 NbtCompound entryNBT = anyVariantNBT.getCompound(i);
-                Identifier providerID = new Identifier(entryNBT.getString("ID"));
+                Identifier providerID = Identifier.of(entryNBT.getString("ID"));
                 IBlockProvider provider = BlockProviderTypes.createFromID(providerID);
                 provider.read(entryNBT);
                 this.anyVariantMask.add(provider);

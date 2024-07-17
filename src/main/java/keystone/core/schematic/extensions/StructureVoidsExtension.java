@@ -57,7 +57,7 @@ public class StructureVoidsExtension implements ISchematicExtension
     @Override
     public Identifier id()
     {
-        return new Identifier("keystone:structure_voids");
+        return Identifier.of("keystone:structure_voids");
     }
 
     @Override

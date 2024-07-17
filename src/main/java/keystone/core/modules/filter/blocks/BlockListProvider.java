@@ -141,7 +141,7 @@ public class BlockListProvider implements IBlockProvider
             }
             
             // Tag
-            Identifier tagID = new Identifier(nbt.getString("Tag"));
+            Identifier tagID = Identifier.of(nbt.getString("Tag"));
             this.tag = TagKey.of(RegistryKeys.BLOCK, tagID);
             this.states.clear();
             Registries.BLOCK.getEntryList(this.tag).ifPresent(contents -> addTagContents(contents, this.vagueProperties));

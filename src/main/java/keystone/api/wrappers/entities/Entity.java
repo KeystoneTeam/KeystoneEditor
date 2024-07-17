@@ -64,7 +64,7 @@ public class Entity
      */
     public Entity(String id)
     {
-        Optional<EntityType<?>> type = Registries.ENTITY_TYPE.getOrEmpty(new Identifier(id));
+        Optional<EntityType<?>> type = Registries.ENTITY_TYPE.getOrEmpty(Identifier.of(id));
         if (type.isEmpty())
         {
             Keystone.tryCancelFilter("Invalid entity type '" + id + "'!");
@@ -94,7 +94,7 @@ public class Entity
     public Entity(NbtCompound nbt, boolean useMinecraftEntity)
     {
         String id = nbt.getString(net.minecraft.entity.Entity.ID_KEY);
-        Optional<EntityType<?>> type = Registries.ENTITY_TYPE.getOrEmpty(new Identifier(id));
+        Optional<EntityType<?>> type = Registries.ENTITY_TYPE.getOrEmpty(Identifier.of(id));
         if (type.isEmpty())
         {
             Keystone.tryCancelFilter("Invalid entity type '" + id + "'!");

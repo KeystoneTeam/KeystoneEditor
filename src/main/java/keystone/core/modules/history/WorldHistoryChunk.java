@@ -163,7 +163,7 @@ public class WorldHistoryChunk
         chunkZ = chunkPos[2];
     
         this.historyEntry = historyEntry;
-        world = worldCache.getDimensionWorld(WorldCacheModule.getDimensionKey(new Identifier(nbt.getString("World"))));
+        world = worldCache.getDimensionWorld(WorldCacheModule.getDimensionKey(Identifier.of(nbt.getString("World"))));
         chunk = world.getChunk(chunkX, chunkZ);
         chunkSection = world.getChunk(chunkX, chunkZ).getSection(chunk.getSectionIndex(chunkY << 4));
 
@@ -216,17 +216,17 @@ public class WorldHistoryChunk
             RegistryWrapper<net.minecraft.world.biome.Biome> biomeRegistry = RegistryLookups.registryLookup(RegistryKeys.BIOME);
             this.oldBiomes = new PalettedArray<>(oldNBT, serialized ->
             {
-                Identifier identifier = new Identifier(serialized.asString());
+                Identifier identifier = Identifier.of(serialized.asString());
                 return biomeRegistry.getOrThrow(RegistryKey.of(RegistryKeys.BIOME, identifier));
             });
             this.biomeBuffer1 = new PalettedArray<>(buffer1NBT, serialized ->
             {
-                Identifier identifier = new Identifier(serialized.asString());
+                Identifier identifier = Identifier.of(serialized.asString());
                 return biomeRegistry.getOrThrow(RegistryKey.of(RegistryKeys.BIOME, identifier));
             });
             this.biomeBuffer2 = new PalettedArray<>(buffer2NBT, serialized ->
             {
-                Identifier identifier = new Identifier(serialized.asString());
+                Identifier identifier = Identifier.of(serialized.asString());
                 return biomeRegistry.getOrThrow(RegistryKey.of(RegistryKeys.BIOME, identifier));
             });
 

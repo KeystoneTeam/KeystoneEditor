@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 public class HotbarButton extends ButtonNoHotkey
 {
-    private static final Identifier selectionTexture = new Identifier("keystone:textures/gui/hotbar.png");
+    private static final Identifier selectionTexture = Identifier.of("keystone:textures/gui/hotbar.png");
 
     private MinecraftClient mc;
     private final KeystoneHotbar parent;

@@ -172,7 +172,7 @@ public class ChangeSet
         KeystoneGlobalState.WaitingForChangeQueue = false;
         if (redrawBiomes)
         {
-            for (Map.Entry<ServerWorld, List<Chunk>> chunkList : KeystoneGlobalState.DirtyChunks.entrySet()) chunkList.getKey().getChunkManager().threadedAnvilChunkStorage.sendChunkBiomePackets(chunkList.getValue());
+            for (Map.Entry<ServerWorld, List<Chunk>> chunkList : KeystoneGlobalState.DirtyChunks.entrySet()) chunkList.getKey().getChunkManager().chunkLoadingManager.sendChunkBiomePackets(chunkList.getValue());
             KeystoneGlobalState.DirtyChunks.clear();
         }
         if (hasProgressBar) ProgressBar.finish();
