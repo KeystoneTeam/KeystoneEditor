@@ -1,5 +1,7 @@
 package keystone.api.wrappers;
 
+import keystone.api.Keystone;
+import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.utils.RandomWrapper;
 import net.minecraft.item.ItemStack;
 
@@ -55,7 +57,7 @@ public class Item
     {
         ItemStack newStack = this.stack.copy();
 
-        if (useUnbreaking) newStack.damage(damage, RandomWrapper.INSTANCE, null, () -> newStack.setCount(0));
+        if (useUnbreaking) newStack.damage(damage, Keystone.getModule(WorldCacheModule.class).getPrimaryWorld().toServerWorld(), null, item -> {});
         else newStack.setDamage(newStack.getDamage() + damage);
 
         while (newStack.getDamage() >= newStack.getMaxDamage())

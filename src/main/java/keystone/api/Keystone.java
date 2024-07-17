@@ -370,7 +370,7 @@ public final class Keystone
         WorldRenderEvents.LAST.register(context ->
         {
             // Update Client Player Data
-            Player.update(context.tickDelta(), MinecraftClient.getInstance().player);
+            Player.update(context.tickCounter().getTickDelta(true), MinecraftClient.getInstance().player);
             
             if (Keystone.isEnabled())
             {

@@ -61,7 +61,7 @@ public class GhostBlocksModule implements IKeystoneModule
             RenderSystem.polygonOffset(-0.1f, -0.2f);
     
             SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();
-            ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().render(stack, buffer, context.tickDelta()));
+            ghostWorlds.forEach(ghostWorld -> ghostWorld.getRenderer().render(stack, buffer, context.tickCounter().getTickDelta(true)));
             buffer.draw();
     
             RenderSystem.polygonOffset(0, 0);

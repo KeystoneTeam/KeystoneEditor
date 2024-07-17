@@ -18,7 +18,7 @@ public class BooleanWidget extends CheckboxWidget
 
     public BooleanWidget(int x, int y, int width, int height, Text message, boolean checked)
     {
-        super(x, y, message, MinecraftClient.getInstance().textRenderer, checked, (checkbox, newChecked) -> ((BooleanWidget) checkbox).onChanged(newChecked));
+        super(x, y, width, message, MinecraftClient.getInstance().textRenderer, checked, (checkbox, newChecked) -> ((BooleanWidget) checkbox).onChanged(newChecked));
         this.width = width;
         this.height = height;
         this.tooltipDelay = KeystoneConfig.tooltipDelay;
@@ -40,7 +40,7 @@ public class BooleanWidget extends CheckboxWidget
         {
             if (active && visible && hovered)
             {
-                if (mouseX == tooltipX && mouseY == tooltipY) tooltipTimer += MinecraftClient.getInstance().getTickDelta();
+                if (mouseX == tooltipX && mouseY == tooltipY) tooltipTimer += MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(true);
                 else if (tooltipTimer < tooltipDelay) tooltipTimer = 0;
                 
                 tooltipX = mouseX;
