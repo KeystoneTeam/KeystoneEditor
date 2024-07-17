@@ -144,6 +144,8 @@ public class GhostWorldRenderer
         startedBufferBuilders.clear();
         startedFluidBufferBuilders.clear();
 
+        // CRITICAL TODO: Reimplement Ghost World Rendering
+        /*
         final GhostBlocksWorld blockAccess = ghostBlocks;
         final BlockRenderManager blockRendererDispatcher = minecraft.getBlockRenderManager();
 
@@ -212,6 +214,7 @@ public class GhostWorldRenderer
             BufferBuilder buf = blockBuffers.get(layer);
             bufferCache.put(layer, new SuperByteBuffer(buf));
         }
+         */
     }
 
     private static int getLayerCount()

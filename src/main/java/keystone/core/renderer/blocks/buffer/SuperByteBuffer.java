@@ -152,7 +152,9 @@ public class SuperByteBuffer extends TemplateBuffer
             } else
                 builder.light(getLight(buffer, i));
 
-            builder.normal(nx, ny, nz).next();
+            // CRITICAL TODO: Check how to replace .next()
+            //builder.normal(nx, ny, nz).next();
+            builder.normal(nx, ny, nz);
         }
 
         transforms = new MatrixStack();

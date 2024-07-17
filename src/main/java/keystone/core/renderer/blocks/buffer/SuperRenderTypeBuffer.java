@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.chunk.BlockBufferAllocatorStorage;
 import net.minecraft.client.render.model.ModelLoader;
+import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.util.Util;
 
 import java.util.SortedMap;
@@ -20,16 +21,21 @@ public class SuperRenderTypeBuffer implements VertexConsumerProvider
             instance = new SuperRenderTypeBuffer();
         return instance;
     }
-
-    SuperRenderTypeBufferPhase earlyBuffer;
-    SuperRenderTypeBufferPhase defaultBuffer;
-    SuperRenderTypeBufferPhase lateBuffer;
+    
+    VertexConsumerProvider.Immediate earlyBuffer;
+    VertexConsumerProvider.Immediate defaultBuffer;
+    VertexConsumerProvider.Immediate lateBuffer;
 
     public SuperRenderTypeBuffer()
     {
-        earlyBuffer = new SuperRenderTypeBufferPhase();
-        defaultBuffer = new SuperRenderTypeBufferPhase();
-        lateBuffer = new SuperRenderTypeBufferPhase();
+        int i = Runtime.getRuntime().availableProcessors();
+        BufferBuilderStorage earlyBuffers = new BufferBuilderStorage(i);
+        BufferBuilderStorage defaultBuffers = new BufferBuilderStorage(i);
+        BufferBuilderStorage lateBuffers = new BufferBuilderStorage(i);
+        
+        earlyBuffer = earlyBuffers.getEntityVertexConsumers();
+        defaultBuffer = defaultBuffers.getEntityVertexConsumers();
+        lateBuffer = lateBuffers.getEntityVertexConsumers();
     }
 
     public VertexConsumer getEarlyBuffer(RenderLayer type)
@@ -62,51 +68,5 @@ public class SuperRenderTypeBuffer implements VertexConsumerProvider
         earlyBuffer.draw(type);
         defaultBuffer.draw(type);
         lateBuffer.draw(type);
-    }
-
-    private static class SuperRenderTypeBufferPhase extends VertexConsumerProvider.Immediate
-    {
-        static final BlockBufferAllocatorStorage blockBuilders = new BlockBufferAllocatorStorage();
-    
-        /**
-         * Create a mapping between RenderLayers and BufferBuilders. Look at {@link BufferBuilderStorage} for guidance.
-         * @return
-         */
-        static SortedMap<RenderLayer, BufferBuilder> createEntityBuilders()
-        {
-            return Util.make(new Object2ObjectLinkedOpenHashMap<>(), (map) ->
-            {
-                map.put(TexturedRenderLayers.getEntitySolid(), blockBuilders.get(RenderLayer.getSolid()));
-                map.put(TexturedRenderLayers.getEntityCutout(), blockBuilders.get(RenderLayer.getCutout()));
-                map.put(TexturedRenderLayers.getBannerPatterns(), blockBuilders.get(RenderLayer.getCutoutMipped()));
-                map.put(TexturedRenderLayers.getEntityTranslucentCull(), blockBuilders.get(RenderLayer.getTranslucent()));
-                put(map, TexturedRenderLayers.getShieldPatterns());
-                put(map, TexturedRenderLayers.getBeds());
-                put(map, TexturedRenderLayers.getShulkerBoxes());
-                put(map, TexturedRenderLayers.getSign());
-                put(map, TexturedRenderLayers.getHangingSign());
-                put(map, TexturedRenderLayers.getChest());
-                put(map, RenderLayer.getArmorGlint());
-                put(map, RenderLayer.getArmorEntityGlint());
-                put(map, RenderLayer.getGlint());
-                put(map, RenderLayer.getDirectGlint());
-                put(map, RenderLayer.getGlintTranslucent());
-                put(map, RenderLayer.getEntityGlint());
-                put(map, RenderLayer.getDirectEntityGlint());
-                put(map, RenderLayer.getWaterMask());
-                ModelLoader.BLOCK_DESTRUCTION_RENDER_LAYERS.forEach((RenderLayer) -> put(map, RenderLayer));
-            });
-        }
-
-        private static void put(Object2ObjectLinkedOpenHashMap<RenderLayer, BufferBuilder> map, RenderLayer type)
-        {
-            map.put(type, new BufferBuilder(type.getExpectedBufferSize()));
-        }
-
-        protected SuperRenderTypeBufferPhase()
-        {
-            super(new BufferBuilder(256), createEntityBuilders());
-        }
-
     }
 }

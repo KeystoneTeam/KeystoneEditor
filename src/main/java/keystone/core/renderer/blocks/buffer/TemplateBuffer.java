@@ -1,6 +1,7 @@
 package keystone.core.renderer.blocks.buffer;
 
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -13,10 +14,10 @@ public class TemplateBuffer
 
     public TemplateBuffer(BufferBuilder buf)
     {
-        BufferBuilder.BuiltBuffer state = buf.end();
-        BufferBuilder.DrawParameters parameters = state.getParameters();
-        // TODO: Check if this is the right buffer to get, and if I need to do anything with the index buffer
-        ByteBuffer rendered = state.getVertexBuffer();
+        BuiltBuffer state = buf.end();
+        BuiltBuffer.DrawParameters parameters = state.getDrawParameters();
+        // TODO: Check if this is the right buffer to get, and if I need to do anything with the sorted buffer
+        ByteBuffer rendered = state.getBuffer();
 
         formatSize = parameters.format().getVertexSizeByte();
         vertexCount = parameters.vertexCount();
