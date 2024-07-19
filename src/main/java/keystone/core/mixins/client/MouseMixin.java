@@ -83,7 +83,7 @@ public class MouseMixin
     }
 
     @Inject(method = "onFilesDropped", at = @At("HEAD"))
-    public void onFilesDropped(long window, List<Path> paths, CallbackInfo callback)
+    public void onFilesDropped(long window, List<Path> paths, int invalidFilesCount, CallbackInfo ci)
     {
         if (window == client.getWindow().getHandle()) InputEvents.FILES_DROPPED.invoker().filesDropped(paths);
     }
