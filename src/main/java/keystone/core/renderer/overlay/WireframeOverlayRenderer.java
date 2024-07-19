@@ -50,8 +50,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
             Vec3d a = vertices[i];
             Vec3d b = vertices[(i + 1) % vertices.length];
             Vec3d normal = b.subtract(a).normalize();
-            renderer.vertex(a).color(color).normal(normal).next();
-            renderer.vertex(b).color(color).normal(normal).next();
+            renderer.vertex(a).color(color).normal(normal);
+            renderer.vertex(b).color(color).normal(normal);
         }
     }
 
@@ -161,8 +161,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                     Vec3d a = min.add(0, k, i);
                     Vec3d b = min.add(0, Math.min(sizeY, k + 128), i);
                     Vec3d normal = b.subtract(a);
-                    renderer.vertex(a).color(color).normal(normal).next();
-                    renderer.vertex(b).color(color).normal(normal).next();
+                    renderer.vertex(a).color(color).normal(normal);
+                    renderer.vertex(b).color(color).normal(normal);
                 }
             }
             for (int i = 0; i < sizeY; i++)
@@ -172,8 +172,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                     Vec3d a = min.add(0, i, k);
                     Vec3d b = min.add(0, i, Math.min(sizeZ, k + 128));
                     Vec3d normal = b.subtract(a);
-                    renderer.vertex(a).color(color).normal(normal).next();
-                    renderer.vertex(b).color(color).normal(normal).next();
+                    renderer.vertex(a).color(color).normal(normal);
+                    renderer.vertex(b).color(color).normal(normal);
                 }
             }
             //endregion
@@ -188,8 +188,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                         Vec3d a = min.add(sizeX, k, i);
                         Vec3d b = min.add(sizeX, Math.min(sizeY, k + 128), i);
                         Vec3d normal = b.subtract(a);
-                        renderer.vertex(a).color(color).normal(normal).next();
-                        renderer.vertex(b).color(color).normal(normal).next();
+                        renderer.vertex(a).color(color).normal(normal);
+                        renderer.vertex(b).color(color).normal(normal);
                     }
                 }
                 for (int i = 0; i < sizeY; i++)
@@ -199,8 +199,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                         Vec3d a = min.add(sizeX, i, k);
                         Vec3d b = min.add(sizeX, i, Math.min(sizeZ, k + 128));
                         Vec3d normal = b.subtract(a);
-                        renderer.vertex(a).color(color).normal(normal).next();
-                        renderer.vertex(b).color(color).normal(normal).next();
+                        renderer.vertex(a).color(color).normal(normal);
+                        renderer.vertex(b).color(color).normal(normal);
                     }
                 }
             }
@@ -219,8 +219,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                     Vec3d a = min.add(i, 0, k);
                     Vec3d b = min.add(i, 0, Math.min(sizeZ, k + 128));
                     Vec3d normal = b.subtract(a);
-                    renderer.vertex(a).color(color).normal(normal).next();
-                    renderer.vertex(b).color(color).normal(normal).next();
+                    renderer.vertex(a).color(color).normal(normal);
+                    renderer.vertex(b).color(color).normal(normal);
                 }
             }
             for (int i = 0; i < sizeZ; i++)
@@ -230,8 +230,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                     Vec3d a = min.add(k, 0, i);
                     Vec3d b = min.add(Math.min(sizeX, k + 128), 0, i);
                     Vec3d normal = b.subtract(a);
-                    renderer.vertex(a).color(color).normal(normal).next();
-                    renderer.vertex(b).color(color).normal(normal).next();
+                    renderer.vertex(a).color(color).normal(normal);
+                    renderer.vertex(b).color(color).normal(normal);
                 }
             }
             //endregion
@@ -246,8 +246,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                         Vec3d a = min.add(i, sizeY, k);
                         Vec3d b = min.add(i, sizeY, Math.min(sizeZ, k + 128));
                         Vec3d normal = b.subtract(a);
-                        renderer.vertex(a).color(color).normal(normal).next();
-                        renderer.vertex(b).color(color).normal(normal).next();
+                        renderer.vertex(a).color(color).normal(normal);
+                        renderer.vertex(b).color(color).normal(normal);
                     }
                 }
                 for (int i = 0; i < sizeZ; i++)
@@ -257,8 +257,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                         Vec3d a = min.add(k, sizeY, i);
                         Vec3d b = min.add(Math.min(sizeX, k + 128), sizeY, i);
                         Vec3d normal = b.subtract(a);
-                        renderer.vertex(a).color(color).normal(normal).next();
-                        renderer.vertex(b).color(color).normal(normal).next();
+                        renderer.vertex(a).color(color).normal(normal);
+                        renderer.vertex(b).color(color).normal(normal);
                     }
                 }
             }
@@ -277,8 +277,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                     Vec3d a = min.add(i, k, 0);
                     Vec3d b = min.add(i, Math.min(sizeY, k + 128), 0);
                     Vec3d normal = b.subtract(a);
-                    renderer.vertex(a).color(color).normal(normal).next();
-                    renderer.vertex(b).color(color).normal(normal).next();
+                    renderer.vertex(a).color(color).normal(normal);
+                    renderer.vertex(b).color(color).normal(normal);
                 }
             }
             for (int i = 0; i < sizeY; i++)
@@ -288,8 +288,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                     Vec3d a = min.add(k, i, 0);
                     Vec3d b = min.add(Math.min(sizeX, k + 128), i, 0);
                     Vec3d normal = b.subtract(a);
-                    renderer.vertex(a).color(color).normal(normal).next();
-                    renderer.vertex(b).color(color).normal(normal).next();
+                    renderer.vertex(a).color(color).normal(normal);
+                    renderer.vertex(b).color(color).normal(normal);
                 }
             }
             //endregion
@@ -304,8 +304,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                         Vec3d a = min.add(i, k, sizeZ);
                         Vec3d b = min.add(i, Math.min(sizeY, k + 128), sizeZ);
                         Vec3d normal = b.subtract(a);
-                        renderer.vertex(a).color(color).normal(normal).next();
-                        renderer.vertex(b).color(color).normal(normal).next();
+                        renderer.vertex(a).color(color).normal(normal);
+                        renderer.vertex(b).color(color).normal(normal);
                     }
                 }
                 for (int i = 0; i < sizeY; i++)
@@ -315,8 +315,8 @@ public class WireframeOverlayRenderer implements IOverlayRenderer
                         Vec3d a = min.add(k, i, sizeZ);
                         Vec3d b = min.add(Math.min(sizeX, k + 128), i, sizeZ);
                         Vec3d normal = b.subtract(a);
-                        renderer.vertex(a).color(color).normal(normal).next();
-                        renderer.vertex(b).color(color).normal(normal).next();
+                        renderer.vertex(a).color(color).normal(normal);
+                        renderer.vertex(b).color(color).normal(normal);
                     }
                 }
             }

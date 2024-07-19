@@ -3,11 +3,10 @@ package keystone.core.renderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import keystone.core.renderer.interfaces.IRendererModifier;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.VertexBuffer;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.*;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
@@ -15,11 +14,10 @@ import org.joml.Vector3f;
 public class ShapeRenderer
 {
     private final Tessellator tessellator;
-    private final BufferBuilder buffer;
-    private final VertexBuffer bufferUpload;
+    private final RendererProperties properties;
     private final Camera camera;
     
-    private final RendererProperties properties;
+    private BufferBuilder buffer;
     
     /**
      * Create a ShapeRenderer. This will create a new {@link Tessellator} for the renderer, so avoid
@@ -28,16 +26,14 @@ public class ShapeRenderer
      */
     public ShapeRenderer(RendererProperties properties)
     {
-        this.tessellator = new Tessellator();
-        this.buffer = tessellator.getBuffer();
-        this.bufferUpload = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
+        this.tessellator = Tessellator.getInstance();
         this.camera = MinecraftClient.getInstance().gameRenderer.getCamera();
         this.properties = properties;
     }
     
     public void begin()
     {
-        buffer.begin(properties.drawMode(), properties.vertexFormat());
+        buffer = tessellator.begin(properties.drawMode(), properties.vertexFormat());
     }
     public void end()
     {
@@ -47,8 +43,10 @@ public class ShapeRenderer
         for (IRendererModifier modifier : properties.modifiers()) modifier.enable();
     
         // Sort and Draw
-        buffer.setSorter(VertexSorter.byDistance((float)camera.getPos().x, (float)camera.getPos().y, (float)camera.getPos().z));
-        tessellator.draw();
+        //buffer.setSorter(VertexSorter.byDistance((float)camera.getPos().x, (float)camera.getPos().y, (float)camera.getPos().z));
+        
+        BuiltBuffer built = buffer.endNullable();
+        if (built != null) BufferRenderer.drawWithGlobalProgram(built);
         
         // Disable the Modifiers
         for (IRendererModifier modifier : properties.modifiers()) modifier.disable();
@@ -66,7 +64,7 @@ public class ShapeRenderer
         return this;
     }
     
-    public ShapeRenderer vertex(double x, double y, double z) { buffer.vertex(x - camera.getPos().x, y - camera.getPos().y, z - camera.getPos().z); return this; }
+    public ShapeRenderer vertex(double x, double y, double z) { buffer.vertex((float)(x - camera.getPos().x), (float)(y - camera.getPos().y), (float)(z - camera.getPos().z)); return this; }
     public ShapeRenderer color(Color4f color) { buffer.color(color.r, color.g, color.b, color.a); return this; }
     public ShapeRenderer normal(float x, float y, float z) { buffer.normal(x, y, z); return this; }
     public ShapeRenderer texture(float u, float v) { buffer.texture(u, v); return this; }
@@ -74,5 +72,4 @@ public class ShapeRenderer
     public ShapeRenderer light(int u, int v) { buffer.light(u, v); return this; }
     public ShapeRenderer overlay(int uv) { buffer.overlay(uv); return this; }
     public ShapeRenderer overlay(int u, int v) { buffer.overlay(u, v); return this; }
-    public ShapeRenderer next() { buffer.next(); return this; }
 }

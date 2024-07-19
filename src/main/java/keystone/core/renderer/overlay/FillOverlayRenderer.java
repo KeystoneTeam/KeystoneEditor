@@ -46,53 +46,53 @@ public class FillOverlayRenderer implements IOverlayRenderer
         if (minX != maxX && minZ != maxZ)
         {
             color = colorProvider.apply(Direction.DOWN).withAlpha(alphaProvider.apply(Direction.DOWN));
-            quadRenderer.vertex(minX, minY, minZ).color(color).next()
-                    .vertex(maxX, minY, minZ).color(color).next()
-                    .vertex(maxX, minY, maxZ).color(color).next()
-                    .vertex(minX, minY, maxZ).color(color).next();
+            quadRenderer.vertex(minX, minY, minZ).color(color)
+                    .vertex(maxX, minY, minZ).color(color)
+                    .vertex(maxX, minY, maxZ).color(color)
+                    .vertex(minX, minY, maxZ).color(color);
 
             if (minY != maxY)
             {
                 color = colorProvider.apply(Direction.UP).withAlpha(alphaProvider.apply(Direction.UP));
-                quadRenderer.vertex(minX, maxY, maxZ).color(color).next()
-                        .vertex(maxX, maxY, maxZ).color(color).next()
-                        .vertex(maxX, maxY, minZ).color(color).next()
-                        .vertex(minX, maxY, minZ).color(color).next();
+                quadRenderer.vertex(minX, maxY, maxZ).color(color)
+                        .vertex(maxX, maxY, maxZ).color(color)
+                        .vertex(maxX, maxY, minZ).color(color)
+                        .vertex(minX, maxY, minZ).color(color);
             }
         }
 
         if (minX != maxX && minY != maxY)
         {
             color = colorProvider.apply(Direction.SOUTH).withAlpha(alphaProvider.apply(Direction.SOUTH));
-            quadRenderer.vertex(maxX, minY, maxZ).color(color).next()
-                    .vertex(maxX, maxY, maxZ).color(color).next()
-                    .vertex(minX, maxY, maxZ).color(color).next()
-                    .vertex(minX, minY, maxZ).color(color).next();
+            quadRenderer.vertex(maxX, minY, maxZ).color(color)
+                    .vertex(maxX, maxY, maxZ).color(color)
+                    .vertex(minX, maxY, maxZ).color(color)
+                    .vertex(minX, minY, maxZ).color(color);
 
             if (minZ != maxZ)
             {
                 color = colorProvider.apply(Direction.NORTH).withAlpha(alphaProvider.apply(Direction.NORTH));
-                quadRenderer.vertex(minX, minY, minZ).color(color).next()
-                        .vertex(minX, maxY, minZ).color(color).next()
-                        .vertex(maxX, maxY, minZ).color(color).next()
-                        .vertex(maxX, minY, minZ).color(color).next();
+                quadRenderer.vertex(minX, minY, minZ).color(color)
+                        .vertex(minX, maxY, minZ).color(color)
+                        .vertex(maxX, maxY, minZ).color(color)
+                        .vertex(maxX, minY, minZ).color(color);
             }
         }
         if (minY != maxY && minZ != maxZ)
         {
             color = colorProvider.apply(Direction.WEST).withAlpha(alphaProvider.apply(Direction.WEST));
-            quadRenderer.vertex(minX, minY, minZ).color(color).next()
-                    .vertex(minX, minY, maxZ).color(color).next()
-                    .vertex(minX, maxY, maxZ).color(color).next()
-                    .vertex(minX, maxY, minZ).color(color).next();
+            quadRenderer.vertex(minX, minY, minZ).color(color)
+                    .vertex(minX, minY, maxZ).color(color)
+                    .vertex(minX, maxY, maxZ).color(color)
+                    .vertex(minX, maxY, minZ).color(color);
 
             if (minX != maxX)
             {
                 color = colorProvider.apply(Direction.EAST).withAlpha(alphaProvider.apply(Direction.EAST));
-                quadRenderer.vertex(maxX, maxY, minZ).color(color).next()
-                        .vertex(maxX, maxY, maxZ).color(color).next()
-                        .vertex(maxX, minY, maxZ).color(color).next()
-                        .vertex(maxX, minY, minZ).color(color).next();
+                quadRenderer.vertex(maxX, maxY, minZ).color(color)
+                        .vertex(maxX, maxY, maxZ).color(color)
+                        .vertex(maxX, minY, maxZ).color(color)
+                        .vertex(maxX, minY, minZ).color(color);
             }
         }
     }
@@ -143,40 +143,40 @@ public class FillOverlayRenderer implements IOverlayRenderer
         Vec3d nZ = center.add(0, 0, -zRadius);
         Vec3d pZ = center.add(0, 0, zRadius);
         
-        triangleRenderer.vertex(pY).color(color).next()
-                .vertex(pX).color(color).next()
-                .vertex(nZ).color(color).next();
-        triangleRenderer.vertex(nY).color(color).next()
-                .vertex(nZ).color(color).next()
-                .vertex(pX).color(color).next();
+        triangleRenderer.vertex(pY).color(color)
+                .vertex(pX).color(color)
+                .vertex(nZ).color(color);
+        triangleRenderer.vertex(nY).color(color)
+                .vertex(nZ).color(color)
+                .vertex(pX).color(color);
     
-        triangleRenderer.vertex(pY).color(color).next()
-                .vertex(nZ).color(color).next()
-                .vertex(nX).color(color).next();
-        triangleRenderer.vertex(nY).color(color).next()
-                .vertex(nX).color(color).next()
-                .vertex(nZ).color(color).next();
+        triangleRenderer.vertex(pY).color(color)
+                .vertex(nZ).color(color)
+                .vertex(nX).color(color);
+        triangleRenderer.vertex(nY).color(color)
+                .vertex(nX).color(color)
+                .vertex(nZ).color(color);
     
-        triangleRenderer.vertex(pY).color(color).next()
-                .vertex(nX).color(color).next()
-                .vertex(pZ).color(color).next();
-        triangleRenderer.vertex(nY).color(color).next()
-                .vertex(pZ).color(color).next()
-                .vertex(nX).color(color).next();
+        triangleRenderer.vertex(pY).color(color)
+                .vertex(nX).color(color)
+                .vertex(pZ).color(color);
+        triangleRenderer.vertex(nY).color(color)
+                .vertex(pZ).color(color)
+                .vertex(nX).color(color);
     
-        triangleRenderer.vertex(pY).color(color).next()
-                .vertex(pZ).color(color).next()
-                .vertex(pX).color(color).next();
-        triangleRenderer.vertex(nY).color(color).next()
-                .vertex(pX).color(color).next()
-                .vertex(pZ).color(color).next();
+        triangleRenderer.vertex(pY).color(color)
+                .vertex(pZ).color(color)
+                .vertex(pX).color(color);
+        triangleRenderer.vertex(nY).color(color)
+                .vertex(pX).color(color)
+                .vertex(pZ).color(color);
     }
     @Override
     public void drawSphere(Vec3d center, double xRadius, double yRadius, double zRadius, Color4f color)
     {
         if (yRadius <= 0) yRadius = xRadius;
         if (zRadius <= 0) zRadius = xRadius;
-        for (Vec3d vertex : UNIT_SPHERE_VERTICES) triangleRenderer.vertex(center.add(vertex.getX() * xRadius, vertex.getY() * yRadius, vertex.getZ() * zRadius)).color(color).next();
+        for (Vec3d vertex : UNIT_SPHERE_VERTICES) triangleRenderer.vertex(center.add(vertex.getX() * xRadius, vertex.getY() * yRadius, vertex.getZ() * zRadius)).color(color);
     }
     //endregion
 }
