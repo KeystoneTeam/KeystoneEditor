@@ -31,7 +31,7 @@ public class Topsoil extends KeystoneFilter
     @Variable BlockPalette depthPalette = palette("minecraft:dirt");
     
     @Tooltip("The palette to use for a special layer placed above the surface layer.")
-    @Variable BlockPalette foliagePalette = palette("minecraft:air 4", "minecraft:grass 1");
+    @Variable BlockPalette foliagePalette = palette("minecraft:air 4", "minecraft:tall_grass 1");
 
     @Override
     public void processBlock(int x, int y, int z, WorldRegion region)

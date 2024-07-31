@@ -1,6 +1,5 @@
 package keystone.api;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import keystone.api.enums.WorldType;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.wrappers.blocks.BlockMask;
@@ -23,6 +22,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -374,8 +374,8 @@ public final class Keystone
             
             if (Keystone.isEnabled())
             {
-                // Begin Shape Rendering
-                ShapeRenderers.beginRender();
+                // Initialize Shape Rendering
+                ShapeRenderers.begin(context);
                 
                 // Render Ghost Blocks
                 ghostBlocksModule.renderGhostBlocks(context);
@@ -390,8 +390,8 @@ public final class Keystone
                     if (module.isEnabled()) module.renderWhenEnabled(context);
                 }
                 
-                // End Shape Rendering
-                ShapeRenderers.endRender();
+                // Finish Shape Rendering
+                ShapeRenderers.draw();
             }
         });
 
@@ -458,11 +458,15 @@ public final class Keystone
             {
                 player.getAbilities().setFlySpeed(0.05f);
                 MinecraftClient.getInstance().player.getAbilities().setFlySpeed(0.05f);
-
-                GameMode revertGameMode = MinecraftClient.getInstance().interactionManager.getPreviousGameMode();
-                if (revertGameMode == null || revertGameMode.getId() < 0) revertGameMode = player.getServer().getDefaultGameMode();
-                if (revertGameMode == null || revertGameMode.getId() < 0) revertGameMode = GameMode.CREATIVE;
-                player.changeGameMode(revertGameMode);
+                ClientPlayerInteractionManager interactionManager = MinecraftClient.getInstance().interactionManager;
+                
+                if (interactionManager != null)
+                {
+                    GameMode revertGameMode = interactionManager.getPreviousGameMode();
+                    if (revertGameMode == null || revertGameMode.getId() < 0) revertGameMode = player.getServer().getDefaultGameMode();
+                    if (revertGameMode == null || revertGameMode.getId() < 0) revertGameMode = GameMode.CREATIVE;
+                    player.changeGameMode(revertGameMode);
+                }
                 revertPlayerGamemode = false;
             }
         }

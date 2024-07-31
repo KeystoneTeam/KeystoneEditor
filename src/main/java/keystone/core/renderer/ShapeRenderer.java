@@ -1,12 +1,11 @@
 package keystone.core.renderer;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.VertexSorter;
 import keystone.core.renderer.interfaces.IRendererModifier;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.*;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
@@ -18,6 +17,7 @@ public class ShapeRenderer
     private final Camera camera;
     
     private BufferBuilder buffer;
+    private MatrixStack matrixStack;
     
     /**
      * Create a ShapeRenderer. This will create a new {@link Tessellator} for the renderer, so avoid
@@ -26,32 +26,34 @@ public class ShapeRenderer
      */
     public ShapeRenderer(RendererProperties properties)
     {
-        this.tessellator = Tessellator.getInstance();
+        this.tessellator = new Tessellator();
         this.camera = MinecraftClient.getInstance().gameRenderer.getCamera();
         this.properties = properties;
     }
     
-    public void begin()
+    public void begin(WorldRenderContext context)
     {
         buffer = tessellator.begin(properties.drawMode(), properties.vertexFormat());
+        matrixStack = context.matrixStack();
     }
-    public void end()
+    public void draw()
     {
         // Configure Rendering
         RenderSystem.applyModelViewMatrix();
         RenderSystem.enableDepthTest();
         for (IRendererModifier modifier : properties.modifiers()) modifier.enable();
-    
-        // Sort and Draw
-        //buffer.setSorter(VertexSorter.byDistance((float)camera.getPos().x, (float)camera.getPos().y, (float)camera.getPos().z));
         
+        // Draw
         BuiltBuffer built = buffer.endNullable();
         if (built != null) BufferRenderer.drawWithGlobalProgram(built);
         
-        // Disable the Modifiers
+        // Clear Tessellator
         for (IRendererModifier modifier : properties.modifiers()) modifier.disable();
+        tessellator.clear();
     }
-    public BufferBuilder getBuffer() { return this.buffer; }
+    
+    public BufferBuilder getBuffer() { return buffer; }
+    public MatrixStack getMatrixStack() { return matrixStack; }
     
     public ShapeRenderer vertex(Vec3d vertex) { return vertex(vertex.x, vertex.y, vertex.z); }
     public ShapeRenderer normal(Vector3f normal) { return normal(normal.x, normal.y, normal.z); }
@@ -64,9 +66,9 @@ public class ShapeRenderer
         return this;
     }
     
-    public ShapeRenderer vertex(double x, double y, double z) { buffer.vertex((float)(x - camera.getPos().x), (float)(y - camera.getPos().y), (float)(z - camera.getPos().z)); return this; }
+    public ShapeRenderer vertex(double x, double y, double z) { buffer.vertex(matrixStack.peek(), (float)(x - camera.getPos().x), (float)(y - camera.getPos().y), (float)(z - camera.getPos().z)); return this; }
     public ShapeRenderer color(Color4f color) { buffer.color(color.r, color.g, color.b, color.a); return this; }
-    public ShapeRenderer normal(float x, float y, float z) { buffer.normal(x, y, z); return this; }
+    public ShapeRenderer normal(float x, float y, float z) { buffer.normal(matrixStack.peek(), x, y, z); return this; }
     public ShapeRenderer texture(float u, float v) { buffer.texture(u, v); return this; }
     public ShapeRenderer light(int uv) { buffer.light(uv); return this; }
     public ShapeRenderer light(int u, int v) { buffer.light(u, v); return this; }
