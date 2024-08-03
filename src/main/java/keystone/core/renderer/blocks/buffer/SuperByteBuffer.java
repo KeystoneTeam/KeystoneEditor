@@ -5,10 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
@@ -45,7 +42,7 @@ public class SuperByteBuffer extends TemplateBuffer
     // TEMPORARY
     private static final Long2IntMap WORLD_LIGHT_CACHE = new Long2IntOpenHashMap();
 
-    public SuperByteBuffer(BufferBuilder buf)
+    public SuperByteBuffer(BuiltBuffer buf)
     {
         super(buf);
         transforms = new MatrixStack();

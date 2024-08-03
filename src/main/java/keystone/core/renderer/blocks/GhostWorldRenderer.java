@@ -1,5 +1,6 @@
 package keystone.core.renderer.blocks;
 
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import keystone.core.renderer.blocks.buffer.SuperByteBuffer;
 import keystone.core.renderer.blocks.buffer.SuperRenderTypeBuffer;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
@@ -8,7 +9,10 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.BlockRenderManager;
+import net.minecraft.client.render.chunk.BlockBufferAllocatorStorage;
+import net.minecraft.client.render.chunk.SectionBuilder;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
+import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.BlockMirror;
@@ -25,24 +29,22 @@ import java.util.Set;
 
 public class GhostWorldRenderer
 {
+    private static GhostSectionBuilder chunkBuilder;
+    
     private final MinecraftClient minecraft;
-    private final Map<RenderLayer, SuperByteBuffer> bufferCache = new HashMap<>(getLayerCount());
-    private final Set<RenderLayer> usedBlockRenderLayers = new HashSet<>(getLayerCount());
-    private final Set<RenderLayer> startedBufferBuilders = new HashSet<>(getLayerCount());
-    private final Map<RenderLayer, Map<ChunkSectionPos, SuperByteBuffer>> fluidBufferCache = new HashMap<>(getLayerCount());
-    private final Set<RenderLayer> usedFluidRenderLayers = new HashSet<>(getLayerCount());
-    private final Map<RenderLayer, Set<ChunkSectionPos>> startedFluidBufferBuilders = new HashMap<>(getLayerCount());
-    private boolean changed;
+    private final Map<ChunkSectionPos, BuiltGhostChunkSection> chunks;
 
     protected GhostBlocksWorld ghostBlocks;
-
     public Vec3d offset;
-
+    private boolean changed;
+    
     public GhostWorldRenderer()
     {
         minecraft = MinecraftClient.getInstance();
-        changed = false;
+        chunks = new Reference2ObjectArrayMap<>();
         offset = Vec3d.ZERO;
+        changed = false;
+        if (chunkBuilder == null) chunkBuilder = new GhostSectionBuilder(minecraft);
     }
 
     public void display(GhostBlocksWorld world)
@@ -60,45 +62,16 @@ public class GhostWorldRenderer
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.world == null || mc.player == null || !changed) return;
 
-        redraw(mc);
+        redraw();
         changed = false;
     }
 
     public void render(MatrixStack ms, SuperRenderTypeBuffer buffer, float partialTicks)
     {
         ms.push();
-        ms.translate(offset.x, offset.y, offset.z);
+        applyOrientation(ms);
 
-        // Apply Ghost World Orientation to MatrixStack
-        int xAxisSize = ghostBlocks.getRotation() == BlockRotation.NONE || ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getBlockCountX() : ghostBlocks.getBounds().getBlockCountZ();
-        int zAxisSize = ghostBlocks.getRotation() == BlockRotation.NONE || ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getBlockCountZ() : ghostBlocks.getBounds().getBlockCountX();
-        if (ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_90)
-        {
-            ms.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-90));
-            ms.translate(0, 0, -xAxisSize);
-        }
-        else if (ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_180)
-        {
-            ms.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
-            ms.translate(-xAxisSize, 0, -zAxisSize);
-        }
-        else if (ghostBlocks.getRotation() == BlockRotation.COUNTERCLOCKWISE_90)
-        {
-            ms.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90));
-            ms.translate(-zAxisSize, 0, 0);
-        }
-
-        if (ghostBlocks.getMirror() == BlockMirror.FRONT_BACK)
-        {
-            ms.scale(-1.0f, 1.0f, 1.0f);
-            ms.translate(-ghostBlocks.getBounds().getBlockCountX(), 0, 0);
-        }
-        else if (ghostBlocks.getMirror() == BlockMirror.LEFT_RIGHT)
-        {
-            ms.scale(1.0f, 1.0f, -1.0f);
-            ms.translate(0, 0, -ghostBlocks.getBounds().getBlockCountZ());
-        }
-
+        // TODO: Check if this can be removed
         buffer.getBuffer(RenderLayer.getSolid());
 
         // Dispatch Ghost World Entity Rendering
@@ -110,116 +83,84 @@ public class GhostWorldRenderer
             entityRenderer.render(entity, entity.getX(), entity.getY(), entity.getZ(), entity.getYaw(), 0, ms, buffer, light);
         });
     
-        // Dispatch Ghost World Block Rendering
+        // Process Each RenderLayer
         for (RenderLayer layer : RenderLayer.getBlockLayers())
         {
-            if (!usedBlockRenderLayers.contains(layer)) continue;
-            SuperByteBuffer superByteBuffer = bufferCache.get(layer);
-            superByteBuffer.renderInto(ms, buffer.getBuffer(layer));
-        }
-        TileEntityRenderHelper.renderTileEntities(ghostBlocks, ghostBlocks.getRenderedTileEntities(), ms, new MatrixStack(), buffer, partialTicks);
-        
-        // Dispatch Ghost World Fluid Rendering
-        for (RenderLayer layer : RenderLayer.getBlockLayers())
-        {
-            if (!usedFluidRenderLayers.contains(layer)) continue;
-            Map<ChunkSectionPos, SuperByteBuffer> fluidChunks = fluidBufferCache.get(layer);
-            for (Map.Entry<ChunkSectionPos, SuperByteBuffer> entry : fluidChunks.entrySet())
+            // Iterate through chunk sections
+            for (Map.Entry<ChunkSectionPos, BuiltGhostChunkSection> entry : chunks.entrySet())
             {
+                // Get Chunk Data
+                ChunkSectionPos pos = entry.getKey();
+                BuiltGhostChunkSection section = entry.getValue();
+                
+                // Apply Chunk Position
                 ms.push();
-                ms.translate(entry.getKey().getMinX(), entry.getKey().getMinY(), entry.getKey().getMinZ());
-                entry.getValue().renderInto(ms, buffer.getBuffer(layer));
+                ms.translate(pos.getMinX(), pos.getMinY(), pos.getMinZ());
+                
+                // Render Layer
+                SuperByteBuffer layerBuffer = section.buffers.get(layer);
+                if (layerBuffer != null) layerBuffer.renderInto(ms, buffer.getBuffer(layer));
+                
                 ms.pop();
             }
         }
+        TileEntityRenderHelper.renderTileEntities(ghostBlocks, ghostBlocks.getRenderedTileEntities(), ms, new MatrixStack(), buffer, partialTicks);
 
         ms.pop();
     }
-
-    // For vanilla implementation, see ChunkBuilder.BuiltChunk.RebuildTask.render()
-    protected void redraw(MinecraftClient minecraft)
+    
+    protected void redraw()
     {
-        usedBlockRenderLayers.clear();
-        usedFluidRenderLayers.clear();
-        startedBufferBuilders.clear();
-        startedFluidBufferBuilders.clear();
-
-        // CRITICAL TODO: Reimplement Ghost World Rendering
-        /*
-        final GhostBlocksWorld blockAccess = ghostBlocks;
-        final BlockRenderManager blockRendererDispatcher = minecraft.getBlockRenderManager();
-
-        Map<RenderLayer, BufferBuilder> blockBuffers = new HashMap<>();
-        Map<RenderLayer, Map<ChunkSectionPos, BufferBuilder>> fluidBuffers = new HashMap<>();
-        MatrixStack ms = new MatrixStack();
-
-        BlockPos.stream(blockAccess.getBounds()).forEach(localPos ->
+        chunks.clear();
+        ChunkSectionPos min = ChunkSectionPos.from(new BlockPos(ghostBlocks.getBounds().getMinX(), ghostBlocks.getBounds().getMinY(), ghostBlocks.getBounds().getMinZ()));
+        ChunkSectionPos max = ChunkSectionPos.from(new BlockPos(ghostBlocks.getBounds().getMaxX(), ghostBlocks.getBounds().getMaxY(), ghostBlocks.getBounds().getMaxZ()));
+        
+        for (int sectionY = min.getSectionY(); sectionY <= max.getSectionY(); sectionY++)
         {
-            ms.push();
-            ms.translate(localPos.getX(), localPos.getY(), localPos.getZ());
-
-            ChunkSectionPos chunkSectionPos = ChunkSectionPos.from(localPos);
-            BlockState blockState = blockAccess.getBlockState(localPos);
-            FluidState fluidState = blockState.getFluidState();
-
-            RenderLayer renderLayer;
-            BufferBuilder bufferBuilder;
-
-            // Fluid Rendering
-            if (!fluidState.isEmpty())
+            for (int sectionX = min.getSectionX(); sectionX <= max.getSectionX(); sectionX++)
             {
-                renderLayer = RenderLayers.getFluidLayer(fluidState);
-                if (!fluidBuffers.containsKey(renderLayer)) fluidBuffers.put(renderLayer, new HashMap<>());
-                
-                if (!fluidBuffers.get(renderLayer).containsKey(chunkSectionPos)) fluidBuffers.get(renderLayer).put(chunkSectionPos, new BufferBuilder(renderLayer.getExpectedBufferSize()));
-                bufferBuilder = fluidBuffers.get(renderLayer).get(chunkSectionPos);
-
-                if (!startedFluidBufferBuilders.containsKey(renderLayer)) startedFluidBufferBuilders.put(renderLayer, new HashSet<>());
-                if (startedFluidBufferBuilders.get(renderLayer).add(chunkSectionPos)) bufferBuilder.begin(renderLayer.getDrawMode(), renderLayer.getVertexFormat());
-
-                // TODO: Check if I need to find a way to re-implement the if statement before adding the layer to usedFluidRendersLayers
-                blockRendererDispatcher.renderFluid(localPos, blockAccess, bufferBuilder, blockState, fluidState);
-                usedFluidRenderLayers.add(renderLayer);
+                for (int sectionZ = min.getSectionX(); sectionZ <= max.getSectionZ(); sectionZ++)
+                {
+                    ChunkSectionPos pos = ChunkSectionPos.from(sectionX, sectionY, sectionZ);
+                    BuiltGhostChunkSection built = chunkBuilder.build(ghostBlocks, pos);
+                    chunks.put(pos, built);
+                }
             }
-
-            // Block Rendering
-            if (blockState.getRenderType() != BlockRenderType.INVISIBLE)
-            {
-                renderLayer = RenderLayers.getBlockLayer(blockState);
-                if (!blockBuffers.containsKey(renderLayer)) blockBuffers.put(renderLayer, new BufferBuilder(renderLayer.getExpectedBufferSize()));
-                bufferBuilder = blockBuffers.get(renderLayer);
-                if (startedBufferBuilders.add(renderLayer)) bufferBuilder.begin(renderLayer.getDrawMode(), renderLayer.getVertexFormat());
-
-                // TODO: Check if I need to find a way to re-implement the if statement before adding the layer to usedBlockRenderLayers
-                blockRendererDispatcher.renderBlock(blockState, localPos, blockAccess, ms, bufferBuilder, true, minecraft.world.random);
-                usedBlockRenderLayers.add(renderLayer);
-            }
-
-            ms.pop();
-        });
-
-        // Finish Drawing Fluids
-        for (RenderLayer layer : startedFluidBufferBuilders.keySet())
-        {
-            Map<ChunkSectionPos, BufferBuilder> chunkBuffers = fluidBuffers.get(layer);
-            Map<ChunkSectionPos, SuperByteBuffer> byteBuffers = new HashMap<>();
-
-            for (Map.Entry<ChunkSectionPos, BufferBuilder> entry : chunkBuffers.entrySet()) byteBuffers.put(entry.getKey(), new SuperByteBuffer(entry.getValue()));
-            fluidBufferCache.put(layer, byteBuffers);
         }
-
-        // Finish Drawing Blocks
-        for (RenderLayer layer : startedBufferBuilders)
-        {
-            BufferBuilder buf = blockBuffers.get(layer);
-            bufferCache.put(layer, new SuperByteBuffer(buf));
-        }
-         */
     }
-
-    private static int getLayerCount()
+    
+    private void applyOrientation(MatrixStack matrixStack)
     {
-        return RenderLayer.getBlockLayers()
-                .size();
+        matrixStack.translate(offset.x, offset.y, offset.z);
+        
+        // Apply Ghost World Orientation to MatrixStack
+        int xAxisSize = ghostBlocks.getRotation() == BlockRotation.NONE || ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getBlockCountX() : ghostBlocks.getBounds().getBlockCountZ();
+        int zAxisSize = ghostBlocks.getRotation() == BlockRotation.NONE || ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_180 ? ghostBlocks.getBounds().getBlockCountZ() : ghostBlocks.getBounds().getBlockCountX();
+        if (ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_90)
+        {
+            matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-90));
+            matrixStack.translate(0, 0, -xAxisSize);
+        }
+        else if (ghostBlocks.getRotation() == BlockRotation.CLOCKWISE_180)
+        {
+            matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
+            matrixStack.translate(-xAxisSize, 0, -zAxisSize);
+        }
+        else if (ghostBlocks.getRotation() == BlockRotation.COUNTERCLOCKWISE_90)
+        {
+            matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90));
+            matrixStack.translate(-zAxisSize, 0, 0);
+        }
+        
+        if (ghostBlocks.getMirror() == BlockMirror.FRONT_BACK)
+        {
+            matrixStack.scale(-1.0f, 1.0f, 1.0f);
+            matrixStack.translate(-ghostBlocks.getBounds().getBlockCountX(), 0, 0);
+        }
+        else if (ghostBlocks.getMirror() == BlockMirror.LEFT_RIGHT)
+        {
+            matrixStack.scale(1.0f, 1.0f, -1.0f);
+            matrixStack.translate(0, 0, -ghostBlocks.getBounds().getBlockCountZ());
+        }
     }
 }

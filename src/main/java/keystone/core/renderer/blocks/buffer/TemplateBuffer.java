@@ -12,12 +12,11 @@ public class TemplateBuffer
     protected int formatSize;
     protected int vertexCount;
 
-    public TemplateBuffer(BufferBuilder buf)
+    public TemplateBuffer(BuiltBuffer buffer)
     {
-        BuiltBuffer state = buf.end();
-        BuiltBuffer.DrawParameters parameters = state.getDrawParameters();
+        BuiltBuffer.DrawParameters parameters = buffer.getDrawParameters();
         // TODO: Check if this is the right buffer to get, and if I need to do anything with the sorted buffer
-        ByteBuffer rendered = state.getBuffer();
+        ByteBuffer rendered = buffer.getBuffer();
 
         formatSize = parameters.format().getVertexSizeByte();
         vertexCount = parameters.vertexCount();

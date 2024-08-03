@@ -2,14 +2,7 @@ package keystone.core.renderer.blocks.buffer;
 
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.minecraft.client.render.*;
-import net.minecraft.client.render.chunk.BlockBufferAllocatorStorage;
-import net.minecraft.client.render.model.ModelLoader;
-import net.minecraft.client.util.BufferAllocator;
-import net.minecraft.util.Util;
-
-import java.util.SortedMap;
 
 public class SuperRenderTypeBuffer implements VertexConsumerProvider
 {
@@ -22,51 +15,30 @@ public class SuperRenderTypeBuffer implements VertexConsumerProvider
         return instance;
     }
     
-    VertexConsumerProvider.Immediate earlyBuffer;
-    VertexConsumerProvider.Immediate defaultBuffer;
-    VertexConsumerProvider.Immediate lateBuffer;
+    VertexConsumerProvider.Immediate consumers;
 
     public SuperRenderTypeBuffer()
     {
         int i = Runtime.getRuntime().availableProcessors();
-        BufferBuilderStorage earlyBuffers = new BufferBuilderStorage(i);
-        BufferBuilderStorage defaultBuffers = new BufferBuilderStorage(i);
-        BufferBuilderStorage lateBuffers = new BufferBuilderStorage(i);
-        
-        earlyBuffer = earlyBuffers.getEntityVertexConsumers();
-        defaultBuffer = defaultBuffers.getEntityVertexConsumers();
-        lateBuffer = lateBuffers.getEntityVertexConsumers();
+        BufferBuilderStorage buffers = new BufferBuilderStorage(i);
+        consumers = buffers.getEntityVertexConsumers();
     }
-
-    public VertexConsumer getEarlyBuffer(RenderLayer type)
-    {
-        return earlyBuffer.getBuffer(type);
-    }
-
+    
     @Override
     public VertexConsumer getBuffer(RenderLayer type)
     {
-        return defaultBuffer.getBuffer(type);
+        return consumers.getBuffer(type);
     }
-
-    public VertexConsumer getLateBuffer(RenderLayer type)
-    {
-        return lateBuffer.getBuffer(type);
-    }
-
+    
     public void draw()
     {
         RenderSystem.disableCull();
-        earlyBuffer.draw();
-        defaultBuffer.draw();
-        lateBuffer.draw();
+        consumers.draw();
     }
 
     public void draw(RenderLayer type)
     {
         RenderSystem.disableCull();
-        earlyBuffer.draw(type);
-        defaultBuffer.draw(type);
-        lateBuffer.draw(type);
+        consumers.draw(type);
     }
 }
