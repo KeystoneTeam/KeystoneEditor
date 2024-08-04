@@ -2,6 +2,7 @@ package keystone.core.renderer.blocks.world;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -35,50 +36,52 @@ import java.util.Collections;
 import java.util.List;
 
 @MethodsReturnNonnullByDefault
-public class WrappedWorld extends World
+public class WrappedClientWorld extends World
 {
-    protected World world;
     protected ChunkManager chunkManager;
     protected DummyEntityLookup<Entity> entityLookup = new DummyEntityLookup<>();
 
-    public WrappedWorld(World world)
+    public WrappedClientWorld()
     {
-        super((MutableWorldProperties) world.getLevelProperties(), world.getRegistryKey(), world.getRegistryManager(), world.getDimensionEntry(), world.getProfilerSupplier(), world.isClient, world.isDebugWorld(), 0, -1);
-        this.world = world;
+        super(
+                MinecraftClient.getInstance().world.getLevelProperties(),
+                MinecraftClient.getInstance().world.getRegistryKey(),
+                MinecraftClient.getInstance().world.getRegistryManager(),
+                MinecraftClient.getInstance().world.getDimensionEntry(),
+                MinecraftClient.getInstance().world.getProfilerSupplier(),
+                MinecraftClient.getInstance().world.isClient,
+                MinecraftClient.getInstance().world.isDebugWorld(), 0, -1
+        );
     }
 
     public void setChunkManager(ChunkManager chunkManager)
     {
         this.chunkManager = chunkManager;
     }
-    public World getWorld()
-    {
-        return this.world;
-    }
 
     @Override protected EntityLookup<Entity> getEntityLookup() { return this.entityLookup; }
-    @Override public ChunkManager getChunkManager() { return chunkManager != null ? chunkManager : world.getChunkManager(); }
+    @Override public ChunkManager getChunkManager() { return chunkManager != null ? chunkManager : MinecraftClient.getInstance().world.getChunkManager(); }
     @Override
     public boolean spawnEntity(Entity entity)
     {
-        return world.spawnEntity(entity);
+        return MinecraftClient.getInstance().world.spawnEntity(entity);
     }
 
-    @Override public DynamicRegistryManager getRegistryManager() { return world.getRegistryManager(); }
-    @Override public BrewingRecipeRegistry getBrewingRecipeRegistry() { return world.getBrewingRecipeRegistry(); }
-    @Override public FeatureSet getEnabledFeatures() { return world.getEnabledFeatures(); }
+    @Override public DynamicRegistryManager getRegistryManager() { return MinecraftClient.getInstance().world.getRegistryManager(); }
+    @Override public BrewingRecipeRegistry getBrewingRecipeRegistry() { return MinecraftClient.getInstance().world.getBrewingRecipeRegistry(); }
+    @Override public FeatureSet getEnabledFeatures() { return MinecraftClient.getInstance().world.getEnabledFeatures(); }
     
-    @Override public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) { return world.getGeneratorStoredBiome(biomeX, biomeY, biomeZ); }
-    @Override public void updateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags) { world.updateListeners(pos, oldState, newState, flags); }
-    @Override public float getBrightness(Direction direction, boolean shaded) { return world.getBrightness(direction, shaded); }
-    @Override public QueryableTickScheduler<Block> getBlockTickScheduler() { return world.getBlockTickScheduler(); }
-    @Override public QueryableTickScheduler<Fluid> getFluidTickScheduler() { return world.getFluidTickScheduler(); }
-    @Override public Scoreboard getScoreboard() { return world.getScoreboard(); }
-    @Override public LightingProvider getLightingProvider() { return world.getLightingProvider(); }
-    @Override public BlockState getBlockState(BlockPos pos) { return world.getBlockState(pos); }
+    @Override public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) { return MinecraftClient.getInstance().world.getGeneratorStoredBiome(biomeX, biomeY, biomeZ); }
+    @Override public void updateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags) { MinecraftClient.getInstance().world.updateListeners(pos, oldState, newState, flags); }
+    @Override public float getBrightness(Direction direction, boolean shaded) { return MinecraftClient.getInstance().world.getBrightness(direction, shaded); }
+    @Override public QueryableTickScheduler<Block> getBlockTickScheduler() { return MinecraftClient.getInstance().world.getBlockTickScheduler(); }
+    @Override public QueryableTickScheduler<Fluid> getFluidTickScheduler() { return MinecraftClient.getInstance().world.getFluidTickScheduler(); }
+    @Override public Scoreboard getScoreboard() { return MinecraftClient.getInstance().world.getScoreboard(); }
+    @Override public LightingProvider getLightingProvider() { return MinecraftClient.getInstance().world.getLightingProvider(); }
+    @Override public BlockState getBlockState(BlockPos pos) { return MinecraftClient.getInstance().world.getBlockState(pos); }
     
-    @Override public RecipeManager getRecipeManager() { return world.getRecipeManager(); }
-    @Override public String asString() { return world.asString(); }
+    @Override public RecipeManager getRecipeManager() { return MinecraftClient.getInstance().world.getRecipeManager(); }
+    @Override public String asString() { return MinecraftClient.getInstance().world.asString(); }
 
     @Override public List<? extends PlayerEntity> getPlayers() { return Collections.emptyList(); }
     @Override public void syncWorldEvent(@org.jetbrains.annotations.Nullable PlayerEntity player, int eventId, BlockPos pos, int data) { }
@@ -91,9 +94,9 @@ public class WrappedWorld extends World
     
     @Override public void playSoundFromEntity(@org.jetbrains.annotations.Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) { }
     @Override @org.jetbrains.annotations.Nullable public Entity getEntityById(int id) { return null; }
-    @Override public TickManager getTickManager() { return world.getTickManager(); }
+    @Override public TickManager getTickManager() { return MinecraftClient.getInstance().world.getTickManager(); }
     
-    @Override public MapIdComponent increaseAndGetMapId() { return world.increaseAndGetMapId(); }
+    @Override public MapIdComponent increaseAndGetMapId() { return MinecraftClient.getInstance().world.increaseAndGetMapId(); }
     @Nullable @Override public MapState getMapState(MapIdComponent id) { return null; }
     @Override public void putMapState(MapIdComponent id, MapState state) { }
     

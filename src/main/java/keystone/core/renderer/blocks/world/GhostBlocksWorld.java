@@ -7,9 +7,8 @@ import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
@@ -37,7 +36,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class GhostBlocksWorld extends WrappedWorld implements ServerWorldAccess
+public class GhostBlocksWorld extends WrappedClientWorld implements ServerWorldAccess
 {
     protected Map<BlockPos, BlockState> blocks;
     protected Map<BlockPos, BlockEntity> tileEntities;
@@ -48,9 +47,8 @@ public class GhostBlocksWorld extends WrappedWorld implements ServerWorldAccess
     protected BlockRotation rotation;
     protected BlockMirror mirror;
 
-    public GhostBlocksWorld(World original, BlockRotation rotation, BlockMirror mirror)
+    public GhostBlocksWorld(BlockRotation rotation, BlockMirror mirror)
     {
-        super(original);
         setChunkManager(new GhostChunkManager(this));
 
         this.blocks = new HashMap<>();
@@ -171,13 +169,13 @@ public class GhostBlocksWorld extends WrappedWorld implements ServerWorldAccess
     @Override
     public RegistryEntry<Biome> getBiome(BlockPos pos)
     {
-        return world.getRegistryManager().get(RegistryKeys.BIOME).getEntry(BiomeKeys.THE_VOID).get();
+        return MinecraftClient.getInstance().world.getRegistryManager().get(RegistryKeys.BIOME).getEntry(BiomeKeys.THE_VOID).get();
     }
     
     @Override
     public FeatureSet getEnabledFeatures()
     {
-        return world.getEnabledFeatures();
+        return MinecraftClient.getInstance().world.getEnabledFeatures();
     }
     
     @Override
@@ -271,7 +269,6 @@ public class GhostBlocksWorld extends WrappedWorld implements ServerWorldAccess
     @Override
     public ServerWorld toServerWorld()
     {
-        if (this.world instanceof ServerWorld) return (ServerWorld) this.world;
         throw new IllegalStateException("Cannot use ServerLevelAccess#toServerWorld in a client environment");
     }
 }

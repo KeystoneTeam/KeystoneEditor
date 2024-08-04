@@ -4,6 +4,7 @@ import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
@@ -18,8 +19,8 @@ import java.util.Map;
 
 public class WorldCacheModule implements IKeystoneModule
 {
-    private Map<RegistryKey<World>, ServerWorld> loadedWorlds;
-    private Map<RegistryKey<World>, GhostBlocksWorld> ghostWorlds;
+    private final Map<RegistryKey<World>, ServerWorld> loadedWorlds;
+    private final Map<RegistryKey<World>, GhostBlocksWorld> ghostWorlds;
     private ServerWorld primaryWorld;
 
     public WorldCacheModule()
@@ -62,7 +63,14 @@ public class WorldCacheModule implements IKeystoneModule
     }
     public GhostBlocksWorld getGhostWorld(RegistryKey<World> dimension)
     {
-        return ghostWorlds.getOrDefault(dimension, null);
+        GhostBlocksWorld ghostWorld = ghostWorlds.get(dimension);
+        if (ghostWorld == null)
+        {
+            World baseWorld = MinecraftClient.getInstance().world;
+            ghostWorld = new GhostBlocksWorld(BlockRotation.NONE, BlockMirror.NONE);
+            ghostWorlds.put(dimension, ghostWorld);
+        }
+        return ghostWorld;
     }
 
     private void onWorldLoaded(MinecraftServer server, ServerWorld world)
@@ -74,10 +82,6 @@ public class WorldCacheModule implements IKeystoneModule
         RegistryKey<World> dimensionId = world.getRegistryKey();
         if (loadedWorlds.containsKey(dimensionId)) loadedWorlds.clear();
         loadedWorlds.put(dimensionId, world);
-        
-        // Register Ghost World
-        if (ghostWorlds.containsKey(dimensionId)) ghostWorlds.clear();
-        ghostWorlds.put(dimensionId, new GhostBlocksWorld(world, BlockRotation.NONE, BlockMirror.NONE));
     }
     private void onSaveUnloaded()
     {

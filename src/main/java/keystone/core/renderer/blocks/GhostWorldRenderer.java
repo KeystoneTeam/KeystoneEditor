@@ -1,5 +1,6 @@
 package keystone.core.renderer.blocks;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import keystone.core.renderer.blocks.buffer.SuperByteBuffer;
 import keystone.core.renderer.blocks.buffer.SuperRenderTypeBuffer;
@@ -70,16 +71,13 @@ public class GhostWorldRenderer
     {
         ms.push();
         applyOrientation(ms);
-
-        // TODO: Check if this can be removed
-        buffer.getBuffer(RenderLayer.getSolid());
+        RenderSystem.disableCull();
 
         // Dispatch Ghost World Entity Rendering
         EntityRenderDispatcher entityRenderer = minecraft.getEntityRenderDispatcher();
         ghostBlocks.getEntities().forEach(entity ->
         {
             int light = LightmapTextureManager.pack(15, 15);
-            // TODO: Check if this needs pitch somehow
             entityRenderer.render(entity, entity.getX(), entity.getY(), entity.getZ(), entity.getYaw(), 0, ms, buffer, light);
         });
     

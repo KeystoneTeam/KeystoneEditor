@@ -82,7 +82,7 @@ public class GhostBlocksModule implements IKeystoneModule
 
     public GhostBlocksWorld createWorld(BlockRotation rotation, BlockMirror mirror)
     {
-        GhostBlocksWorld world = new GhostBlocksWorld(worldCache.getDimensionWorld(Player.getDimension()), rotation, mirror);
+        GhostBlocksWorld world = new GhostBlocksWorld(rotation, mirror);
         ghostWorlds.add(world);
         return world;
     }
