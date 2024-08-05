@@ -2,7 +2,7 @@ package keystone.core.modules.world.change_queue;
 
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
-import keystone.core.modules.history.WorldHistoryChunk;
+import keystone.core.modules.history.chunk.WorldHistoryChunk;
 import keystone.core.modules.session.SessionModule;
 import keystone.core.utils.ProgressBar;
 import net.minecraft.server.world.ServerWorld;
@@ -34,7 +34,7 @@ public class ChangeSet
         {
             session.registerChange(chunk);
             if (undoing) chunk.revertBlocks();
-            else chunk.placeBlocks();
+            else chunk.place();
         }
     
         public void applyUpdates()

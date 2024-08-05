@@ -49,7 +49,6 @@ public class BlockMask
         forcedBlockAdditions.put(BlockTypeRegistry.AIR, new BlockType[]
                 {
                         BlockTypeRegistry.fromMinecraftBlock(Blocks.CAVE_AIR.getDefaultState()),
-                        BlockTypeRegistry.fromMinecraftBlock(Blocks.VOID_AIR.getDefaultState())
                 });
     }
     /**

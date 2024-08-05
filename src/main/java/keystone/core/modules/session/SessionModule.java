@@ -6,7 +6,7 @@ import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.gui.screens.PromptQuestionScreen;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.history.WorldHistoryChunk;
+import keystone.core.modules.history.chunk.WorldHistoryChunk;
 import keystone.core.utils.FileUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.MessageScreen;

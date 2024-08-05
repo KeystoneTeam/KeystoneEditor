@@ -3,6 +3,8 @@ package keystone.core.utils;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.world.chunk.PalettedContainer;
+import net.minecraft.world.chunk.ReadableContainer;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -97,6 +99,25 @@ public class PalettedArray<T>
         binary = new Binary(nbt.getIntArray("Binary"));
         size = nbt.getInt("Size");
         bits = nbt.getInt("Bits");
+    }
+    
+    public static <T> PalettedArray<T> fromContainer(ReadableContainer<T> container, int sizeX, int sizeY, int sizeZ)
+    {
+        // CRITICAL TODO: Check if this is needed
+        PalettedContainer<T> paletted = container instanceof PalettedContainer<T> palettedContainer ? palettedContainer : container.slice();
+        PalettedArray<T> ret = new PalettedArray<>(sizeX * sizeY * sizeZ, 1, null);
+        for (int x = 0; x < sizeX; x++)
+        {
+            for (int y = 0; y < sizeY; y++)
+            {
+                for (int z = 0; z < sizeZ; z++)
+                {
+                    int index = z + y * sizeZ + x * sizeZ * sizeY;
+                    ret.set(index, paletted.get(x, y, z));
+                }
+            }
+        }
+        return ret;
     }
 
     public PalettedArray<T> copy()

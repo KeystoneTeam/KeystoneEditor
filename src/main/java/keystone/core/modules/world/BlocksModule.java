@@ -8,7 +8,7 @@ import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.client.Player;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.history.WorldHistoryChunk;
+import keystone.core.modules.history.chunk.WorldHistoryChunk;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.RegistryLookups;

@@ -77,6 +77,7 @@ public class BrushModule implements IKeystoneModule
         this.renderer = ShapeRenderers.createComplexOverlay(RendererProperties.createFill(this::isCameraInsideShape), RendererProperties.createWireframe(4.0f).ignoreDepth());
     }
 
+    //region Module Implementation
     @Override
     public void postInit()
     {
@@ -109,7 +110,7 @@ public class BrushModule implements IKeystoneModule
 
             if (immediateMode)
             {
-                if (immediateModeCooldown <= 0 || (KeystoneGlobalState.CloseSelection && pos != lastCheckedPosition))
+                if (immediateModeCooldown <= 0)
                 {
                     if (addBrushPosition(pos)) if (immediateMode) immediateModeDirty = true;
                     lastCheckedPosition = pos;
@@ -179,6 +180,7 @@ public class BrushModule implements IKeystoneModule
             renderer.drawMode(ComplexOverlayRenderer.DrawMode.WIREFRAME).drawCuboid(box, Color4f.blue);
         }
     }
+    //endregion
 
     public BrushOperation getBrushOperation() { return brushOperation; }
     public boolean isImmediateMode() { return immediateMode; }

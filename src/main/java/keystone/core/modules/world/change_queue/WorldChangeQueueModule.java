@@ -2,7 +2,7 @@ package keystone.core.modules.world.change_queue;
 
 import keystone.api.Keystone;
 import keystone.core.modules.IKeystoneModule;
-import keystone.core.modules.history.WorldHistoryChunk;
+import keystone.core.modules.history.chunk.WorldHistoryChunk;
 import keystone.core.modules.session.SessionModule;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;

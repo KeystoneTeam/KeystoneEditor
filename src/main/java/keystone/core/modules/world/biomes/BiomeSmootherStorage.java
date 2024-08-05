@@ -3,7 +3,7 @@ package keystone.core.modules.world.biomes;
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
 import keystone.core.modules.history.HistoryModule;
-import keystone.core.modules.history.WorldHistoryChunk;
+import keystone.core.modules.history.chunk.WorldHistoryChunk;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;

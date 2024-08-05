@@ -6,6 +6,7 @@ import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.client.Player;
+import keystone.core.modules.history.chunk.WorldHistoryChunk;
 import keystone.core.modules.world.change_queue.FlushMode;
 import keystone.core.modules.world.change_queue.WorldChangeQueueModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
