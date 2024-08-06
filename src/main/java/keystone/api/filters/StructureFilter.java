@@ -1,6 +1,6 @@
 package keystone.api.filters;
 
-import keystone.api.DiscSampler;
+import keystone.api.utils.DiscSampler;
 import keystone.api.Keystone;
 import keystone.api.WorldRegion;
 import keystone.api.variables.Variable;

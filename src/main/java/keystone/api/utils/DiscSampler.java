@@ -1,5 +1,6 @@
-package keystone.api;
+package keystone.api.utils;
 
+import keystone.api.Keystone;
 import keystone.api.wrappers.coordinates.Vector2f;
 
 import java.util.ArrayList;

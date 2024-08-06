@@ -1,5 +1,6 @@
 package keystone.core.modules.filter;
 
+import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.utils.StringUtils;
@@ -108,7 +109,11 @@ public class FilterDirectoryManager
         KeystoneFilter existingFilter = compiledFilters.getOrDefault(file, null);
         VariableContainer variableContainer = existingFilter != null ? new VariableContainer(existingFilter) : null;
         KeystoneFilter recompiled = FilterLoader.loadFilter(file);
-        if (variableContainer != null) variableContainer.apply(recompiled);
+        if (variableContainer != null)
+        {
+            try { variableContainer.apply(recompiled); }
+            catch (Throwable t) {Keystone.LOGGER.error(t); }
+        }
         compiledFilters.put(file, recompiled);
 
         FilterSelectionScreen.dirty();

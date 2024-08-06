@@ -1,6 +1,7 @@
 package keystone.core.modules.history.chunk;
 
 import keystone.api.wrappers.entities.Entity;
+import keystone.core.utils.NBTSerializer;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.math.Box;
@@ -63,13 +64,13 @@ public class EntitiesHistoryBuffer extends HistoryBuffer<ConcurrentHashMap<UUID,
     @Override
     protected NbtCompound writeBuffer(ConcurrentHashMap<UUID, Entity> buffer)
     {
-        return null;
+        return NBTSerializer.serializeEntities(buffer);
     }
     
     @Override
     protected ConcurrentHashMap<UUID, Entity> readBuffer(NbtCompound nbt)
     {
-        return null;
+        return new ConcurrentHashMap<>(NBTSerializer.deserializeEntities(nbt));
     }
     
     @Override
