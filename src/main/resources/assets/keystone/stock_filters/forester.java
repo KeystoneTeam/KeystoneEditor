@@ -97,7 +97,7 @@ public class Forester extends StructureFilter
         @Override
         public void makeTrunk(WorldRegion region)
         {
-            for (int i = 0; i < height && !isCancelled(); i++) region.setBlock(x, y + i, z, log);
+            for (int i = 0; i < height && !isCancelled(); i++) region.setBlockType(x, y + i, z, log);
         }
     }
     public class NormalTree extends StickTree
@@ -122,7 +122,7 @@ public class Forester extends StructureFilter
                         
                         // Randomly ignore edges of blob
                         if (Math.abs(dx) == Math.abs(dz) && Math.abs(dx) == radius && forester.random.nextFloat() > 0.618f) continue;
-                        region.setBlock(x + dx, layer, z + dz, foliage);
+                        region.setBlockType(x + dx, layer, z + dz, foliage);
                     }
                 }
             }
@@ -143,7 +143,7 @@ public class Forester extends StructureFilter
                     
                     int dx = forester.random.nextBoolean() ? -1 : 1;
                     int dz = forester.random.nextBoolean() ? -1 : 1;
-                    region.setBlock(x + dx, layer, z + dz, foliage);
+                    region.setBlockType(x + dx, layer, z + dz, foliage);
                 }
             }
         }
@@ -187,9 +187,9 @@ public class Forester extends StructureFilter
                     
                     switch (axis)
                     {
-                        case X: region.setBlock((int)Math.floor(centerX), (int)Math.floor(centerY + i), (int)Math.floor(centerZ + j), blockType); break;
-                        case Y: region.setBlock((int)Math.floor(centerX + i), (int)Math.floor(centerY), (int)Math.floor(centerZ + j), blockType); break;
-                        case Z: region.setBlock((int)Math.floor(centerX + i), (int)Math.floor(centerY + j), (int)Math.floor(centerZ), blockType); break;
+                        case X: region.setBlockType((int)Math.floor(centerX), (int)Math.floor(centerY + i), (int)Math.floor(centerZ + j), blockType); break;
+                        case Y: region.setBlockType((int)Math.floor(centerX + i), (int)Math.floor(centerY), (int)Math.floor(centerZ + j), blockType); break;
+                        case Z: region.setBlockType((int)Math.floor(centerX + i), (int)Math.floor(centerY + j), (int)Math.floor(centerZ), blockType); break;
                     }
                 }
             }
@@ -300,7 +300,7 @@ public class Forester extends StructureFilter
             {
                 if (isCancelled()) break;
                 float[] center = (float[])obj;
-                region.setBlock((int)Math.floor(center[0]), (int)Math.floor(center[1]), (int)Math.floor(center[2]), foliage);
+                region.setBlockType((int)Math.floor(center[0]), (int)Math.floor(center[1]), (int)Math.floor(center[2]), foliage);
             }
         }
         
@@ -682,7 +682,7 @@ public class Forester extends StructureFilter
     @Variable public boolean rootButtresses = false;
     
     public BlockMask airMask = whitelist("minecraft:air");
-    public BlockType air = block("minecraft:air").blockType();
+    public BlockType air = blockType("minecraft:air");
     
     private List trees = new ArrayList();
     //endregion

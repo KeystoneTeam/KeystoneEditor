@@ -2,12 +2,12 @@ package keystone.core.schematic.extensions;
 
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
+import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.math.BlockPosMath;
-import keystone.core.modules.world.BlocksModule;
+import keystone.core.modules.world.submodules.BlocksModule;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
@@ -25,6 +25,7 @@ import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class StructureVoidsExtension implements ISchematicExtension
 {
@@ -73,7 +74,7 @@ public class StructureVoidsExtension implements ISchematicExtension
     }
 
     @Override
-    public ISchematicExtension deserialize(Vec3i size, Block[] blocks, Entity[] entities, NbtCompound nbt)
+    public ISchematicExtension deserialize(Vec3i size, BlockType[] blocks, Map<BlockPos, NBTCompound> tileEntities, Entity[] entities, NbtCompound nbt)
     {
         List<BlockPos> structureVoidsList = new ArrayList<>();
 
@@ -97,7 +98,7 @@ public class StructureVoidsExtension implements ISchematicExtension
         for (BlockPos pos : structureVoids)
         {
             BlockPos oriented = BlockPosMath.getOrientedBlockPos(pos, schematic.getSize(), rotation, mirror, scale).add(anchor);
-            worldModifiers.blocks.setBlock(oriented.getX(), oriented.getY(), oriented.getZ(), structureVoid);
+            worldModifiers.blocks.setBlockType(oriented.getX(), oriented.getY(), oriented.getZ(), structureVoid);
         }
     }
 }

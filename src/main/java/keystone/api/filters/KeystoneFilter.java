@@ -8,7 +8,6 @@ import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.EditorDirtyFlag;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.Item;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
@@ -24,18 +23,19 @@ import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.utils.RegistryLookups;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.command.argument.*;
+import net.minecraft.command.argument.BlockStateArgument;
+import net.minecraft.command.argument.BlockStateArgumentType;
+import net.minecraft.command.argument.ItemStackArgument;
+import net.minecraft.command.argument.ItemStackArgumentType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.command.FillBiomeCommand;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -368,27 +368,6 @@ public class KeystoneFilter
         BlockMask mask = new BlockMask();
         for (BlockType blockType : blockTypes) mask = mask.with(blockType);
         return mask;
-    }
-    /**
-     * Create a {@link Block} from a block ID. Any ID that is a valid ID for the
-     * /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
-     * @param block The block ID
-     * @return The generated {@link Block}
-     */
-    public final Block block(String block)
-    {
-        return Block.create(block);
-    }
-    /**
-     * Create a {@link Block} from a block ID and tile entity. Any ID that is a valid ID
-     * for the /setblock command will work. [e.g. "minecraft:stone_slab[type=top]"]
-     * @param block The block ID
-     * @param tileEntity The tile entity
-     * @return The generated {@link Block}
-     */
-    public final Block block(String block, NBTCompound tileEntity)
-    {
-        return block(block).setTileEntity(tileEntity);
     }
     /**
      * Create a {@link Block} from a block ID. Any ID that is a valid ID for the

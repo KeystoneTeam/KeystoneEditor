@@ -399,12 +399,6 @@ public class BlockMask
     //endregion
     //region Checking
     /**
-     * Check if a {@link Block} is matched by this mask
-     * @param block The {@link Block} to check
-     * @return Whether the {@link Block} is matched by this mask
-     */
-    public boolean valid(@NotNull Block block) { return valid(block.blockType()); }
-    /**
      * Check if a {@link BlockType} is matched by this mask
      * @param blockType The {@link BlockType} to check
      * @return Whether the {@link BlockType} is matched by this mask

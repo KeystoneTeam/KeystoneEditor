@@ -1,8 +1,9 @@
 package keystone.core.schematic.extensions;
 
-import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
+import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.renderer.blocks.world.GhostBlocksWorld;
 import keystone.core.schematic.KeystoneSchematic;
@@ -14,12 +15,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 
+import java.util.Map;
+
 public interface ISchematicExtension
 {
     ISchematicExtension create(World world, BoundingBox bounds);
     Identifier id();
     void serialize(KeystoneSchematic schematic, NbtCompound nbt);
-    ISchematicExtension deserialize(Vec3i size, Block[] blocks, Entity[] entities, NbtCompound nbt);
+    ISchematicExtension deserialize(Vec3i size, BlockType[] blocks, Map<BlockPos, NBTCompound> tileEntities, Entity[] entities, NbtCompound nbt);
 
     default boolean canPlace() { return true; }
     default boolean placeByDefault() { return false; }

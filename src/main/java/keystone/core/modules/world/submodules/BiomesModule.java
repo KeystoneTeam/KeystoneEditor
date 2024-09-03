@@ -1,4 +1,4 @@
-package keystone.core.modules.world.biomes;
+package keystone.core.modules.world.submodules;
 
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
@@ -7,6 +7,7 @@ import keystone.core.client.Player;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.chunk.WorldHistoryChunk;
+import keystone.core.modules.world.BiomeSmootherStorage;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;

@@ -1,6 +1,5 @@
 package keystone.core.gui.overlays.block_selection;
 
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.overlays.KeystoneOverlay;
@@ -19,7 +18,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
 
     private boolean ranCallback = false;
     private final Consumer<BlockType> callback;
-    private final Block block;
+    private final BlockType block;
 
     private int panelX;
     private int panelY;
@@ -32,7 +31,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
         super(Text.translatable("keystone.screen.blockProperties"));
 
         this.callback = callback;
-        this.block = new Block(blockType);
+        this.block = blockType;
     }
     public static void editBlockProperties(BlockType blockType, Consumer<BlockType> callback)
     {
@@ -45,7 +44,7 @@ public class BlockPropertiesScreen extends KeystoneOverlay
     {
         if (!ranCallback)
         {
-            callback.accept(block.blockType());
+            callback.accept(block);
             ranCallback = true;
         }
     }

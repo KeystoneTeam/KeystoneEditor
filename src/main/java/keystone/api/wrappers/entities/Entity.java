@@ -8,7 +8,7 @@ import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3d;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.math.BlockPosMath;
-import keystone.core.modules.world.EntitiesModule;
+import keystone.core.modules.world.submodules.EntitiesModule;
 import keystone.core.utils.EntityUtils;
 import net.minecraft.command.argument.NbtElementArgumentType;
 import net.minecraft.command.argument.NbtPathArgumentType;

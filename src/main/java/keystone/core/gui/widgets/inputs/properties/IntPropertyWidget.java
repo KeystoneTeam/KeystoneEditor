@@ -1,6 +1,6 @@
 package keystone.core.gui.widgets.inputs.properties;
 
-import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.widgets.inputs.IntegerWidget;
 import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.state.property.IntProperty;
@@ -8,12 +8,12 @@ import net.minecraft.text.Text;
 
 public class IntPropertyWidget extends IntegerWidget
 {
-    private final Block block;
+    private BlockType block;
     private final IntProperty property;
 
-    public IntPropertyWidget(Block block, IntProperty property, int x, int y, int width)
+    public IntPropertyWidget(BlockType block, IntProperty property, int x, int y, int width)
     {
-        super(Text.literal(property.getName()), x, y, width, block.blockType().getMinecraftBlock().get(property));
+        super(Text.literal(property.getName()), x, y, width, block.getMinecraftBlock().get(property));
 
         this.block = block;
         this.property = property;
@@ -31,7 +31,7 @@ public class IntPropertyWidget extends IntegerWidget
     protected boolean onSetValue(Integer value)
     {
         value = Math.max(Math.min(value, max), min);
-        block.setBlockType(BlockTypeRegistry.fromMinecraftBlock(block.blockType().getMinecraftBlock().with(property, value)));
+        block = BlockTypeRegistry.fromMinecraftBlock(block.getMinecraftBlock().with(property, value));
         return true;
     }
 }

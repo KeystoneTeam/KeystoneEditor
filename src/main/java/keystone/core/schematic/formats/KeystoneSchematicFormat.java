@@ -1,11 +1,14 @@
 package keystone.core.schematic.formats;
 
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import keystone.api.Keystone;
-import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
+import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.mixins.common.PalettedBlockInfoListInvoker;
 import keystone.core.mixins.common.StructureTemplateAccessor;
+import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.extensions.ISchematicExtension;
 import keystone.core.utils.NBTSerializer;
@@ -71,7 +74,7 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         
         // Blocks
         List<StructureTemplate.StructureBlockInfo> blockList = new ArrayList<>();
-        schematic.forEachBlock((pos, block) -> blockList.add(new StructureTemplate.StructureBlockInfo(pos, block.blockType().getMinecraftBlock(), block.tileEntity().getMinecraftNBT())));
+        schematic.forEachBlock((pos, block, tileEntity) -> blockList.add(new StructureTemplate.StructureBlockInfo(pos, block.getMinecraftBlock(), tileEntity == null ? null : tileEntity.getMinecraftNBT())));
         accessor.getBlockLists().add(PalettedBlockInfoListInvoker.invokeConstructor(blockList));
         
         // Entities
@@ -124,9 +127,14 @@ public class KeystoneSchematicFormat implements ISchematicFormat
     
         // Copy Data
         Vec3i size = template.getSize();
-        Block[] blocks = new Block[size.getX() * size.getY() * size.getZ()];
+        BlockType[] blocks = new BlockType[size.getX() * size.getY() * size.getZ()];
+        Map<BlockPos, NBTCompound> tileEntities = new Reference2ObjectArrayMap<>();
         Entity[] entities = new Entity[accessor.getEntities().size()];
-        for (StructureTemplate.StructureBlockInfo blockInfo : accessor.getBlockLists().get(0).getAll()) blocks[index(size, blockInfo.pos())] = new Block(blockInfo.state(), blockInfo.nbt());
+        for (StructureTemplate.StructureBlockInfo blockInfo : accessor.getBlockLists().get(0).getAll())
+        {
+            blocks[index(size, blockInfo.pos())] = BlockTypeRegistry.fromMinecraftBlock(blockInfo.state());
+            tileEntities.put(blockInfo.pos(), new NBTCompound(blockInfo.nbt()));
+        }
         for (int i = 0; i < entities.length; i++)
         {
             StructureTemplate.StructureEntityInfo entityInfo = accessor.getEntities().get(i);
@@ -144,12 +152,12 @@ public class KeystoneSchematicFormat implements ISchematicFormat
                 Identifier id = Identifier.of(namespace, path);
                 if (!dataExtensions.containsKey(id)) continue;
 
-                ISchematicExtension extension = dataExtensions.get(id).deserialize(size, blocks, entities, namespaceNBT.getCompound(path));
+                ISchematicExtension extension = dataExtensions.get(id).deserialize(size, blocks, tileEntities, entities, namespaceNBT.getCompound(path));
                 extensions.put(id, extension);
             }
         }
 
-        return new KeystoneSchematic(size, blocks, entities, extensions);
+        return new KeystoneSchematic(size, blocks, tileEntities, entities, extensions);
     }
     
     private static int index(Vec3i size, Vec3i pos)

@@ -48,8 +48,8 @@ public class Topsoil extends KeystoneFilter
         }
 
         // Place Topsoil
-        region.setBlock(x, y + yOffset, z, surfacePalette);
-        region.setBlock(x, y + yOffset + 1, z, foliagePalette);
-        for (int dy = 1; dy < depth; dy++) if (!airMask.valid(region.getBlockType(x, y + yOffset - dy, z))) region.setBlock(x, y + yOffset - dy, z, depthPalette);
+        region.setBlockType(x, y + yOffset, z, surfacePalette);
+        region.setBlockType(x, y + yOffset + 1, z, foliagePalette);
+        for (int dy = 1; dy < depth; dy++) if (!airMask.valid(region.getBlockType(x, y + yOffset - dy, z))) region.setBlockType(x, y + yOffset - dy, z, depthPalette);
     }
 }

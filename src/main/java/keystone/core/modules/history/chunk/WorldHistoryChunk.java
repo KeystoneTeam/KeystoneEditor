@@ -3,7 +3,6 @@ package keystone.core.modules.history.chunk;
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.Biome;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
@@ -13,7 +12,6 @@ import keystone.core.mixins.common.ChunkSectionAccessor;
 import keystone.core.modules.history.HistoryStackFrame;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
-import keystone.core.utils.NBTSerializer;
 import keystone.core.utils.PalettedArray;
 import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.BlockState;
@@ -23,16 +21,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
@@ -46,7 +40,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -176,25 +169,12 @@ public class WorldHistoryChunk
         z -= chunkZ * 16;
         return BlockTypeRegistry.fromMinecraftBlock(this.blocks.getBuffer(retrievalMode).get(z + y * 16 + x * 256));
     }
-    public NBTCompound getBlockEntity(int x, int y, int z, RetrievalMode retrievalMode)
+    public NBTCompound getBlockData(int x, int y, int z, RetrievalMode retrievalMode)
     {
         BlockPos pos = new BlockPos(x, y, z);
         NBTCompound tileEntity = this.tileEntities.getBuffer(retrievalMode).getOrDefault(pos, null);
         if (tileEntity != null) return tileEntity.clone();
         else return null;
-    }
-    public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
-    {
-        BlockPos pos = new BlockPos(x, y, z);
-        
-        x -= chunkX * 16;
-        y -= chunkY * 16;
-        z -= chunkZ * 16;
-        
-        BlockType blockType = BlockTypeRegistry.fromMinecraftBlock(this.blocks.getBuffer(retrievalMode).get(z + y * 16 + x * 256));
-        NBTCompound tileEntity = this.tileEntities.getBuffer(retrievalMode).getOrDefault(pos, null);
-
-        return new Block(blockType, tileEntity != null ? tileEntity.clone() : null);
     }
     public Biome getBiome(int x, int y, int z, RetrievalMode retrievalMode)
     {
@@ -235,10 +215,9 @@ public class WorldHistoryChunk
     }
     //endregion
     //region Content Setters
-    public void setBlock(int x, int y, int z, BlockType blockType)
+    public void setBlockType(int x, int y, int z, BlockType blockType)
     {
         markDirty();
-        BlockPos pos = new BlockPos(x, y, z);
         
         x -= chunkX * 16;
         y -= chunkY * 16;
@@ -247,17 +226,12 @@ public class WorldHistoryChunk
         this.blocks.getBuffer(RetrievalMode.CURRENT).set(z + y * 16 + x * 256, blockType.getMinecraftBlock());
         this.tileEntities.getBuffer(RetrievalMode.CURRENT).remove(new BlockPos(x, y, z));
     }
-    public void setBlock(int x, int y, int z, Block block)
+    public void setBlockData(int x, int y, int z, NBTCompound blockData)
     {
         markDirty();
         BlockPos pos = new BlockPos(x, y, z);
         
-        x -= chunkX * 16;
-        y -= chunkY * 16;
-        z -= chunkZ * 16;
-        
-        this.blocks.getBuffer(RetrievalMode.CURRENT).set(z + y * 16 + x * 256, block.blockType().getMinecraftBlock());
-        if (block.tileEntity() != null) this.tileEntities.getBuffer(RetrievalMode.CURRENT).put(pos, block.tileEntity());
+        if (blockData != null) this.tileEntities.getBuffer(RetrievalMode.CURRENT).put(pos, blockData);
         else this.tileEntities.getBuffer(RetrievalMode.CURRENT).remove(pos);
     }
     public void setBiome(int x, int y, int z, Biome biome)

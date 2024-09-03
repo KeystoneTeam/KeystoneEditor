@@ -33,8 +33,8 @@ public class GravityBrushOperation extends BrushOperation
                 newY++;
             }
 
-            worldModifiers.blocks.setBlock(x, newY, z, existing);
-            worldModifiers.blocks.setBlock(x, y, z, BlockTypeRegistry.AIR);
+            worldModifiers.blocks.setBlockType(x, newY, z, existing);
+            worldModifiers.blocks.setBlockType(x, y, z, BlockTypeRegistry.AIR);
         }
 
         return true;

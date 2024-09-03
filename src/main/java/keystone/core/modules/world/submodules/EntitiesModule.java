@@ -1,4 +1,4 @@
-package keystone.core.modules.world;
+package keystone.core.modules.world.submodules;
 
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;

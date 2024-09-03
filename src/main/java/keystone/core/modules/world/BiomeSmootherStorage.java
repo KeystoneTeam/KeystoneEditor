@@ -1,4 +1,4 @@
-package keystone.core.modules.world.biomes;
+package keystone.core.modules.world;
 
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;

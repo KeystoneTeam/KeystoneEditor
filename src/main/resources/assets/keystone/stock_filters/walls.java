@@ -27,12 +27,12 @@ public class Walls extends KeystoneFilter
     {
         if (mask.valid(box.getBlockType(x, y, z)))
         {
-            if (x - box.min.x < wallDepth) box.setBlock(x, y, z, palette);
-            else if (box.max.x - x < wallDepth) box.setBlock(x, y, z, palette);
-            else if (z - box.min.z < wallDepth) box.setBlock(x, y, z, palette);
-            else if (box.max.z - z < wallDepth) box.setBlock(x, y, z, palette);
-            else if (roof && box.max.y - y < wallDepth) box.setBlock(x, y, z, palette);
-            else if (floor && y - box.min.y < wallDepth) box.setBlock(x, y, z, palette);
+            if (x - box.min.x < wallDepth) box.setBlockType(x, y, z, palette);
+            else if (box.max.x - x < wallDepth) box.setBlockType(x, y, z, palette);
+            else if (z - box.min.z < wallDepth) box.setBlockType(x, y, z, palette);
+            else if (box.max.z - z < wallDepth) box.setBlockType(x, y, z, palette);
+            else if (roof && box.max.y - y < wallDepth) box.setBlockType(x, y, z, palette);
+            else if (floor && y - box.min.y < wallDepth) box.setBlockType(x, y, z, palette);
         }
     }
 }

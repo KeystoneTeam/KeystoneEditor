@@ -2,14 +2,9 @@ package keystone.core.utils;
 
 import keystone.api.Keystone;
 import keystone.api.wrappers.Biome;
-import keystone.api.wrappers.blocks.Block;
-import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
-import keystone.core.registries.BlockTypeRegistry;
-import net.minecraft.block.BlockState;
 import net.minecraft.nbt.*;
-import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
@@ -84,148 +79,6 @@ public class NBTSerializer
         }
     }
     //endregion
-    //region Short Arrays
-    public static NbtList serializeShortArray(short[] shorts)
-    {
-        NbtList listNBT = new NbtList();
-        for (short s : shorts) listNBT.add(NbtShort.of(s));
-        return listNBT;
-    }
-    public static short[] deserializeShortArray(NbtList listNBT)
-    {
-        short[] shorts = new short[listNBT.size()];
-        for (int i = 0; i < shorts.length; i++) shorts[i] = listNBT.getShort(i);
-        return shorts;
-    }
-    //endregion
-    //region BlockType Arrays
-    public static NbtList serializeBlockTypes(BlockType[] blockTypes)
-    {
-        short[] indices = new short[blockTypes.length];
-        for (int i = 0; i < blockTypes.length; i++) indices[i] = blockTypes[i] == null ? -1 : blockTypes[i].getKeystoneID();
-        return serializeShortArray(indices);
-    }
-    public static BlockType[] deserializeBlockTypes(NbtList blockTypesNBT)
-    {
-        BlockType[] blockTypes = new BlockType[blockTypesNBT.size()];
-        for (int i = 0; i < blockTypes.length; i++)
-        {
-            short id = blockTypesNBT.getShort(i);
-            blockTypes[i] = id < 0 ? null : BlockTypeRegistry.fromKeystoneID(blockTypesNBT.getShort(i));
-        }
-        return blockTypes;
-    }
-    //endregion
-    //region Block Arrays
-    public static NbtList serializeBlockPalette(BlockState[] palette)
-    {
-        List<BlockState> paletteList = new ArrayList<>();
-        Collections.addAll(paletteList, palette);
-
-        NbtList paletteNBT = new NbtList();
-        for (int i = 0; i < paletteList.size(); i++)
-        {
-            BlockState entry = paletteList.get(i);
-            NbtCompound entryNBT = NbtHelper.fromBlockState(entry);
-            paletteNBT.add(i, entryNBT);
-        }
-        return paletteNBT;
-    }
-    public static BlockType[] deserializeBlockPalette(NbtList paletteNBT)
-    {
-        BlockType[] palette = new BlockType[paletteNBT.size()];
-        for (int i = 0; i < palette.length; i++)
-        {
-            NbtCompound entry = paletteNBT.getCompound(i);
-            BlockState blockState = NbtHelper.toBlockState(RegistryLookups.registryLookup(RegistryKeys.BLOCK), entry);
-            palette[i] = BlockTypeRegistry.fromMinecraftBlock(blockState);
-        }
-        return palette;
-    }
-
-    public static NbtCompound serializeBlocks(Block[] blocks)
-    {
-        NbtCompound nbt = new NbtCompound();
-
-        // Palette
-        List<BlockState> palette = generatePalette(blocks);
-        NbtList paletteNBT = new NbtList();
-        for (int i = 0; i < palette.size(); i++)
-        {
-            BlockState entry = palette.get(i);
-            NbtCompound entryNBT = NbtHelper.fromBlockState(entry);
-            paletteNBT.add(i, entryNBT);
-        }
-        nbt.put("palette", paletteNBT);
-
-        // Blocks
-        {
-            NbtList blocksNBT = new NbtList();
-            for (Block block : blocks)
-            {
-                NbtCompound blockNBT = new NbtCompound();
-                if (block == null) blockNBT.putInt("state", -1);
-                else
-                {
-                    blockNBT.putInt("state", palette.indexOf(block.blockType().getMinecraftBlock()));
-
-                    NBTCompound tileEntityNBT = block.tileEntity();
-                    if (tileEntityNBT != null && !tileEntityNBT.getMinecraftNBT().isEmpty())
-                    {
-                        tileEntityNBT.remove("x");
-                        tileEntityNBT.remove("y");
-                        tileEntityNBT.remove("z");
-                        blockNBT.put("nbt", tileEntityNBT.getMinecraftNBT());
-                    }
-                }
-                blocksNBT.add(blockNBT);
-            }
-            nbt.put("blocks", blocksNBT);
-        }
-
-        return nbt;
-    }
-    public static Block[] deserializeBlocks(NbtCompound blocksNBT)
-    {
-        BlockType[] palette = deserializeBlockPalette(blocksNBT.getList("palette", NbtElement.COMPOUND_TYPE));
-        NbtList statesNBT = blocksNBT.getList("blocks", NbtElement.COMPOUND_TYPE);
-        Block[] blocks = new Block[statesNBT.size()];
-        loadBlocks(blocks, statesNBT, palette);
-        return blocks;
-    }
-
-    private static List<BlockState> generatePalette(Block[] blockTypes)
-    {
-        List<BlockState> palette = new ArrayList<>();
-        for (Block block : blockTypes)
-        {
-            if (block == null) continue;
-            BlockState paletteEntry = block.blockType().getMinecraftBlock();
-            if (!palette.contains(paletteEntry)) palette.add(paletteEntry);
-        }
-        palette.sort(Comparator.comparing(BlockState::toString));
-        return palette;
-    }
-    private static void loadBlocks(Block[] blocks, NbtList blocksNBT, BlockType[] palette)
-    {
-        for (int i = 0; i < blocksNBT.size(); i++)
-        {
-            NbtCompound blockNBT = blocksNBT.getCompound(i);
-            int state = blockNBT.getInt("state");
-            if (state < 0) blocks[i] = null;
-            else
-            {
-                BlockType blockType = palette[state];
-                if (blockNBT.contains("nbt"))
-                {
-                    NBTCompound tileEntity = new NBTCompound(blockNBT.getCompound("nbt"));
-                    blocks[i] = new Block(blockType, tileEntity);
-                }
-                else blocks[i] = new Block(blockType);
-            }
-        }
-    }
-    //endregion
     //region Biome Arrays
     public static NbtCompound serializeBiomes(Biome[] biomes)
     {
@@ -248,6 +101,22 @@ public class NBTSerializer
 
         return nbt;
     }
+    public static Biome[] deserializeBiomes(NbtCompound nbt)
+    {
+        List<RegistryEntry<net.minecraft.world.biome.Biome>> rawPalette = deserializeBiomePalette(nbt.getList("palette", NbtElement.STRING_TYPE));
+        List<Biome> palette = new ArrayList<>(rawPalette.size());
+        for (RegistryEntry<net.minecraft.world.biome.Biome> biome : rawPalette) palette.add(new Biome(biome));
+        
+        int[] biomeIndices = nbt.getIntArray("biomes");
+        Biome[] biomes = new Biome[biomeIndices.length];
+        for (int i = 0; i < biomes.length; i++)
+        {
+            int index = biomeIndices[i];
+            if (index < 0) biomes[i] = null;
+            else biomes[i] = palette.get(index);
+        }
+        return biomes;
+    }
     public static List<RegistryEntry<net.minecraft.world.biome.Biome>> deserializeBiomePalette(NbtList paletteNBT)
     {
         RegistryWrapper<net.minecraft.world.biome.Biome> biomeRegistry = RegistryLookups.registryLookup(RegistryKeys.BIOME);
@@ -266,22 +135,6 @@ public class NBTSerializer
             }
         }
         return palette;
-    }
-    public static Biome[] deserializeBiomes(NbtCompound nbt)
-    {
-        List<RegistryEntry<net.minecraft.world.biome.Biome>> rawPalette = deserializeBiomePalette(nbt.getList("palette", NbtElement.STRING_TYPE));
-        List<Biome> palette = new ArrayList<>(rawPalette.size());
-        for (RegistryEntry<net.minecraft.world.biome.Biome> biome : rawPalette) palette.add(new Biome(biome));
-
-        int[] biomeIndices = nbt.getIntArray("biomes");
-        Biome[] biomes = new Biome[biomeIndices.length];
-        for (int i = 0; i < biomes.length; i++)
-        {
-            int index = biomeIndices[i];
-            if (index < 0) biomes[i] = null;
-            else biomes[i] = palette.get(index);
-        }
-        return biomes;
     }
 
     private static List<Biome> generatePalette(Biome[] biomes)

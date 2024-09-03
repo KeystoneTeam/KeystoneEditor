@@ -30,6 +30,6 @@ public class Hollow extends KeystoneFilter
                 }
             }
         }
-        region.setBlock(x, y, z, hollowingPalette);
+        region.setBlockType(x, y, z, hollowingPalette);
     }
 }

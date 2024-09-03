@@ -15,7 +15,7 @@ public class Smooth extends KeystoneFilter
     @Override
     public void processBlock(int x, int y, int z, WorldRegion region)
     {
-        region.setBlock(x, y, z, getSmoothed(region, x, y, z, smoothing));
+        region.setBlockType(x, y, z, getSmoothed(region, x, y, z, smoothing));
     }
 
     private BlockType getSmoothed(WorldRegion region, int x, int y, int z, int smoothing)

@@ -1,11 +1,12 @@
 package keystone.core.schematic;
 
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
+import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.client.Player;
 import keystone.core.math.BlockPosMath;
 import keystone.core.modules.selection.SelectionBoundingBox;
@@ -27,9 +28,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import org.apache.logging.log4j.util.TriConsumer;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -38,20 +39,23 @@ import java.util.function.Consumer;
 public class KeystoneSchematic
 {
     private Vec3i size;
-    private Block[] blocks;
+    private BlockType[] blocks;
+    private Map<BlockPos, NBTCompound> tileEntities;
     private Entity[] entities;
     private Map<Identifier, ISchematicExtension> extensions;
 
     /**
      * @param size The size of the schematic
-     * @param blocks The {@link Block} contents of the schematic
+     * @param blocks The {@link BlockType} contents of the schematic
+     * @param tileEntities A map of all tile entities in the schematic
      * @param entities The {@link Entity} contents of the schematic
      * @param extensions The {@link ISchematicExtension Extensions} stored in this schematic
      */
-    public KeystoneSchematic(Vec3i size, Block[] blocks, Entity[] entities, Map<Identifier, ISchematicExtension> extensions)
+    public KeystoneSchematic(Vec3i size, BlockType[] blocks, Map<BlockPos, NBTCompound> tileEntities, Entity[] entities, Map<Identifier, ISchematicExtension> extensions)
     {
         this.size = size;
         this.blocks = blocks;
+        this.tileEntities = tileEntities;
         this.entities = entities == null ? new Entity[0] : entities;
         for (Entity entity : this.entities) entity.breakMinecraftEntityConnection();
         this.extensions = extensions;
@@ -86,7 +90,8 @@ public class KeystoneSchematic
         Vec3i size = new Vec3i(max.getX() - min.getX() + 1, max.getY() - min.getY() + 1, max.getZ() - min.getZ() + 1);
 
         // Get blocks
-        Block[] blocks = new Block[size.getX() * size.getY() * size.getZ()];
+        BlockType[] blocks = new BlockType[size.getX() * size.getY() * size.getZ()];
+        Map<BlockPos, NBTCompound> tileEntities = new Reference2ObjectArrayMap<>();
         int i = 0;
         for (int x = 0; x < size.getX(); x++)
         {
@@ -94,8 +99,9 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    blocks[i] = worldModifiers.blocks.getBlock(x + min.getX(), y + min.getY(), z + min.getZ(), retrievalMode);
-                    if (blocks[i].blockType().getMinecraftBlock() == structureVoid) blocks[i] = null;
+                    blocks[i] = worldModifiers.blocks.getBlockType(x + min.getX(), y + min.getY(), z + min.getZ(), retrievalMode);
+                    if (blocks[i].getMinecraftBlock() == structureVoid) blocks[i] = null;
+                    else if (blocks[i].getMinecraftBlock().hasBlockEntity()) tileEntities.put(new BlockPos(x, y, z), worldModifiers.blocks.getBlockData(x + min.getX(), y + min.getY(), z + min.getZ(), retrievalMode));
                     i++;
                 }
             }
@@ -114,7 +120,7 @@ public class KeystoneSchematic
 
         // Create schematic from data
         World world = Keystone.getModule(WorldCacheModule.class).getDimensionWorld(Player.getDimension());
-        return new KeystoneSchematic(size, blocks, entities, KeystoneSchematicFormat.createExtensions(world, box));
+        return new KeystoneSchematic(size, blocks, tileEntities, entities, KeystoneSchematicFormat.createExtensions(world, box));
     }
 
     /**
@@ -123,7 +129,7 @@ public class KeystoneSchematic
      */
     public KeystoneSchematic clone()
     {
-        return new KeystoneSchematic(new Vec3i(size.getX(), size.getY(), size.getZ()), Arrays.copyOf(blocks, blocks.length), Arrays.copyOf(entities, entities.length), Collections.unmodifiableMap(new HashMap<>(extensions)));
+        return new KeystoneSchematic(new Vec3i(size.getX(), size.getY(), size.getZ()), Arrays.copyOf(blocks, blocks.length), Collections.unmodifiableMap(tileEntities), Arrays.copyOf(entities, entities.length), Collections.unmodifiableMap(new HashMap<>(extensions)));
     }
 
     /**
@@ -159,16 +165,20 @@ public class KeystoneSchematic
      */
     public Set<Identifier> getExtensionIDs() { return extensions.keySet(); }
     /**
-     * Get the {@link Block} at a relative block position in the schematic
+     * Get the {@link BlockType} at a relative block position in the schematic
      * @param relativePos The relative block position
-     * @return The {@link Block} at the position, or air if it is outside the schematic. Can return
+     * @return The {@link BlockType} at the position, or air if it is outside the schematic. Can return
      * null if there is no block at that location
      */
-    public Block getBlock(BlockPos relativePos)
+    public BlockType getBlock(BlockPos relativePos)
     {
         int index = getIndex(relativePos);
-        if (index < 0) return new Block(Blocks.AIR.getDefaultState());
+        if (index < 0) return BlockTypeRegistry.fromMinecraftBlock(Blocks.VOID_AIR.getDefaultState());
         else return blocks[getIndex(relativePos)];
+    }
+    public NBTCompound getTileEntity(BlockPos relativePos)
+    {
+        return tileEntities.getOrDefault(relativePos, null);
     }
     /**
      * @param id The Resource Location of the extension
@@ -182,7 +192,7 @@ public class KeystoneSchematic
      * Run a function for every block position and state in the schematic
      * @param consumer The function to run
      */
-    public void forEachBlock(BiConsumer<BlockPos, Block> consumer)
+    public void forEachBlock(TriConsumer<BlockPos, BlockType, NBTCompound> consumer)
     {
         int i = 0;
         for (int x = 0; x < size.getX(); x++)
@@ -196,7 +206,8 @@ public class KeystoneSchematic
                         i++;
                         continue;
                     }
-                    consumer.accept(new BlockPos(x, y, z), blocks[i]);
+                    BlockPos pos = new BlockPos(x, y, z);
+                    consumer.accept(pos, blocks[i], tileEntities.getOrDefault(pos, null));
                     i++;
                 }
             }
@@ -240,7 +251,8 @@ public class KeystoneSchematic
                         i++;
                         continue;
                     }
-                    Block block = blocks[i];
+                    BlockType blockType = blocks[i];
+                    NBTCompound tileEntity = tileEntities.getOrDefault(new BlockPos(x, y, z), null);
 
                     for (int sx = 0; sx < scale; sx++)
                     {
@@ -249,19 +261,18 @@ public class KeystoneSchematic
                             for (int sz = 0; sz < scale; sz++)
                             {
                                 BlockPos localPos = new BlockPos(x * scale + sx, y * scale + sy, z * scale + sz);
-                                BlockType blockType = block.blockType();
 
                                 BlockState state = blockType.getMinecraftBlock();
                                 ghostWorld.setBlockState(localPos, state);
-                                if (block.tileEntity() != null)
+                                if (tileEntity != null)
                                 {
-                                    NbtCompound tileEntityData = block.tileEntity().getMinecraftNBT().copy();
+                                    NbtCompound tileEntityData = tileEntity.getMinecraftNBT().copy();
                                     tileEntityData.putInt("x", x);
                                     tileEntityData.putInt("y", y);
                                     tileEntityData.putInt("z", z);
 
-                                    BlockEntity tileEntity = ghostWorld.getBlockEntity(localPos);
-                                    if (tileEntity != null) tileEntity.read(tileEntityData, RegistryLookups.registryLookup());
+                                    BlockEntity instance = ghostWorld.getBlockEntity(localPos);
+                                    if (instance != null) instance.read(tileEntityData, RegistryLookups.registryLookup());
                                 }
                             }
                         }
@@ -313,8 +324,10 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    Block block = blocks[i];
-                    if (block == null || (block.blockType().getMinecraftBlock().isAir() && !placeAir))
+                    BlockType blockType = blocks[i];
+                    NBTCompound tileEntity = tileEntities.getOrDefault(new BlockPos(x, y, z), null);
+                    
+                    if (blockType.getMinecraftBlock().isAir() && !placeAir)
                     {
                         i++;
                         continue;
@@ -328,10 +341,9 @@ public class KeystoneSchematic
                             {
                                 BlockPos localPos = new BlockPos(x * clampedScale + sx, y * clampedScale + sy, z * clampedScale + sz);
                                 BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, clampedScale).add(anchor);
-                                BlockType blockType = block.blockType();
                                 blockType = BlockTypeRegistry.fromMinecraftBlock(blockType.getMinecraftBlock().rotate(rotation).mirror(mirror));
-                                Block oriented = new Block(blockType, block.tileEntity());
-                                worldModifiers.blocks.setBlock(worldPos.getX(), worldPos.getY(), worldPos.getZ(), oriented);
+                                worldModifiers.blocks.setBlockType(worldPos.getX(), worldPos.getY(), worldPos.getZ(), blockType);
+                                if (tileEntity != null) worldModifiers.blocks.setBlockData(worldPos.getX(), worldPos.getY(), worldPos.getZ(), tileEntity);
                             }
                         }
                     }

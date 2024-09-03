@@ -2,15 +2,15 @@ package keystone.core.schematic.extensions;
 
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
-import keystone.api.wrappers.blocks.Block;
+import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
-import keystone.core.modules.world.BlocksModule;
+import keystone.api.wrappers.nbt.NBTCompound;
+import keystone.core.modules.world.submodules.BlocksModule;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.*;
-import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
@@ -21,10 +21,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class BiomesExtension implements ISchematicExtension
 {
@@ -97,7 +94,7 @@ public class BiomesExtension implements ISchematicExtension
     }
 
     @Override
-    public ISchematicExtension deserialize(Vec3i size, Block[] blocks, Entity[] entities, NbtCompound nbt)
+    public ISchematicExtension deserialize(Vec3i size, BlockType[] blocks, Map<BlockPos, NBTCompound> tileEntities, Entity[] entities, NbtCompound nbt)
     {
         // Load Biome Palette
         List<RegistryEntry<Biome>> palette = new ArrayList<>();

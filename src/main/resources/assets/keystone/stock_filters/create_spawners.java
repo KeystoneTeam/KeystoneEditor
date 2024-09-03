@@ -27,8 +27,7 @@ public class CreateSpawners extends KeystoneFilter
         spawnData.put("entity", entityData);
         tileEntity.put("SpawnData", spawnData);
 
-        BlockPos blockPos = entity.blockPos();
-        region.setBlock(blockPos.x, blockPos.y, blockPos.z, block("minecraft:spawner", tileEntity));
+        region.setBlockData(entity.blockPos(), tileEntity);
         entity.kill();
     }
 }

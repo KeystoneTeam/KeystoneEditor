@@ -114,7 +114,7 @@ public class ErodeBrushOperation extends BrushOperation
             neighborBlockCounts.put(neighbor, count);
         }
 
-        if (total >= meltFaces) worldModifiers.blocks.setBlock(x, y, z, highestBlockType);
+        if (total >= meltFaces) worldModifiers.blocks.setBlockType(x, y, z, highestBlockType);
     }
     private void fillIteration(int x, int y, int z, WorldModifierModules worldModifiers)
     {
@@ -146,7 +146,7 @@ public class ErodeBrushOperation extends BrushOperation
             neighborBlockCounts.put(neighbor, count);
         }
 
-        if (total >= meltFaces) worldModifiers.blocks.setBlock(x, y, z, highestBlockType);
+        if (total >= meltFaces) worldModifiers.blocks.setBlockType(x, y, z, highestBlockType);
     }
 
     //region Hooks

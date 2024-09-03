@@ -60,7 +60,7 @@ public class StackFillBrushOperation extends BrushOperation
             else return true;
         }
 
-        worldModifiers.blocks.setBlock(x, newY, z, palette.randomBlock());
+        worldModifiers.blocks.setBlockType(x, newY, z, palette.randomBlock());
         return true;
     }
 }

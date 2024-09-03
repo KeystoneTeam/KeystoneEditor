@@ -2,13 +2,13 @@ package keystone.api;
 
 import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.Biome;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.api.wrappers.entities.Entity;
+import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import net.minecraft.util.math.Vec3i;
@@ -114,7 +114,6 @@ public class WorldRegion
      * @return The block at the given coordinates
      */
     public BlockType getBlockType(int x, int y, int z) { return worldModifiers.blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED); }
-
     /**
      * Get the {@link BlockType} at a position in the filter box
      * @param x The x coordinate
@@ -127,27 +126,29 @@ public class WorldRegion
     {
         return worldModifiers.blocks.getBlockType(x, y, z, retrievalMode);
     }
-
+    
     /**
-     * Get the {@link Block} at a position in the filter box, before any changes were made by the filter
+     * Get the {@link NBTCompound Block Data} at a position in the filter box
      * @param x The x coordinate
      * @param y The y coordinate
      * @param z The z coordinate
-     * @return The block at the given coordinates
+     * @return The block data at the given coordinates
      */
-    public Block getBlock(int x, int y, int z) { return worldModifiers.blocks.getBlock(x, y, z, RetrievalMode.LAST_SWAPPED); }
-
+    public NBTCompound getBlockData(int x, int y, int z)
+    {
+        return worldModifiers.blocks.getBlockData(x, y, z, RetrievalMode.LAST_SWAPPED);
+    }
     /**
-     * Get the {@link Block} at a position in the filter box
+     * Get the {@link NBTCompound Block Data} at a position in the filter box
      * @param x The x coordinate
      * @param y The y coordinate
      * @param z The z coordinate
      * @param retrievalMode The {@link RetrievalMode} to use when getting the block
-     * @return The block at the given coordinates
+     * @return The block data at the given coordinates
      */
-    public Block getBlock(int x, int y, int z, RetrievalMode retrievalMode)
+    public NBTCompound getBlockData(int x, int y, int z, RetrievalMode retrievalMode)
     {
-        return worldModifiers.blocks.getBlock(x, y, z, retrievalMode);
+        return worldModifiers.blocks.getBlockData(x, y, z, retrievalMode);
     }
 
     /**
@@ -208,7 +209,7 @@ public class WorldRegion
      * @param palette The {@link BlockPalette} to change the position to
      * @return Whether the change was successful
      */
-    public boolean setBlock(int x, int y, int z, BlockPalette palette) { return setBlock(x, y, z, palette.randomBlock()); }
+    public boolean setBlockType(int x, int y, int z, BlockPalette palette) { return setBlockType(x, y, z, palette.randomBlock()); }
     /**
      * Set the block at a position in the filter box to a {@link BlockType}.
      * This will only work if the position is within the filter box or
@@ -219,42 +220,24 @@ public class WorldRegion
      * @param blockType The {@link BlockType} to change the position to
      * @return Whether the change was successful
      */
-    public boolean setBlock(int x, int y, int z, BlockType blockType)
+    public boolean setBlockType(int x, int y, int z, BlockType blockType)
     {
         if (allowBlocksOutside || isPositionInBox(x, y, z))
         {
-            worldModifiers.blocks.setBlock(x, y, z, blockType);
-            return true;
-        }
-        else return false;
-    }
-    /**
-     * Set the block at a position in the filter box to a {@link Block}.
-     * This will only work if the position is within the filter box or
-     * allowBlocksOutside is true
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @param z The z coordinate
-     * @param block The {@link Block} to change the position to
-     * @return Whether the change was successful
-     */
-    public boolean setBlock(int x, int y, int z, Block block)
-    {
-        if (allowBlocksOutside || isPositionInBox(x, y, z))
-        {
-            worldModifiers.blocks.setBlock(x, y, z, block);
+            worldModifiers.blocks.setBlockType(x, y, z, blockType);
             return true;
         }
         else return false;
     }
     /**
      * Set the block at a position in the filter box to a random entry in a {@link BlockPalette}.
-     * This will only work if the position is within the filter box
+     * This will only work if the position is within the filter box or
+     * allowBlocksOutside is true
      * @param pos The {@link BlockPos} to change
      * @param palette The {@link BlockPalette} to change the position to
      * @return Whether the change was successful
      */
-    public boolean setBlock(BlockPos pos, BlockPalette palette) { return setBlock(pos.x, pos.y, pos.z, palette); }
+    public boolean setBlockType(BlockPos pos, BlockPalette palette) { return setBlockType(pos.x, pos.y, pos.z, palette); }
     /**
      * Set the block at a position in the filter box to a {@link BlockType}.
      * This will only work if the position is within the filter box or
@@ -263,16 +246,35 @@ public class WorldRegion
      * @param blockType The {@link BlockType} to change the position to
      * @return Whether the change was successful
      */
-    public boolean setBlock(BlockPos pos, BlockType blockType) { return setBlock(pos.x, pos.y, pos.z, blockType); }
+    public boolean setBlockType(BlockPos pos, BlockType blockType) { return setBlockType(pos.x, pos.y, pos.z, blockType); }
     /**
-     * Set the block at a position in the filter box to a {@link Block}.
+     * Set the block data at a position in the filter box to a {@link NBTCompound}.
+     * This will only work if the position is within the filter box or
+     * allowBlocksOutside is true
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param z The z coordinate
+     * @param blockData The {@link NBTCompound} to change the position to
+     * @return Whether the change was successful
+     */
+    public boolean setBlockData(int x, int y, int z, NBTCompound blockData)
+    {
+        if (allowBlocksOutside || isPositionInBox(x, y, z))
+        {
+            worldModifiers.blocks.setBlockData(x, y, z, blockData);
+            return true;
+        }
+        else return false;
+    }
+    /**
+     * Set the block data at a position in the filter box to a {@link NBTCompound}.
      * This will only work if the position is within the filter box or
      * allowBlocksOutside is true
      * @param pos The {@link BlockPos} to change
-     * @param block The {@link Block} to change the position to
+     * @param blockData The {@link NBTCompound} to change the position to
      * @return Whether the change was successful
      */
-    public boolean setBlock(BlockPos pos, Block block) { return setBlock(pos.x, pos.y, pos.z, block); }
+    public boolean setBlockData(BlockPos pos, NBTCompound blockData) { return setBlockData(pos.x, pos.y, pos.z, blockData); }
     /**
      * Set the biome at a position in the filter box to a {@link Biome}.
      * This will only work if the position is within the filter box or

@@ -49,6 +49,6 @@ public class ColorBiomes extends KeystoneFilter
                 return;
             }
         }
-        region.setBlock(x, y, z, biomeColors[index]);
+        region.setBlockType(x, y, z, biomeColors[index]);
     }
 }

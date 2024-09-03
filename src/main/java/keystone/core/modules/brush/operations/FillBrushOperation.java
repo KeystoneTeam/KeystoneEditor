@@ -29,7 +29,7 @@ public class FillBrushOperation extends BrushOperation
         BlockType existing = worldModifiers.blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED);
         if (mask.valid(existing))
         {
-            worldModifiers.blocks.setBlock(x, y, z, palette.randomBlock());
+            worldModifiers.blocks.setBlockType(x, y, z, palette.randomBlock());
             return true;
         }
         else return false;

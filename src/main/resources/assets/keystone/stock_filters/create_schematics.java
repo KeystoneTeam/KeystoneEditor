@@ -4,13 +4,13 @@ import keystone.api.enums.RetrievalMode;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.Block;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Direction;
+import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
 
@@ -38,11 +38,13 @@ public class CreateSchematics extends KeystoneFilter
     @Override
     public void processBlock(int x, int y, int z, WorldRegion region)
     {
-        Block block = region.getBlock(x, y, z);
-        if (markerMask.valid(block))
+        BlockType blockType = region.getBlockType(x, y, z);
+        NBTCompound blockData = region.getBlockData(x, y, z);
+        
+        if (markerMask.valid(blockType) && blockData != null)
         {
             // Read name from structure block
-            String identifier = block.tileEntity().getString("name").trim();
+            String identifier = blockData.getString("name").trim();
             if (identifier == null || identifier == "") return;
             
             // Create file path from structure name
@@ -50,11 +52,12 @@ public class CreateSchematics extends KeystoneFilter
             Path path = Paths.get(KeystoneDirectories.getSchematicsDirectory().resolve(pathTokens[0]).toString(), pathTokens[1].split("/"));
             
             // Save schematic
-            region.setBlock(x, y, z, replaceMarkerWith.randomBlock());
+            region.setBlockType(x, y, z, replaceMarkerWith.randomBlock());
             BoundingBox schematicBounds = getSchematicBounds(x, y, z, region);
             KeystoneSchematic schematic = schematic(schematicBounds, region.getWorldModifiers(), RetrievalMode.CURRENT, structureVoid);
             SchematicLoader.saveSchematic(schematic, path.toString() + ".kschem");
-            region.setBlock(x, y, z, block);
+            region.setBlockType(x, y, z, blockType);
+            region.setBlockData(x, y, z, blockData);
         }
     }
     

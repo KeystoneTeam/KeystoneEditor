@@ -35,7 +35,7 @@ public class Resurface extends KeystoneFilter
                     BlockType original = region.getBlockType(x + i, y + j, z + k);
                     if (airMask.valid(original))
                     {
-                        region.setBlock(x, y, z, surfacePalette);
+                        region.setBlockType(x, y, z, surfacePalette);
                         return;
                     }
                 }

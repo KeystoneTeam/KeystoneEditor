@@ -99,16 +99,6 @@ public class BlockType
     {
         return test != null && block().equals(test.block());
     }
-    /**
-     * Check whether this block's type is the same as another block, regardless of their
-     * property sets or tile entities
-     * @param test The block ID to test against
-     * @return True if the both block's types are equal.
-     */
-    public boolean isBlock(String test)
-    {
-        return isBlock(Block.create(test).blockType());
-    }
 
     /**
      * Apply a given property set to this block
@@ -225,12 +215,6 @@ public class BlockType
         if (o.getClass() == this.getClass())
         {
             BlockType blockType = (BlockType) o;
-            return this.string.equals(blockType.string);
-        }
-        if (o.getClass() == String.class)
-        {
-            String string = (String) o;
-            BlockType blockType = Block.create(string).blockType();
             return this.string.equals(blockType.string);
         }
         return false;

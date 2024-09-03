@@ -176,7 +176,7 @@ public class SelectionScreen extends KeystoneOverlay
                 {
                     for (int z = selection.getMin().getZ(); z <= selection.getMax().getZ(); z++)
                     {
-                        worldModifiers.blocks.setBlock(x, y, z, BlockTypeRegistry.AIR);
+                        worldModifiers.blocks.setBlockType(x, y, z, BlockTypeRegistry.AIR);
                     }
                 }
             }

@@ -1,7 +1,9 @@
 package keystone.core.modules.world;
 
 import keystone.api.Keystone;
-import keystone.core.modules.world.biomes.BiomesModule;
+import keystone.core.modules.world.submodules.BiomesModule;
+import keystone.core.modules.world.submodules.BlocksModule;
+import keystone.core.modules.world.submodules.EntitiesModule;
 
 public class WorldModifierModules
 {
