@@ -91,6 +91,7 @@ public class KeystoneOverlay extends Screen implements IMouseBlocker
         context.getMatrices().push();
         context.getMatrices().translate(0, 0, -150);
         context.drawItem(stack, x, y);
+        context.drawItemInSlot(MinecraftClient.getInstance().textRenderer, stack, x, y);
         context.getMatrices().pop();
     }
     //endregion

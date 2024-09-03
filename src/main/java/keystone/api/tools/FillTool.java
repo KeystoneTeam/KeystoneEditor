@@ -2,6 +2,7 @@ package keystone.api.tools;
 
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
+import keystone.api.variables.Name;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
@@ -40,6 +41,5 @@ public class FillTool extends KeystoneFilter
     public void processBlock(int x, int y, int z, WorldRegion region)
     {
         if (mask.valid(region.getBlockType(x, y, z))) region.setBlock(x, y, z, palette);
-        else print("Invalid black at " + new BlockPos(x, y, z));
     }
 }

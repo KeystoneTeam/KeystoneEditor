@@ -1,8 +1,9 @@
 package keystone.api.filters;
 
-import keystone.api.utils.DiscSampler;
+import it.unimi.dsi.fastutil.objects.Object2ReferenceArrayMap;
 import keystone.api.Keystone;
 import keystone.api.WorldRegion;
+import keystone.api.utils.PositionSampler;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.coordinates.Vector2f;
 import keystone.core.utils.ProgressBar;
@@ -26,12 +27,13 @@ public abstract class StructureFilter extends KeystoneFilter
     @Override public void initialize()
     {
         this.random = seed == 0 ? Keystone.RANDOM : new Random(seed);
+        this.coordinates = new Object2ReferenceArrayMap<>();
     }
 
     @Override
     public void prepareRegion(WorldRegion region)
     {
-        List<Vector2f> samples = DiscSampler.sample2D(random, getStructureSeparation(), region.min.x, region.min.z, region.size.x, region.size.z);
+        List<Vector2f> samples = PositionSampler.sample2D(random, getStructureSeparation(), region.min.x, region.min.z, region.size.x, region.size.z);
         coordinates.put(region, samples);
     }
     @Override

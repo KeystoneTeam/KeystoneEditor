@@ -34,9 +34,10 @@ public class MainFilterThread extends AbstractFilterThread
         Class<? extends KeystoneFilter> filterClass = filter.getClass();
         try
         {
-            processRegions = filterClass.getMethod("processRegion", WorldRegion.class).getDeclaringClass().equals(filterClass);
-            processBlocks = filterClass.getMethod("processBlock", int.class, int.class, int.class, WorldRegion.class).getDeclaringClass().equals(filterClass);
-            processEntities = filterClass.getMethod("processEntity", Entity.class, WorldRegion.class).getDeclaringClass().equals(filterClass);
+            Class<KeystoneFilter> baseClass = KeystoneFilter.class;
+            processRegions = !filterClass.getMethod("processRegion", WorldRegion.class).getDeclaringClass().equals(baseClass);
+            processBlocks = !filterClass.getMethod("processBlock", int.class, int.class, int.class, WorldRegion.class).getDeclaringClass().equals(baseClass);
+            processEntities = !filterClass.getMethod("processEntity", Entity.class, WorldRegion.class).getDeclaringClass().equals(baseClass);
         }
         catch (NoSuchMethodException e)
         {
@@ -125,9 +126,9 @@ public class MainFilterThread extends AbstractFilterThread
         int progressBarSteps = allEntities.size();
         for (WorldRegion region : executor.getRegions())
         {
-            progressBarSteps += region.size.x * region.size.y * region.size.z;
-            progressBarSteps += filter.getRegionSteps(region);
             if (executor.isCancelled()) return;
+            if (processBlocks) progressBarSteps += region.size.x * region.size.y * region.size.z;
+            if (processRegions) progressBarSteps += filter.getRegionSteps(region);
         }
         ProgressBar.beginIteration(progressBarSteps);
 

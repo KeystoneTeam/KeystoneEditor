@@ -43,7 +43,8 @@ public class BlockMaskEditScreen extends AbstractBlockSelectionScreen
         super.init();
         this.maskPanel = BlockGridWidget.createWithViewport(this, ScreenViewports.getViewport(Viewport.BOTTOM, Viewport.RIGHT, Viewport.MIDDLE, Viewport.RIGHT).offset(0, 0, -5, -105), false, Text.translatable("keystone.mask_panel"), (entry, mouseButton) ->
         {
-            entry.provider().forEach(blockType -> this.mask.without(blockType));
+            if (entry.tooltipBuilder().equals(BlockGridWidget.ANY_VARIANT_TOOLTIP)) entry.provider().forEach(this.mask::withoutAllVariants);
+            else entry.provider().forEach(this.mask::without);
             this.maskPanel.removeBlockProvider(entry.provider(), entry.tooltipBuilder());
         }, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.PASS_UNMODIFIED, BlockGridButton.NO_SCROLLING);
         this.mask.forEach(
