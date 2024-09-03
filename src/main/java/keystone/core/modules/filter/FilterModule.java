@@ -4,6 +4,7 @@ import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
 import keystone.api.filters.KeystoneFilter;
 import keystone.core.modules.IKeystoneModule;
+import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.modules.filter.execution.FilterExecutor;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionModule;
@@ -32,6 +33,8 @@ public class FilterModule implements IKeystoneModule
     @Override
     public void postInit()
     {
+        FilterCache.load();
+        
         historyModule = Keystone.getModule(HistoryModule.class);
         selectionModule = Keystone.getModule(SelectionModule.class);
         filterDirectoryManager = FilterDirectoryManager.create(KeystoneDirectories.getStockFilterCache(), KeystoneDirectories.getFilterDirectory());

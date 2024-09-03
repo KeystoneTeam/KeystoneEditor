@@ -35,10 +35,10 @@ import keystone.core.modules.rendering.world_highlight.WorldHighlightModule;
 import keystone.core.modules.schematic_import.ImportModule;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.session.SessionModule;
+import keystone.core.modules.world.change_queue.WorldChangeQueueModule;
+import keystone.core.modules.world.submodules.BiomesModule;
 import keystone.core.modules.world.submodules.BlocksModule;
 import keystone.core.modules.world.submodules.EntitiesModule;
-import keystone.core.modules.world.submodules.BiomesModule;
-import keystone.core.modules.world.change_queue.WorldChangeQueueModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.schematic.extensions.BiomesExtension;
 import keystone.core.schematic.extensions.StructureVoidsExtension;
@@ -188,8 +188,6 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
 
     private void onOpenWorld(World world)
     {
-        FilterCache.load();
-
         if (KeystoneConfig.startActive) Keystone.enableKeystone();
         else Keystone.disableKeystone();
     

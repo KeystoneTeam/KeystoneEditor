@@ -6,7 +6,6 @@ import keystone.api.variables.Variable;
 import keystone.api.wrappers.blocks.BlockMask;
 import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.api.wrappers.blocks.BlockType;
-import keystone.core.gui.overlays.file_browser.SaveFileScreen;
 
 import java.io.File;
 import java.util.HashMap;

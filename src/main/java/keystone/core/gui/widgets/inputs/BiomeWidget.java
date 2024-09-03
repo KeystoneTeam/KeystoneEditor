@@ -3,7 +3,6 @@ package keystone.core.gui.widgets.inputs;
 import keystone.api.wrappers.Biome;
 import keystone.core.utils.RegistryLookups;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.Text;

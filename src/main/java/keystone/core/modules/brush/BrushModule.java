@@ -1,7 +1,6 @@
 package keystone.core.modules.brush;
 
 import keystone.api.Keystone;
-import keystone.core.KeystoneGlobalState;
 import keystone.core.client.Player;
 import keystone.core.events.keystone.KeystoneInputEvents;
 import keystone.core.gui.hotbar.KeystoneHotbar;
