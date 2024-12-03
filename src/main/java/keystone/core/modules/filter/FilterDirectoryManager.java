@@ -88,8 +88,12 @@ public class FilterDirectoryManager
                 WatchEvent<Path> event = (WatchEvent<Path>) ev;
                 Path filePath = directory.resolve(event.context());
 
-                if (kind == ENTRY_DELETE) onFileDeleted(filePath);
-                else if (kind == ENTRY_MODIFY) onFileModified(filePath);
+                try
+                {
+                    if (kind == ENTRY_DELETE) onFileDeleted(filePath);
+                    else if (kind == ENTRY_MODIFY) onFileModified(filePath);
+                }
+                catch (Exception e) { e.printStackTrace(); }
             }
 
             boolean valid = key.reset();

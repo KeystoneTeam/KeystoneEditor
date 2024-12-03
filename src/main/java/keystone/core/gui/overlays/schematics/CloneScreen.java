@@ -98,8 +98,9 @@ public class CloneScreen extends KeystonePanel
         if (!KeystoneOverlayHandler.isOverlayOpen(CloneScreen.class))
         {
             SelectionBoundingBox selection = SelectionNudgeScreen.getSelectionToNudge();
-            open = new CloneScreen(selection.getBoundingBox(),
-                    KeystoneSchematic.createFromSelection(selection, new WorldModifierModules(), RetrievalMode.ORIGINAL, Blocks.STRUCTURE_VOID.getDefaultState()),
+            KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(selection, new WorldModifierModules(), RetrievalMode.ORIGINAL, Blocks.STRUCTURE_VOID.getDefaultState());
+            
+            open = new CloneScreen(selection.getBoundingBox(), schematic,
                     selection.getMin(), BlockRotation.NONE, BlockMirror.NONE, new Vector3i(0, 0, 0), 1, 1);
             KeystoneOverlayHandler.addOverlay(open);
         }

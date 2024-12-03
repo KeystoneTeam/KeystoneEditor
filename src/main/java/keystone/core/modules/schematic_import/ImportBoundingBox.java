@@ -181,15 +181,19 @@ public class ImportBoundingBox extends SelectableCuboid
     public void nudgeBox(Direction direction, int amount)
     {
         if (amount < 0) amount = getAxisSize(direction.getAxis());
-
         super.nudgeBox(direction, amount);
+        
         ghostBlocks.getRenderer().offset = Vec3d.of(getMin());
+        ghostBlocks.setOrientation(rotation, mirror);
+        updateBounds();
     }
     @Override
     public void move(Vec3i newMin)
     {
-        ghostBlocks.getRenderer().offset = Vec3d.of(newMin);
         super.move(newMin);
+        ghostBlocks.getRenderer().offset = Vec3d.of(newMin);
+        ghostBlocks.setOrientation(rotation, mirror);
+        updateBounds();
     }
 
     public void place(Map<Identifier, Boolean> extensionsToPlace, boolean copyAir)

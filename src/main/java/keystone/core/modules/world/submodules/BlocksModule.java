@@ -14,6 +14,7 @@ import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.WorldChunk;
 
 public class BlocksModule implements IKeystoneModule
 {
@@ -60,9 +61,17 @@ public class BlocksModule implements IKeystoneModule
         {
             World world = worldCacheModule.getDimensionWorld(Player.getDimension());
             BlockPos pos = new BlockPos(x, y, z);
-            BlockEntity tileEntity = world.getBlockEntity(pos);
+            
+            // Get World Chunk
+            WorldChunk chunk = world.getWorldChunk(pos);
+            if (chunk == null) return null;
+            
+            // Get Tile Entity from Chunk
+            BlockEntity tileEntity = chunk.getBlockEntity(pos);
             if (tileEntity == null) return null;
-            else return new NBTCompound(tileEntity.createNbtWithIdentifyingData(RegistryLookups.registryLookup()));
+            
+            // Return wrapped block data
+            return new NBTCompound(tileEntity.createNbtWithIdentifyingData(RegistryLookups.registryLookup()));
         }
 
         WorldHistoryChunk chunk = historyModule.getOpenEntry().getOrAddChunk(x, y, z);

@@ -28,15 +28,16 @@ import org.joml.Vector4i;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 public final class KeystoneOverlayHandler
 {
     private static boolean worldFinishedLoading = false;
     private static final Queue<IKeystoneTooltip> tooltips = new ArrayDeque<>();
-    private static final List<Screen> overlays = Collections.synchronizedList(new ArrayList<>());
-    private static final List<Screen> addList = Collections.synchronizedList(new ArrayList<>());
-    private static final List<Screen> removeList = Collections.synchronizedList(new ArrayList<>());
+    private static final List<Screen> overlays = Collections.synchronizedList(new CopyOnWriteArrayList<>());
+    private static final List<Screen> addList = Collections.synchronizedList(new CopyOnWriteArrayList<>());
+    private static final List<Screen> removeList = Collections.synchronizedList(new CopyOnWriteArrayList<>());
 
     private static boolean rendering;
     

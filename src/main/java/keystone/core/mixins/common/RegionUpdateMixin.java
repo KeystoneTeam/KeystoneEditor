@@ -19,14 +19,8 @@ public class RegionUpdateMixin
         if (KeystoneGlobalState.PurgeUnvisitedChunks)
         {
             long inhabitedTime = chunkNBT.contains("InhabitedTime", NbtElement.LONG_TYPE) ? chunkNBT.getLong("InhabitedTime") : 0;
-            if (inhabitedTime <= KeystoneGlobalState.UnvisitedChunkCutoff)
-            {
-                Keystone.LOGGER.info("Purged {}. Time: {}", chunkPos, inhabitedTime);
-                return null;
-            }
+            if (inhabitedTime <= KeystoneGlobalState.UnvisitedChunkCutoff) return null;
         }
-        
-        Keystone.LOGGER.info("Kept {}", chunkPos);
         return chunkNBT;
     }
 }

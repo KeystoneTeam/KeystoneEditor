@@ -27,19 +27,6 @@ public class KeystoneHotbar extends KeystonePanel
     private KeystoneHotbar()
     {
         super(Text.literal("keystone.screen.hotbar"));
-        KeystoneHotbarEvents.CHANGED.register(this::onHotbarChanged);
-    }
-
-    //region Hotbar Changed Event
-    // TODO: Separate this from the hotbar screen
-    private void onHotbarChanged(KeystoneHotbarSlot previous, KeystoneHotbarSlot slot)
-    {
-        switch (slot)
-        {
-            case CLONE:
-                Keystone.getModule(ClipboardModule.class).copy();
-                break;
-        }
     }
 
     private boolean selectionBoxesPresent()

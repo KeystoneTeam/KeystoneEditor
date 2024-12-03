@@ -1,6 +1,7 @@
 package keystone.core.renderer.blocks.buffer;
 
 import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.client.render.chunk.ChunkBuilder;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -28,6 +29,7 @@ public class TemplateBuffer
         template.limit(rendered.limit());
         template.put(rendered);
         template.rewind();
+        buffer.close();
     }
 
     public boolean isEmpty()

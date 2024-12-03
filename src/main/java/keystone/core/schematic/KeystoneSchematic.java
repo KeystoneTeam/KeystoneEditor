@@ -91,7 +91,7 @@ public class KeystoneSchematic
 
         // Get blocks
         BlockType[] blocks = new BlockType[size.getX() * size.getY() * size.getZ()];
-        Map<BlockPos, NBTCompound> tileEntities = new Reference2ObjectArrayMap<>();
+        Map<BlockPos, NBTCompound> tileEntities = new HashMap<>();
         int i = 0;
         for (int x = 0; x < size.getX(); x++)
         {
@@ -101,7 +101,11 @@ public class KeystoneSchematic
                 {
                     blocks[i] = worldModifiers.blocks.getBlockType(x + min.getX(), y + min.getY(), z + min.getZ(), retrievalMode);
                     if (blocks[i].getMinecraftBlock() == structureVoid) blocks[i] = null;
-                    else if (blocks[i].getMinecraftBlock().hasBlockEntity()) tileEntities.put(new BlockPos(x, y, z), worldModifiers.blocks.getBlockData(x + min.getX(), y + min.getY(), z + min.getZ(), retrievalMode));
+                    else if (blocks[i].getMinecraftBlock().hasBlockEntity())
+                    {
+                        NBTCompound tileEntity = worldModifiers.blocks.getBlockData(x + min.getX(), y + min.getY(), z + min.getZ(), retrievalMode);
+                        tileEntities.put(new BlockPos(x, y, z), tileEntity);
+                    }
                     i++;
                 }
             }
@@ -324,7 +328,7 @@ public class KeystoneSchematic
             {
                 for (int z = 0; z < size.getZ(); z++)
                 {
-                    BlockType blockType = blocks[i];
+                    BlockType blockType = BlockTypeRegistry.fromMinecraftBlock(blocks[i].getMinecraftBlock().mirror(mirror).rotate(rotation));
                     NBTCompound tileEntity = tileEntities.getOrDefault(new BlockPos(x, y, z), null);
                     
                     if (blockType.getMinecraftBlock().isAir() && !placeAir)
@@ -341,7 +345,6 @@ public class KeystoneSchematic
                             {
                                 BlockPos localPos = new BlockPos(x * clampedScale + sx, y * clampedScale + sy, z * clampedScale + sz);
                                 BlockPos worldPos = BlockPosMath.getOrientedBlockPos(localPos, size, rotation, mirror, clampedScale).add(anchor);
-                                blockType = BlockTypeRegistry.fromMinecraftBlock(blockType.getMinecraftBlock().rotate(rotation).mirror(mirror));
                                 worldModifiers.blocks.setBlockType(worldPos.getX(), worldPos.getY(), worldPos.getZ(), blockType);
                                 if (tileEntity != null) worldModifiers.blocks.setBlockData(worldPos.getX(), worldPos.getY(), worldPos.getZ(), tileEntity);
                             }

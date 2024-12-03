@@ -354,9 +354,9 @@ public class WorldHistoryChunk
                     if (blockData != null)
                     {
                         NbtCompound tileEntityData = blockData.getMinecraftNBT().copy();
-                        tileEntityData.putInt("x", x);
-                        tileEntityData.putInt("y", y);
-                        tileEntityData.putInt("z", z);
+                        tileEntityData.putInt("x", pos.getX());
+                        tileEntityData.putInt("y", pos.getY());
+                        tileEntityData.putInt("z", pos.getZ());
                         BlockEntity tileEntity = world.getBlockEntity(pos);
                         if (tileEntity != null) tileEntity.read(tileEntityData, RegistryLookups.registryLookup());
                     }
