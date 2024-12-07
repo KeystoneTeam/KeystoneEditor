@@ -1,4 +1,4 @@
-package keystone.core.renderer.blocks.buffer;
+package keystone.core.renderer.blocks.legacy.buffer;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;

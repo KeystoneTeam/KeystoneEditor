@@ -1,10 +1,10 @@
-package keystone.core.renderer.blocks;
+package keystone.core.renderer.blocks.legacy;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import keystone.core.renderer.blocks.buffer.SuperByteBuffer;
-import keystone.core.renderer.blocks.buffer.SuperRenderTypeBuffer;
-import keystone.core.renderer.blocks.world.GhostBlocksWorld;
+import keystone.core.renderer.blocks.legacy.buffer.SuperByteBuffer;
+import keystone.core.renderer.blocks.legacy.buffer.SuperRenderTypeBuffer;
+import keystone.core.renderer.blocks.legacy.world.GhostBlocksWorld;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;

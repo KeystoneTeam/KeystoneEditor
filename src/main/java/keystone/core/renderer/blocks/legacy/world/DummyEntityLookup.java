@@ -1,4 +1,4 @@
-package keystone.core.renderer.blocks.world;
+package keystone.core.renderer.blocks.legacy.world;
 
 import net.minecraft.util.TypeFilter;
 import net.minecraft.util.function.LazyIterationConsumer;

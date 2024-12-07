@@ -8,7 +8,7 @@ import keystone.core.modules.rendering.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.selection.SelectableCuboid;
 import keystone.core.modules.selection.SelectedFace;
 import keystone.core.modules.world.WorldModifierModules;
-import keystone.core.renderer.blocks.world.GhostBlocksWorld;
+import keystone.core.renderer.blocks.legacy.world.GhostBlocksWorld;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;

@@ -1,6 +1,5 @@
 package keystone.core.schematic;
 
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.wrappers.blocks.BlockType;
@@ -13,7 +12,7 @@ import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.registries.BlockTypeRegistry;
-import keystone.core.renderer.blocks.world.GhostBlocksWorld;
+import keystone.core.renderer.blocks.legacy.world.GhostBlocksWorld;
 import keystone.core.schematic.extensions.ISchematicExtension;
 import keystone.core.schematic.formats.KeystoneSchematicFormat;
 import keystone.core.utils.RegistryLookups;

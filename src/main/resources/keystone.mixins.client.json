@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "BackupPromptScreenMixin",
+    "ChunkBuilderMixin",
     "ClientPlayerEntityMixin",
     "ClientPlayerInteractionManagerMixin",
     "ClientPlayNetworkHandlerMixin",
@@ -21,8 +22,11 @@
     "MinecraftClientMixin",
     "MouseMixin",
     "OptimizeWorldScreenMixin",
+    "ParticleManagerMixin",
+    "RenderSystemAccessor",
     "SpectatorHudMixin",
-    "WorldEntryMixin"
+    "WorldEntryMixin",
+    "WorldRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

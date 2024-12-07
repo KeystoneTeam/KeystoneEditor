@@ -1,7 +1,7 @@
-package keystone.core.renderer.blocks;
+package keystone.core.renderer.blocks.legacy;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import keystone.core.renderer.blocks.buffer.SuperByteBuffer;
+import keystone.core.renderer.blocks.legacy.buffer.SuperByteBuffer;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.render.RenderLayer;
 

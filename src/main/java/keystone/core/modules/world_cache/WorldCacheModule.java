@@ -2,7 +2,7 @@ package keystone.core.modules.world_cache;
 
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.modules.IKeystoneModule;
-import keystone.core.renderer.blocks.world.GhostBlocksWorld;
+import keystone.core.renderer.blocks.legacy.world.GhostBlocksWorld;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.registry.RegistryKey;

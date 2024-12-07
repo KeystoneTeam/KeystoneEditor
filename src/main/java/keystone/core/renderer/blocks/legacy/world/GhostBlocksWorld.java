@@ -1,7 +1,7 @@
-package keystone.core.renderer.blocks.world;
+package keystone.core.renderer.blocks.legacy.world;
 
 import keystone.api.Keystone;
-import keystone.core.renderer.blocks.GhostWorldRenderer;
+import keystone.core.renderer.blocks.legacy.GhostWorldRenderer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;

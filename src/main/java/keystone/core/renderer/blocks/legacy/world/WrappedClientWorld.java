@@ -1,4 +1,4 @@
-package keystone.core.renderer.blocks.world;
+package keystone.core.renderer.blocks.legacy.world;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;

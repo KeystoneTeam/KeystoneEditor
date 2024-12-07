@@ -1,4 +1,4 @@
-package keystone.core.renderer.blocks.buffer;
+package keystone.core.renderer.blocks.legacy.buffer;
 
 
 import com.mojang.blaze3d.systems.RenderSystem;

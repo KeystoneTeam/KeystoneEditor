@@ -146,5 +146,6 @@
   "keystone.hud.block_updates.label": "Block Updates: ",
   "keystone.hud.block_updates.on": "ON",
   "keystone.hud.block_updates.off": "OFF",
-  "keystone.hud.unsavedChanges": "%s Unsaved Changes"
+  "keystone.hud.unsavedChanges": "%s Unsaved Changes",
+  "keystone.key.feature_test": "Feature Test"
 }

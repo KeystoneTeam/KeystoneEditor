@@ -1,23 +1,26 @@
 package keystone.core.mixins.client;
 
 import keystone.core.gui.KeystoneOverlayHandler;
+import keystone.core.mixins.interfaces.KeystoneGameRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.BufferBuilderStorage;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.render.*;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GameRenderer.class)
-public class GameRendererMixin
+public class GameRendererMixin implements KeystoneGameRenderer
 {
     @Shadow @Final MinecraftClient client;
     @Shadow @Final private BufferBuilderStorage buffers;
+    @Shadow private boolean renderHand;
+    @Shadow @Mutable @Final private LightmapTextureManager lightmapTextureManager;
+    @Shadow @Mutable @Final private Camera camera;
     
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;draw()V", shift = At.Shift.BEFORE))
     public void renderOverlays(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci)
@@ -30,6 +33,30 @@ public class GameRendererMixin
             KeystoneOverlayHandler.render(this.client, drawContext, i, j, tickCounter.getLastFrameDuration());
             drawContext.draw();
         }
+    }
+    
+    @Override
+    public boolean keystone_getRenderHand()
+    {
+        return renderHand;
+    }
+    
+    @Override
+    public void keystone_setRenderHand(boolean render)
+    {
+        renderHand = render;
+    }
+    
+    @Override
+    public void keystone_setLightmapTextureManager(LightmapTextureManager lightmap)
+    {
+        lightmapTextureManager = lightmap;
+    }
+    
+    @Override
+    public void keystone_setCamera(Camera newCamera)
+    {
+        camera = newCamera;
     }
 }
 

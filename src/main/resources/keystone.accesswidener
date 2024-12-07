@@ -22,8 +22,13 @@ accessible field net/minecraft/command/argument/BlockPredicateArgumentType$TagPr
 extendable method net/minecraft/client/gui/widget/ClickableWidget render (Lnet/minecraft/client/gui/DrawContext;IIF)V
 extendable method net/minecraft/client/gui/widget/CheckboxWidget <init> (IIILnet/minecraft/text/Text;Lnet/minecraft/client/font/TextRenderer;ZLnet/minecraft/client/gui/widget/CheckboxWidget$Callback;)V
 
+accessible field net/minecraft/client/world/ClientWorld chunkManager Lnet/minecraft/client/world/ClientChunkManager;
+mutable field net/minecraft/client/world/ClientWorld chunkManager Lnet/minecraft/client/world/ClientChunkManager;
 accessible field net/minecraft/client/world/ClientChunkManager chunks Lnet/minecraft/client/world/ClientChunkManager$ClientChunkMap;
 accessible field net/minecraft/client/world/ClientChunkManager$ClientChunkMap chunks Ljava/util/concurrent/atomic/AtomicReferenceArray;
 
 accessible field net/minecraft/client/gui/widget/ButtonWidget onPress Lnet/minecraft/client/gui/widget/ButtonWidget$PressAction;
 mutable field net/minecraft/client/gui/widget/ButtonWidget onPress Lnet/minecraft/client/gui/widget/ButtonWidget$PressAction;
+
+accessible field net/minecraft/client/world/ClientWorld networkHandler Lnet/minecraft/client/network/ClientPlayNetworkHandler;
+mutable field net/minecraft/client/world/ClientWorld networkHandler Lnet/minecraft/client/network/ClientPlayNetworkHandler;

@@ -1,7 +1,6 @@
-package keystone.core.renderer.blocks.buffer;
+package keystone.core.renderer.blocks.legacy.buffer;
 
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.render.chunk.ChunkBuilder;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

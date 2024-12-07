@@ -5,7 +5,7 @@ import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.modules.world.WorldModifierModules;
-import keystone.core.renderer.blocks.world.GhostBlocksWorld;
+import keystone.core.renderer.blocks.legacy.world.GhostBlocksWorld;
 import keystone.core.schematic.KeystoneSchematic;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.BlockMirror;

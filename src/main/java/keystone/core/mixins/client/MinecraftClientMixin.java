@@ -3,20 +3,26 @@ package keystone.core.mixins.client;
 import keystone.api.Keystone;
 import keystone.core.KeystoneMod;
 import keystone.core.gui.KeystoneOverlayHandler;
+import keystone.core.mixins.interfaces.KeystoneMinecraftClient;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BufferBuilderStorage;
+import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.Window;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftClient.class)
-public class MinecraftClientMixin
+public class MinecraftClientMixin implements KeystoneMinecraftClient
 {
     @Shadow @Final private Window window;
-
+    @Shadow @Mutable @Final public WorldRenderer worldRenderer;
+    @Shadow @Mutable @Final private BufferBuilderStorage bufferBuilders;
+    
     @Inject(method = "run", at = @At("HEAD"))
     public void gameLoaded(CallbackInfo callback)
     {
@@ -33,5 +39,17 @@ public class MinecraftClientMixin
     public void resizeDisplay(CallbackInfo callback)
     {
         KeystoneOverlayHandler.resize(MinecraftClient.getInstance(), this.window.getScaledWidth(), this.window.getScaledHeight());
+    }
+    
+    @Override
+    public void keystone_setWorldRenderer(WorldRenderer renderer)
+    {
+        worldRenderer = renderer;
+    }
+    
+    @Override
+    public void keystone_setBufferBuilders(BufferBuilderStorage buffers)
+    {
+        bufferBuilders = buffers;
     }
 }

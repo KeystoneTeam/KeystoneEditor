@@ -1,4 +1,4 @@
-package keystone.core.renderer.blocks;
+package keystone.core.renderer.blocks.legacy;
 
 import keystone.api.Keystone;
 import net.minecraft.block.entity.BlockEntity;
