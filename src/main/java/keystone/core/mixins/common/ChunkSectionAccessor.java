@@ -11,5 +11,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface ChunkSectionAccessor
 {
     @Accessor("biomeContainer")
-    void setBiomeStorage(ReadableContainer<RegistryEntry<Biome>> biomeContainer);
+    void setBiomeContainer(ReadableContainer<RegistryEntry<Biome>> biomeContainer);
 }

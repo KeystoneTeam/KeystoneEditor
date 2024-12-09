@@ -1,60 +1,65 @@
 package keystone.core.modules.history.chunk;
 
+import com.mojang.serialization.Codec;
+import keystone.api.Keystone;
 import keystone.core.utils.PalettedArray;
+import keystone.core.utils.PalettedContainerUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.chunk.PalettedContainer;
 
-public class BlockStateHistoryBuffer extends HistoryBuffer<PalettedArray<BlockState>, NbtCompound>
+public class BlockStateHistoryBuffer extends HistoryBuffer<PalettedContainer<BlockState>, NbtElement>
 {
-    private final RegistryWrapper<Block> registry;
+    private static final Codec<PalettedContainer<BlockState>> CODEC = PalettedContainer.createPalettedContainerCodec(Block.STATE_IDS, BlockState.CODEC, PalettedContainer.PaletteProvider.BLOCK_STATE, Blocks.AIR.getDefaultState());
     
-    private BlockStateHistoryBuffer(RegistryWrapper<Block> registry, PalettedArray<BlockState> old, PalettedArray<BlockState> buffer1, PalettedArray<BlockState> buffer2)
+    private BlockStateHistoryBuffer(PalettedContainer<BlockState> old, PalettedContainer<BlockState> buffer1, PalettedContainer<BlockState> buffer2)
     {
         super(old, buffer1, buffer2);
-        this.registry = registry;
     }
     
-    public static BlockStateHistoryBuffer createEmpty(World world)
+    public static BlockStateHistoryBuffer createEmpty()
     {
-        return new BlockStateHistoryBuffer(world.createCommandRegistryWrapper(RegistryKeys.BLOCK), null, null, null);
+        return new BlockStateHistoryBuffer(null, null, null);
     }
-    public static BlockStateHistoryBuffer createFromChunkSection(World world, ChunkSection section)
+    public static BlockStateHistoryBuffer createFromChunkSection(ChunkSection section)
     {
-        if (section.isEmpty()) return createFilled(world, Blocks.AIR.getDefaultState());
+        if (section.isEmpty()) return createFilled(Blocks.AIR.getDefaultState());
         
-        PalettedArray<BlockState> old = PalettedArray.fromContainer(section.getBlockStateContainer(), 16, 16, 16);
-        PalettedArray<BlockState> buffer1 = old.copy();
-        PalettedArray<BlockState> buffer2 = old.copy();
-        return new BlockStateHistoryBuffer(world.createCommandRegistryWrapper(RegistryKeys.BLOCK), old, buffer1, buffer2);
+        PalettedContainer<BlockState> old = PalettedContainerUtils.copyContainer(section.getBlockStateContainer());
+        PalettedContainer<BlockState> buffer1 = PalettedContainerUtils.copyContainer(section.getBlockStateContainer());
+        PalettedContainer<BlockState> buffer2 = PalettedContainerUtils.copyContainer(section.getBlockStateContainer());
+        return new BlockStateHistoryBuffer(old, buffer1, buffer2);
     }
-    public static BlockStateHistoryBuffer createFilled(World world, BlockState fill)
+    public static BlockStateHistoryBuffer createFilled(BlockState fill)
     {
-        PalettedArray<BlockState> old = new PalettedArray<>(4096, 1, fill);
-        PalettedArray<BlockState> buffer1 = old.copy();
-        PalettedArray<BlockState> buffer2 = old.copy();
-        return new BlockStateHistoryBuffer(world.createCommandRegistryWrapper(RegistryKeys.BLOCK), old, buffer1, buffer2);
+        PalettedContainer<BlockState> old = new PalettedContainer<>(Block.STATE_IDS, fill, PalettedContainer.PaletteProvider.BLOCK_STATE);
+        PalettedContainer<BlockState> buffer1 = new PalettedContainer<>(Block.STATE_IDS, fill, PalettedContainer.PaletteProvider.BLOCK_STATE);
+        PalettedContainer<BlockState> buffer2 = new PalettedContainer<>(Block.STATE_IDS, fill, PalettedContainer.PaletteProvider.BLOCK_STATE);
+        return new BlockStateHistoryBuffer(old, buffer1, buffer2);
     }
     
     @Override
-    protected NbtCompound writeBuffer(PalettedArray<BlockState> buffer)
+    protected NbtElement writeBuffer(PalettedContainer<BlockState> buffer)
     {
-        return buffer.serialize(NbtHelper::fromBlockState);
+        return CODEC.encodeStart(NbtOps.INSTANCE, buffer).getOrThrow();
     }
     @Override
-    protected PalettedArray<BlockState> readBuffer(NbtCompound nbt)
+    protected PalettedContainer<BlockState> readBuffer(NbtElement nbt)
     {
-        return new PalettedArray<>(nbt, serialized -> NbtHelper.toBlockState(registry, (NbtCompound)serialized));
+        return CODEC.parse(NbtOps.INSTANCE, nbt).promotePartial(error -> Keystone.LOGGER.warn("Recoverable error while reading block state history buffer: {}", error)).getOrThrow();
     }
     @Override
-    protected PalettedArray<BlockState> copyBuffer(PalettedArray<BlockState> buffer)
+    protected PalettedContainer<BlockState> copyBuffer(PalettedContainer<BlockState> buffer)
     {
-        return buffer.copy();
+        return PalettedContainerUtils.copyContainer(buffer);
     }
 }

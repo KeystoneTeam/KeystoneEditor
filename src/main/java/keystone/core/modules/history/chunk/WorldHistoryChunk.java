@@ -8,6 +8,7 @@ import keystone.core.mixins.common.ChunkSectionAccessor;
 import keystone.core.modules.history.HistoryStackFrame;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.utils.PalettedArray;
+import keystone.core.utils.PalettedContainerUtils;
 import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -81,7 +82,7 @@ public class WorldHistoryChunk
         if (sectionIndex < 0 || sectionIndex >= sections.length)
         {
             this.chunkSection = null;
-            this.blocks = BlockStateHistoryBuffer.createFilled(world.toServerWorld(), Blocks.VOID_AIR.getDefaultState());
+            this.blocks = BlockStateHistoryBuffer.createFilled(Blocks.VOID_AIR.getDefaultState());
             this.tileEntities = TileEntityHistoryBuffer.createEmpty();
             this.biomes = BiomeHistoryBuffer.createFilled(world.toServerWorld(), BiomeKeys.THE_VOID);
             this.entities = EntitiesHistoryBuffer.createFromSection(world.toServerWorld(), chunkPosition);
@@ -91,7 +92,7 @@ public class WorldHistoryChunk
         else
         {
             this.chunkSection = sections[sectionIndex];
-            this.blocks = BlockStateHistoryBuffer.createFromChunkSection(world.toServerWorld(), this.chunkSection);
+            this.blocks = BlockStateHistoryBuffer.createFromChunkSection(this.chunkSection);
             this.tileEntities = TileEntityHistoryBuffer.createFromSection(world.toServerWorld(), this.chunk, this.chunkY);
             this.biomes = BiomeHistoryBuffer.createFromChunkSection(world.toServerWorld(), this.chunkSection);
             this.entities = EntitiesHistoryBuffer.createEmpty();
@@ -122,8 +123,8 @@ public class WorldHistoryChunk
         else this.chunkSection = sections[sectionIndex];
         
         // Blocks
-        if (nbt.contains("Blocks", NbtElement.COMPOUND_TYPE)) this.blocks = HistoryBuffer.deserialize(nbt.getCompound("Blocks"), () -> BlockStateHistoryBuffer.createEmpty(world.toServerWorld()));
-        else this.blocks = BlockStateHistoryBuffer.createFilled(world.toServerWorld(), Blocks.AIR.getDefaultState());
+        if (nbt.contains("Blocks", NbtElement.COMPOUND_TYPE)) this.blocks = HistoryBuffer.deserialize(nbt.getCompound("Blocks"), BlockStateHistoryBuffer::createEmpty);
+        else this.blocks = BlockStateHistoryBuffer.createFilled(Blocks.AIR.getDefaultState());
         
         // Tile Entities
         if (nbt.contains("TileEntities", NbtElement.COMPOUND_TYPE)) this.tileEntities = HistoryBuffer.deserialize(nbt.getCompound("TileEntities"), TileEntityHistoryBuffer::createEmpty);
@@ -164,7 +165,7 @@ public class WorldHistoryChunk
         x -= chunkX * 16;
         y -= chunkY * 16;
         z -= chunkZ * 16;
-        return this.blocks.getBuffer(retrievalMode).get(z + y * 16 + x * 256);
+        return this.blocks.getBuffer(retrievalMode).get(x, y, z);
     }
     public NbtCompound getBlockData(int x, int y, int z, RetrievalMode retrievalMode)
     {
@@ -220,7 +221,7 @@ public class WorldHistoryChunk
         y -= chunkY * 16;
         z -= chunkZ * 16;
         
-        this.blocks.getBuffer(RetrievalMode.CURRENT).set(z + y * 16 + x * 256, blockState);
+        this.blocks.getBuffer(RetrievalMode.CURRENT).set(x, y, z, blockState);
         this.tileEntities.getBuffer(RetrievalMode.CURRENT).remove(new BlockPos(x, y, z));
     }
     public void setBlockData(int x, int y, int z, NbtCompound blockData)
@@ -286,21 +287,19 @@ public class WorldHistoryChunk
     public void processUpdates(boolean undoing)
     {
         if (chunkSection == null) return;
-        PalettedArray<BlockState> newBlocks = this.blocks.getBuffer(undoing ? RetrievalMode.ORIGINAL : RetrievalMode.CURRENT);
+        PalettedContainer<BlockState> newBlocks = this.blocks.getBuffer(undoing ? RetrievalMode.ORIGINAL : RetrievalMode.CURRENT);
         
         BlockPos start = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
-        int index = 0;
         for (int x = 0; x < 16; x++)
         {
             for (int y = 0; y < 16; y++)
             {
                 for (int z = 0; z < 16; z++)
                 {
-                    BlockState newState = newBlocks.get(index);
+                    BlockState newState = newBlocks.get(x, y, z);
                     BlockPos pos = start.add(x, y, z);
                     world.updateNeighbors(pos, newState.getBlock());
                     newState.updateNeighbors(world, pos, UPDATE_FLAGS);
-                    index++;
                 }
             }
         }
@@ -311,33 +310,33 @@ public class WorldHistoryChunk
     {
         if (chunkSection == null) return;
         
-        PalettedArray<BlockState> blockStates = this.blocks.getBuffer(retrievalMode);
+        BlockPos chunkOrigin = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
+        PalettedContainer<BlockState> blockStates = this.blocks.getBuffer(retrievalMode);
         ConcurrentHashMap<BlockPos, NbtCompound> tileEntities = this.tileEntities.getBuffer(retrievalMode);
         PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> biomes = this.biomes.getBuffer(retrievalMode);
         ConcurrentHashMap<UUID, Entity> entities = this.entities.getBuffer(retrievalMode);
         
         // Apply Biomes
         var biomeContainer = createBiomeContainer(biomes);
-        ((ChunkSectionAccessor)chunkSection).setBiomeStorage(biomeContainer);
+        ((ChunkSectionAccessor)chunkSection).setBiomeContainer(biomeContainer);
         if (MinecraftClient.getInstance().world.getDimension().equals(world.getDimension()))
         {
             ClientWorld world = MinecraftClient.getInstance().world;
             Chunk chunk = world.getChunk(chunkX, chunkZ);
             ChunkSection chunkSection = world.getChunk(chunkX, chunkZ).getSection(chunk.getSectionIndex(chunkY << 4));
-            ((ChunkSectionAccessor)chunkSection).setBiomeStorage(biomeContainer.copy());
+            ((ChunkSectionAccessor)chunkSection).setBiomeContainer(PalettedContainerUtils.copyContainer(biomeContainer));
             KeystoneGlobalState.DirtyChunks.computeIfAbsent(this.world.toServerWorld(), key -> Lists.newArrayList()).add(chunk);
         }
         
         // Apply Blocks
-        BlockPos start = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
         for (int x = 0; x < 16; x++)
         {
             for (int y = 0; y < 16; y++)
             {
                 for (int z = 0; z < 16; z++)
                 {
-                    BlockPos pos = start.add(x, y, z);
-                    BlockState state = blockStates.get(z + y * 16 + x * 256);
+                    BlockPos pos = chunkOrigin.add(x, y, z);
+                    BlockState state = blockStates.get(x, y, z);
                     BlockState existing = world.getBlockState(pos);
                     
                     if (!state.equals(existing))
