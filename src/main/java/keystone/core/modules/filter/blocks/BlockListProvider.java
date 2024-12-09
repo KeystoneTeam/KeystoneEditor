@@ -2,9 +2,7 @@ package keystone.core.modules.filter.blocks;
 
 import keystone.api.Keystone;
 import keystone.api.utils.StringUtils;
-import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.overlays.block_selection.BlockGridButton;
-import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.BlockUtils;
 import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.Block;
@@ -31,7 +29,7 @@ import java.util.function.Consumer;
 
 public class BlockListProvider implements IBlockProvider
 {
-    private static final BlockType ERROR = BlockTypeRegistry.fromMinecraftBlock(Blocks.RED_STAINED_GLASS.getDefaultState());
+    private static final BlockState ERROR = Blocks.RED_STAINED_GLASS.getDefaultState();
     
     private final List<BlockState> states = new ArrayList<>();
     private final Map<String, String> vagueProperties = new HashMap<>();
@@ -59,18 +57,18 @@ public class BlockListProvider implements IBlockProvider
     @Override public int size() { return states.size(); }
     
     @Override
-    public BlockType get()
+    public BlockState get()
     {
         if (this.states.isEmpty()) return ERROR;
-        return BlockTypeRegistry.fromMinecraftBlock(states.get(Keystone.RANDOM.nextInt(states.size())));
+        return states.get(Keystone.RANDOM.nextInt(states.size()));
     }
     @Override
-    public BlockType getFirst()
+    public BlockState getFirst()
     {
         if (this.states.isEmpty()) return ERROR;
-        return BlockTypeRegistry.fromMinecraftBlock(this.states.get(0));
+        return this.states.get(0);
     }
-    @Override public void forEach(Consumer<BlockType> consumer) { this.states.forEach(state -> consumer.accept(BlockTypeRegistry.fromMinecraftBlock(state))); }
+    @Override public void forEach(Consumer<BlockState> consumer) { this.states.forEach(consumer); }
     @Override
     public IBlockProvider clone()
     {
@@ -88,11 +86,11 @@ public class BlockListProvider implements IBlockProvider
         return new BlockListProvider(statesArray);
     }
     
-    @Override public boolean containsState(BlockType blockType) { return states.contains(blockType.getMinecraftBlock()); }
+    @Override public boolean containsState(BlockState blockType) { return states.contains(blockType); }
     @Override
-    public boolean containsBlock(BlockType block)
+    public boolean containsBlock(BlockState block)
     {
-        for (BlockState state : this.states) if (state.getBlock().equals(block.getMinecraftBlock().getBlock())) return true;
+        for (BlockState state : this.states) if (state.getBlock().equals(block.getBlock())) return true;
         return false;
     }
     
@@ -207,7 +205,7 @@ public class BlockListProvider implements IBlockProvider
     public ItemStack getDisplayItem()
     {
         // TODO: Cycle tag items in display
-        Item item = BlockUtils.getBlockItem(getFirst().getMinecraftBlock().getBlock());
+        Item item = BlockUtils.getBlockItem(getFirst().getBlock());
         return new ItemStack(item);
     }
     

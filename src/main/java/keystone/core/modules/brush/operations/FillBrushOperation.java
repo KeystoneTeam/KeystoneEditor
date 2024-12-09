@@ -1,13 +1,13 @@
 package keystone.core.modules.brush.operations;
 
+import keystone.api.BlockMask;
+import keystone.api.BlockPalette;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.BlockMask;
-import keystone.api.wrappers.blocks.BlockPalette;
-import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
+import net.minecraft.block.BlockState;
 import net.minecraft.text.Text;
 
 public class FillBrushOperation extends BrushOperation
@@ -26,10 +26,10 @@ public class FillBrushOperation extends BrushOperation
     @Override
     public boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration)
     {
-        BlockType existing = worldModifiers.blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED);
+        BlockState existing = worldModifiers.blocks.getBlockState(x, y, z, RetrievalMode.LAST_SWAPPED);
         if (mask.valid(existing))
         {
-            worldModifiers.blocks.setBlockType(x, y, z, palette.randomBlock());
+            worldModifiers.blocks.setBlockType(x, y, z, palette.randomBlockState());
             return true;
         }
         else return false;

@@ -60,7 +60,7 @@ public class NonIntersectingCuboidList<T extends Cuboid>
     }
     private boolean intersects(T a, T b)
     {
-        return a.getBoundingBox().getMinecraftBoundingBox().intersects(b.getBoundingBox().getMinecraftBoundingBox());
+        return a.getBoundingBox().intersects(b.getBoundingBox());
     }
     private List<T> split(T splitting, T original)
     {
@@ -106,8 +106,8 @@ public class NonIntersectingCuboidList<T extends Cuboid>
 
             Box box = new Box(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1);
             byte value = NONE;
-            if (box.intersects(splitting.getBoundingBox().getMinecraftBoundingBox())) value += SPLITTING;
-            if (box.intersects(original.getBoundingBox().getMinecraftBoundingBox())) value += ORIGINAL;
+            if (box.intersects(splitting.getBoundingBox())) value += SPLITTING;
+            if (box.intersects(original.getBoundingBox())) value += ORIGINAL;
             this.value = value;
         }
 

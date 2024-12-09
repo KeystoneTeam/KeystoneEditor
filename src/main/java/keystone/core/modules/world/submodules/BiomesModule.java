@@ -2,15 +2,16 @@ package keystone.core.modules.world.submodules;
 
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
-import keystone.api.wrappers.Biome;
 import keystone.core.client.Player;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.chunk.WorldHistoryChunk;
 import keystone.core.modules.world.BiomeSmootherStorage;
 import keystone.core.modules.world_cache.WorldCacheModule;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.dimension.DimensionType;
 
@@ -42,20 +43,20 @@ public class BiomesModule implements IKeystoneModule
         return worldCacheModule.getDimensionWorld(Player.getDimension());
     }
 
-    public Biome getBiome(int x, int y, int z, RetrievalMode retrievalMode, boolean smooth)
+    public RegistryEntry<Biome> getBiome(int x, int y, int z, RetrievalMode retrievalMode, boolean smooth)
     {
         World world = getWorld();
 
         if (!historyModule.isEntryOpen())
         {
             BlockPos pos = new BlockPos(x, y, z);
-            return new Biome(world.getBiome(pos));
+            return world.getBiome(pos);
         }
 
         if (smooth)
         {
             BiomeAccess smoother = getSmoother(world, retrievalMode);
-            return new Biome(smoother.getBiome(new BlockPos(x, y, z)));
+            return smoother.getBiome(new BlockPos(x, y, z));
         }
         else
         {
@@ -63,7 +64,7 @@ public class BiomesModule implements IKeystoneModule
             return chunk.getBiome(x, y, z, retrievalMode);
         }
     }
-    public void setBiome(int x, int y, int z, Biome biome)
+    public void setBiome(int x, int y, int z, RegistryEntry<Biome> biome)
     {
         historyModule.getOpenEntry().setBiome(x, y, z, biome);
     }

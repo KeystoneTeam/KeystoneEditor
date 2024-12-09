@@ -2,8 +2,6 @@ package keystone.core.gui.overlays.schematics;
 
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
-import keystone.api.wrappers.coordinates.BoundingBox;
-import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
@@ -25,13 +23,13 @@ import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.extensions.ISchematicExtension;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 import org.lwjgl.glfw.GLFW;
@@ -51,7 +49,7 @@ public class CloneScreen extends KeystonePanel
     private static Vec3i anchor;
     private static BlockRotation rotation;
     private static BlockMirror mirror;
-    private static Vector3i offset = new Vector3i(0, 0, 0);
+    private static Vec3i offset = new Vec3i(0, 0, 0);
     private static int repeat = 1;
     private static int scale = 1;
     private static Map<Identifier, Boolean> extensionsToPlace;
@@ -69,7 +67,7 @@ public class CloneScreen extends KeystonePanel
     private IntegerWidget scaleField;
     private BooleanWidget copyAir;
 
-    protected CloneScreen(BoundingBox selectionBounds, KeystoneSchematic schematic, Vec3i anchor, BlockRotation rotation, BlockMirror mirror, Vector3i offset, int repeat, int scale)
+    protected CloneScreen(Box selectionBounds, KeystoneSchematic schematic, Vec3i anchor, BlockRotation rotation, BlockMirror mirror, Vec3i offset, int repeat, int scale)
     {
         super(Text.translatable("keystone.screen.clone"));
 
@@ -98,10 +96,10 @@ public class CloneScreen extends KeystonePanel
         if (!KeystoneOverlayHandler.isOverlayOpen(CloneScreen.class))
         {
             SelectionBoundingBox selection = SelectionNudgeScreen.getSelectionToNudge();
-            KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(selection, new WorldModifierModules(), RetrievalMode.ORIGINAL, Blocks.STRUCTURE_VOID.getDefaultState());
+            KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(selection, new WorldModifierModules(), RetrievalMode.ORIGINAL);
             
             open = new CloneScreen(selection.getBoundingBox(), schematic,
-                    selection.getMin(), BlockRotation.NONE, BlockMirror.NONE, new Vector3i(0, 0, 0), 1, 1);
+                    selection.getMin(), BlockRotation.NONE, BlockMirror.NONE, Vec3i.ZERO, 1, 1);
             KeystoneOverlayHandler.addOverlay(open);
         }
     }
@@ -110,7 +108,7 @@ public class CloneScreen extends KeystonePanel
         if (open != null) open.close();
         KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
-    public static void restoreValues(BoundingBox boundingBox, KeystoneSchematic schematic, Vec3i anchor, BlockRotation rotation, BlockMirror mirror, Vector3i offset, int repeat, int scale, Map<Identifier, Boolean> extensionsToPlace, boolean copyAir)
+    public static void restoreValues(Box boundingBox, KeystoneSchematic schematic, Vec3i anchor, BlockRotation rotation, BlockMirror mirror, Vec3i offset, int repeat, int scale, Map<Identifier, Boolean> extensionsToPlace, boolean copyAir)
     {
         if (open != null) open.close();
 
@@ -129,7 +127,7 @@ public class CloneScreen extends KeystonePanel
     public static Vec3i getAnchor() { return anchor; }
     public static BlockRotation getRotation() { return rotation; }
     public static BlockMirror getMirror() { return mirror; }
-    public static Vector3i getOffset() { return offset; }
+    public static Vec3i getOffset() { return offset; }
     public static int getRepeat() { return repeat; }
     public static int getScale() { return scale; }
     public static Map<Identifier, Boolean> getExtensionsToPlace() { return extensionsToPlace; }
@@ -185,34 +183,34 @@ public class CloneScreen extends KeystonePanel
 
         // Offset Fields
         int offsetWidgetWidth = (getViewport().getWidth() - 2 * (MARGINS + PADDING)) / 3;
-        offsetX = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.offsetX"), x, y, offsetWidgetWidth, offset.x, Integer.MIN_VALUE, Integer.MAX_VALUE)
+        offsetX = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.offsetX"), x, y, offsetWidgetWidth, offset.getX(), Integer.MIN_VALUE, Integer.MAX_VALUE)
         {
             @Override
             protected boolean onSetValue(Integer value)
             {
-                Vector3i newOffset = new Vector3i(value, offset.y, offset.z);
+                Vec3i newOffset = new Vec3i(value, offset.getY(), offset.getZ());
                 importModule.addCloneImportBoxes(schematic, anchor, rotation, mirror, newOffset, repeat, scale);
                 offset = newOffset;
                 return true;
             }
         });
-        offsetY = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.offsetY"), x + offsetWidgetWidth + PADDING, y, offsetWidgetWidth, offset.y, Integer.MIN_VALUE, Integer.MAX_VALUE)
+        offsetY = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.offsetY"), x + offsetWidgetWidth + PADDING, y, offsetWidgetWidth, offset.getY(), Integer.MIN_VALUE, Integer.MAX_VALUE)
         {
             @Override
             protected boolean onSetValue(Integer value)
             {
-                Vector3i newOffset = new Vector3i(offset.x, value, offset.z);
+                Vec3i newOffset = new Vec3i(offset.getX(), value, offset.getZ());
                 importModule.addCloneImportBoxes(schematic, anchor, rotation, mirror, newOffset, repeat, scale);
                 offset = newOffset;
                 return true;
             }
         });
-        offsetZ = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.offsetZ"), x + 2 * (offsetWidgetWidth + PADDING), y, offsetWidgetWidth, offset.z, Integer.MIN_VALUE, Integer.MAX_VALUE)
+        offsetZ = addDrawableChild(new IntegerWidget(Text.translatable("keystone.clone.offsetZ"), x + 2 * (offsetWidgetWidth + PADDING), y, offsetWidgetWidth, offset.getZ(), Integer.MIN_VALUE, Integer.MAX_VALUE)
         {
             @Override
             protected boolean onSetValue(Integer value)
             {
-                Vector3i newOffset = new Vector3i(offset.x, offset.y, value);
+                Vec3i newOffset = new Vec3i(offset.getX(), offset.getY(), value);
                 importModule.addCloneImportBoxes(schematic, anchor, rotation, mirror, newOffset, repeat, scale);
                 offset = newOffset;
                 return true;
@@ -388,17 +386,17 @@ public class CloneScreen extends KeystonePanel
 
         switch (direction)
         {
-            case EAST: offset = new Vector3i(offset.x + amount, offset.y, offset.z); break;
-            case WEST: offset = new Vector3i(offset.x - amount, offset.y, offset.z); break;
-            case UP: offset = new Vector3i(offset.x, offset.y + amount, offset.z); break;
-            case DOWN: offset = new Vector3i(offset.x, offset.y - amount, offset.z); break;
-            case SOUTH: offset = new Vector3i(offset.x, offset.y, offset.z + amount); break;
-            case NORTH: offset = new Vector3i(offset.x, offset.y, offset.z - amount); break;
+            case EAST: offset = new Vec3i(offset.getX() + amount, offset.getY(), offset.getZ()); break;
+            case WEST: offset = new Vec3i(offset.getX() - amount, offset.getY(), offset.getZ()); break;
+            case UP: offset = new Vec3i(offset.getX(), offset.getY() + amount, offset.getZ()); break;
+            case DOWN: offset = new Vec3i(offset.getX(), offset.getY() - amount, offset.getZ()); break;
+            case SOUTH: offset = new Vec3i(offset.getX(), offset.getY(), offset.getZ() + amount); break;
+            case NORTH: offset = new Vec3i(offset.getX(), offset.getY(), offset.getZ() - amount); break;
         }
 
-        offsetX.setText(String.valueOf(offset.x));
-        offsetY.setText(String.valueOf(offset.y));
-        offsetZ.setText(String.valueOf(offset.z));
+        offsetX.setText(String.valueOf(offset.getX()));
+        offsetY.setText(String.valueOf(offset.getY()));
+        offsetZ.setText(String.valueOf(offset.getZ()));
         importModule.addCloneImportBoxes(schematic, anchor, rotation, mirror, offset, repeat, scale);
     }
     private void cloneButton(ButtonWidget button)

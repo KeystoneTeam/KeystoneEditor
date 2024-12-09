@@ -21,7 +21,7 @@ import keystone.core.modules.brush.BrushModule;
 import keystone.core.modules.clipboard.ClipboardModule;
 import keystone.core.modules.filter.FilterModule;
 import keystone.core.modules.filter.blocks.BlockListProvider;
-import keystone.core.modules.filter.blocks.BlockTypeProvider;
+import keystone.core.modules.filter.blocks.BlockStateProvider;
 import keystone.core.modules.filter.cache.FilterCache;
 import keystone.core.modules.filter.remapper.FilterRemapper;
 import keystone.core.modules.history.HistoryModule;
@@ -132,7 +132,7 @@ public class KeystoneMod implements ModInitializer, ClientModInitializer
             @Override
             public void onRegister()
             {
-                register(Identifier.of("keystone:block_type"), BlockTypeProvider.class);
+                register(Identifier.of("keystone:block_type"), BlockStateProvider.class);
                 register(Identifier.of("keystone:block_list"), BlockListProvider.class);
             }
         });

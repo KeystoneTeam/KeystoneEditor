@@ -3,11 +3,11 @@ package keystone.core.modules.brush.operations;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.BlockMask;
-import keystone.api.wrappers.blocks.BlockPalette;
-import keystone.api.wrappers.blocks.BlockType;
+import keystone.api.BlockMask;
+import keystone.api.BlockPalette;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
+import net.minecraft.block.BlockState;
 import net.minecraft.text.Text;
 
 public class StackFillBrushOperation extends BrushOperation
@@ -33,7 +33,7 @@ public class StackFillBrushOperation extends BrushOperation
     public boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration)
     {
         int newY = y;
-        BlockType current = worldModifiers.blocks.getBlockType(x, newY, z, RetrievalMode.CURRENT);
+        BlockState current = worldModifiers.blocks.getBlockState(x, newY, z, RetrievalMode.CURRENT);
         if (airMask.valid(current))
         {
             if (gravity)
@@ -41,11 +41,11 @@ public class StackFillBrushOperation extends BrushOperation
                 while (airMask.valid(current))
                 {
                     newY--;
-                    current = worldModifiers.blocks.getBlockType(x, newY, z, RetrievalMode.CURRENT);
+                    current = worldModifiers.blocks.getBlockState(x, newY, z, RetrievalMode.CURRENT);
                 }
                 newY++;
             }
-            else if (worldModifiers.blocks.getBlockType(x, newY - 1, z, RetrievalMode.CURRENT).isAir()) return true;
+            else if (worldModifiers.blocks.getBlockState(x, newY - 1, z, RetrievalMode.CURRENT).isAir()) return true;
         }
         else
         {
@@ -54,13 +54,13 @@ public class StackFillBrushOperation extends BrushOperation
                 while (!airMask.valid(current))
                 {
                     newY++;
-                    current = worldModifiers.blocks.getBlockType(x, newY, z, RetrievalMode.CURRENT);
+                    current = worldModifiers.blocks.getBlockState(x, newY, z, RetrievalMode.CURRENT);
                 }
             }
             else return true;
         }
 
-        worldModifiers.blocks.setBlockType(x, newY, z, palette.randomBlock());
+        worldModifiers.blocks.setBlockType(x, newY, z, palette.randomBlockState());
         return true;
     }
 }

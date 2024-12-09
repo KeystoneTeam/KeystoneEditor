@@ -1,7 +1,7 @@
 package keystone.core.gui.overlays.block_selection;
 
 import keystone.api.KeystoneDirectories;
-import keystone.api.wrappers.blocks.BlockMask;
+import keystone.api.BlockMask;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.overlays.file_browser.OpenFilesScreen;

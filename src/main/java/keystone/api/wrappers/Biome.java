@@ -48,6 +48,15 @@ public class Biome
         this.id = minecraftBiome.getKey().get().getValue();
         this.name = Text.translatable("biome." + this.id.getNamespace() + "." + this.id.getPath());
     }
+    /**
+     * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
+     * @param keystoneID The keystone ID
+     * @param minecraftBiome The Minecraft Biome
+     */
+    public Biome(short keystoneID, net.minecraft.registry.entry.RegistryEntry<net.minecraft.world.biome.Biome> minecraftBiome)
+    {
+        this(minecraftBiome);
+    }
     
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>

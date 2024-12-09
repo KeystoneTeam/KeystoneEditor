@@ -3,7 +3,7 @@ package keystone.api.tools;
 import keystone.api.KeystoneDirectories;
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.wrappers.blocks.BlockType;
+import keystone.api.wrappers.BlockType;
 import keystone.api.wrappers.entities.Entity;
 import net.minecraft.util.Util;
 

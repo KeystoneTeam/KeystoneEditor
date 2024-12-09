@@ -2,9 +2,6 @@ package keystone.core.modules.world.submodules;
 
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
-import keystone.api.wrappers.coordinates.BlockPos;
-import keystone.api.wrappers.coordinates.BoundingBox;
-import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.api.wrappers.entities.Entity;
 import keystone.core.client.Player;
 import keystone.core.modules.IKeystoneModule;
@@ -12,6 +9,7 @@ import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 
 import java.util.*;
@@ -68,10 +66,10 @@ public class EntitiesModule implements IKeystoneModule
 
     public List<Entity> getEntities(BlockPos min, BlockPos max, RetrievalMode retrievalMode)
     {
-        BoundingBox bb = new BoundingBox(min, max);
+        Box bb = new Box(Vec3d.of(min), Vec3d.of(max.add(1, 1, 1)));
         return getEntities(bb, retrievalMode);
     }
-    public List<Entity> getEntities(BoundingBox boundingBox, RetrievalMode retrievalMode)
+    public List<Entity> getEntities(Box boundingBox, RetrievalMode retrievalMode)
     {
         if (!isEnabled())
         {
@@ -80,15 +78,21 @@ public class EntitiesModule implements IKeystoneModule
         }
 
         List<Entity> entities = new ArrayList<>();
+        int minX = (int)Math.floor(boundingBox.minX);
+        int minY = (int)Math.floor(boundingBox.minY);
+        int minZ = (int)Math.floor(boundingBox.minZ);
+        int maxX = (int)Math.ceil(boundingBox.maxX);
+        int maxY = (int)Math.ceil(boundingBox.maxY);
+        int maxZ = (int)Math.ceil(boundingBox.maxZ);
         if (historyModule.isEntryOpen())
         {
-            Vector3i minChunk = new Vector3i((int)boundingBox.minX >> 4, (int)boundingBox.minY >> 4, (int)boundingBox.minZ >> 4);
-            Vector3i maxChunk = new Vector3i((int)boundingBox.maxX >> 4, (int)boundingBox.maxY >> 4, (int)boundingBox.maxZ >> 4);
-            for (int x = minChunk.x; x <= maxChunk.x; x++)
+            Vec3i minChunk = new Vec3i(ChunkSectionPos.getSectionCoord(minX), ChunkSectionPos.getSectionCoord(minY), ChunkSectionPos.getSectionCoord(minZ));
+            Vec3i maxChunk = new Vec3i(ChunkSectionPos.getSectionCoord(maxX), ChunkSectionPos.getSectionCoord(maxY), ChunkSectionPos.getSectionCoord(maxZ));
+            for (int x = minChunk.getX(); x <= maxChunk.getX(); x++)
             {
-                for (int y = minChunk.y; y <= maxChunk.y; y++)
+                for (int y = minChunk.getY(); y <= maxChunk.getY(); y++)
                 {
-                    for (int z = minChunk.z; z <= maxChunk.z; z++)
+                    for (int z = minChunk.getZ(); z <= maxChunk.getZ(); z++)
                     {
                         historyModule.getOpenEntry().getOrAddChunk(x << 4, y << 4, z << 4).getEntities(entities, boundingBox, retrievalMode);
                     }
@@ -98,7 +102,7 @@ public class EntitiesModule implements IKeystoneModule
         else
         {
             World world = worldCacheModule.getDimensionWorld(Player.getDimension());
-            List<net.minecraft.entity.Entity> mcEntities = world.getNonSpectatingEntities(net.minecraft.entity.Entity.class, boundingBox.getMinecraftBoundingBox());
+            List<net.minecraft.entity.Entity> mcEntities = world.getNonSpectatingEntities(net.minecraft.entity.Entity.class, boundingBox);
             for (net.minecraft.entity.Entity mcEntity : mcEntities) entities.add(new Entity(mcEntity));
         }
         return entities;

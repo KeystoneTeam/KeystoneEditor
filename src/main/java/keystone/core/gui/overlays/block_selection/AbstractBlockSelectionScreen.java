@@ -5,9 +5,10 @@ import keystone.core.gui.viewports.ScreenViewports;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.gui.widgets.BlockGridWidget;
 import keystone.core.modules.filter.blocks.BlockListProvider;
-import keystone.core.modules.filter.blocks.BlockTypeProvider;
+import keystone.core.modules.filter.blocks.BlockStateProvider;
 import keystone.core.modules.filter.blocks.IBlockProvider;
-import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.registries.WrapperRegistries;
+import keystone.core.registries.WrapperRegistry;
 import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
@@ -50,7 +51,7 @@ public abstract class AbstractBlockSelectionScreen extends KeystoneOverlay
         // Build Selection Panel
         this.panel = createMainPanel();
         RegistryWrapper<Block> blockRegistry = RegistryLookups.registryLookup(RegistryKeys.BLOCK);
-        blockRegistry.streamEntries().forEach(block -> this.panel.addBlockProvider(new BlockTypeProvider(BlockTypeRegistry.fromMinecraftBlock(block.value().getDefaultState())), BlockGridWidget.NAME_TOOLTIP, false));
+        blockRegistry.streamEntries().forEach(block -> this.panel.addBlockProvider(new BlockStateProvider(block.value().getDefaultState()), BlockGridWidget.NAME_TOOLTIP, false));
         blockRegistry.streamTags().forEach(tag -> this.panel.addBlockProvider(new BlockListProvider(tag, null), BlockGridWidget.NAME_TOOLTIP, false));
         this.panel.rebuildButtons();
         addDrawableChild(this.panel);

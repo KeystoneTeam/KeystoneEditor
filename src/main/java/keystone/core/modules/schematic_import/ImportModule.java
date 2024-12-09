@@ -2,8 +2,6 @@ package keystone.core.modules.schematic_import;
 
 import keystone.api.Keystone;
 import keystone.api.KeystoneDirectories;
-import keystone.api.wrappers.coordinates.BoundingBox;
-import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.gui.hotbar.KeystoneHotbar;
@@ -23,6 +21,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 
@@ -123,13 +122,13 @@ public class ImportModule implements IKeystoneModule
         if (importBoxes.size() > 0) KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.IMPORT);
         else KeystoneHotbar.setSelectedSlot(KeystoneHotbarSlot.SELECTION);
     }
-    public void addCloneImportBoxes(KeystoneSchematic schematic, Vec3i minPosition, BlockRotation rotation, BlockMirror mirror, Vector3i offset, int repeat, int scale)
+    public void addCloneImportBoxes(KeystoneSchematic schematic, Vec3i minPosition, BlockRotation rotation, BlockMirror mirror, Vec3i offset, int repeat, int scale)
     {
         clearImportBoxes(false, false);
 
-        int dx = offset.x;
-        int dy = offset.y;
-        int dz = offset.z;
+        int dx = offset.getX();
+        int dy = offset.getY();
+        int dz = offset.getZ();
         for (int i = 1; i <= repeat; i++)
         {
             ImportBoundingBox box = ImportBoundingBox.create(minPosition.add(dx, dy, dz), schematic, rotation, mirror, scale);
@@ -138,9 +137,9 @@ public class ImportModule implements IKeystoneModule
             box.setSelectable(false);
             this.importBoxes.add(box);
 
-            dx += offset.x * scale;
-            dy += offset.y * scale;
-            dz += offset.z * scale;
+            dx += offset.getX() * scale;
+            dy += offset.getY() * scale;
+            dz += offset.getZ() * scale;
         }
 
         KeystoneLifecycleEvents.IMPORTS_CHANGED.invoker().importsChanged(this.importBoxes, false);
@@ -183,7 +182,7 @@ public class ImportModule implements IKeystoneModule
             importBoxes.forEach(importBox -> importBox.place(extensionsToPlace, copyAir));
 
             // Create selection box for each import box
-            List<BoundingBox> boxes = new ArrayList<>(importBoxes.size());
+            List<Box> boxes = new ArrayList<>(importBoxes.size());
             importBoxes.forEach(box -> boxes.add(box.getBoundingBox()));
             selectionModule.setSelections(boxes);
 

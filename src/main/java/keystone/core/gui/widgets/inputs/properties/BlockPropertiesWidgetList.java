@@ -1,7 +1,7 @@
 package keystone.core.gui.widgets.inputs.properties;
 
-import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.widgets.groups.VerticalLayoutGroup;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
@@ -17,7 +17,7 @@ public class BlockPropertiesWidgetList extends VerticalLayoutGroup
     protected final int intendedWidth;
     protected final BiConsumer<ClickableWidget, ClickableWidget> addDropdown;
 
-    public BlockPropertiesWidgetList(BlockType block, int x, int y, int width, int maxHeight, int padding)
+    public BlockPropertiesWidgetList(BlockState block, int x, int y, int width, int maxHeight, int padding)
     {
         super(x, y, width, maxHeight, padding, Text.translatable("keystone.block_selection_panel.propertiesPanel"));
 
@@ -25,14 +25,14 @@ public class BlockPropertiesWidgetList extends VerticalLayoutGroup
         this.addDropdown = this::addPinnedWidget;
 
         int propertyY = 0;
-        Collection<Property<?>> properties = block.getMinecraftBlock().getProperties();
+        Collection<Property<?>> properties = block.getProperties();
         for (Property<?> property : properties)
         {
             propertyY += createVariableEditor(block, property, propertyY) + padding;
         }
     }
 
-    private int createVariableEditor(BlockType block, Property<?> property, int y)
+    private int createVariableEditor(BlockState block, Property<?> property, int y)
     {
         if (property instanceof BooleanProperty)
         {

@@ -1,16 +1,16 @@
 package keystone.api;
 
 import keystone.api.enums.RetrievalMode;
+import keystone.api.wrappers.BlockType;
+import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.Biome;
-import keystone.api.wrappers.blocks.BlockPalette;
-import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Vector3i;
-import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.modules.world.WorldModifierModules;
 import keystone.core.modules.world_cache.WorldCacheModule;
+import keystone.core.registries.WrapperRegistries;
 import net.minecraft.util.math.Vec3i;
 
 import java.util.Iterator;
@@ -113,7 +113,7 @@ public class WorldRegion
      * @param z The z coordinate
      * @return The block at the given coordinates
      */
-    public BlockType getBlockType(int x, int y, int z) { return worldModifiers.blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED); }
+    public BlockType getBlockType(int x, int y, int z) { return WrapperRegistries.getBlocks().fromBaseType(worldModifiers.blocks.getBlockState(x, y, z, RetrievalMode.LAST_SWAPPED)); }
     /**
      * Get the {@link BlockType} at a position in the filter box
      * @param x The x coordinate
@@ -122,10 +122,7 @@ public class WorldRegion
      * @param retrievalMode The {@link RetrievalMode} to use when getting the block
      * @return The block at the given coordinates
      */
-    public BlockType getBlockType(int x, int y, int z, RetrievalMode retrievalMode)
-    {
-        return worldModifiers.blocks.getBlockType(x, y, z, retrievalMode);
-    }
+    public BlockType getBlockType(int x, int y, int z, RetrievalMode retrievalMode) { return WrapperRegistries.getBlocks().fromBaseType(worldModifiers.blocks.getBlockState(x, y, z, retrievalMode)); }
     
     /**
      * Get the {@link NBTCompound Block Data} at a position in the filter box
@@ -136,7 +133,7 @@ public class WorldRegion
      */
     public NBTCompound getBlockData(int x, int y, int z)
     {
-        return worldModifiers.blocks.getBlockData(x, y, z, RetrievalMode.LAST_SWAPPED);
+        return new NBTCompound(worldModifiers.blocks.getBlockData(x, y, z, RetrievalMode.LAST_SWAPPED));
     }
     /**
      * Get the {@link NBTCompound Block Data} at a position in the filter box
@@ -148,7 +145,7 @@ public class WorldRegion
      */
     public NBTCompound getBlockData(int x, int y, int z, RetrievalMode retrievalMode)
     {
-        return worldModifiers.blocks.getBlockData(x, y, z, retrievalMode);
+        return new NBTCompound(worldModifiers.blocks.getBlockData(x, y, z, retrievalMode));
     }
 
     /**
@@ -160,7 +157,7 @@ public class WorldRegion
      */
     public Biome getBiome(int x, int y, int z)
     {
-        return worldModifiers.biomes.getBiome(x, y, z, RetrievalMode.LAST_SWAPPED, true);
+        return WrapperRegistries.getBiomes().fromBaseType(worldModifiers.biomes.getBiome(x, y, z, RetrievalMode.LAST_SWAPPED, true));
     }
     /**
      * Get the biome at a position in the filter box
@@ -172,7 +169,7 @@ public class WorldRegion
      */
     public Biome getBiome(int x, int y, int z, RetrievalMode retrievalMode)
     {
-        return worldModifiers.biomes.getBiome(x, y, z, retrievalMode, true);
+        return WrapperRegistries.getBiomes().fromBaseType(worldModifiers.biomes.getBiome(x, y, z, retrievalMode, true));
     }
     /**
      * Get the biome at a position in the filter box
@@ -184,7 +181,7 @@ public class WorldRegion
      */
     public Biome getBiome(int x, int y, int z, boolean smooth)
     {
-        return worldModifiers.biomes.getBiome(x, y, z, RetrievalMode.LAST_SWAPPED, smooth);
+        return WrapperRegistries.getBiomes().fromBaseType(worldModifiers.biomes.getBiome(x, y, z, RetrievalMode.LAST_SWAPPED, smooth));
     }
     /**
      * Get the biome at a position in the filter box
@@ -197,7 +194,7 @@ public class WorldRegion
      */
     public Biome getBiome(int x, int y, int z, RetrievalMode retrievalMode, boolean smooth)
     {
-        return worldModifiers.biomes.getBiome(x, y, z, retrievalMode, smooth);
+        return WrapperRegistries.getBiomes().fromBaseType(worldModifiers.biomes.getBiome(x, y, z, retrievalMode, smooth));
     }
 
     /**
@@ -209,7 +206,7 @@ public class WorldRegion
      * @param palette The {@link BlockPalette} to change the position to
      * @return Whether the change was successful
      */
-    public boolean setBlockType(int x, int y, int z, BlockPalette palette) { return setBlockType(x, y, z, palette.randomBlock()); }
+    public boolean setBlockType(int x, int y, int z, BlockPalette palette) { return setBlockType(x, y, z, palette.randomBlockType()); }
     /**
      * Set the block at a position in the filter box to a {@link BlockType}.
      * This will only work if the position is within the filter box or
@@ -224,7 +221,7 @@ public class WorldRegion
     {
         if (allowBlocksOutside || isPositionInBox(x, y, z))
         {
-            worldModifiers.blocks.setBlockType(x, y, z, blockType);
+            worldModifiers.blocks.setBlockType(x, y, z, blockType.getMinecraftBlock());
             return true;
         }
         else return false;
@@ -261,7 +258,7 @@ public class WorldRegion
     {
         if (allowBlocksOutside || isPositionInBox(x, y, z))
         {
-            worldModifiers.blocks.setBlockData(x, y, z, blockData);
+            worldModifiers.blocks.setBlockData(x, y, z, blockData.getMinecraftNBT());
             return true;
         }
         else return false;
@@ -289,7 +286,7 @@ public class WorldRegion
     {
         if (allowBlocksOutside || isPositionInBox(x, y, z))
         {
-            worldModifiers.biomes.setBiome(x, y, z, biome);
+            worldModifiers.biomes.setBiome(x, y, z, biome.getMinecraftBiome());
             return true;
         }
         else return false;
@@ -421,6 +418,6 @@ public class WorldRegion
      */
     public void forEachEntity(EntityConsumer consumer, RetrievalMode retrievalMode)
     {
-        worldModifiers.entities.getEntities(this.bounds, retrievalMode).forEach(entity -> consumer.accept(entity));
+        worldModifiers.entities.getEntities(this.bounds.getMinecraftBoundingBox(), retrievalMode).forEach(consumer::accept);
     }
 }

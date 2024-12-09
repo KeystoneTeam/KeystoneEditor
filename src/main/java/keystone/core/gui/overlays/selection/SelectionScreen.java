@@ -21,7 +21,7 @@ import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.selection.SelectionBoundingBox;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.world.WorldModifierModules;
-import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.registries.WrapperRegistry;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.SchematicLoader;
 import net.minecraft.block.Blocks;
@@ -165,7 +165,7 @@ public class SelectionScreen extends KeystoneOverlay
             int newAmount = (amount < 0) ? selection.getAxisSize(direction.getAxis()) : amount;
 
             WorldModifierModules worldModifiers = new WorldModifierModules();
-            KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(selection, worldModifiers, RetrievalMode.ORIGINAL, Blocks.STRUCTURE_VOID.getDefaultState());
+            KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(selection, worldModifiers, RetrievalMode.ORIGINAL);
 
             HistoryModule historyModule = Keystone.getModule(HistoryModule.class);
             historyModule.tryBeginHistoryEntry();
@@ -176,7 +176,7 @@ public class SelectionScreen extends KeystoneOverlay
                 {
                     for (int z = selection.getMin().getZ(); z <= selection.getMax().getZ(); z++)
                     {
-                        worldModifiers.blocks.setBlockType(x, y, z, BlockTypeRegistry.AIR);
+                        worldModifiers.blocks.setBlockType(x, y, z, Blocks.AIR.getDefaultState());
                     }
                 }
             }
@@ -223,7 +223,7 @@ public class SelectionScreen extends KeystoneOverlay
         SaveFileScreen.saveFile("kschem", KeystoneDirectories.getSchematicsDirectory(), true, file ->
                 Keystone.runOnMainThread(() ->
                 {
-                    KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(SelectionNudgeScreen.getSelectionToNudge(), new WorldModifierModules(), RetrievalMode.ORIGINAL, Blocks.STRUCTURE_VOID.getDefaultState());
+                    KeystoneSchematic schematic = KeystoneSchematic.createFromSelection(SelectionNudgeScreen.getSelectionToNudge(), new WorldModifierModules(), RetrievalMode.ORIGINAL);
                     SchematicLoader.saveSchematic(schematic, file);
                 }));
     }

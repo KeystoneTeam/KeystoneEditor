@@ -1,8 +1,6 @@
 package keystone.core.modules.history.entries;
 
 import keystone.api.Keystone;
-import keystone.api.wrappers.coordinates.BoundingBox;
-import keystone.api.wrappers.coordinates.Vector3i;
 import keystone.core.gui.overlays.schematics.CloneScreen;
 import keystone.core.modules.history.IHistoryEntry;
 import keystone.core.modules.schematic_import.ImportModule;
@@ -12,6 +10,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3i;
 
 import java.util.HashMap;
@@ -19,12 +18,12 @@ import java.util.Map;
 
 public class CloneScreenHistoryEntry implements IHistoryEntry
 {
-    private BoundingBox boundingBox;
+    private Box boundingBox;
     private KeystoneSchematic schematic;
     private Vec3i anchor;
     private BlockRotation rotation;
     private BlockMirror mirror;
-    private Vector3i offset = new Vector3i(0, 0, 0);
+    private Vec3i offset = Vec3i.ZERO;
     private int repeat = 1;
     private int scale = 1;
     private Map<Identifier, Boolean> extensionsToPlace;
@@ -36,7 +35,7 @@ public class CloneScreenHistoryEntry implements IHistoryEntry
     {
         this.closeScreen = closeScreen;
     }
-    public CloneScreenHistoryEntry(BoundingBox boundingBox, KeystoneSchematic schematic, Vec3i anchor, BlockRotation rotation, BlockMirror mirror, Vector3i offset, int repeat, int scale, Map<Identifier, Boolean> extensionsToPlace, boolean copyAir)
+    public CloneScreenHistoryEntry(Box boundingBox, KeystoneSchematic schematic, Vec3i anchor, BlockRotation rotation, BlockMirror mirror, Vec3i offset, int repeat, int scale, Map<Identifier, Boolean> extensionsToPlace, boolean copyAir)
     {
         this.boundingBox = boundingBox;
         this.schematic = schematic;
@@ -82,7 +81,7 @@ public class CloneScreenHistoryEntry implements IHistoryEntry
             nbt.putIntArray("anchor", new int[] { anchor.getX(), anchor.getY(), anchor.getZ() });
             nbt.putString("rotation", rotation.name());
             nbt.putString("mirror", mirror.name());
-            nbt.putIntArray("offset", new int[] { offset.x, offset.y, offset.z });
+            nbt.putIntArray("offset", new int[] { offset.getX(), offset.getY(), offset.getZ() });
             nbt.putInt("repeat", repeat);
             nbt.putInt("scale", scale);
             nbt.putBoolean("copyAir", copyAir);
@@ -103,14 +102,14 @@ public class CloneScreenHistoryEntry implements IHistoryEntry
         else
         {
             int[] boundingBox = nbt.getIntArray("boundingBox");
-            this.boundingBox = new BoundingBox(boundingBox[0], boundingBox[1], boundingBox[2], boundingBox[3], boundingBox[4], boundingBox[5]);
+            this.boundingBox = new Box(boundingBox[0], boundingBox[1], boundingBox[2], boundingBox[3], boundingBox[4], boundingBox[5]);
             this.schematic = SchematicLoader.deserializeSchematic(nbt.getCompound("schematic"));
             int[] anchor = nbt.getIntArray("anchor");
             this.anchor = new Vec3i(anchor[0], anchor[1], anchor[2]);
             this.rotation = BlockRotation.valueOf(nbt.getString("rotation"));
             this.mirror = BlockMirror.valueOf(nbt.getString("mirror"));
             int[] offset =  nbt.getIntArray("offset");
-            this.offset = new Vector3i(offset[0], offset[1], offset[2]);
+            this.offset = new Vec3i(offset[0], offset[1], offset[2]);
             this.repeat = nbt.getInt("repeat");
             this.scale = nbt.getInt("scale");
             this.copyAir = nbt.getBoolean("copyAir");

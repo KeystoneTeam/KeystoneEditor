@@ -2,7 +2,6 @@ package keystone.api;
 
 import keystone.api.enums.WorldType;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.wrappers.blocks.BlockMask;
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.client.Player;
@@ -16,7 +15,8 @@ import keystone.core.modules.filter.execution.IFilterThread;
 import keystone.core.modules.rendering.ghost_blocks.GhostBlocksModule;
 import keystone.core.modules.world.change_queue.WorldChangeQueueModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
-import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.registries.WrapperRegistries;
+import keystone.core.registries.WrapperRegistry;
 import keystone.core.renderer.ShapeRenderers;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -400,8 +400,8 @@ public final class Keystone
         ServerTickEvents.START_SERVER_TICK.register(Keystone::onServerTick);
         ServerPlayerEvents.START_TICK.register(Keystone::onPlayerTick);
         ServerPlayerEvents.ALLOW_USE_BLOCK.register((player, world, stack, hand, hitResult) -> !Keystone.isActive());
-
-        BlockTypeRegistry.buildRegistry();
+        
+        WrapperRegistries.init();
         BlockMask.buildForcedAdditionsList();
     }
 

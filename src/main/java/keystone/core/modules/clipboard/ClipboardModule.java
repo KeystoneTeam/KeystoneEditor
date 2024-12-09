@@ -81,7 +81,7 @@ public class ClipboardModule implements IKeystoneModule
             clearClipboard();
             for (SelectionBoundingBox selection : Keystone.getModule(SelectionModule.class).getSelectionBoundingBoxes())
             {
-                clipboard.add(KeystoneSchematic.createFromSelection(selection, worldModifiers, RetrievalMode.ORIGINAL, Blocks.STRUCTURE_VOID.getDefaultState()));
+                clipboard.add(KeystoneSchematic.createFromSelection(selection, worldModifiers, RetrievalMode.ORIGINAL));
             }
         });
     }

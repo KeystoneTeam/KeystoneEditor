@@ -1,11 +1,12 @@
-package keystone.api.wrappers.blocks;
+package keystone.api.wrappers;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import keystone.api.Keystone;
 import keystone.core.client.Player;
 import keystone.core.modules.world_cache.WorldCacheModule;
-import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.registries.WrapperRegistries;
+import keystone.core.registries.WrapperRegistry;
 import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
  */
 public class BlockType
 {
-    protected static final Function<Map.Entry<Property<?>, Comparable<?>>, String> PROPERTY_ENTRY_TO_STRING_FUNCTION = new Function<Map.Entry<Property<?>, Comparable<?>>, String>()
+    protected static final Function<Map.Entry<Property<?>, Comparable<?>>, String> PROPERTY_ENTRY_TO_STRING_FUNCTION = new Function<>()
     {
         public String apply(@Nullable Map.Entry<Property<?>, Comparable<?>> entry)
         {
@@ -39,22 +40,22 @@ public class BlockType
                 return property.getName() + "=" + this.getName(property, entry.getValue());
             }
         }
-
-        private <T extends Comparable<T>> String getName(Property<T> property, Comparable<?> comparable) { return property.name((T)comparable); }
+        
+        private <T extends Comparable<T>> String getName(Property<T> property, Comparable<?> comparable) {return property.name((T) comparable);}
     };
     protected static final BiPredicate<BlockState, Map.Entry<Property<?>, Comparable<?>>> PROPERTY_VALUE_DIFFERENT_PREDICATE = (defaultState, entry) ->
     {
         Comparable<?> defaultValue = defaultState.get(entry.getKey());
         return entry.getValue().equals(defaultValue);
     };
-
+    
     private short keystoneID;
     private BlockState state;
     private String string;
     private String block;
     private String properties;
     private String allProperties;
-
+    
     //region INTERNAL USE ONLY, DO NOT USE IN FILTERS
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
@@ -67,7 +68,7 @@ public class BlockType
         this.state = state;
         buildStrings();
     }
-
+    
     public short getKeystoneID() { return keystoneID; }
     /**
      * <p>INTERNAL USE ONLY, DO NOT USE IN FILTERS</p>
@@ -88,7 +89,7 @@ public class BlockType
      * @return This block's property set, including default values. [e.g. "type=top,waterlogged=false"]
      */
     public String allProperties() { return this.allProperties; }
-
+    
     /**
      * Check whether this block's type is the same as another {@link BlockType}, regardless of their
      * property sets or tile entities
@@ -99,7 +100,7 @@ public class BlockType
     {
         return test != null && block().equals(test.block());
     }
-
+    
     /**
      * Apply a given property set to this block
      * @param properties A property set. [e.g. "type=top", "type=top,waterlogged=true"]
@@ -111,11 +112,11 @@ public class BlockType
         {
             String blockStr = BlockArgumentParser.stringifyBlockState(this.state);
             String[] tokens = properties.split(",");
-
+            
             for (String token : tokens)
             {
                 String propertyName = token.split("=")[0];
-
+                
                 if (blockStr.contains(propertyName)) blockStr = blockStr.replaceFirst(propertyName + "=[^,\\]]*", token);
                 else if (blockStr.contains("["))
                 {
@@ -131,7 +132,7 @@ public class BlockType
             }
             
             BlockStateArgument parsed = BlockStateArgumentType.blockState(RegistryLookups.commandRegistryLookup()).parse(new StringReader(blockStr));
-            return BlockTypeRegistry.fromMinecraftBlock(parsed.getBlockState());
+            return WrapperRegistries.getBlocks().fromBaseType(parsed.getBlockState());
         }
         catch (ArrayIndexOutOfBoundsException e)
         {
@@ -169,7 +170,7 @@ public class BlockType
             else blockStr = blockStr + "[" + property + "=" + value + "]";
             
             BlockStateArgument parsed = BlockStateArgumentType.blockState(RegistryLookups.commandRegistryLookup()).parse(new StringReader(blockStr));
-            return BlockTypeRegistry.fromMinecraftBlock(parsed.getBlockState());
+            return WrapperRegistries.getBlocks().fromBaseType(parsed.getBlockState());
         }
         catch (CommandSyntaxException e)
         {
@@ -177,7 +178,7 @@ public class BlockType
             return this;
         }
     }
-
+    
     /**
      * @return Whether this block is an air block
      */
@@ -224,7 +225,7 @@ public class BlockType
     {
         return keystoneID;
     }
-
+    
     @Override
     public String toString()
     {

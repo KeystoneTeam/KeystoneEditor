@@ -3,11 +3,11 @@ package keystone.core.modules.brush.operations;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
+import keystone.api.BlockMask;
 import keystone.api.wrappers.Biome;
-import keystone.api.wrappers.blocks.BlockMask;
-import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
+import net.minecraft.block.BlockState;
 import net.minecraft.text.Text;
 import net.minecraft.world.biome.BiomeKeys;
 
@@ -28,10 +28,10 @@ public class SetBiomeBrushOperation extends BrushOperation
     @Override
     public boolean process(int x, int y, int z, WorldModifierModules worldModifiers, int iteration)
     {
-        BlockType blockType = worldModifiers.blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED);
+        BlockState blockType = worldModifiers.blocks.getBlockState(x, y, z, RetrievalMode.LAST_SWAPPED);
         if (mask.valid(blockType))
         {
-            worldModifiers.biomes.setBiome(x, y, z, biome);
+            worldModifiers.biomes.setBiome(x, y, z, biome.getMinecraftBiome());
             return true;
         }
         return false;

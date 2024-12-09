@@ -2,16 +2,11 @@ package keystone.core.modules.history.chunk;
 
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
-import keystone.api.wrappers.Biome;
-import keystone.api.wrappers.blocks.BlockType;
-import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
-import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.mixins.common.ChunkSectionAccessor;
 import keystone.core.modules.history.HistoryStackFrame;
 import keystone.core.modules.world_cache.WorldCacheModule;
-import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.PalettedArray;
 import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.BlockState;
@@ -27,9 +22,11 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.biome.source.BiomeCoords;
 import net.minecraft.world.chunk.Chunk;
@@ -162,21 +159,21 @@ public class WorldHistoryChunk
     public boolean isBiomesChanged() { return biomesChanged; }
 
     //region Content Getters
-    public BlockType getBlockType(int x, int y, int z, RetrievalMode retrievalMode)
+    public BlockState getBlockState(int x, int y, int z, RetrievalMode retrievalMode)
     {
         x -= chunkX * 16;
         y -= chunkY * 16;
         z -= chunkZ * 16;
-        return BlockTypeRegistry.fromMinecraftBlock(this.blocks.getBuffer(retrievalMode).get(z + y * 16 + x * 256));
+        return this.blocks.getBuffer(retrievalMode).get(z + y * 16 + x * 256);
     }
-    public NBTCompound getBlockData(int x, int y, int z, RetrievalMode retrievalMode)
+    public NbtCompound getBlockData(int x, int y, int z, RetrievalMode retrievalMode)
     {
         BlockPos pos = new BlockPos(x, y, z);
-        NBTCompound tileEntity = this.tileEntities.getBuffer(retrievalMode).getOrDefault(pos, null);
-        if (tileEntity != null) return tileEntity.clone();
+        NbtCompound tileEntity = this.tileEntities.getBuffer(retrievalMode).getOrDefault(pos, null);
+        if (tileEntity != null) return tileEntity.copy();
         else return null;
     }
-    public Biome getBiome(int x, int y, int z, RetrievalMode retrievalMode)
+    public RegistryEntry<Biome> getBiome(int x, int y, int z, RetrievalMode retrievalMode)
     {
         x -= chunkX * 16;
         y -= chunkY * 16;
@@ -186,7 +183,7 @@ public class WorldHistoryChunk
         int biomeY = BiomeCoords.fromBlock(y);
         int biomeZ = BiomeCoords.fromBlock(z);
 
-        return new Biome(this.biomes.getBuffer(retrievalMode).get(biomeZ + biomeY * 4 + biomeX * 16));
+        return this.biomes.getBuffer(retrievalMode).get(biomeZ + biomeY * 4 + biomeX * 16);
     }
     public RegistryEntry<net.minecraft.world.biome.Biome> getBiomeRaw(int biomeX, int biomeY, int biomeZ, RetrievalMode retrievalMode)
     {
@@ -198,7 +195,7 @@ public class WorldHistoryChunk
         if (entity == null) return this.entities.old.get(keystoneUUID);
         else return entity;
     }
-    public int getEntities(List<Entity> buffer, BoundingBox boundingBox, RetrievalMode retrievalMode)
+    public int getEntities(List<Entity> buffer, Box boundingBox, RetrievalMode retrievalMode)
     {
         Map<UUID, Entity> retrievalBuffer = this.entities.getBuffer(retrievalMode);
 
@@ -215,7 +212,7 @@ public class WorldHistoryChunk
     }
     //endregion
     //region Content Setters
-    public void setBlockType(int x, int y, int z, BlockType blockType)
+    public void setBlockState(int x, int y, int z, BlockState blockState)
     {
         markDirty();
         
@@ -223,10 +220,10 @@ public class WorldHistoryChunk
         y -= chunkY * 16;
         z -= chunkZ * 16;
         
-        this.blocks.getBuffer(RetrievalMode.CURRENT).set(z + y * 16 + x * 256, blockType.getMinecraftBlock());
+        this.blocks.getBuffer(RetrievalMode.CURRENT).set(z + y * 16 + x * 256, blockState);
         this.tileEntities.getBuffer(RetrievalMode.CURRENT).remove(new BlockPos(x, y, z));
     }
-    public void setBlockData(int x, int y, int z, NBTCompound blockData)
+    public void setBlockData(int x, int y, int z, NbtCompound blockData)
     {
         markDirty();
         BlockPos pos = new BlockPos(x, y, z);
@@ -234,7 +231,7 @@ public class WorldHistoryChunk
         if (blockData != null) this.tileEntities.getBuffer(RetrievalMode.CURRENT).put(pos, blockData);
         else this.tileEntities.getBuffer(RetrievalMode.CURRENT).remove(pos);
     }
-    public void setBiome(int x, int y, int z, Biome biome)
+    public void setBiome(int x, int y, int z, RegistryEntry<Biome> biome)
     {
         markDirty();
         x -= chunkX * 16;
@@ -245,7 +242,7 @@ public class WorldHistoryChunk
         int biomeY = BiomeCoords.fromBlock(y);
         int biomeZ = BiomeCoords.fromBlock(z);
 
-        this.biomes.getBuffer(RetrievalMode.CURRENT).set(biomeZ + biomeY * 4 + biomeX * 16, biome.getMinecraftBiome());
+        this.biomes.getBuffer(RetrievalMode.CURRENT).set(biomeZ + biomeY * 4 + biomeX * 16, biome);
         biomesChanged = true;
     }
     public void commitEntityChanges(Entity entity)
@@ -315,7 +312,7 @@ public class WorldHistoryChunk
         if (chunkSection == null) return;
         
         PalettedArray<BlockState> blockStates = this.blocks.getBuffer(retrievalMode);
-        ConcurrentHashMap<BlockPos, NBTCompound> tileEntities = this.tileEntities.getBuffer(retrievalMode);
+        ConcurrentHashMap<BlockPos, NbtCompound> tileEntities = this.tileEntities.getBuffer(retrievalMode);
         PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> biomes = this.biomes.getBuffer(retrievalMode);
         ConcurrentHashMap<UUID, Entity> entities = this.entities.getBuffer(retrievalMode);
         
@@ -350,10 +347,10 @@ public class WorldHistoryChunk
                         KeystoneGlobalState.BlockTickScheduling = false;
                     }
                     
-                    NBTCompound blockData = tileEntities.getOrDefault(pos, null);
+                    NbtCompound blockData = tileEntities.getOrDefault(pos, null);
                     if (blockData != null)
                     {
-                        NbtCompound tileEntityData = blockData.getMinecraftNBT().copy();
+                        NbtCompound tileEntityData = blockData.copy();
                         tileEntityData.putInt("x", pos.getX());
                         tileEntityData.putInt("y", pos.getY());
                         tileEntityData.putInt("z", pos.getZ());

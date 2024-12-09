@@ -2,8 +2,8 @@ import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.BlockMask;
-import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.BlockMask;
+import keystone.api.BlockPalette;
 
 public class Walls extends KeystoneFilter
 {

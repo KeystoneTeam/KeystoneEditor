@@ -1,7 +1,7 @@
 package keystone.core.renderer.shapes;
 
-import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.core.renderer.RenderBox;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -74,7 +74,7 @@ public class Cuboid
         }
     }
     public Vec3d getCenter() { return center; }
-    public BoundingBox getBoundingBox() { return new BoundingBox(min, max); }
+    public Box getBoundingBox() { return new Box(Vec3d.of(min), Vec3d.of(max)); }
 
     public final void refreshMinMax()
     {

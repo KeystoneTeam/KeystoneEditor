@@ -62,8 +62,15 @@ public class SchematicLoader
         List<ISchematicFormat> extensionFormats = formats.get(extension);
         for (ISchematicFormat format : extensionFormats)
         {
-            KeystoneSchematic schematic = format.loadFile(file);
-            if (schematic != null) return schematic;
+            try
+            {
+                KeystoneSchematic schematic = format.readFile(file.toPath());
+                if (schematic != null) return schematic;
+            }
+            catch (Exception e)
+            {
+                Keystone.LOGGER.error("Failed to load schematic '{}' with format '{}': {}", file.getName(), format.getClass().getSimpleName(), e.getMessage());
+            }
         }
         return null;
     }

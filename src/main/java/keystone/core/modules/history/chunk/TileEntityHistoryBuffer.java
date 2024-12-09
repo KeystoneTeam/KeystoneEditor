@@ -1,6 +1,5 @@
 package keystone.core.modules.history.chunk;
 
-import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.utils.NBTSerializer;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -14,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TileEntityHistoryBuffer extends HistoryBuffer<ConcurrentHashMap<BlockPos, NBTCompound>, NbtList>
+public class TileEntityHistoryBuffer extends HistoryBuffer<ConcurrentHashMap<BlockPos, NbtCompound>, NbtList>
 {
     private TileEntityHistoryBuffer()
     {
@@ -31,9 +30,9 @@ public class TileEntityHistoryBuffer extends HistoryBuffer<ConcurrentHashMap<Blo
             if (ChunkSectionPos.getSectionCoord(pos.getY()) != sectionY) continue;
             BlockEntity tileEntity = chunk.getBlockEntity(pos);
             NbtCompound nbt = tileEntity.createNbtWithIdentifyingData(world.getRegistryManager());
-            ret.old.put(pos, new NBTCompound(nbt.copy()));
-            ret.buffer1.put(pos, new NBTCompound(nbt.copy()));
-            ret.buffer2.put(pos, new NBTCompound(nbt.copy()));
+            ret.old.put(pos, nbt.copy());
+            ret.buffer1.put(pos, nbt.copy());
+            ret.buffer2.put(pos, nbt.copy());
         }
         
         return ret;
@@ -41,22 +40,22 @@ public class TileEntityHistoryBuffer extends HistoryBuffer<ConcurrentHashMap<Blo
     public static TileEntityHistoryBuffer createEmpty() { return new TileEntityHistoryBuffer(); }
     
     @Override
-    protected NbtList writeBuffer(ConcurrentHashMap<BlockPos, NBTCompound> buffer)
+    protected NbtList writeBuffer(ConcurrentHashMap<BlockPos, NbtCompound> buffer)
     {
         return NBTSerializer.serializeTileEntities(buffer);
     }
     
     @Override
-    protected ConcurrentHashMap<BlockPos, NBTCompound> readBuffer(NbtList nbt)
+    protected ConcurrentHashMap<BlockPos, NbtCompound> readBuffer(NbtList nbt)
     {
         return new ConcurrentHashMap<>(NBTSerializer.deserializeTileEntities(nbt));
     }
     
     @Override
-    protected ConcurrentHashMap<BlockPos, NBTCompound> copyBuffer(ConcurrentHashMap<BlockPos, NBTCompound> buffer)
+    protected ConcurrentHashMap<BlockPos, NbtCompound> copyBuffer(ConcurrentHashMap<BlockPos, NbtCompound> buffer)
     {
-        ConcurrentHashMap<BlockPos, NBTCompound> copy = new ConcurrentHashMap<>(buffer.size());
-        for (Map.Entry<BlockPos, NBTCompound> entry : buffer.entrySet()) copy.put(entry.getKey(), entry.getValue().clone());
+        ConcurrentHashMap<BlockPos, NbtCompound> copy = new ConcurrentHashMap<>(buffer.size());
+        for (Map.Entry<BlockPos, NbtCompound> entry : buffer.entrySet()) copy.put(entry.getKey(), entry.getValue().copy());
         return copy;
     }
 }

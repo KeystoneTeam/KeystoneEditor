@@ -1,21 +1,21 @@
 package keystone.core.modules.history;
 
 import keystone.api.Keystone;
-import keystone.api.wrappers.Biome;
-import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.entities.Entity;
-import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.client.Player;
 import keystone.core.modules.history.chunk.WorldHistoryChunk;
 import keystone.core.modules.world.change_queue.FlushMode;
 import keystone.core.modules.world.change_queue.WorldChangeQueueModule;
 import keystone.core.modules.world_cache.WorldCacheModule;
+import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.ServerWorldAccess;
+import net.minecraft.world.biome.Biome;
 
 import java.util.*;
 
@@ -165,15 +165,15 @@ public class HistoryStackFrame
         revertEntries.add(revert);
         entry.onPushToHistory(historyModule, false);
     }
-    public void setBlockType(int x, int y, int z, BlockType blockType)
+    public void setBlockState(int x, int y, int z, BlockState blockState)
     {
-        getOrAddChunk(x, y, z).setBlockType(x, y, z, blockType);
+        getOrAddChunk(x, y, z).setBlockState(x, y, z, blockState);
     }
-    public void setBlockData(int x, int y, int z, NBTCompound blockData)
+    public void setBlockData(int x, int y, int z, NbtCompound blockData)
     {
         getOrAddChunk(x, y, z).setBlockData(x, y, z, blockData);
     }
-    public void setBiome(int x, int y, int z, Biome biome)
+    public void setBiome(int x, int y, int z, RegistryEntry<Biome> biome)
     {
         getOrAddChunk(x, y, z).setBiome(x, y, z, biome);
     }

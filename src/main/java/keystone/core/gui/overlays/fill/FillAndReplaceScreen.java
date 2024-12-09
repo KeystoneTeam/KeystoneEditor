@@ -2,8 +2,8 @@ package keystone.core.gui.overlays.fill;
 
 import keystone.api.Keystone;
 import keystone.api.tools.FillTool;
-import keystone.api.wrappers.blocks.BlockMask;
-import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.BlockMask;
+import keystone.api.BlockPalette;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
 import keystone.core.gui.IKeystoneTooltip;
 import keystone.core.gui.KeystoneOverlayHandler;

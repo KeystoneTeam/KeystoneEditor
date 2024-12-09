@@ -1,12 +1,11 @@
 package keystone.api.tools;
 
+import keystone.api.BlockMask;
+import keystone.api.BlockPalette;
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
-import keystone.api.wrappers.blocks.BlockMask;
-import keystone.api.wrappers.blocks.BlockPalette;
-import keystone.api.wrappers.blocks.BlockType;
+import keystone.api.wrappers.BlockType;
 import keystone.core.modules.filter.blocks.IBlockProvider;
-import keystone.core.registries.BlockTypeRegistry;
 import net.minecraft.block.BlockState;
 
 public class FillTool extends KeystoneFilter
@@ -20,21 +19,19 @@ public class FillTool extends KeystoneFilter
         this.palette = palette;
         setName("Fill");
     }
-
-    public FillTool(BlockType blockType)
-    {
-        this(new BlockMask().blacklist(), new BlockPalette().with(blockType));
-    }
+    
     public FillTool(IBlockProvider blockProvider)
     {
         this(new BlockMask().blacklist(), new BlockPalette().with(blockProvider));
     }
     public FillTool(BlockState block)
     {
-        this(new BlockMask().blacklist(), new BlockPalette().with(BlockTypeRegistry.fromMinecraftBlock(block)));
+        this(new BlockMask().blacklist(), new BlockPalette().with(block));
     }
-
-
+    public FillTool(BlockType block)
+    {
+        this(new BlockMask().blacklist(), new BlockPalette().with(block));
+    }
     @Override
     public void processBlock(int x, int y, int z, WorldRegion region)
     {

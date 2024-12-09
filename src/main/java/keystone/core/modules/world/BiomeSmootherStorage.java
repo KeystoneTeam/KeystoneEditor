@@ -26,9 +26,9 @@ public class BiomeSmootherStorage implements BiomeAccess.Storage
         int blockX = BiomeCoords.toBlock(biomeX);
         int blockY = BiomeCoords.toBlock(biomeY);
         int blockZ = BiomeCoords.toBlock(biomeZ);
-        biomeX = BiomeCoords.method_39920(biomeX);
-        biomeY = BiomeCoords.method_39920(biomeY);
-        biomeZ = BiomeCoords.method_39920(biomeZ);
+        biomeX = BiomeCoords.quartLocal(biomeX);
+        biomeY = BiomeCoords.quartLocal(biomeY);
+        biomeZ = BiomeCoords.quartLocal(biomeZ);
 
         WorldHistoryChunk chunk = historyModule.getOpenEntry().getOrAddChunk(blockX, blockY, blockZ);
         return chunk.getBiomeRaw(biomeX, biomeY, biomeZ, retrievalMode);

@@ -1,7 +1,7 @@
 package keystone.api.variables;
 
-import keystone.api.wrappers.blocks.BlockMask;
-import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.BlockMask;
+import keystone.api.BlockPalette;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

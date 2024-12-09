@@ -1,37 +1,42 @@
 package keystone.core.schematic.formats;
 
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import keystone.api.Keystone;
-import keystone.api.wrappers.blocks.BlockType;
-import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.entities.Entity;
-import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.mixins.common.PalettedBlockInfoListInvoker;
 import keystone.core.mixins.common.StructureTemplateAccessor;
-import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.schematic.extensions.ISchematicExtension;
 import keystone.core.utils.NBTSerializer;
+import keystone.core.utils.PalettedArray;
 import keystone.core.utils.RegistryLookups;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.datafixer.DataFixTypes;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.*;
+import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 public class KeystoneSchematicFormat implements ISchematicFormat
 {
     private static final String[] FILE_EXTENSIONS = new String[] { "nbt", "kschem" };
+    
+    private static final String SIZE_KEY = "Size";
+    private static final String BLOCKS_KEY = "Blocks";
+    private static final String TILE_ENTITIES_KEY = "TileEntities";
+    private static final String ENTITIES_KEY = "Entities";
+    private static final String EXTENSIONS_KEY = "Extensions";
+    
     private static final Map<Identifier, ISchematicExtension> dataExtensions = new HashMap<>();
 
     @Override
@@ -49,7 +54,7 @@ public class KeystoneSchematicFormat implements ISchematicFormat
         }
         dataExtensions.put(extension.id(), extension);
     }
-    public static Map<Identifier, ISchematicExtension> createExtensions(World world, BoundingBox bounds)
+    public static Map<Identifier, ISchematicExtension> createExtensions(World world, BlockBox bounds)
     {
         Map<Identifier, ISchematicExtension> ret = new HashMap<>();
         for (Map.Entry<Identifier, ISchematicExtension> entry : dataExtensions.entrySet())
@@ -65,99 +70,99 @@ public class KeystoneSchematicFormat implements ISchematicFormat
     {
         NbtCompound nbt = new NbtCompound();
 
-        // Structure
-        StructureTemplate template = new StructureTemplate();
-        StructureTemplateAccessor accessor = (StructureTemplateAccessor) template;
-        
         // Size
-        accessor.setSize(schematic.getSize());
+        nbt.putIntArray(SIZE_KEY, new int[] { schematic.getSize().getX(), schematic.getSize().getY(), schematic.getSize().getZ() });
         
         // Blocks
-        List<StructureTemplate.StructureBlockInfo> blockList = new ArrayList<>();
-        schematic.forEachBlock((pos, block, tileEntity) -> blockList.add(new StructureTemplate.StructureBlockInfo(pos, block.getMinecraftBlock(), tileEntity == null ? null : tileEntity.getMinecraftNBT())));
-        accessor.getBlockLists().add(PalettedBlockInfoListInvoker.invokeConstructor(blockList));
+        nbt.put(BLOCKS_KEY, schematic.getBlocks().serialize(NbtHelper::fromBlockState));
+        
+        // Tile Entities
+        NbtList tileEntities = NBTSerializer.serializeTileEntities(schematic.getTileEntities());
+        nbt.put(TILE_ENTITIES_KEY, tileEntities);
         
         // Entities
+        NbtList entities = new NbtList();
         schematic.forEachEntity(entity ->
         {
-            Vec3d pos = entity.pos().getMinecraftVec3d();
-            BlockPos blockPos = BlockPos.ofFloored(pos.x, pos.y, pos.z);
-            accessor.getEntities().add(new StructureTemplate.StructureEntityInfo(pos, blockPos, entity.data().getMinecraftNBT()));
+            NbtCompound entityNbt = new NbtCompound();
+            NbtList posNbt = new NbtList();
+            posNbt.add(NbtDouble.of(entity.pos().x));
+            posNbt.add(NbtDouble.of(entity.pos().y));
+            posNbt.add(NbtDouble.of(entity.pos().z));
+            entityNbt.put("Pos", posNbt);
+            entityNbt.put("Data", entity.data().getMinecraftNBT());
+            entities.add(entityNbt);
         });
-        
-        // Write Structure
-        template.writeNbt(nbt);
+        nbt.put(ENTITIES_KEY, entities);
         
         // Extensions
-        List<Identifier> ids = new ArrayList<>(dataExtensions.keySet());
-        ids.sort(Identifier::compareTo);
-        NbtCompound extensionsNBT = new NbtCompound();
-        for (Identifier id : ids)
+        NbtList extensionsNbt = new NbtList();
+        schematic.forEachExtension(extension ->
         {
-            ISchematicExtension extension = schematic.getExtension(id);
-            if (extension == null) continue;
-            NbtCompound namespaceNBT = extensionsNBT.contains(id.getNamespace(), NbtElement.COMPOUND_TYPE) ? extensionsNBT.getCompound(id.getNamespace()) : new NbtCompound();
-
-            NbtCompound extensionNBT = new NbtCompound();
-            extension.serialize(schematic, extensionNBT);
-            namespaceNBT.put(id.getPath(), extensionNBT);
-            extensionsNBT.put(id.getNamespace(), namespaceNBT);
-        }
-        nbt.put("extensions", extensionsNBT);
-
+            NbtCompound extensionNbt = new NbtCompound();
+            extensionNbt.putString("ID", extension.id().toString());
+            
+            NbtCompound data = extension.serialize(schematic);
+            if (data != null) extensionNbt.put("Data", data);
+        });
+        nbt.put(EXTENSIONS_KEY, extensionsNbt);
+        
         return nbt;
+    }
+    
+    @Override
+    public void writeFile(Path path, KeystoneSchematic schematic) throws IOException
+    {
+        NbtIo.write(saveSchematic(schematic), path);
     }
     //endregion
     //region Loading
     @Override
-    public KeystoneSchematic loadFile(File file)
+    public KeystoneSchematic readFile(Path path) throws Exception
     {
-        return deserialize(NBTSerializer.deserialize(file));
+        return deserialize(NbtIo.read(path));
     }
     public KeystoneSchematic deserialize(NbtCompound nbt)
     {
         if (nbt.isEmpty()) return null;
-        int version = NbtHelper.getDataVersion(nbt, 500);
-        nbt = DataFixTypes.STRUCTURE.update(MinecraftClient.getInstance().getDataFixer(), nbt, version);
-    
-        // Load Structure
-        StructureTemplate template = new StructureTemplate();
-        StructureTemplateAccessor accessor = (StructureTemplateAccessor) template;
-        template.readNbt(RegistryLookups.registryLookup(RegistryKeys.BLOCK), nbt);
-    
-        // Copy Data
-        Vec3i size = template.getSize();
-        BlockType[] blocks = new BlockType[size.getX() * size.getY() * size.getZ()];
-        Map<BlockPos, NBTCompound> tileEntities = new Reference2ObjectArrayMap<>();
-        Entity[] entities = new Entity[accessor.getEntities().size()];
-        for (StructureTemplate.StructureBlockInfo blockInfo : accessor.getBlockLists().get(0).getAll())
-        {
-            blocks[index(size, blockInfo.pos())] = BlockTypeRegistry.fromMinecraftBlock(blockInfo.state());
-            tileEntities.put(blockInfo.pos(), new NBTCompound(blockInfo.nbt()));
-        }
+        
+        // Size
+        int[] sizeArray = nbt.getIntArray(SIZE_KEY);
+        Vec3i size = new Vec3i(sizeArray[0], sizeArray[1], sizeArray[2]);
+        
+        // Blocks
+        RegistryEntryLookup<Block> blockLookup = RegistryLookups.registryLookup(RegistryKeys.BLOCK);
+        PalettedArray<BlockState> blocks = new PalettedArray<>(nbt.getCompound(BLOCKS_KEY), paletteEntry -> NbtHelper.toBlockState(blockLookup, (NbtCompound) paletteEntry));
+        
+        // Tile Entities
+        NbtList tileEntitiesNbt = nbt.getList(TILE_ENTITIES_KEY, NbtElement.COMPOUND_TYPE);
+        Map<BlockPos, NbtCompound> tileEntities = NBTSerializer.deserializeTileEntities(tileEntitiesNbt);
+        
+        // Entities
+        NbtList entitiesNbt = nbt.getList(ENTITIES_KEY, NbtElement.COMPOUND_TYPE);
+        Entity[] entities = new Entity[entitiesNbt.size()];
         for (int i = 0; i < entities.length; i++)
         {
-            StructureTemplate.StructureEntityInfo entityInfo = accessor.getEntities().get(i);
-            entities[i] = new Entity(accessor.getEntities().get(i).nbt, false).position(entityInfo.pos.x, entityInfo.pos.y, entityInfo.pos.z);
+            NbtCompound entityNbt = entitiesNbt.getCompound(i);
+            NbtList posNbt = entityNbt.getList("Pos", NbtElement.DOUBLE_TYPE);
+            entities[i] = new Entity(entityNbt.getCompound("Data"), false).position(posNbt.getDouble(0), posNbt.getDouble(1), posNbt.getDouble(2));
         }
-
+        
         // Extensions
+        NbtList extensionsNBT = nbt.getList(EXTENSIONS_KEY, NbtElement.COMPOUND_TYPE);
         Map<Identifier, ISchematicExtension> extensions = new HashMap<>();
-        NbtCompound extensionsNBT = nbt.getCompound("extensions");
-        for (String namespace : extensionsNBT.getKeys())
+        for (NbtElement extensionNBT : extensionsNBT)
         {
-            NbtCompound namespaceNBT = extensionsNBT.getCompound(namespace);
-            for (String path : namespaceNBT.getKeys())
-            {
-                Identifier id = Identifier.of(namespace, path);
-                if (!dataExtensions.containsKey(id)) continue;
-
-                ISchematicExtension extension = dataExtensions.get(id).deserialize(size, blocks, tileEntities, entities, namespaceNBT.getCompound(path));
-                extensions.put(id, extension);
-            }
+            NbtCompound extensionNbt = (NbtCompound) extensionNBT;
+            Identifier id = Identifier.of(extensionNbt.getString("ID"));
+            if (!dataExtensions.containsKey(id)) continue;
+            
+            ISchematicExtension extension = dataExtensions.get(id).deserialize(size, blocks, tileEntities, entities, extensionNbt.getCompound("Data"));
+            extensions.put(id, extension);
         }
-
-        return new KeystoneSchematic(size, blocks, tileEntities, entities, extensions);
+        
+        // Create Schematic
+        return new KeystoneSchematic(size, blocks, tileEntities, entities, new HashMap<>());
     }
     
     private static int index(Vec3i size, Vec3i pos)

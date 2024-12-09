@@ -2,7 +2,6 @@ package keystone.core.modules.selection;
 
 import keystone.api.Keystone;
 import keystone.api.WorldRegion;
-import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.client.Player;
 import keystone.core.events.keystone.KeystoneHotbarEvents;
@@ -23,6 +22,7 @@ import keystone.core.renderer.overlay.ComplexOverlayRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3i;
 import org.lwjgl.glfw.GLFW;
 
@@ -111,7 +111,7 @@ public class SelectionModule implements IKeystoneModule
         }
         return regions;
     }
-    public void setSelections(List<BoundingBox> boxes)
+    public void setSelections(List<Box> boxes)
     {
         selectionBoxes.clear();
         boxes.forEach(box -> selectionBoxes.add(SelectionBoundingBox.createFromBoundingBox(box)));

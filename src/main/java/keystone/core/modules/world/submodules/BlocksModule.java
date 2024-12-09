@@ -2,16 +2,15 @@ package keystone.core.modules.world.submodules;
 
 import keystone.api.Keystone;
 import keystone.api.enums.RetrievalMode;
-import keystone.api.wrappers.blocks.BlockType;
-import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.client.Player;
 import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.HistoryModule;
 import keystone.core.modules.history.chunk.WorldHistoryChunk;
 import keystone.core.modules.world_cache.WorldCacheModule;
-import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.RegistryLookups;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
@@ -20,7 +19,7 @@ public class BlocksModule implements IKeystoneModule
 {
     public interface BlockListener
     {
-        void onChanged(int x, int y, int z, BlockType blockType);
+        void onChanged(int x, int y, int z, BlockState blockState);
     }
 
     private HistoryModule historyModule;
@@ -43,19 +42,19 @@ public class BlocksModule implements IKeystoneModule
         return worldCacheModule.getDimensionWorld(Player.getDimension());
     }
 
-    public BlockType getBlockType(int x, int y, int z, RetrievalMode retrievalMode)
+    public BlockState getBlockState(int x, int y, int z, RetrievalMode retrievalMode)
     {
         if (!historyModule.isEntryOpen())
         {
             World world = worldCacheModule.getDimensionWorld(Player.getDimension());
             BlockPos pos = new BlockPos(x, y, z);
-            return BlockTypeRegistry.fromMinecraftBlock(world.getBlockState(pos));
+            return world.getBlockState(pos);
         }
 
         WorldHistoryChunk chunk = historyModule.getOpenEntry().getOrAddChunk(x, y, z);
-        return chunk.getBlockType(x, y, z, retrievalMode);
+        return chunk.getBlockState(x, y, z, retrievalMode);
     }
-    public NBTCompound getBlockData(int x, int y, int z, RetrievalMode retrievalMode)
+    public NbtCompound getBlockData(int x, int y, int z, RetrievalMode retrievalMode)
     {
         if (!historyModule.isEntryOpen())
         {
@@ -71,7 +70,7 @@ public class BlocksModule implements IKeystoneModule
             if (tileEntity == null) return null;
             
             // Return wrapped block data
-            return new NBTCompound(tileEntity.createNbtWithIdentifyingData(RegistryLookups.registryLookup()));
+            return tileEntity.createNbtWithIdentifyingData(RegistryLookups.registryLookup());
         }
 
         WorldHistoryChunk chunk = historyModule.getOpenEntry().getOrAddChunk(x, y, z);
@@ -79,19 +78,19 @@ public class BlocksModule implements IKeystoneModule
     }
     
     /**
-     * Set a {@link BlockType} in the current world. This will automatically hook into the history system, allowing
+     * Set a block state in the current world. This will automatically hook into the history system, allowing
      * for undo and redo support. Be sure that the {@link keystone.core.modules.history.HistoryModule}
      * has an entry open first
      * @param x The x-coordinate
      * @param y The y-coordinate
      * @param z The z-coordinate
-     * @param blockType The {@link BlockType} to set
+     * @param blockState The block state to set
      */
-    public void setBlockType(int x, int y, int z, BlockType blockType)
+    public void setBlockType(int x, int y, int z, BlockState blockState)
     {
-        historyModule.getOpenEntry().setBlockType(x, y, z, blockType);
+        historyModule.getOpenEntry().setBlockState(x, y, z, blockState);
     }
-    public void setBlockData(int x, int y, int z, NBTCompound blockData)
+    public void setBlockData(int x, int y, int z, NbtCompound blockData)
     {
         historyModule.getOpenEntry().setBlockData(x, y, z, blockData);
     }

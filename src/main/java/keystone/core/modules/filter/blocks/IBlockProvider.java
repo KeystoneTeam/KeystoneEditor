@@ -1,7 +1,7 @@
 package keystone.core.modules.filter.blocks;
 
-import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.overlays.block_selection.BlockGridButton;
+import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
@@ -13,13 +13,13 @@ public interface IBlockProvider
 {
     int size();
     
-    BlockType get();
-    BlockType getFirst();
-    void forEach(Consumer<BlockType> consumer);
+    BlockState get();
+    BlockState getFirst();
+    void forEach(Consumer<BlockState> consumer);
     IBlockProvider clone();
     
-    boolean containsState(BlockType blockType);
-    boolean containsBlock(BlockType block);
+    boolean containsState(BlockState blockType);
+    boolean containsBlock(BlockState block);
     
     NbtCompound write();
     void read(NbtCompound nbt);

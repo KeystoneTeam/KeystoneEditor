@@ -2,9 +2,9 @@ package keystone.core.modules.brush.operations;
 
 import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.*;
-import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.modules.brush.BrushOperation;
 import keystone.core.modules.world.WorldModifierModules;
+import net.minecraft.block.BlockState;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -37,7 +37,7 @@ public class ErodeBrushOperation extends BrushOperation
         }
     }
 
-    private static final Map<BlockType, Integer> neighborBlockCounts = new HashMap<>();
+    private static final Map<BlockState, Integer> neighborBlockCounts = new HashMap<>();
     @EditorDirtyFlag private boolean editorDirty;
 
     @Tooltip("The number of times to perform the erosion operation.")
@@ -86,19 +86,19 @@ public class ErodeBrushOperation extends BrushOperation
 
     private void meltIteration(int x, int y, int z, WorldModifierModules worldModifiers)
     {
-        BlockType currentBlockType = worldModifiers.blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED);
-        if (currentBlockType.isAirOrLiquid()) return;
+        BlockState currentBlockType = worldModifiers.blocks.getBlockState(x, y, z, RetrievalMode.LAST_SWAPPED);
+        if (currentBlockType.isAir() || currentBlockType.isLiquid()) return;
 
         neighborBlockCounts.clear();
         int highest = 1;
-        BlockType highestBlockType = currentBlockType;
+        BlockState highestBlockType = currentBlockType;
         int total = 0;
 
         for (Direction direction : Direction.values())
         {
             BlockPos neighborPos = new BlockPos(x, y, z).offset(direction);
-            BlockType neighbor = worldModifiers.blocks.getBlockType(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
-            if (!neighbor.isAirOrLiquid()) continue;
+            BlockState neighbor = worldModifiers.blocks.getBlockState(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
+            if (!(neighbor.isAir() || neighbor.isLiquid())) continue;
 
             total++;
             Integer count = neighborBlockCounts.get(neighbor);
@@ -118,19 +118,19 @@ public class ErodeBrushOperation extends BrushOperation
     }
     private void fillIteration(int x, int y, int z, WorldModifierModules worldModifiers)
     {
-        BlockType currentBlockType = worldModifiers.blocks.getBlockType(x, y, z, RetrievalMode.LAST_SWAPPED);
-        if (!currentBlockType.isAirOrLiquid()) return;
+        BlockState currentBlockType = worldModifiers.blocks.getBlockState(x, y, z, RetrievalMode.LAST_SWAPPED);
+        if (!(currentBlockType.isAir() || currentBlockType.isLiquid())) return;
 
         neighborBlockCounts.clear();
         int highest = 1;
-        BlockType highestBlockType = currentBlockType;
+        BlockState highestBlockType = currentBlockType;
         int total = 0;
 
         for (Direction direction : Direction.values())
         {
             BlockPos neighborPos = new BlockPos(x, y, z).offset(direction);
-            BlockType neighbor = worldModifiers.blocks.getBlockType(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
-            if (neighbor.isAirOrLiquid()) continue;
+            BlockState neighbor = worldModifiers.blocks.getBlockState(neighborPos.getX(), neighborPos.getY(), neighborPos.getZ(), RetrievalMode.LAST_SWAPPED);
+            if (!(neighbor.isAir() || neighbor.isLiquid())) continue;
 
             total++;
             Integer count = neighborBlockCounts.get(neighbor);

@@ -1,14 +1,14 @@
-package keystone.api.wrappers.blocks;
+package keystone.api;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import keystone.api.Keystone;
+import keystone.api.wrappers.BlockType;
 import keystone.core.modules.filter.blocks.BlockListProvider;
 import keystone.core.modules.filter.blocks.BlockProviderTypes;
-import keystone.core.modules.filter.blocks.BlockTypeProvider;
+import keystone.core.modules.filter.blocks.BlockStateProvider;
 import keystone.core.modules.filter.blocks.IBlockProvider;
-import keystone.core.registries.BlockTypeRegistry;
 import keystone.core.utils.RegistryLookups;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.argument.BlockPredicateArgumentType;
 import net.minecraft.nbt.NbtCompound;
@@ -32,7 +32,7 @@ import java.util.function.Consumer;
  */
 public class BlockMask
 {
-    private static final Map<BlockType, BlockType[]> forcedBlockAdditions = new HashMap<>();
+    private static final Map<BlockState, BlockState[]> forcedBlockAdditions = new HashMap<>();
 
     private final List<IBlockProvider> mask = new ArrayList<>();
     private final List<IBlockProvider> anyVariantMask = new ArrayList<>();
@@ -46,9 +46,9 @@ public class BlockMask
      */
     public static void buildForcedAdditionsList()
     {
-        forcedBlockAdditions.put(BlockTypeRegistry.AIR, new BlockType[]
+        forcedBlockAdditions.put(Blocks.AIR.getDefaultState(), new BlockState[]
                 {
-                        BlockTypeRegistry.fromMinecraftBlock(Blocks.CAVE_AIR.getDefaultState()),
+                        Blocks.CAVE_AIR.getDefaultState(),
                 });
     }
     /**
@@ -245,7 +245,7 @@ public class BlockMask
         try
         {
             BlockPredicateArgumentType.BlockPredicate parsed = BlockPredicateArgumentType.blockPredicate(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
-            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return with(BlockTypeRegistry.fromMinecraftBlock(statePredicate.state));
+            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return with(statePredicate.state);
             else if (parsed instanceof BlockPredicateArgumentType.TagPredicate tagPredicate) return with(new BlockListProvider(tagPredicate.tag, tagPredicate.properties));
         } catch (CommandSyntaxException e)
         {
@@ -261,8 +261,18 @@ public class BlockMask
      */
     public BlockMask with(BlockType blockType)
     {
-        with(new BlockTypeProvider(blockType));
-        if (forcedBlockAdditions.containsKey(blockType)) for (BlockType add : forcedBlockAdditions.get(blockType)) with(new BlockTypeProvider(add));
+        return with(blockType.getMinecraftBlock());
+    }
+    /**
+     * Add a block state to the mask
+     *
+     * @param blockState The block state to add
+     * @return The modified {@link BlockMask}
+     */
+    public BlockMask with(BlockState blockState)
+    {
+        with(new BlockStateProvider(blockState));
+        if (forcedBlockAdditions.containsKey(blockState)) for (BlockState add : forcedBlockAdditions.get(blockState)) with(new BlockStateProvider(add));
         return this;
     }
 
@@ -279,7 +289,7 @@ public class BlockMask
         try
         {
             BlockPredicateArgumentType.BlockPredicate parsed = BlockPredicateArgumentType.blockPredicate(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
-            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return withAllVariants(BlockTypeRegistry.fromMinecraftBlock(statePredicate.state));
+            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return withAllVariants(statePredicate.state);
             else if (parsed instanceof BlockPredicateArgumentType.TagPredicate tagPredicate) return withAllVariants(new BlockListProvider(tagPredicate.tag, tagPredicate.properties));
         } catch (CommandSyntaxException e)
         {
@@ -290,13 +300,23 @@ public class BlockMask
     /**
      * Add a property agnostic {@link BlockType} to the mask.  Blocks added in this way will match any variant of the block. For example,
      * adding "minecraft:stone_slab" will match "minecraft:stone_slab[type=top]" and "minecraft:stone_slab[type=bottom]"
-     * @param blockType The {@link BlockType} to add
+     * @param blockType The block to add
      * @return The modified {@link BlockMask}
      */
     public BlockMask withAllVariants(BlockType blockType)
     {
-        withAllVariants(new BlockTypeProvider(blockType));
-        if (forcedBlockAdditions.containsKey(blockType)) for (BlockType add : forcedBlockAdditions.get(blockType)) withAllVariants(new BlockTypeProvider(add));
+        return withAllVariants(blockType.getMinecraftBlock());
+    }
+    /**
+     * Add a property agnostic block to the mask.  Blocks added in this way will match any variant of the block. For example,
+     * adding "minecraft:stone_slab" will match "minecraft:stone_slab[type=top]" and "minecraft:stone_slab[type=bottom]"
+     * @param blockType The block to add
+     * @return The modified {@link BlockMask}
+     */
+    public BlockMask withAllVariants(BlockState blockType)
+    {
+        withAllVariants(new BlockStateProvider(blockType));
+        if (forcedBlockAdditions.containsKey(blockType)) for (BlockState add : forcedBlockAdditions.get(blockType)) withAllVariants(new BlockStateProvider(add));
         return this;
     }
     //endregion
@@ -311,7 +331,7 @@ public class BlockMask
         try
         {
             BlockPredicateArgumentType.BlockPredicate parsed = BlockPredicateArgumentType.blockPredicate(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
-            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return without(BlockTypeRegistry.fromMinecraftBlock(statePredicate.state));
+            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return without(statePredicate.state);
             else if (parsed instanceof BlockPredicateArgumentType.TagPredicate tagPredicate) return without(new BlockListProvider(tagPredicate.tag, tagPredicate.properties));
         }
         catch (CommandSyntaxException e)
@@ -327,17 +347,26 @@ public class BlockMask
      */
     public BlockMask without(BlockType blockType)
     {
-        without(new BlockTypeProvider(blockType));
-        if (forcedBlockAdditions.containsKey(blockType)) for (BlockType remove : forcedBlockAdditions.get(blockType)) without(new BlockTypeProvider(remove));
+        return without(blockType.getMinecraftBlock());
+    }
+    /**
+     * Remove a block state from the mask
+     * @param blockState The block state to remove
+     * @return The modified {@link BlockMask}
+     */
+    public BlockMask without(BlockState blockState)
+    {
+        without(new BlockStateProvider(blockState));
+        if (forcedBlockAdditions.containsKey(blockState)) for (BlockState remove : forcedBlockAdditions.get(blockState)) without(new BlockStateProvider(remove));
         return this;
     }
 
     /**
-     * Add a property agnostic block ID to the mask. Any valid block ID or block tag ID will work. Blocks added in this way will
+     * Remove a property agnostic block ID from the mask. Any valid block ID or block tag ID will work. Blocks removed in this way will
      * match any variant of the block. For example, adding "minecraft:stone_slab" will match "minecraft:stone_slab[type=top]" and
      * "minecraft:stone_slab[type=bottom]"
      *
-     * @param block The block ID to add
+     * @param block The block ID to remove
      * @return The modified {@link BlockMask}
      */
     public BlockMask withoutAllVariants(String block)
@@ -345,7 +374,7 @@ public class BlockMask
         try
         {
             BlockPredicateArgumentType.BlockPredicate parsed = BlockPredicateArgumentType.blockPredicate(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
-            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return withoutAllVariants(BlockTypeRegistry.fromMinecraftBlock(statePredicate.state));
+            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return withoutAllVariants(statePredicate.state);
             else if (parsed instanceof BlockPredicateArgumentType.TagPredicate tagPredicate) return withoutAllVariants(new BlockListProvider(tagPredicate.tag, tagPredicate.properties));
         } catch (CommandSyntaxException e)
         {
@@ -354,15 +383,25 @@ public class BlockMask
         return this;
     }
     /**
-     * Add a property agnostic {@link BlockType} to the mask.  Blocks added in this way will match any variant of the block. For example,
+     * Remove a property agnostic {@link BlockType} from the mask. Blocks removed in this way will match any variant of the block. For example,
      * adding "minecraft:stone_slab" will match "minecraft:stone_slab[type=top]" and "minecraft:stone_slab[type=bottom]"
-     * @param blockType The {@link BlockType} to add
+     * @param blockType The {@link BlockType} to remove
      * @return The modified {@link BlockMask}
      */
     public BlockMask withoutAllVariants(BlockType blockType)
     {
-        withoutAllVariants(new BlockTypeProvider(blockType));
-        if (forcedBlockAdditions.containsKey(blockType)) for (BlockType add : forcedBlockAdditions.get(blockType)) withoutAllVariants(new BlockTypeProvider(add));
+        return withoutAllVariants(blockType.getMinecraftBlock());
+    }
+    /**
+     * Remove a property agnostic from the mask. Blocks removed in this way will match any variant of the block. For example,
+     * adding "minecraft:stone_slab" will match "minecraft:stone_slab[type=top]" and "minecraft:stone_slab[type=bottom]"
+     * @param blockType The {@link BlockState} to remove
+     * @return The modified {@link BlockMask}
+     */
+    public BlockMask withoutAllVariants(BlockState blockType)
+    {
+        withoutAllVariants(new BlockStateProvider(blockType));
+        if (forcedBlockAdditions.containsKey(blockType)) for (BlockState add : forcedBlockAdditions.get(blockType)) withoutAllVariants(new BlockStateProvider(add));
         return this;
     }
     //endregion
@@ -401,9 +440,18 @@ public class BlockMask
     /**
      * Check if a {@link BlockType} is matched by this mask
      * @param blockType The {@link BlockType} to check
-     * @return Whether the {@link BlockType} is matched by this mask
+     * @return Whether the block type is matched by this mask
      */
     public boolean valid(@NotNull BlockType blockType)
+    {
+        return valid(blockType.getMinecraftBlock());
+    }
+    /**
+     * Check if a block state is matched by this mask
+     * @param state The block state to check
+     * @return Whether the block state is matched by this mask
+     */
+    public boolean valid(@NotNull BlockState state)
     {
         // Always return valid for empty masks
         if (mask.size() == 0 && anyVariantMask.size() == 0) return true;
@@ -413,7 +461,7 @@ public class BlockMask
         // Check Property-Specific Mask
         for (IBlockProvider provider : mask)
         {
-            if (provider.containsState(blockType))
+            if (provider.containsState(state))
             {
                 matches = true;
                 break;
@@ -425,7 +473,7 @@ public class BlockMask
         {
             for (IBlockProvider provider : anyVariantMask)
             {
-                if (provider.containsBlock(blockType))
+                if (provider.containsBlock(state))
                 {
                     matches = true;
                     break;
@@ -451,7 +499,7 @@ public class BlockMask
         return clone;
     }
     /**
-     * Run a function on every {@link BlockType} in the mask contents
+     * Run a function on every block state provider in the mask contents
      * @param variantConsumer The function to run on property-specific block providers
      * @param anyVariantConsumer The function to run on property agnostic block providers
      */

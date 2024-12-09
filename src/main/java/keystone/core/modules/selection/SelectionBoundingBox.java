@@ -1,11 +1,11 @@
 package keystone.core.modules.selection;
 
 import keystone.api.Keystone;
-import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.core.client.Player;
 import keystone.core.events.keystone.KeystoneLifecycleEvents;
 import keystone.core.math.RayTracing;
 import keystone.core.modules.history.HistoryModule;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -23,7 +23,7 @@ public class SelectionBoundingBox extends SelectableCuboid
     {
         return new SelectionBoundingBox(coords, coords);
     }
-    public static SelectionBoundingBox createFromBoundingBox(BoundingBox boundingBox)
+    public static SelectionBoundingBox createFromBoundingBox(Box boundingBox)
     {
         Vec3i corner1 = new Vec3i((int)boundingBox.minX, (int)boundingBox.minY, (int)boundingBox.minZ);
         Vec3i corner2 = new Vec3i((int)(boundingBox.maxX - 1), (int)(boundingBox.maxY - 1), (int)(boundingBox.maxZ - 1));

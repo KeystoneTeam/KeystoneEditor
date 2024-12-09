@@ -1,6 +1,6 @@
 package keystone.core.gui.widgets.inputs;
 
-import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.BlockPalette;
 import keystone.core.gui.WidgetDisabler;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.overlays.block_selection.BlockPaletteEditScreen;

@@ -6,21 +6,21 @@ import keystone.api.Keystone;
 import keystone.api.WorldRegion;
 import keystone.api.enums.RetrievalMode;
 import keystone.api.variables.EditorDirtyFlag;
+import keystone.api.BlockMask;
+import keystone.api.BlockPalette;
+import keystone.api.wrappers.BlockType;
+import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.Biome;
 import keystone.api.wrappers.Item;
-import keystone.api.wrappers.blocks.BlockMask;
-import keystone.api.wrappers.blocks.BlockPalette;
-import keystone.api.wrappers.blocks.BlockType;
 import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.BoundingBox;
-import keystone.api.wrappers.entities.Entity;
 import keystone.api.wrappers.nbt.NBTCompound;
 import keystone.core.modules.filter.execution.CustomFilterThread;
 import keystone.core.modules.filter.execution.FilterExecutor;
 import keystone.core.modules.filter.execution.IFilterThread;
 import keystone.core.modules.selection.SelectionModule;
 import keystone.core.modules.world.WorldModifierModules;
-import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.registries.WrapperRegistries;
 import keystone.core.schematic.KeystoneSchematic;
 import keystone.core.utils.RegistryLookups;
 import net.minecraft.block.Block;
@@ -389,13 +389,13 @@ public class KeystoneFilter
             getExecutor().cancel(e.getLocalizedMessage());
         }
 
-        return BlockTypeRegistry.fromMinecraftBlock(state);
+        return WrapperRegistries.getBlocks().fromBaseType(state);
     }
     /**
-     * Create a {@link keystone.api.wrappers.Item} from an item ID. Any ID that is a valid ID for the
+     * Create a {@link Item} from an item ID. Any ID that is a valid ID for the
      * /give command will work. [e.g. "minecraft:diamond"]
      * @param item The item ID
-     * @return The generated {@link keystone.api.wrappers.Item}
+     * @return The generated {@link Item}
      */
     public final Item item(String item)
     {
@@ -451,7 +451,7 @@ public class KeystoneFilter
      */
     public final KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers)
     {
-        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, RetrievalMode.LAST_SWAPPED, Blocks.STRUCTURE_VOID.getDefaultState());
+        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, RetrievalMode.LAST_SWAPPED);
     }
     /**
      * Create a schematic from two corners
@@ -463,7 +463,7 @@ public class KeystoneFilter
      */
     public final KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers, RetrievalMode retrievalMode)
     {
-        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode, Blocks.STRUCTURE_VOID.getDefaultState());
+        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode);
     }
     /**
      * Create a schematic from two corners
@@ -476,7 +476,7 @@ public class KeystoneFilter
      */
     public final KeystoneSchematic schematic(BlockPos corner1, BlockPos corner2, WorldModifierModules worldModifiers, RetrievalMode retrievalMode, BlockType structureVoid)
     {
-        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode, structureVoid.getMinecraftBlock());
+        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode);
     }
     /**
      * Create a schematic from a {@link BoundingBox}
@@ -488,7 +488,7 @@ public class KeystoneFilter
     {
         BlockPos corner1 = new BlockPos((int)bounds.minX, (int)bounds.minY, (int)bounds.minZ);
         BlockPos corner2 = new BlockPos((int)bounds.maxX, (int)bounds.maxY, (int)bounds.maxZ);
-        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, RetrievalMode.ORIGINAL, Blocks.STRUCTURE_VOID.getDefaultState());
+        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, RetrievalMode.ORIGINAL);
     }
     /**
      * Create a schematic from a {@link BoundingBox}
@@ -501,21 +501,7 @@ public class KeystoneFilter
     {
         BlockPos corner1 = new BlockPos((int)bounds.minX, (int)bounds.minY, (int)bounds.minZ);
         BlockPos corner2 = new BlockPos((int)bounds.maxX, (int)bounds.maxY, (int)bounds.maxZ);
-        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode, Blocks.STRUCTURE_VOID.getDefaultState());
-    }
-    /**
-     * Create a schematic from a {@link BoundingBox}
-     * @param bounds The {@link BoundingBox} of  the schematic
-     * @param worldModifiers The {@link WorldModifierModules} that the schematic contents is read from
-     * @param retrievalMode The {@link RetrievalMode} used in reading the schematic contents
-     * @param structureVoid The {@link BlockType} that represents structure voids
-     * @return The generated {@link KeystoneSchematic}
-     */
-    public final KeystoneSchematic schematic(BoundingBox bounds, WorldModifierModules worldModifiers, RetrievalMode retrievalMode, BlockType structureVoid)
-    {
-        BlockPos corner1 = new BlockPos((int)bounds.minX, (int)bounds.minY, (int)bounds.minZ);
-        BlockPos corner2 = new BlockPos((int)bounds.maxX, (int)bounds.maxY, (int)bounds.maxZ);
-        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode, structureVoid.getMinecraftBlock());
+        return KeystoneSchematic.createFromCorners(corner1.getMinecraftBlockPos(), corner2.getMinecraftBlockPos(), worldModifiers, retrievalMode);
     }
     //endregion
     //region Input/Output Utils

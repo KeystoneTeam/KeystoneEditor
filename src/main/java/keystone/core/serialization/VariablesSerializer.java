@@ -1,8 +1,8 @@
 package keystone.core.serialization;
 
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.BlockMask;
-import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.BlockMask;
+import keystone.api.BlockPalette;
 import net.minecraft.nbt.NbtCompound;
 
 import java.lang.reflect.Field;

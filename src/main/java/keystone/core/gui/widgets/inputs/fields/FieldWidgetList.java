@@ -1,11 +1,11 @@
 package keystone.core.gui.widgets.inputs.fields;
 
+import keystone.api.BlockMask;
+import keystone.api.BlockPalette;
 import keystone.api.Keystone;
 import keystone.api.variables.Header;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.Biome;
-import keystone.api.wrappers.blocks.BlockMask;
-import keystone.api.wrappers.blocks.BlockPalette;
 import keystone.core.gui.widgets.ITickableWidget;
 import keystone.core.gui.widgets.groups.VerticalLayoutGroup;
 import keystone.core.utils.AnnotationUtils;

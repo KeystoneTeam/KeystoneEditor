@@ -5,15 +5,30 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.world.chunk.PalettedContainer;
 import net.minecraft.world.chunk.ReadableContainer;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
-public class PalettedArray<T>
+public class PalettedArray<T> implements Iterable<T>
 {
+    //region Iterator
+    private class Itr implements Iterator<T>
+    {
+        private int index = 0;
+
+        @Override public boolean hasNext() { return index < size; }
+        @Override public T next() { return get(index++); }
+    }
+    
+    @NotNull
+    @Override
+    public Iterator<T> iterator()
+    {
+        return new Itr();
+    }
+    //endregion
+    
     private static class Binary
     {
         private final BitSet bitSet = new BitSet();
@@ -81,6 +96,14 @@ public class PalettedArray<T>
         palette.addAll(copyFrom.palette);
         size = copyFrom.size;
         bits = copyFrom.bits;
+    }
+    public PalettedArray(int size)
+    {
+        this(size, 1, null);
+    }
+    public PalettedArray(int size, int startingBits)
+    {
+        this(size, startingBits, null);
     }
     public PalettedArray(int size, int startingBits, T startingContent)
     {

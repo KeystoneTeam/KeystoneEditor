@@ -1,15 +1,18 @@
-package keystone.api.wrappers.blocks;
+package keystone.api;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import keystone.api.Keystone;
+import keystone.api.wrappers.BlockType;
 import keystone.core.modules.filter.blocks.BlockListProvider;
 import keystone.core.modules.filter.blocks.BlockProviderTypes;
-import keystone.core.modules.filter.blocks.BlockTypeProvider;
+import keystone.core.modules.filter.blocks.BlockStateProvider;
 import keystone.core.modules.filter.blocks.IBlockProvider;
-import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.registries.WrapperRegistries;
+import keystone.core.registries.WrapperRegistry;
 import keystone.core.utils.RegistryLookups;
 import keystone.core.utils.WeightedRandom;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.command.argument.BlockPredicateArgumentType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -26,7 +29,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
- * A weighted palette of {@link BlockType Blocks} for a filter. Used to set a block to
+ * A weighted palette of block providers for a filter. Used to set a block to
  * a random state from a list
  */
 public class BlockPalette
@@ -209,7 +212,7 @@ public class BlockPalette
         try
         {
             BlockPredicateArgumentType.BlockPredicate parsed = BlockPredicateArgumentType.blockPredicate(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
-            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return with(BlockTypeRegistry.fromMinecraftBlock(statePredicate.state), weight);
+            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return with(statePredicate.state, weight);
             else if (parsed instanceof BlockPredicateArgumentType.TagPredicate tagPredicate) return with(new BlockListProvider(tagPredicate.tag, tagPredicate.properties));
         }
         catch (CommandSyntaxException e)
@@ -220,10 +223,10 @@ public class BlockPalette
     }
     /**
      * Add a {@link BlockType} to the palette with a weight of 1
-     * @param blockType The {@link BlockType} top add
+     * @param blockType The {@link BlockType} to add
      * @return The modified {@link BlockPalette}
      */
-    public BlockPalette with(BlockType blockType) { return with(blockType, 1); }
+    public BlockPalette with(BlockType blockType) { return with(blockType.getMinecraftBlock(), 1); }
     /**
      * Add a {@link BlockType} to the palette with a given weight. A higher weight is more
      * likely to be chosen
@@ -231,7 +234,21 @@ public class BlockPalette
      * @param weight The weight of the block
      * @return The modified {@link BlockPalette}
      */
-    public BlockPalette with(BlockType blockType, int weight) { return with(new BlockTypeProvider(blockType), weight); }
+    public BlockPalette with(BlockType blockType, int weight) { return with(blockType.getMinecraftBlock(), weight); }
+    /**
+     * Add a block state to the palette with a weight of 1
+     * @param blockState The block state to add
+     * @return The modified {@link BlockPalette}
+     */
+    public BlockPalette with(BlockState blockState) { return with(blockState, 1); }
+    /**
+     * Add a block state to the palette with a given weight. A higher weight is more
+     * likely to be chosen
+     * @param blockState The block state to add
+     * @param weight The weight of the block
+     * @return The modified {@link BlockPalette}
+     */
+    public BlockPalette with(BlockState blockState, int weight) { return with(new BlockStateProvider(blockState), weight); }
     /**
      * Add an {@link IBlockProvider} to the palette with a weight of 1
      * @param block The {@link IBlockProvider} to add
@@ -307,7 +324,7 @@ public class BlockPalette
         try
         {
             BlockPredicateArgumentType.BlockPredicate parsed = BlockPredicateArgumentType.blockPredicate(RegistryLookups.commandRegistryLookup()).parse(new StringReader(block));
-            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return without(BlockTypeRegistry.fromMinecraftBlock(statePredicate.state), weight);
+            if (parsed instanceof BlockPredicateArgumentType.StatePredicate statePredicate) return without(statePredicate.state, weight);
             else if (parsed instanceof BlockPredicateArgumentType.TagPredicate tagPredicate) return without(new BlockListProvider(tagPredicate.tag, tagPredicate.properties));
         }
         catch (CommandSyntaxException e)
@@ -321,7 +338,13 @@ public class BlockPalette
      * @param blockType The {@link BlockType} to remove
      * @return The modified {@link BlockPalette}
      */
-    public BlockPalette without(BlockType blockType) { return without(blockType, Integer.MAX_VALUE); }
+    public BlockPalette without(BlockType blockType) { return without(blockType.getMinecraftBlock(), Integer.MAX_VALUE); }
+    /**
+     * Remove a block state from the palette
+     * @param blockState The block state to remove
+     * @return The modified {@link BlockPalette}
+     */
+    public BlockPalette without(BlockState blockState) { return without(blockState, Integer.MAX_VALUE); }
     /**
      * Remove weight from a {@link BlockType} in the palette. If the remaining weight is zero or less,
      * the entry will be removed
@@ -329,7 +352,15 @@ public class BlockPalette
      * @param weight The weight to remove
      * @return The modified {@link BlockPalette}
      */
-    public BlockPalette without(BlockType blockType, int weight) { return without(new BlockTypeProvider(blockType), weight); }
+    public BlockPalette without (BlockType blockType, int weight) { return without(blockType.getMinecraftBlock(), weight); }
+    /**
+     * Remove weight from a block state in the palette. If the remaining weight is zero or less,
+     * the entry will be removed
+     * @param blockType The block state to effect
+     * @param weight The weight to remove
+     * @return The modified {@link BlockPalette}
+     */
+    public BlockPalette without(BlockState blockType, int weight) { return without(new BlockStateProvider(blockType), weight); }
     /**
      * Remove an {@link IBlockProvider} from the palette
      * @param block The {@link IBlockProvider} to remove
@@ -370,12 +401,21 @@ public class BlockPalette
     //region Contains
     /**
      * Check if the palette contains a {@link BlockType}
-     * @param blockType The {@link BlockType} to check
+     * @param blockType The block ID to check
      * @return Whether the palette contains the block
      */
     public boolean contains(BlockType blockType)
     {
-        return contains(new BlockTypeProvider(blockType));
+        return contains(blockType.getMinecraftBlock());
+    }
+    /**
+     * Check if the palette contains a block state
+     * @param blockState The block state to check
+     * @return Whether the palette contains the block
+     */
+    public boolean contains(BlockState blockState)
+    {
+        return contains(new BlockStateProvider(blockState));
     }
     /**
      * Check if the palette contains an {@link IBlockProvider}
@@ -389,13 +429,17 @@ public class BlockPalette
     //endregion
     //region Resolving
     /**
-     * @return A random {@link BlockType} from the palette, or air if empty
+     * @return A random block state from the palette, or air if empty
      */
-    public BlockType randomBlock()
+    public BlockState randomBlockState()
     {
-        if (palette.size() == 0) return BlockTypeRegistry.AIR;
+        if (palette.size() == 0) return Blocks.AIR.getDefaultState();
         return WeightedRandom.getRandomItem(Keystone.RANDOM, palette, totalWeight).blockProvider.get();
     }
+    /**
+     * @return A random {@llnk BlockType} from the palette, or air if empty
+     */
+    public BlockType randomBlockType() { return WrapperRegistries.getBlocks().fromBaseType(randomBlockState()); }
     /**
      * @return A random index from the palette
      */
@@ -411,21 +455,27 @@ public class BlockPalette
         return palette.indexOf(entry);
     }
     /**
-     * Get a {@link BlockType} at a given index in the palette
+     * Get a block state at a given index in the palette
      * @param index The index
      * @return The block at the given index
      */
-    public BlockType getBlockType(int index)
+    public BlockState getBlockState(int index)
     {
         if (palette.size() == 0)
         {
             Keystone.tryCancelFilter("Cannot get block at index from empty BlockPalette!");
-            return BlockTypeRegistry.AIR;
+            return Blocks.AIR.getDefaultState();
         }
 
         while (index >= palette.size()) index -= palette.size();
         return palette.get(index).blockProvider.get();
     }
+    /**
+     * Get a {@link BlockType} at a given index in the palette
+     * @param index The index
+     * @return The block at the given index
+     */
+    public BlockType getBlockType(int index) { return WrapperRegistries.getBlocks().fromBaseType(getBlockState(index)); }
     /**
      * Run a function on every entry in the palette
      * @param consumer The function to run

@@ -3,8 +3,8 @@ import java.util.HashMap;
 import keystone.api.WorldRegion;
 import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.BlockMask;
-import keystone.api.wrappers.blocks.BlockPalette;
+import keystone.api.BlockMask;
+import keystone.api.BlockPalette;
 import keystone.api.wrappers.coordinates.BlockPos;
 
 public class SpreadLights extends KeystoneFilter

@@ -1,11 +1,11 @@
 package keystone.core.gui.overlays.block_selection;
 
-import keystone.api.wrappers.blocks.BlockType;
 import keystone.core.gui.KeystoneOverlayHandler;
 import keystone.core.gui.overlays.KeystoneOverlay;
 import keystone.core.gui.widgets.buttons.ButtonNoHotkey;
 import keystone.core.gui.widgets.groups.Margins;
 import keystone.core.gui.widgets.inputs.properties.BlockPropertiesWidgetList;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
@@ -17,8 +17,8 @@ public class BlockPropertiesScreen extends KeystoneOverlay
     private static final int PADDING = 5;
 
     private boolean ranCallback = false;
-    private final Consumer<BlockType> callback;
-    private final BlockType block;
+    private final Consumer<BlockState> callback;
+    private final BlockState block;
 
     private int panelX;
     private int panelY;
@@ -26,16 +26,16 @@ public class BlockPropertiesScreen extends KeystoneOverlay
     private int panelHeight;
     private BlockPropertiesWidgetList propertiesList;
 
-    protected BlockPropertiesScreen(BlockType blockType, Consumer<BlockType> callback)
+    protected BlockPropertiesScreen(BlockState blockType, Consumer<BlockState> callback)
     {
         super(Text.translatable("keystone.screen.blockProperties"));
 
         this.callback = callback;
         this.block = blockType;
     }
-    public static void editBlockProperties(BlockType blockType, Consumer<BlockType> callback)
+    public static void editBlockProperties(BlockState blockType, Consumer<BlockState> callback)
     {
-        if (blockType.getMinecraftBlock().getProperties().size() > 0) KeystoneOverlayHandler.addOverlay(new BlockPropertiesScreen(blockType, callback));
+        if (blockType.getProperties().size() > 0) KeystoneOverlayHandler.addOverlay(new BlockPropertiesScreen(blockType, callback));
         else callback.accept(blockType);
     }
 

@@ -5,9 +5,9 @@ import keystone.core.gui.overlays.block_selection.AbstractBlockButton;
 import keystone.core.gui.overlays.block_selection.BlockGridButton;
 import keystone.core.gui.viewports.Viewport;
 import keystone.core.modules.filter.blocks.BlockListProvider;
-import keystone.core.modules.filter.blocks.BlockTypeProvider;
+import keystone.core.modules.filter.blocks.BlockStateProvider;
 import keystone.core.modules.filter.blocks.IBlockProvider;
-import keystone.core.registries.BlockTypeRegistry;
+import keystone.core.registries.WrapperRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.DrawContext;
@@ -29,7 +29,7 @@ public class BlockGridWidget extends ClickableWidget
     {
         public Entry(BlockState state, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
         {
-            this(new BlockTypeProvider(BlockTypeRegistry.fromMinecraftBlock(state)), tooltipBuilder);
+            this(new BlockStateProvider(state), tooltipBuilder);
         }
         public Entry(RegistryEntryList<Block> tag, Map<String, String> vagueProperties, AbstractBlockButton.IBlockTooltipBuilder tooltipBuilder)
         {

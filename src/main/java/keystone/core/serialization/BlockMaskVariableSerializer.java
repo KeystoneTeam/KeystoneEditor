@@ -1,6 +1,6 @@
 package keystone.core.serialization;
 
-import keystone.api.wrappers.blocks.BlockMask;
+import keystone.api.BlockMask;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 

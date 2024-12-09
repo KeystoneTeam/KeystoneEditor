@@ -3,7 +3,7 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
 import keystone.api.wrappers.Biome;
-import keystone.api.wrappers.blocks.BlockMask;
+import keystone.api.BlockMask;
 
 public class SetBiome extends KeystoneFilter
 {
