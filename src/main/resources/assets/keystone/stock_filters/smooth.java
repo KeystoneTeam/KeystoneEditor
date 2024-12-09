@@ -3,7 +3,7 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.IntRange;
 import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
-import keystone.api.wrappers.blocks.BlockType;
+import keystone.api.wrappers.BlockType;
 
 import java.util.HashMap;
 

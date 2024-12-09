@@ -5,7 +5,7 @@ import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
 import keystone.api.BlockMask;
 import keystone.api.BlockPalette;
-import keystone.api.wrappers.blocks.BlockType;
+import keystone.api.wrappers.BlockType;
 
 public class Topsoil extends KeystoneFilter
 {

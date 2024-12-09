@@ -6,7 +6,7 @@ import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
 import keystone.api.BlockMask;
 import keystone.api.BlockPalette;
-import keystone.api.wrappers.blocks.BlockType;
+import keystone.api.wrappers.BlockType;
 import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.BoundingBox;
 import keystone.api.wrappers.coordinates.Direction;
@@ -32,9 +32,6 @@ public class CreateSchematics extends KeystoneFilter
     @Tooltip("The blocks that surround the structure of the schematic")
     @Variable BlockMask borderMask = blacklist("minecraft:air");
     
-    @Tooltip("What blocks represent a structure void.")
-    @Variable BlockType structureVoid = blockType("minecraft:structure_void");
-    
     @Override
     public void processBlock(int x, int y, int z, WorldRegion region)
     {
@@ -52,9 +49,9 @@ public class CreateSchematics extends KeystoneFilter
             Path path = Paths.get(KeystoneDirectories.getSchematicsDirectory().resolve(pathTokens[0]).toString(), pathTokens[1].split("/"));
             
             // Save schematic
-            region.setBlockType(x, y, z, replaceMarkerWith.randomBlock());
+            region.setBlockType(x, y, z, replaceMarkerWith.randomBlockType());
             BoundingBox schematicBounds = getSchematicBounds(x, y, z, region);
-            KeystoneSchematic schematic = schematic(schematicBounds, region.getWorldModifiers(), RetrievalMode.CURRENT, structureVoid);
+            KeystoneSchematic schematic = schematic(schematicBounds, region.getWorldModifiers(), RetrievalMode.CURRENT);
             SchematicLoader.saveSchematic(schematic, path.toString() + ".kschem");
             region.setBlockType(x, y, z, blockType);
             region.setBlockData(x, y, z, blockData);

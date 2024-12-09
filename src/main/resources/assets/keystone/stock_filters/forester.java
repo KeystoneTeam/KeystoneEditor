@@ -5,7 +5,7 @@ import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
 import keystone.api.BlockMask;
 import keystone.api.BlockPalette;
-import keystone.api.wrappers.blocks.BlockType;
+import keystone.api.wrappers.BlockType;
 import keystone.api.wrappers.coordinates.Axis;
 import keystone.api.wrappers.coordinates.BlockPos;
 import keystone.api.wrappers.coordinates.Vector2f;

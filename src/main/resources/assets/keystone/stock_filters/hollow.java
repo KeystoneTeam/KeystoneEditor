@@ -3,7 +3,7 @@ import keystone.api.filters.KeystoneFilter;
 import keystone.api.variables.Tooltip;
 import keystone.api.variables.Variable;
 import keystone.api.BlockPalette;
-import keystone.api.wrappers.blocks.BlockType;
+import keystone.api.wrappers.BlockType;
 import keystone.api.wrappers.coordinates.BlockPos;
 
 public class Hollow extends KeystoneFilter

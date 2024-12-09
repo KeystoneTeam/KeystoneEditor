@@ -5,7 +5,7 @@ import keystone.api.variables.IntRange;
 import keystone.api.variables.Variable;
 import keystone.api.BlockMask;
 import keystone.api.BlockPalette;
-import keystone.api.wrappers.blocks.BlockType;
+import keystone.api.wrappers.BlockType;
 
 import java.io.File;
 import java.util.HashMap;
