@@ -1,17 +1,33 @@
 package keystone.core.modules.world.change_queue;
 
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import keystone.core.KeystoneConfig;
 import keystone.core.KeystoneGlobalState;
+import keystone.core.mixins.common.ChunkSectionAccessor;
+import keystone.core.mixins.common.ChunkSectionMixin;
+import keystone.core.mixins.common.ServerChunkLoadingManagerAccessor;
+import keystone.core.mixins.interfaces.KeystoneChunkSection;
 import keystone.core.modules.history.chunk.WorldHistoryChunk;
 import keystone.core.modules.session.SessionModule;
 import keystone.core.utils.ProgressBar;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.server.world.ServerChunkLoadingManager;
+import net.minecraft.server.world.ServerLightingProvider;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.LightType;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.chunk.light.ChunkBlockLightProvider;
+import net.minecraft.world.chunk.light.ChunkLightingView;
+import net.minecraft.world.chunk.light.LightingProvider;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ChangeSet
 {
@@ -24,17 +40,17 @@ public class ChangeSet
     
     private record WorldChange(SessionModule session, WorldHistoryChunk chunk, boolean undoing)
     {
-        public void apply(QueueState queueState)
+        public void apply(QueueState queueState, Map<ServerWorld, DirtyChunkList> dirtyChunks)
         {
-            if (queueState == QueueState.PLACING_BLOCKS) applyChanges();
+            if (queueState == QueueState.PLACING_BLOCKS) applyChanges(dirtyChunks);
             else if (queueState == QueueState.PROCESSING_UPDATES) applyUpdates();
         }
     
-        public void applyChanges()
+        public void applyChanges(Map<ServerWorld, DirtyChunkList> dirtyChunks)
         {
             session.registerChange(chunk);
-            if (undoing) chunk.revertBlocks();
-            else chunk.place();
+            if (undoing) chunk.revertBlocks(dirtyChunks);
+            else chunk.place(dirtyChunks);
         }
     
         public void applyUpdates()
@@ -113,7 +129,7 @@ public class ChangeSet
     private void tickImmediate()
     {
         // Process all changes
-        while (state != QueueState.IDLE) applyNextChange();
+        applyChanges(Integer.MAX_VALUE);
     }
     private void tickAsync()
     {
@@ -122,9 +138,68 @@ public class ChangeSet
     }
     private void applyChanges(int count)
     {
-        for (int i = 0; i < count && state != QueueState.IDLE; i++) applyNextChange();
+        MinecraftClient client = MinecraftClient.getInstance();
+        ClientWorld clientWorld = client.world;
+        
+        // Apply Changes
+        Map<ServerWorld, DirtyChunkList> dirtyChunks = new Reference2ObjectArrayMap<>();
+        for (int i = 0; i < count && state != QueueState.IDLE; i++) applyNextChange(dirtyChunks);
+        
+        // Send Packets and Updates
+        for (Map.Entry<ServerWorld, DirtyChunkList> entry : dirtyChunks.entrySet())
+        {
+            ServerWorld world = entry.getKey();
+            DirtyChunkList chunks = entry.getValue();
+            ServerChunkLoadingManager chunkLoadingManager = world.getChunkManager().chunkLoadingManager;
+            ServerLightingProvider lightingProvider = ((ServerChunkLoadingManagerAccessor)chunkLoadingManager).getLightingProvider();
+            boolean updateClient = world.getDimensionEntry().getKey().orElseThrow().equals(clientWorld.getDimensionEntry().getKey().orElseThrow());
+            
+            // Repopulate Heightmaps
+            for (Chunk chunk : chunks.getChunks())
+            {
+                Heightmap.populateHeightmaps(chunk, EnumSet.allOf(Heightmap.Type.class));
+                chunk.refreshSurfaceY();
+            }
+            
+            // Process Chunk Sections
+            entry.getValue().forEachSection((section, pos) ->
+            {
+                relightChunk(section, pos, lightingProvider);
+                
+                // Sync with Client
+                if (updateClient)
+                {
+                    // Get Client Chunk and Section
+                    WorldChunk clientChunk = clientWorld.getChunk(pos.getSectionX(), pos.getSectionZ());
+                    ChunkSection clientSection = clientChunk.getSection(clientChunk.sectionCoordToIndex(pos.getSectionY()));
+                    
+                    // Update Client Section BlockState Container
+                    ((KeystoneChunkSection)clientSection).keystone_copyFrom(section);
+                    relightChunk(section, pos, clientWorld.getLightingProvider());
+                    
+                    // Re-render Chunk
+                    clientWorld.enqueueChunkUpdate(() ->
+                    {
+                        clientWorld.getChunkManager().getLightingProvider().setSectionStatus(pos, section.isEmpty());
+                        clientWorld.scheduleBlockRenders(pos.getSectionX(), pos.getSectionY(), pos.getSectionZ());
+                    });
+                }
+            });
+            
+            // Send Biome Packets
+            chunkLoadingManager.sendChunkBiomePackets(chunks.getChunks());
+        }
     }
-    private void applyNextChange()
+    
+    private void relightChunk(ChunkSection chunkSection, ChunkSectionPos pos, LightingProvider lightingProvider)
+    {
+        lightingProvider.setSectionStatus(pos, true);
+        lightingProvider.enqueueSectionData(LightType.BLOCK, pos, null);
+        lightingProvider.enqueueSectionData(LightType.SKY, pos, null);
+        lightingProvider.propagateLight(new ChunkPos(pos.getSectionX(), pos.getSectionZ()));
+    }
+    
+    private void applyNextChange(Map<ServerWorld, DirtyChunkList> dirtyChunks)
     {
         if (queueIndex >= changeQueue.size())
         {
@@ -133,7 +208,7 @@ public class ChangeSet
         }
     
         WorldChange change = this.changeQueue.get(queueIndex++);
-        change.apply(state);
+        change.apply(state, dirtyChunks);
         if (flushMode == FlushMode.BLOCKING) ProgressBar.nextStep();
     
         // Check if the end of the queue was reached

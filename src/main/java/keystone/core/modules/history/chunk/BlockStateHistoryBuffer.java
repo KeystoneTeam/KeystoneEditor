@@ -48,12 +48,12 @@ public class BlockStateHistoryBuffer extends HistoryBuffer<PalettedContainer<Blo
     }
     
     @Override
-    protected NbtElement writeBuffer(PalettedContainer<BlockState> buffer)
+    protected NbtElement writeBuffer(World world, PalettedContainer<BlockState> buffer)
     {
         return CODEC.encodeStart(NbtOps.INSTANCE, buffer).getOrThrow();
     }
     @Override
-    protected PalettedContainer<BlockState> readBuffer(NbtElement nbt)
+    protected PalettedContainer<BlockState> readBuffer(World world, NbtElement nbt)
     {
         return CODEC.parse(NbtOps.INSTANCE, nbt).promotePartial(error -> Keystone.LOGGER.warn("Recoverable error while reading block state history buffer: {}", error)).getOrThrow();
     }

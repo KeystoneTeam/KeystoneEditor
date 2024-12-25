@@ -6,6 +6,7 @@ import keystone.api.wrappers.entities.Entity;
 import keystone.core.KeystoneGlobalState;
 import keystone.core.mixins.common.ChunkSectionAccessor;
 import keystone.core.modules.history.HistoryStackFrame;
+import keystone.core.modules.world.change_queue.DirtyChunkList;
 import keystone.core.modules.world_cache.WorldCacheModule;
 import keystone.core.utils.PalettedArray;
 import keystone.core.utils.PalettedContainerUtils;
@@ -17,27 +18,35 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.command.FillBiomeCommand;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.biome.source.BiomeCoords;
+import net.minecraft.world.biome.source.BiomeSupplier;
+import net.minecraft.world.biome.source.util.MultiNoiseUtil;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.PalettedContainer;
+import net.minecraft.world.chunk.WorldChunk;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -51,8 +60,8 @@ public class WorldHistoryChunk
     public final int chunkZ;
     
     private final HistoryStackFrame historyEntry;
-    private final ServerWorldAccess world;
-    private final Chunk chunk;
+    private final ServerWorld world;
+    private final WorldChunk chunk;
     private final ChunkSection chunkSection;
 
     private final BlockStateHistoryBuffer blocks;
@@ -62,7 +71,7 @@ public class WorldHistoryChunk
     
     private boolean biomesChanged;
 
-    public WorldHistoryChunk(HistoryStackFrame historyEntry, Vec3i chunkPosition, @NotNull ServerWorldAccess world)
+    public WorldHistoryChunk(HistoryStackFrame historyEntry, Vec3i chunkPosition, @NotNull ServerWorld world)
     {
         // Initialize Chunk Coordinates
         this.chunkX = chunkPosition.getX();
@@ -123,20 +132,20 @@ public class WorldHistoryChunk
         else this.chunkSection = sections[sectionIndex];
         
         // Blocks
-        if (nbt.contains("Blocks", NbtElement.COMPOUND_TYPE)) this.blocks = HistoryBuffer.deserialize(nbt.getCompound("Blocks"), BlockStateHistoryBuffer::createEmpty);
+        if (nbt.contains("Blocks", NbtElement.COMPOUND_TYPE)) this.blocks = HistoryBuffer.deserialize(world.toServerWorld(), nbt.getCompound("Blocks"), BlockStateHistoryBuffer::createEmpty);
         else this.blocks = BlockStateHistoryBuffer.createFilled(Blocks.AIR.getDefaultState());
         
         // Tile Entities
-        if (nbt.contains("TileEntities", NbtElement.COMPOUND_TYPE)) this.tileEntities = HistoryBuffer.deserialize(nbt.getCompound("TileEntities"), TileEntityHistoryBuffer::createEmpty);
+        if (nbt.contains("TileEntities", NbtElement.COMPOUND_TYPE)) this.tileEntities = HistoryBuffer.deserialize(world.toServerWorld(), nbt.getCompound("TileEntities"), TileEntityHistoryBuffer::createEmpty);
         else this.tileEntities = TileEntityHistoryBuffer.createEmpty();
         
         // Biomes
-        if (nbt.contains("Biomes", NbtElement.COMPOUND_TYPE)) this.biomes = HistoryBuffer.deserialize(nbt.getCompound("Biomes"), () -> BiomeHistoryBuffer.createEmpty(world.toServerWorld()));
+        if (nbt.contains("Biomes", NbtElement.COMPOUND_TYPE)) this.biomes = HistoryBuffer.deserialize(world.toServerWorld(), nbt.getCompound("Biomes"), () -> BiomeHistoryBuffer.createEmpty(world.toServerWorld()));
         else this.biomes = BiomeHistoryBuffer.createFilled(world.toServerWorld(), BiomeKeys.THE_VOID);
         this.biomesChanged = nbt.getBoolean("BiomesChanged");
 
         // Entities
-        if (nbt.contains("Entities", NbtElement.COMPOUND_TYPE)) this.entities = HistoryBuffer.deserialize(nbt.getCompound("Entities"), EntitiesHistoryBuffer::createEmpty);
+        if (nbt.contains("Entities", NbtElement.COMPOUND_TYPE)) this.entities = HistoryBuffer.deserialize(world.toServerWorld(), nbt.getCompound("Entities"), EntitiesHistoryBuffer::createEmpty);
         else this.entities = EntitiesHistoryBuffer.createEmpty();
     }
     public NbtCompound serialize()
@@ -146,10 +155,10 @@ public class WorldHistoryChunk
         nbt.putIntArray("ChunkPos", new int[] { chunkX, chunkY, chunkZ });
         nbt.putString("World", world.toServerWorld().getRegistryKey().getValue().toString());
         
-        nbt.put("Blocks", blocks.write());
-        nbt.put("TileEntities", tileEntities.write());
-        nbt.put("Biomes", biomes.write());
-        nbt.put("Entities", entities.write());
+        nbt.put("Blocks", blocks.write(world.toServerWorld()));
+        nbt.put("TileEntities", tileEntities.write(world.toServerWorld()));
+        nbt.put("Biomes", biomes.write(world.toServerWorld()));
+        nbt.put("Entities", entities.write(world.toServerWorld()));
         nbt.putBoolean("BiomesChanged", biomesChanged);
         
         return nbt;
@@ -184,11 +193,11 @@ public class WorldHistoryChunk
         int biomeY = BiomeCoords.fromBlock(y);
         int biomeZ = BiomeCoords.fromBlock(z);
 
-        return this.biomes.getBuffer(retrievalMode).get(biomeZ + biomeY * 4 + biomeX * 16);
+        return this.biomes.getBuffer(retrievalMode).get(biomeX, biomeY, biomeZ);
     }
     public RegistryEntry<net.minecraft.world.biome.Biome> getBiomeRaw(int biomeX, int biomeY, int biomeZ, RetrievalMode retrievalMode)
     {
-        return this.biomes.getBuffer(retrievalMode).get(biomeZ + biomeY * 4 + biomeX * 16);
+        return this.biomes.getBuffer(retrievalMode).get(biomeX, biomeY, biomeZ);
     }
     public Entity getEntity(UUID keystoneUUID, RetrievalMode retrievalMode)
     {
@@ -243,7 +252,7 @@ public class WorldHistoryChunk
         int biomeY = BiomeCoords.fromBlock(y);
         int biomeZ = BiomeCoords.fromBlock(z);
 
-        this.biomes.getBuffer(RetrievalMode.CURRENT).set(biomeZ + biomeY * 4 + biomeX * 16, biome);
+        this.biomes.getBuffer(RetrievalMode.CURRENT).set(biomeX, biomeY, biomeZ, biome);
         biomesChanged = true;
     }
     public void commitEntityChanges(Entity entity)
@@ -274,15 +283,15 @@ public class WorldHistoryChunk
         if (chunkSection == null) return;
         historyEntry.dirtyChunk(this);
     }
-    public void revertBlocks()
+    public void revertBlocks(Map<ServerWorld, DirtyChunkList> dirtyChunks)
     {
         if (chunkSection == null) return;
-        apply(RetrievalMode.ORIGINAL);
+        apply(RetrievalMode.ORIGINAL, dirtyChunks);
     }
-    public void place()
+    public void place(Map<ServerWorld, DirtyChunkList> dirtyChunks)
     {
         if (chunkSection == null) return;
-        apply(RetrievalMode.CURRENT);
+        apply(RetrievalMode.CURRENT, dirtyChunks);
     }
     public void processUpdates(boolean undoing)
     {
@@ -306,29 +315,48 @@ public class WorldHistoryChunk
     }
     //endregion
     //region Private Helpers
-    private void apply(RetrievalMode retrievalMode)
+    private void apply(RetrievalMode retrievalMode, Map<ServerWorld, DirtyChunkList> dirtyChunks)
     {
         if (chunkSection == null) return;
+        ClientWorld clientWorld = MinecraftClient.getInstance().world;
         
         BlockPos chunkOrigin = new BlockPos(chunkX << 4, chunkY << 4, chunkZ << 4);
         PalettedContainer<BlockState> blockStates = this.blocks.getBuffer(retrievalMode);
         ConcurrentHashMap<BlockPos, NbtCompound> tileEntities = this.tileEntities.getBuffer(retrievalMode);
-        PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> biomes = this.biomes.getBuffer(retrievalMode);
+        PalettedContainer<RegistryEntry<net.minecraft.world.biome.Biome>> biomes = this.biomes.getBuffer(retrievalMode);
         ConcurrentHashMap<UUID, Entity> entities = this.entities.getBuffer(retrievalMode);
         
         // Apply Biomes
-        var biomeContainer = createBiomeContainer(biomes);
-        ((ChunkSectionAccessor)chunkSection).setBiomeContainer(biomeContainer);
-        if (MinecraftClient.getInstance().world.getDimension().equals(world.getDimension()))
-        {
-            ClientWorld world = MinecraftClient.getInstance().world;
-            Chunk chunk = world.getChunk(chunkX, chunkZ);
-            ChunkSection chunkSection = world.getChunk(chunkX, chunkZ).getSection(chunk.getSectionIndex(chunkY << 4));
-            ((ChunkSectionAccessor)chunkSection).setBiomeContainer(PalettedContainerUtils.copyContainer(biomeContainer));
-            KeystoneGlobalState.DirtyChunks.computeIfAbsent(this.world.toServerWorld(), key -> Lists.newArrayList()).add(chunk);
-        }
+        chunkSection.populateBiomes((x, y, z, noise) -> biomes.get(x, y, z), world.getChunkManager().getNoiseConfig().getMultiNoiseSampler(), 0, 0, 0);
         
         // Apply Blocks
+        ((ChunkSectionAccessor) chunkSection).setBlockStateContainer(blockStates);
+        chunkSection.calculateCounts();
+        
+        /*
+        KeystoneGlobalState.BlockTickScheduling = true;
+        for (int x = 0; x < 16; x++)
+        {
+            for (int y = 0; y < 16; y++)
+            {
+                for (int z = 0; z < 16; z++)
+                {
+                    BlockPos pos = chunkOrigin.add(x, y, z);
+                    chunk.setBlockState(pos, blockStates.get(x, y, z), false);
+                    world.updateListeners(pos, blocks.getBuffer(RetrievalMode.ORIGINAL).get(x, y, z), blockStates.get(x, y, z), PLACE_FLAGS);
+                    NbtCompound tileEntityData = tileEntities.getOrDefault(pos, null);
+                    if (tileEntityData != null)
+                    {
+                        BlockEntity blockEntity = world.getBlockEntity(pos);
+                        if (blockEntity != null) blockEntity.read(tileEntityData, RegistryLookups.registryLookup());
+                    }
+                }
+            }
+        }
+        KeystoneGlobalState.BlockTickScheduling = false;
+         */
+        
+        /*
         for (int x = 0; x < 16; x++)
         {
             for (int y = 0; y < 16; y++)
@@ -359,6 +387,22 @@ public class WorldHistoryChunk
                 }
             }
         }
+         */
+        
+        // Apply Tile Entities
+        for (BlockPos pos : chunk.getBlockEntityPositions())
+        {
+            int sectionY = ChunkSectionPos.getSectionCoord(pos.getY());
+            if (sectionY == chunkY) chunk.removeBlockEntity(pos);
+        }
+        for (Map.Entry<BlockPos, NbtCompound> entry : tileEntities.entrySet())
+        {
+            BlockPos pos = entry.getKey();
+            NbtCompound blockData = entry.getValue();
+            BlockEntity blockEntity = BlockEntity.createFromNbt(pos, blockStates.get(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15), blockData, world.getRegistryManager());
+            if (blockEntity != null) chunk.addBlockEntity(blockEntity);
+            else Keystone.LOGGER.error("Failed to create block entity at {}!", pos);
+        }
     
         // Apply Entities
         for (Map.Entry<UUID, Entity> entry : this.entities.allEntities.entrySet())
@@ -377,26 +421,9 @@ public class WorldHistoryChunk
             else entities.get(keystoneID).updateMinecraftEntity(world);
         }
     
+        // Mark Chunk Dirty
         chunk.setNeedsSaving(true);
-    }
-    private PalettedContainer<RegistryEntry<net.minecraft.world.biome.Biome>> createBiomeContainer(PalettedArray<RegistryEntry<net.minecraft.world.biome.Biome>> array)
-    {
-        Registry<net.minecraft.world.biome.Biome> biomeRegistry = RegistryLookups.registry(RegistryKeys.BIOME);
-        PalettedContainer<RegistryEntry<net.minecraft.world.biome.Biome>> container = new PalettedContainer<>(biomeRegistry.getIndexedEntries(), biomeRegistry.entryOf(BiomeKeys.THE_VOID), PalettedContainer.PaletteProvider.BIOME);
-        
-        for (int x = 0; x < 4; x++)
-        {
-            for (int y = 0; y < 4; y++)
-            {
-                for (int z = 0; z < 4; z++)
-                {
-                    int index = z + y * 4 + x * 16;
-                    container.swap(x, y, z, array.get(index));
-                }
-            }
-        }
-        
-        return container;
+        dirtyChunks.computeIfAbsent(world, k -> new DirtyChunkList()).dirtyChunkSection(chunk, chunkSection, chunkY);
     }
     //endregion
 }

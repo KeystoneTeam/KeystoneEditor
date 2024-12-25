@@ -1,11 +1,10 @@
 package keystone.core.utils;
 
 import keystone.api.Keystone;
-import keystone.core.mixins.common.ArrayPaletteAccessor;
-import keystone.core.mixins.common.BiMapPaletteAccessor;
-import keystone.core.mixins.common.PalettedContainerAccessor;
-import keystone.core.mixins.common.SingularPaletteAccessor;
+import keystone.core.mixins.common.*;
 import net.minecraft.world.chunk.*;
+
+import java.util.List;
 
 public class PalettedContainerUtils
 {
@@ -13,12 +12,43 @@ public class PalettedContainerUtils
     {
         PalettedContainer<T> copy = container.copy();
         Palette<T> palette = ((PalettedContainerAccessor<T>)copy).getData().palette();
-        
-        if (palette instanceof SingularPalette<T>) ((SingularPaletteAccessor<T>)palette).setListener(copy);
-        else if (palette instanceof ArrayPalette<T>) ((ArrayPaletteAccessor<T>)palette).setListener(copy);
-        else if (palette instanceof BiMapPalette<T>) ((BiMapPaletteAccessor<T>)palette).setListener(copy);
-        else if (!(palette instanceof IdListPalette<T>)) Keystone.LOGGER.error("Trying to deep copy unknown palette type '{}'! Cannot update palette resize listener!", palette.getClass().getName());
-        
+        ((PalettedContainerDataAccessor<T>)(Object)((PalettedContainerAccessor<?>) copy).getData()).setPalette(deepCopyPalette(palette, copy));
         return copy;
+    }
+    public static <T> Palette<T> deepCopyPalette(Palette<T> original, PaletteResizeListener<T> resizeListener)
+    {
+        if (original instanceof SingularPalette<T> casted)
+        {
+            SingularPaletteAccessor<T> accessor = (SingularPaletteAccessor<T>)casted;
+            T entry = accessor.getEntry();
+            List<T> entries = entry != null ? List.of(entry) : List.of();
+            return new SingularPalette<>(accessor.getIdList(), resizeListener, entries);
+        }
+        else if (original instanceof ArrayPalette<T> casted)
+        {
+            ((ArrayPaletteAccessor<T>)casted).setListener(resizeListener);
+            return casted;
+        }
+        else if (original instanceof BiMapPalette<T> casted)
+        {
+            ((BiMapPaletteAccessor<T>)casted).setListener(resizeListener);
+            return casted;
+        }
+        else if (original instanceof IdListPalette<T> casted) { return original; }
+        else
+        {
+            Keystone.LOGGER.error("Unknown palette type: {}", original.getClass().getName());
+            return original;
+        }
+    }
+    public static <T> PalettedContainer<T> fromReadableContainer(ReadableContainer<T> container, int sizeX, int sizeY, int sizeZ)
+    {
+        if (container instanceof PalettedContainer<T> palettedContainer) return copyContainer(palettedContainer);
+        else
+        {
+            PalettedContainer<T> ret = container.slice();
+            for (int x = 0; x < sizeX; x++) for (int y = 0; y < sizeY; y++) for (int z = 0; z < sizeZ; z++) ret.set(x, y, z, container.get(x, y, z));
+            return ret;
+        }
     }
 }

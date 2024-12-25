@@ -5,6 +5,7 @@ import keystone.core.modules.IKeystoneModule;
 import keystone.core.modules.history.chunk.WorldHistoryChunk;
 import keystone.core.modules.session.SessionModule;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayDeque;

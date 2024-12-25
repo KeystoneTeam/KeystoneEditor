@@ -40,13 +40,13 @@ public class TileEntityHistoryBuffer extends HistoryBuffer<ConcurrentHashMap<Blo
     public static TileEntityHistoryBuffer createEmpty() { return new TileEntityHistoryBuffer(); }
     
     @Override
-    protected NbtList writeBuffer(ConcurrentHashMap<BlockPos, NbtCompound> buffer)
+    protected NbtList writeBuffer(World world, ConcurrentHashMap<BlockPos, NbtCompound> buffer)
     {
         return NBTSerializer.serializeTileEntities(buffer);
     }
     
     @Override
-    protected ConcurrentHashMap<BlockPos, NbtCompound> readBuffer(NbtList nbt)
+    protected ConcurrentHashMap<BlockPos, NbtCompound> readBuffer(World world, NbtList nbt)
     {
         return new ConcurrentHashMap<>(NBTSerializer.deserializeTileEntities(nbt));
     }

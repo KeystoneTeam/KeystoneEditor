@@ -46,29 +46,29 @@ public class EntitiesHistoryBuffer extends HistoryBuffer<ConcurrentHashMap<UUID,
     public static EntitiesHistoryBuffer createEmpty() { return new EntitiesHistoryBuffer(); }
     
     @Override
-    public NbtCompound write()
+    public NbtCompound write(World world)
     {
-        NbtCompound nbt = super.write();
-        nbt.put("All", writeBuffer(allEntities));
+        NbtCompound nbt = super.write(world);
+        nbt.put("All", writeBuffer(world, allEntities));
         return nbt;
     }
     
     @Override
-    public void read(NbtCompound nbt)
+    public void read(World world, NbtCompound nbt)
     {
-        super.read(nbt);
-        if (nbt.contains("All", NbtElement.COMPOUND_TYPE)) this.allEntities = readBuffer(nbt.getCompound("All"));
+        super.read(world, nbt);
+        if (nbt.contains("All", NbtElement.COMPOUND_TYPE)) this.allEntities = readBuffer(world, nbt.getCompound("All"));
         else this.allEntities.clear();
     }
     
     @Override
-    protected NbtCompound writeBuffer(ConcurrentHashMap<UUID, Entity> buffer)
+    protected NbtCompound writeBuffer(World world, ConcurrentHashMap<UUID, Entity> buffer)
     {
         return NBTSerializer.serializeEntities(buffer);
     }
     
     @Override
-    protected ConcurrentHashMap<UUID, Entity> readBuffer(NbtCompound nbt)
+    protected ConcurrentHashMap<UUID, Entity> readBuffer(World world, NbtCompound nbt)
     {
         return new ConcurrentHashMap<>(NBTSerializer.deserializeEntities(nbt));
     }

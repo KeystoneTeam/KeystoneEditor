@@ -3,6 +3,7 @@ package keystone.core.modules.history.chunk;
 import keystone.api.enums.RetrievalMode;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.world.World;
 
 public abstract class HistoryBuffer<BufferType, NbtType extends NbtElement>
 {
@@ -24,31 +25,31 @@ public abstract class HistoryBuffer<BufferType, NbtType extends NbtElement>
         this.swapped = false;
     }
     
-    public static <BufferType, NbtType extends NbtElement, Subclass extends HistoryBuffer<BufferType, NbtType>> Subclass deserialize(NbtCompound nbt, HistoryBufferConstructor<BufferType, NbtType, Subclass> constructor)
+    public static <BufferType, NbtType extends NbtElement, Subclass extends HistoryBuffer<BufferType, NbtType>> Subclass deserialize(World world, NbtCompound nbt, HistoryBufferConstructor<BufferType, NbtType, Subclass> constructor)
     {
         Subclass ret = constructor.construct();
-        ret.read(nbt);
+        ret.read(world, nbt);
         return ret;
     }
     
-    protected abstract NbtType writeBuffer(BufferType buffer);
-    protected abstract BufferType readBuffer(NbtType nbt);
+    protected abstract NbtType writeBuffer(World world, BufferType buffer);
+    protected abstract BufferType readBuffer(World world, NbtType nbt);
     protected abstract BufferType copyBuffer(BufferType buffer);
     
-    public NbtCompound write()
+    public NbtCompound write(World world)
     {
         NbtCompound nbt = new NbtCompound();
-        nbt.put("Old", writeBuffer(old));
-        nbt.put("Buffer1", writeBuffer(buffer1));
-        nbt.put("Buffer2", writeBuffer(buffer2));
+        nbt.put("Old", writeBuffer(world, old));
+        nbt.put("Buffer1", writeBuffer(world, buffer1));
+        nbt.put("Buffer2", writeBuffer(world, buffer2));
         nbt.putBoolean("Swapped", swapped);
         return nbt;
     }
-    public void read(NbtCompound nbt)
+    public void read(World world, NbtCompound nbt)
     {
-        old = readBuffer((NbtType)nbt.get("Old"));
-        buffer1 = readBuffer((NbtType)nbt.get("Buffer1"));
-        buffer2 = readBuffer((NbtType)nbt.get("Buffer2"));
+        old = readBuffer(world, (NbtType)nbt.get("Old"));
+        buffer1 = readBuffer(world, (NbtType)nbt.get("Buffer1"));
+        buffer2 = readBuffer(world, (NbtType)nbt.get("Buffer2"));
         swapped = nbt.getBoolean("Swapped");
     }
     

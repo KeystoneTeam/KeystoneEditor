@@ -12,6 +12,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.ServerWorldAccess;
@@ -23,7 +24,7 @@ public class HistoryStackFrame
 {
     public final int index;
 
-    private ServerWorldAccess world;
+    private ServerWorld world;
     private final HistoryModule historyModule;
     private final WorldChangeQueueModule worldChangeQueue;
     private final List<IHistoryEntry> revertEntries;
